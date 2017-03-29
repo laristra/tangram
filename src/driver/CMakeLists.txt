@@ -46,8 +46,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 # Add header files
 set(driver_HEADERS
-    driver.h
-    PARENT_SCOPE
+  CellMatPoly.h
+  PARENT_SCOPE
 )
 
 # Add source files
@@ -57,5 +57,10 @@ set(driver_SOURCES
 
 # Unit tests
 
-# if (ENABLE_UNIT_TESTS)
-# endif (ENABLE_UNIT_TESTS)
+if (ENABLE_UNIT_TESTS)
+
+  cinch_add_unit(test_CellMatPoly_1D
+    SOURCES test/test_CellMatPoly_1D.cc
+    test/test_CellMatPoly_2D.cc)
+  
+endif (ENABLE_UNIT_TESTS)
