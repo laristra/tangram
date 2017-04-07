@@ -61,6 +61,23 @@ if (ENABLE_UNIT_TESTS)
 
   cinch_add_unit(test_CellMatPoly_1D
     SOURCES test/test_CellMatPoly_1D.cc
-    test/test_CellMatPoly_2D.cc)
+    LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+    POLICY MPI
+    THREADS 1
+  )
   
+  cinch_add_unit(test_CellMatPoly_2D
+    SOURCES test/test_CellMatPoly_2D.cc
+    LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+    POLICY MPI
+    THREADS 1
+  )
+
+  cinch_add_unit(test_CellMatPoly_3D
+    SOURCES test/test_CellMatPoly_3D.cc
+    LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+    POLICY MPI
+    THREADS 1
+  )
+
 endif (ENABLE_UNIT_TESTS)
