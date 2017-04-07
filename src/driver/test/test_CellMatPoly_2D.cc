@@ -55,12 +55,12 @@ TEST(CellMatPoly, Mesh2D) {
 
   Jali::MeshFactory mf(MPI_COMM_WORLD);
 
-  if (Jali::framework_available(Jali::Simple))
-    mf.framework(Jali::Simple);
+  if (Jali::framework_available(Jali::MSTK))
+    mf.framework(Jali::MSTK);
   mf.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
 
-  // Make a 1-cell one-dimensional mesh
-  std::shared_ptr<Jali::Mesh> mesh = mf(0.0, 0.0, 1.0, 1.0, 2, 2);
+  // Make a 1-cell two-dimensional mesh
+  std::shared_ptr<Jali::Mesh> mesh = mf(0.0, 0.0, 1.0, 1.0, 1, 1);
 
   // Make a 2-material CellMatPoly object for the cell
 
@@ -70,7 +70,7 @@ TEST(CellMatPoly, Mesh2D) {
   int cellid = 0;
   cellmatpoly.set_cell(cellid);
 
-  std::vector<int> cnodes(2);
+  std::vector<int> cnodes(4);
   mesh->cell_get_nodes(cellid, &cnodes);
 
   // Two material polygons 
@@ -125,9 +125,9 @@ TEST(CellMatPoly, Mesh2D) {
   // expected matpolys connected to each face
   std::vector<std::array<int, 2>> fmatpolys0;
   fmatpolys0.push_back({0, -1});
-  fmatpolys0.push_back({0, -1});
   fmatpolys0.push_back({0, 1});  // 2nd face is internal; cncted to matpolys 0,1
-  fmatpolys0.push_back({0, 1});
+  fmatpolys0.push_back({0, -1});
+  fmatpolys0.push_back({0, -1});
 
   cellmatpoly.add_matpoly(0, 4, &(points0[0]), &(vparentkind0[0]),
                           &(vparentid0[0]), &(fparentkind0[0]),
@@ -155,13 +155,13 @@ TEST(CellMatPoly, Mesh2D) {
   std::vector<std::vector<int>> fverts1;
   fverts1.push_back({1, 4});
   fverts1.push_back({4, 2});
-  fverts1.push_back({2, 1});
+  fverts1.push_back({1, 2});
 
   // expected matpolys connected to each face
   std::vector<std::array<int, 2>> fmatpolys1;
-  fmatpolys1.push_back({0, -1});
-  fmatpolys1.push_back({0, -1});
-  fmatpolys1.push_back({1, 0});  // 2nd face is internal; cncted to matpolys 0,1
+  fmatpolys1.push_back({1, -1});
+  fmatpolys1.push_back({1, -1});
+  fmatpolys1.push_back({0, 1});  // 2nd face is internal; cncted to matpolys 0,1
 
   cellmatpoly.add_matpoly(1, 3, &(points1[0]), &(vparentkind1[0]),
                           &(vparentid1[0]), nullptr, nullptr);
@@ -192,6 +192,12 @@ TEST(CellMatPoly, Mesh2D) {
       ASSERT_EQ(vparentkind0[i], cellmatpoly.matvertex_parent_kind(v));
       ASSERT_EQ(vparentid0[i], cellmatpoly.matvertex_parent_id(v));
     }
+
+    std::vector<Tangram::Point<2>> mpoints = cellmatpoly.matpoly_points(0);
+    ASSERT_EQ(4, mpoints.size());
+    for (int i = 0; i < 4; i++) {
+      ASSERT_TRUE(approxEq(points0[i], mpoints[i], 1.0e-8));
+    }  
     
     std::vector<int> const& mfaces_out = cellmatpoly.matpoly_faces(0);
     ASSERT_EQ(4, mfaces_out.size());
@@ -203,8 +209,8 @@ TEST(CellMatPoly, Mesh2D) {
     for (int i = 0; i < 4; i++) {
       int f = mfaces_out[i];
       std::vector<int> const& mfverts_out = cellmatpoly.matface_vertices(f);
-      ASSERT_EQ(fverts0[i][0], mfverts_out[0]);
-      ASSERT_EQ(fverts0[i][1], mfverts_out[1]);
+      for (int j = 0; j < mfverts_out.size(); j++)
+        ASSERT_EQ(fverts0[i][j], mfverts_out[j]);
       
       int fmatpolys_out[2];
       cellmatpoly.matface_matpolys(f, &(fmatpolys_out[0]), &(fmatpolys_out[1]));
@@ -227,10 +233,9 @@ TEST(CellMatPoly, Mesh2D) {
     
     // Verify centroid
     
-    Tangram::Point<2> expcen0(0.375, 0.5);    
+    Tangram::Point<2> expcen0(0.388888889, 0.55555556);
     Tangram::Point<2> mcen0 = cellmatpoly.matpoly_centroid(0);
-    ASSERT_NEAR(expcen0[0], mcen0[0], 1.0e-08);
-    ASSERT_NEAR(expcen0[1], mcen0[1], 1.0e-08);
+    ASSERT_TRUE(approxEq(expcen0, mcen0, 1.0e-08));
   }
 
   // Verify info for matpoly 1
@@ -248,7 +253,13 @@ TEST(CellMatPoly, Mesh2D) {
       ASSERT_EQ(vparentid1[i], cellmatpoly.matvertex_parent_id(v));
     }
 
-    std::vector<int> const& mfaces_out = cellmatpoly.matpoly_faces(0);
+    std::vector<Tangram::Point<2>> mpoints = cellmatpoly.matpoly_points(1);
+    ASSERT_EQ(3, mpoints.size());
+    for (int i = 0; i < 3; i++) {
+      ASSERT_TRUE(approxEq(points1[i], mpoints[i], 1.0e-08));
+    }  
+
+    std::vector<int> const& mfaces_out = cellmatpoly.matpoly_faces(1);
     ASSERT_EQ(3, mfaces_out.size());
     ASSERT_EQ(4, mfaces_out[0]);
     ASSERT_EQ(5, mfaces_out[1]);
@@ -257,8 +268,8 @@ TEST(CellMatPoly, Mesh2D) {
     for (int i = 0; i < 3; i++) {
       int f = mfaces_out[i];
       std::vector<int> const& mfverts_out = cellmatpoly.matface_vertices(f);
-      ASSERT_EQ(fverts1[i][0], mfverts_out[0]);
-      ASSERT_EQ(fverts1[i][1], mfverts_out[1]);
+      for (int j = 0; j < mfverts_out.size(); j++)
+        ASSERT_EQ(fverts1[i][j], mfverts_out[j]);
       
       int fmatpolys_out[2];
       cellmatpoly.matface_matpolys(f, &(fmatpolys_out[0]), &(fmatpolys_out[1]));
@@ -266,13 +277,22 @@ TEST(CellMatPoly, Mesh2D) {
       ASSERT_EQ(fmatpolys1[i][1], fmatpolys_out[1]);
       
       if (fmatpolys_out[0] != -1 && fmatpolys_out[1] != -1)
-        ASSERT_TRUE(cellmatpoly.matface_is_interface(mfaces_out[i]));
+        ASSERT_TRUE(cellmatpoly.matface_is_interface(f));
       else
-        ASSERT_TRUE(!cellmatpoly.matface_is_interface(i));
+        ASSERT_TRUE(!cellmatpoly.matface_is_interface(f));
       
-      ASSERT_EQ(Tangram::Entity_kind::UNKNOWN_KIND,
-                cellmatpoly.matface_parent_kind(f));
-      ASSERT_EQ(-1, cellmatpoly.matface_parent_id(f));
+      if (f != 1)
+        ASSERT_EQ(Tangram::Entity_kind::UNKNOWN_KIND,
+                  cellmatpoly.matface_parent_kind(f));
+      else
+        ASSERT_EQ(Tangram::Entity_kind::CELL,
+                  cellmatpoly.matface_parent_kind(f));
+
+
+      if (f != 1)
+        ASSERT_EQ(-1, cellmatpoly.matface_parent_id(f));
+      else
+        ASSERT_EQ(0, cellmatpoly.matface_parent_id(f));
     }
 
     ASSERT_NEAR(0.25*mesh->cell_volume(0), cellmatpoly.matpoly_volume(1),
@@ -280,7 +300,6 @@ TEST(CellMatPoly, Mesh2D) {
     
     Tangram::Point<2> expcen1(2.5/3.0, 1.0/3.0);
     Tangram::Point<2> mcen1 = cellmatpoly.matpoly_centroid(1);
-    ASSERT_NEAR(expcen1[0], mcen1[0], 1.0e-08);
-    ASSERT_NEAR(expcen1[1], mcen1[1], 1.0e-08);
+    ASSERT_TRUE(approxEq(expcen1, mcen1, 1.0e-08));
   }
 }
