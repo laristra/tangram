@@ -496,7 +496,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   assert(D == 2);
 
   int new_matpoly_id = num_matpolys_;
-  materialids_[new_matpoly_id] = matid;
+  materialids_.push_back(matid);
 
   std::vector<int> matverts(numverts);
 
@@ -510,7 +510,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     bool found = false;
     for (int i = 0; i < nv_ini; i++) {  // Note, nv remains number of original pnts
       Point<D>& p = matvertex_points_[i];
-      if (p == pmat) {
+      if (approxEq(p, pmat, 1.0e-16)) {
         found = true;  // This point is already in CellMatPoly
         matverts[j] = i;
         break;
@@ -591,8 +591,8 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     Vector<D> vec1 = cen - matpoly_points[j];
     double trivolume = 0.5*cross(vec0, vec1);
     volume += trivolume;
-    Vector<D> tricen = (matpoly_points[j] + matpoly_points[(j+1)%numverts] +
-                        cen)/3.0;
+    Point<D> tricen = (matpoly_points[j] + matpoly_points[(j+1)%numverts] +
+                       cen)/3.0;
     centroid += trivolume*tricen;
   }
   matpoly_volumes_.push_back(volume);
@@ -633,7 +633,7 @@ void CellMatPoly<D>::add_matpoly(int matid,
   assert(D == 3);
 
   int new_matpoly_id = num_matpolys_;
-  materialids_[new_matpoly_id] = matid;
+  materialids_.push_back(matid);
 
   std::vector<int> matverts(numverts);
 
@@ -642,12 +642,12 @@ void CellMatPoly<D>::add_matpoly(int matid,
   // Add matpoly points if they are not already there
 
   for (int j = 0; j < numverts; j++) {
-    Point<D> & pmat = matpoly_points[j];
+    Point<D> const & pmat = matpoly_points[j];
 
     bool found = false;
     for (int i = 0; i < nv_ini; i++) {
       Point<D>& p = matvertex_points_[i];
-      if (p == pmat) {
+      if (approxEq(p, pmat, 1.0e-16)) {
         found = true;  // This point is already in CellMatPoly
         matverts[j] = i;
         break;
@@ -747,10 +747,10 @@ void CellMatPoly<D>::add_matpoly(int matid,
     }
   }
 
-  matpoly_faces_.insert(matpoly_faces_.end(), matfaces.begin(),
-                        matfaces.end());
-  matpoly_facedirs_.insert(matpoly_facedirs_.end(), matdirs.begin(),
-                        matdirs.end());
+  matpoly_faces_[new_matpoly_id].insert(matpoly_faces_[new_matpoly_id].end(),
+                                        matfaces.begin(), matfaces.end());
+  matpoly_facedirs_[new_matpoly_id].insert(matpoly_facedirs_[new_matpoly_id].end(),
+                                           matdirs.begin(), matdirs.end());
 
 
   // Compute geometric center of points. Assume that the cell is NOT so
@@ -778,7 +778,7 @@ void CellMatPoly<D>::add_matpoly(int matid,
       Vector<3> vec2 = cen - matpoly_points[k];
       double tetvolume = dot(cross(vec0, vec1), vec2)/6.0;
       volume += tetvolume;
-      Vector<3> tetcentroid = (matpoly_points[k] +
+      Point<3> tetcentroid = (matpoly_points[k] +
                                matpoly_points[(k+1)%numverts] +
                                fcen + cen)/4.0;
       centroid += tetcentroid*tetvolume;
