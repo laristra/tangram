@@ -169,6 +169,14 @@ class CellMatPoly {
   }
 
   /*!
+    @brief Number of unique faces among all material polygons
+    @return Number of faces
+  */
+  int num_matfaces() const {
+    return num_matfaces_;
+  }
+  
+  /*!
     @brief Points of the material polygon in cell
     @param matface_id    Local ID of material polygon face in the cell
     @param nv                 Number of points
@@ -251,6 +259,14 @@ class CellMatPoly {
     return matface_parentid_[matface_id];
   }
 
+  /*!
+    @brief Number of unique vertices among all material polygons
+    @return Number of vertices
+  */
+  int num_matvertices() const {
+    return num_matverts_;
+  }
+  
   Point<D> const& matvertex_point(int const matvert_id) const {
     assert(num_matpolys_ > 0);
     assert(matvert_id < num_matverts_);
@@ -534,7 +550,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   //                        // is the same as number of vertices
 
   std::vector<int> matfaces(numfaces);
-  std::vector<int> matdirs(numfaces);
+  std::vector<int> matfacedirs(numfaces);
 
   int nmf_ini = num_matfaces_;
   for (int j = 0; j < numfaces; j++) {
@@ -549,7 +565,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
       if (mfverts[0] == mfverts2[1] && mfverts[1] == mfverts2[0]) {
         found = true;
         matfaces[j] = i;
-        matdirs[j] = 0;
+        matfacedirs[j] = 0;
         assert(matface_matpolys_[i][1] == -1);  // verify slot is empty
         matface_matpolys_[i][1] = new_matpoly_id;
         break;
@@ -564,7 +580,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
       int parentid = faces_parentid ? faces_parentid[j] : -1;
       matface_parentid_.push_back(parentid);
       matfaces[j] = num_matfaces_;
-      matdirs[j] = 1;
+      matfacedirs[j] = 1;
 
       matface_matpolys_.emplace_back(std::array<int, 2>({-1, -1}));
       matface_matpolys_[num_matfaces_][0] = new_matpoly_id;
@@ -573,7 +589,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   }
 
   matpoly_faces_.push_back(matfaces);
-  matpoly_facedirs_.push_back(matdirs);
+  matpoly_facedirs_.push_back(matfacedirs);
 
 
   // Geometric center of polygon; Assume that polygon is NOT so
@@ -669,9 +685,9 @@ void CellMatPoly<D>::add_matpoly(int matid,
   // Add faces
 
   std::vector<int> matfaces(numfaces);
-  std::vector<int> matdirs(numfaces);
+  std::vector<int> matfacedirs(numfaces);
 
-  int nmf_ini = num_matfaces_++;
+  int nmf_ini = num_matfaces_;
 
   int offset = 0;
   for (int j = 0; j < numfaces; j++) {
@@ -702,33 +718,36 @@ void CellMatPoly<D>::add_matpoly(int matid,
 
       // Check if all vertices of the two faces match
 
-      bool allmatch = true;
       for (int k = 0; k < nmfv; k++) {
         if (mfverts[0] == mfverts2[k]) {
+
+	  // Found one matching vertex
           // Check if the rest of the face vertices match (in reverse
           // since the two material polyhedra will use the face in
           // opposite directions)
 
-          bool allmatch = true;
+	  bool allmatch = true;
           for (int m = 1; m < nmfv; m++) {
             if (mfverts[m] != mfverts2[(k-m+nmfv)%nmfv]) {
-              allmatch = false;
+	      allmatch = false;
               break;
-            }
+	    }
           }
+
+	  // Found a matching face
+          if (allmatch) {
+	    found = true;
+	    matfaces[j] = i;
+	    matfacedirs[j] = 0;
+	    assert(matface_matpolys_[i][1] == -1);
+	    matface_matpolys_[i][1] = new_matpoly_id;
+	    break;
+	  }
         }
-        if (!allmatch)
-          break;
       }
 
-      if (allmatch) {
-        found = true;
-        matfaces[j] = i;
-        matdirs[j] = 0;
-        assert(matface_matpolys_[i][1] == -1);
-        matface_matpolys_[i][1] = new_matpoly_id;
-        break;
-      }
+      if (found)
+	break;
     }  // for (int i = 0; i < ncmf_ini; i++)
 
     if (!found) {  // create a new matface
@@ -739,7 +758,7 @@ void CellMatPoly<D>::add_matpoly(int matid,
       int parentid = faces_parentid ? faces_parentid[j] : -1;
       matface_parentid_.push_back(parentid);
       matfaces[j] = num_matfaces_;
-      matdirs[j] = 1;
+      matfacedirs[j] = 1;
 
       matface_matpolys_.emplace_back(std::array<int, 2>({-1, -1}));
       matface_matpolys_[num_matfaces_][0] = new_matpoly_id;
@@ -747,10 +766,8 @@ void CellMatPoly<D>::add_matpoly(int matid,
     }
   }
 
-  matpoly_faces_[new_matpoly_id].insert(matpoly_faces_[new_matpoly_id].end(),
-                                        matfaces.begin(), matfaces.end());
-  matpoly_facedirs_[new_matpoly_id].insert(matpoly_facedirs_[new_matpoly_id].end(),
-                                           matdirs.begin(), matdirs.end());
+  matpoly_faces_.push_back(matfaces);
+  matpoly_facedirs_.push_back(matfacedirs);
 
 
   // Compute geometric center of points. Assume that the cell is NOT so
@@ -765,22 +782,29 @@ void CellMatPoly<D>::add_matpoly(int matid,
   Point<D> centroid;
   for (int j = 0; j < numfaces; j++) {
     Point<D> fcen;
-    int nmfv = matface_vertices_[j].size();
+    int f = matfaces[j];
+    int dir = matfacedirs[j];
+    int nmfv = matface_vertices_[f].size();
     for (int k = 0; k < nmfv; k++) {
-      int k2 = matface_vertices_[j][k];
+      int k2 = matface_vertices_[f][k];
       fcen += matvertex_points_[k2];
     }
     fcen /= nmfv;
 
     for (int k = 0; k < nmfv; k++) {
-      Vector<3> vec0 = matpoly_points[(k+1)%numverts] - matpoly_points[k];
-      Vector<3> vec1 = fcen - matpoly_points[k];
-      Vector<3> vec2 = cen - matpoly_points[k];
-      double tetvolume = dot(cross(vec0, vec1), vec2)/6.0;
+      int v1 = matface_vertices_[f][k];
+      int v2 = (dir == 1) ? matface_vertices_[f][(k+1)%nmfv] :
+	matface_vertices_[f][(k-1+nmfv)%nmfv];
+
+      Point<3> p1 = matvertex_points_[v1];
+      Point<3> p2 = matvertex_points_[v2];
+      Vector<3> vec0 =  p2 - p1;
+      Vector<3> vec1 = fcen - p1;
+      Vector<3> vec2 = cen - p1;
+      Vector<3> inward_normal = -1.0*cross(vec0, vec1);
+      double tetvolume = dot(inward_normal, vec2)/6.0;
       volume += tetvolume;
-      Point<3> tetcentroid = (matpoly_points[k] +
-                               matpoly_points[(k+1)%numverts] +
-                               fcen + cen)/4.0;
+      Point<3> tetcentroid = (p1 + p2 + fcen + cen)/4.0;
       centroid += tetcentroid*tetvolume;
     }
   }
