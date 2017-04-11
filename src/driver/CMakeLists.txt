@@ -59,8 +59,8 @@ set(driver_SOURCES
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
-
   if (Jali_DIR)
+
     cinch_add_unit(test_CellMatPoly_1D
       SOURCES test/test_CellMatPoly_1D.cc
       LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
