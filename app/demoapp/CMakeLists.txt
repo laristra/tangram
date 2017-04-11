@@ -39,5 +39,22 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-add_subdirectory(tangramapp)
-add_subdirectory(demoapp)
+#-------------------------------------------------------------------------------
+# demoapp - uses Simple_Mesh from portage
+#-------------------------------------------------------------------------------
+add_executable(demoapp demoapp.cc)
+target_link_libraries(demoapp ${EXTRA_LIBS})
+
+
+#-------------------------------------------------------------------------------
+# Other libraries
+#-------------------------------------------------------------------------------
+# taget_link_libraries(tangramapp ${WONTON_LIBS})
+# include_directories(${WONTON_INCLUDE_DIRS})
+
+#-------------------------------------------------------------------------------
+# Testing
+#-------------------------------------------------------------------------------
+# if (ENABLE_APP_TESTS)
+#   add_subdirectory(test)
+# endif (ENABLE_APP_TESTS)

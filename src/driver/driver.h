@@ -60,6 +60,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "tangram/support/Point.h"
 #include "tangram/support/tangram.h"
+#include "tangram/driver/CellMatPoly.h"
 
 /*!
   @file driver.h
@@ -73,12 +74,10 @@ namespace Tangram {
 
 
 /*!
-  @class Driver "driver.h" 
+  @class Driver "driver.h"
   @brief Driver provides the API for reconstructing interfaces in
   multimaterial cells and answering queries about said interfaces
 
-  @tparam  Intersect   A class that can take intersect a polygon/polyhedron with
-  a plane and return the resulting polygon/polyhedron
   @tparam  CellReconstruct   A class that can reconstruct the pure material
   polygons in a cell given the volume fractions in the cell (and if needed
   its neighbors)
@@ -86,18 +85,16 @@ namespace Tangram {
   implementation that provides certain functionality.
 */
 
-template <
-  template <class /* Mesh */, int /* D */> class CellInterfaceReconstructor,
-  int Dim,
-  class Mesh_Wrapper
-  >
+template <template <class, int> class CellInterfaceReconstructor,
+    int Dim,
+    class Mesh_Wrapper>
 class Driver {
  public:
   /*!
     @brief Constructor for running the interface reconstruction driver.
     @param[in] Mesh @c Wrapper to the source mesh.
   */
-  Driver(Mesh_Wrapper const& Mesh)
+  explicit Driver(Mesh_Wrapper const& Mesh)
       : mesh_(Mesh)
   {}
 
@@ -121,16 +118,17 @@ class Driver {
   /*!
     @brief Send volume fraction (and optional centroid) data to the Driver
     @param cell_num_mats        Number of materials in each cell
-    @param cell_mat_ids         Material IDs in each cell in each cell
+    @param cell_mat_ids         Material IDs in each cell; length of
+    sum(cell_num_mats)
     @param cell_mat_volfracs    Volume fractions of materials in each cell
     @param cell_mat_centroids   Centroids of materials in each cell
+    @TODO actually use the centroid data if supplied
   */
-  
   void set_volume_fractions(std::vector<int> const& cell_num_mats,
                             std::vector<int> const& cell_mat_ids,
                             std::vector<double> const& cell_mat_volfracs,
-                            std::vector<Point<Dim>> const& cell_mat_centroids) {
-    
+                            std::vector<Point<Dim>>
+                            const& cell_mat_centroids = {}) {
     cell_num_mats_ = cell_num_mats;
     cell_mat_ids_ = cell_mat_ids;
     cell_mat_volfracs_ = cell_mat_volfracs;
@@ -146,52 +144,45 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct() {
-
     int comm_rank = 0;
 
 #ifdef ENABLE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank);
 #endif
 
-    // if (comm_rank == 0) std::printf("in Driver::run()...\n");
-    // {
+    if (comm_rank == 0) std::printf("in Driver::run()...\n");
+    {
+      float tot_seconds = 0.0, tot_seconds_srch = 0.0,
+          tot_seconds_xsect = 0.0, tot_seconds_interp = 0.0;
+      struct timeval begin_timeval, end_timeval, diff_timeval;
 
-    //   float tot_seconds = 0.0, tot_seconds_srch = 0.0,
-    //       tot_seconds_xsect = 0.0, tot_seconds_interp = 0.0;
-    //   struct timeval begin_timeval, end_timeval, diff_timeval;
+      gettimeofday(&begin_timeval, 0);
 
-    //   int cells = mesh_.num_entities(CELL);
+      // Instantiate the interface reconstructor class that will
+      // compute the interfaces and compute the pure material submesh
+      // in each cell
+      CellInterfaceReconstructor<Mesh_Wrapper, Dim>
+          reconstructor(mesh_);
 
-    //   // Get an instance of the desired search algorithm type
-    //   gettimeofday(&begin_timeval, 0);
+      // Tell the reconstructor what materials are in each cell and
+      // what their volume fractions are
+      reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
+                                         cell_mat_volfracs_);
 
-    //   // Instantiate the interface reconstructor class that will
-    //   // compute the interfaces and compute the pure material submesh
-    //   // in each cell
-      
-    //   const CellInterfaceReconstructor<Dim, Mesh_Wrapper>
-    //       reconstructor(mesh_);
+      Tangram::transform(mesh_.begin(CELL, PARALLEL_OWNED),
+                         mesh_.end(CELL, PARALLEL_OWNED),
+                         cellmatpolys_.begin(), reconstructor);
 
-    //   // Tell the reconstructor what materials are in each cell and
-    //   // what their volume fractions are
-      
-    //   reconstructor.set_volume_fractions(cell_num_mats, cell_mat_ids,
-    //                                      cell_mat_volfracs);
+      gettimeofday(&end_timeval, 0);
+      timersub(&end_timeval, &begin_timeval, &diff_timeval);
+      tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
 
-    //   Portage::transform(target_mesh_.begin(CELL, PARALLEL_OWNED),
-    //                      target_mesh_.end(CELL, PARALLEL_OWNED),
-    //                      cellmatpolys_.begin(), reconstructor);
-
-    //   gettimeofday(&end_timeval, 0);
-    //   timersub(&end_timeval, &begin_timeval, &diff_timeval);
-    //   tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
-
-    //   std::cout << "Transform Time Rank " << comm_rank << " (s): " <<
-    //       tot_seconds << std::endl;
-    // }
+      std::cout << "Transform Time Rank " << comm_rank << " (s): " <<
+          tot_seconds << std::endl;
+    }
   }
 
-  // /*!  
+  // /*!
   //   @brief Get a handle to an object that describes the pure
   //   material polygon topology in the cell
 
@@ -204,9 +195,9 @@ class Driver {
   // CellMatPoly const& cell_matpoly_data(int const cellid) {
   //   return cellmatpolys_[cellid];
   // }
-  
-  // /*! 
-  //   @brief Number of material polygons in cell 
+
+  // /*!
+  //   @brief Number of material polygons in cell
   //   @param cellid  ID of the cell we are querying
   //   @return Number of material polygons in cell which IN PRINCIPLE could
   //   be greater than the number of materials in the cell (for example,
@@ -216,13 +207,13 @@ class Driver {
   // int num_matpolys(int const cellid) {
   // }
 
-  // /*! 
+  // /*!
   //   @brief Which material does a material polygon in cell contain?
   //   @param cellid             ID of the cell we are querying
   //   @param matpoly_localid    Local polygon ID in the cell
   //   @return ID of material in the polygon
   // */
-  
+
   // int matpoly_matid(int const cellid, int const matpoly_localid) const;
 
   // /*!
@@ -261,7 +252,7 @@ class Driver {
   // */
   // void matpoly_faces(int const cellid, int matpoly_localid,
   //                    int *nf, std::vector<int> *mfaceids) const;
-  
+
   // /*!
   //   @brief Points of the material polygon in cell
   //   @param cellid             ID of the cell we are querying
@@ -313,7 +304,7 @@ class Driver {
   //   @return Kind of mesh entity (can be FACE if its on the boundary of a cell or CELL if its in the interior of the cell)
   // */
   // Entity_kind matface_parent_kind(int const cellid, int const matface_localid) const;
-  
+
   // /*!
   //   @brief ID of the mesh entity that material face lies on
   //   @param cellid             ID of the cell we are querying
@@ -348,8 +339,8 @@ class Driver {
   std::vector<int> cell_mat_offsets_;
 
   // For now we are going to store a CellMatPoly data structure for all cells
-  // even pure cells. We could store it only for material 
-  //  std::vector<CellMatPoly> cellmatpolys_;
+  // even pure cells. We could store it only for material
+  std::vector<CellMatPoly<Dim>> cellmatpolys_;
 
   bool reconstruction_done_ = false;
 };  // class Driver
