@@ -95,8 +95,7 @@ class Driver {
     @param[in] Mesh @c Wrapper to the source mesh.
   */
   explicit Driver(Mesh_Wrapper const& Mesh)
-      : mesh_(Mesh)
-  {}
+      : mesh_(Mesh) { }
 
   /// Copy constructor (disabled)
   Driver(const Driver &) = delete;
@@ -139,6 +138,9 @@ class Driver {
     cell_mat_offsets_[0] = 0;
     for (int c = 1; c < nc; c++)
       cell_mat_offsets_[c] = cell_mat_offsets_[c-1] + cell_num_mats_[c-1];
+
+    // Should this be done in the constructor?
+    cellmatpolys_.resize(nc);
   }
 
 
