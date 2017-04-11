@@ -133,8 +133,10 @@ class Driver {
     cell_mat_ids_ = cell_mat_ids;
     cell_mat_volfracs_ = cell_mat_volfracs;
 
-    cell_mat_offsets_[0] = 0;
     int nc = mesh_.num_entities(Tangram::Entity_kind::CELL);
+
+    cell_mat_offsets_.resize(nc);
+    cell_mat_offsets_[0] = 0;
     for (int c = 1; c < nc; c++)
       cell_mat_offsets_[c] = cell_mat_offsets_[c-1] + cell_num_mats_[c-1];
   }
