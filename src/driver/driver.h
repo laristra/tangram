@@ -54,7 +54,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <type_traits>
 
+#ifdef ENABLE_MPI
 #include "mpi.h"
+#endif
 
 #include "tangram/support/Point.h"
 #include "tangram/support/tangram.h"
@@ -70,7 +72,7 @@ POSSIBILITY OF SUCH DAMAGE.
 namespace Tangram {
 
 
-/*!  
+/*!
   @class Driver "driver.h" 
   @brief Driver provides the API for reconstructing interfaces in
   multimaterial cells and answering queries about said interfaces
