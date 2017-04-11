@@ -1,8 +1,8 @@
 #[[
-Copyright (c) 2017, Los Alamos National Security, LLC
+Copyright (c) 2016, Los Alamos National Security, LLC
 All rights reserved.
 
-Copyright 2017. Los Alamos National Security, LLC. This software was produced
+Copyright 2016. Los Alamos National Security, LLC. This software was produced
 under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National
 Laboratory (LANL), which is operated by Los Alamos National Security, LLC for
 the U.S. Department of Energy. The U.S. Government has rights to use,
@@ -39,45 +39,27 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-#-----------------------------------------------------------------------------~#
 
-
-#-----------------------------------------------------------------------------~#
 
 # Add header files
-set(driver_HEADERS
-  CellMatPoly.h
+set (simple_mesh_HEADERS
+  simple_mesh.h
   PARENT_SCOPE
-)
+  )
 
 # Add source files
-set(driver_SOURCES
-    PARENT_SCOPE
-)
+set (simple_mesh_SOURCES
+  PARENT_SCOPE
+  )
 
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
 
-  cinch_add_unit(test_CellMatPoly_1D
-    SOURCES test/test_CellMatPoly_1D.cc
-    LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+  cinch_add_unit(test_simple_mesh
+    SOURCES test/test_simple_mesh.cc
     POLICY MPI
     THREADS 1
-  )
-  
-  cinch_add_unit(test_CellMatPoly_2D
-    SOURCES test/test_CellMatPoly_2D.cc
-    LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
-    POLICY MPI
-    THREADS 1
-  )
-
-  cinch_add_unit(test_CellMatPoly_3D
-    SOURCES test/test_CellMatPoly_3D.cc
-    LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
-    POLICY MPI
-    THREADS 1
-  )
+    )
 
 endif (ENABLE_UNIT_TESTS)
