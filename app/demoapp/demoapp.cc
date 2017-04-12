@@ -2,7 +2,7 @@
 Copyright (c) 2017, Los Alamos National Security, LLC
 All rights reserved.
 
-Copyright 2016. Los Alamos National Security, LLC. This software was produced
+Copyright 2017. Los Alamos National Security, LLC. This software was produced
 under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National
 Laboratory (LANL), which is operated by Los Alamos National Security, LLC for
 the U.S. Department of Energy. The U.S. Government has rights to use,
@@ -103,9 +103,8 @@ std::vector<std::vector<double>> inputData(const int probNum) {
 
 int main(int argc, char** argv) {
   // Read the input data
-  auto vfracs = inputData(0);
-
-  std::cout << "Done reading inputs" << std::endl;
+  // TODO - error checking on argv
+  auto vfracs = inputData(atoi(argv[1]));
 
   auto numMats = vfracs.size();
   auto ncells = vfracs[0].size();
@@ -120,12 +119,8 @@ int main(int argc, char** argv) {
 
   Simple_Mesh_Wrapper mymeshWrapper(*mymesh);
 
-  std::cout << "Building driver" << std::endl;
-
   // Build the driver
   Driver<SLIC, 3, Simple_Mesh_Wrapper> d(mymeshWrapper);
-
-  std::cout << "Done building driver" << std::endl;
 
   // Load the volume fractions
   // I'm going to be dumb here - all cells will have all materials, even
@@ -138,19 +133,21 @@ int main(int argc, char** argv) {
       cell_mat_ids[icell*numMats + iMat] = iMat;
       cell_mat_volfracs[icell*numMats + iMat] = vfracs[iMat][icell];
     }
-  std::cout << "setting volfracs" << std::endl;
   d.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs);
-  std::cout << "reconstructing..." << std::endl;
   d.reconstruct();
 
-
-  // Populate the state
-  // Simple_State mystate(mymesh);
-  // for (int iMat(0); iMat < numMats; ++iMat) {
-  //   auto varName = "mat" + std::to_string(iMat);
-  //   mystate.add(varName, Tangram::Entity_kind::CELL, &(vfracs[iMat][0]));
-  // }
-
+  // Do some dumb dumping of data for python plotting
+  for (int c(0); c < ncells; ++c) {
+    auto matpoly = d.cell_matpoly_data(c);
+    auto numPolys = matpoly.num_matpolys();
+    for (int ipoly(0); ipoly < numPolys; ++ipoly) {
+      auto matID = matpoly.matpoly_matid(ipoly);
+      auto nodeCoords = matpoly.matpoly_points(ipoly);
+      std::cout << matID << " ";
+      for (auto p : nodeCoords) std::cout << p << " ";
+      std::cout << std::endl;
+    }
+  }
 
   return 0;
 }

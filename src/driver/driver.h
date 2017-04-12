@@ -196,9 +196,9 @@ class Driver {
   //   polygons in the cell
   // */
 
-  // CellMatPoly const& cell_matpoly_data(int const cellid) {
-  //   return cellmatpolys_[cellid];
-  // }
+  CellMatPoly<Dim> const& cell_matpoly_data(int const cellid) {
+    return cellmatpolys_[cellid];
+  }
 
   // /*!
   //   @brief Number of material polygons in cell

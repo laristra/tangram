@@ -43,6 +43,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SRC_RECONSTRUCT_SLIC_H_
 
 #include <vector>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
 
 #include "tangram/support/Point.h"
 #include "tangram/driver/CellMatPoly.h"
@@ -91,8 +94,8 @@ class SLIC {
                             std::vector<int> const& cell_mat_ids,
                             std::vector<double> const& cell_mat_volfracs) {
     cell_num_mats_ = cell_num_mats;
-    cell_mat_ids_ = cell_mat_ids_;
-    cell_mat_volfracs_ = cell_mat_volfracs_;
+    cell_mat_ids_ = cell_mat_ids;
+    cell_mat_volfracs_ = cell_mat_volfracs;
 
     auto nc = mesh_.num_entities(Entity_kind::CELL);
     cell_mat_offsets_.resize(nc);
@@ -112,12 +115,69 @@ class SLIC {
     auto numMats = cell_num_mats_[cellID];
     auto iStart = cell_mat_offsets_[cellID];
 
-    std::cout << "Working on cell " << cellID;
-    std::cout << "  " << numMats << " " << iStart << std::endl;
+    std::vector<Point<Dim>> nodeCoords;
+    mesh_.cell_get_coordinates(cellID, &nodeCoords);
+
+    // This is ugly, but it works
+    std::vector<double> xs(nodeCoords.size()),
+        ys(nodeCoords.size()),
+        zs(nodeCoords.size());
+    std::transform(nodeCoords.begin(), nodeCoords.end(),
+                   xs.begin(), [](Point<Dim> p){return p[0];});
+    std::transform(nodeCoords.begin(), nodeCoords.end(),
+                   ys.begin(), [](Point<Dim> p){return p[1];});
+    std::transform(nodeCoords.begin(), nodeCoords.end(),
+                   zs.begin(), [](Point<Dim> p){return p[2];});
+
+    // extents
+    double xmin = *std::min_element(xs.begin(), xs.end());
+    double xmax = *std::max_element(xs.begin(), xs.end());
+    double ymin = *std::min_element(ys.begin(), ys.end());
+    double ymax = *std::max_element(ys.begin(), ys.end());
+    double zmin = *std::min_element(zs.begin(), zs.end());
+    double zmax = *std::max_element(zs.begin(), zs.end());
+
+    // Just going along x-direction - again assuming rectangular prisms only
+    auto dx = xmax - xmin;
+    double xloc = xmin;
+    for (int iMat(0); iMat < numMats; ++iMat) {
+      // If the mass fraction is too small, skip it
+      auto vfrac = cell_mat_volfracs_[iStart+iMat];
+      if (vfrac <= 1e-14) continue;
+      // Find the x-direction thickness
+      auto thisDx = vfrac*dx;
+      // Build the node coords - do this manually for now
+      std::vector<Point<Dim>> polyNodes;
+      polyNodes.emplace_back(xloc, ymin, zmin);
+      polyNodes.emplace_back(xloc+thisDx, ymin, zmin);
+      polyNodes.emplace_back(xloc+thisDx, ymax, zmin);
+      polyNodes.emplace_back(xloc, ymax, zmin);
+      polyNodes.emplace_back(xloc, ymin, zmax);
+      polyNodes.emplace_back(xloc+thisDx, ymin, zmax);
+      polyNodes.emplace_back(xloc+thisDx, ymax, zmax);
+      polyNodes.emplace_back(xloc, ymax, zmax);
+
+      // face information - again assumes rectangular prisms only
+      std::vector<int> vertsPerFace(6, 4);
+      // this ordering might not be consistent...
+      std::vector<int> faceNodeIDs = {0, 1, 3, 2,
+                                      4, 5, 7, 6,
+                                      0, 1, 5, 4,
+                                      2, 3, 7, 6,
+                                      2, 0, 4, 6,
+                                      3, 1, 5, 7};
+
+      // add this matpoly
+      cellpoly.add_matpoly(iMat, polyNodes.size(), &polyNodes[0],
+                           nullptr, nullptr,
+                           vertsPerFace.size(), &vertsPerFace[0],
+                           &faceNodeIDs[0],
+                           nullptr, nullptr);
+    }
 
     return cellpoly;
   }
-private:
+ private:
   const Mesh_Wrapper & mesh_;
   std::vector<int> cell_num_mats_;
   std::vector<int> cell_mat_ids_;
