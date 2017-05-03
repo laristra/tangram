@@ -47,6 +47,7 @@ POSSIBILITY OF SUCH DAMAGE.
 # Add header files
 set(driver_HEADERS
   CellMatPoly.h
+  write_to_gmv.h
   PARENT_SCOPE
 )
 
@@ -80,6 +81,21 @@ if (ENABLE_UNIT_TESTS)
       POLICY MPI
       THREADS 1
       )
+
+    cinch_add_unit(test_write_2D
+      SOURCES test/test_write_2D.cc
+      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+      POLICY MPI
+      THREADS 1
+      )
+    
+    cinch_add_unit(test_write_3D
+      SOURCES test/test_write_3D.cc
+      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+      POLICY MPI
+      THREADS 1
+      )
+    
   endif (Jali_DIR)
 
 endif (ENABLE_UNIT_TESTS)
