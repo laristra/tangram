@@ -47,7 +47,7 @@ POSSIBILITY OF SUCH DAMAGE.
 // #include "wonton/destruction.h"
 
 int main(int argc, char** argv) {
-  Tangram::Driver driver();
+  //  Tangram::Driver driver();
 
   std::cout << "                              _.--\"\"-._" << std::endl;
   std::cout << "  .                         .\"         \"." << std::endl;

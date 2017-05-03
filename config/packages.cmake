@@ -51,6 +51,120 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 
+#------------------------------------------------------------------------------#
+# If we are building with FleCSI, then we need a modern C++ compiler
+#------------------------------------------------------------------------------#
+if(FLECSI_INSTALL_DIR)
+  include(cxx14)
+
+  check_for_cxx14_compiler(CXX14_COMPILER)
+
+#------------------------------------------------------------------------------#
+# If a C++14 compiler is available, then set the appropriate flags
+#------------------------------------------------------------------------------#
+  if(CXX14_COMPILER)
+    enable_cxx14()
+  else()
+    message(FATAL_ERROR "C++14 compatible compiler not found")
+  endif()
+
+else()
+  include(cxx11)
+
+  check_for_cxx11_compiler(CXX11_COMPILER)
+
+#------------------------------------------------------------------------------#
+# If a C++11 compiler is available, then set the appropriate flags
+#------------------------------------------------------------------------------#
+  if(CXX11_COMPILER)
+    enable_cxx11()
+  else()
+    message(FATAL_ERROR "C++11 compatible compiler not found")
+  endif()
+endif(FLECSI_INSTALL_DIR)
+#-----------------------------------------------------------------------------
+# FleCSI location
+#-----------------------------------------------------------------------------
+set(FLECSI_INSTALL_DIR "$ENV{FLECSI_INCLUDE_DIR}" CACHE
+  PATH "Installed FleCSI location.")
+if(FLECSI_INSTALL_DIR)
+  message(STATUS "Using FLECSI_INSTALL_DIR=${FLECSI_INSTALL_DIR}")
+  set(FLECSI_INCLUDE_DIRS ${FLECSI_INSTALL_DIR}/include)
+  set(FLECSI_LIBRARY_DIR ${FLECSI_INSTALL_DIR}/lib)
+  set(FLECSI_LIBRARIES ${FLECSI_LIBRARY_DIR}/libflecsi.a)
+
+  include_directories(${FLECSI_INCLUDE_DIRS})
+
+  ######################################################################
+  # This is a placeholder for how we would do IO with FleCSI
+  # There are still some issues with dumping the targetMesh data
+  #
+  # WARNING!!! THIS IS POTENTIALLY FRAGILE
+  # it appears to work, but could cause conflicts with EXODUS and
+  # other libraries used by Jali
+  #
+  # FOR NOW THIS IS DISABLED UNTIL WE CAN GET A PROPER WORKAROUND
+  ######################################################################
+  # STRING(REPLACE "flecsi" "flecsi-tpl" FLECSI_TPL_DIR ${FLECSI_INSTALL_DIR})
+  # message(STATUS "FLECSI_TPL_DIR=${FLECSI_TPL_DIR}")
+  # if(IS_DIRECTORY ${FLECSI_TPL_DIR})
+  #   find_library(EXODUS_LIBRARY
+  #     NAMES exodus
+  #     PATHS ${FLECSI_TPL_DIR}
+  #     PATH_SUFFIXES lib
+  #     NO_DEFAULT_PATH)
+  #   find_path(EXODUS_INCLUDE_DIR
+  #     NAMES exodusII.h
+  #     PATHS ${FLECSI_TPL_DIR}
+  #     PATH_SUFFIXES include
+  #     NO_DEFAULT_PATH)
+
+  #   if(EXODUS_LIBRARY AND EXODUS_INCLUDE_DIR)
+  #     set(FLECSI_LIBRARIES ${EXODUS_LIBRARY} ${FLECSI_LIBRARIES})
+  #     include_directories(${EXODUS_INCLUDE_DIR})
+  #     add_definitions(-DHAVE_EXODUS)
+  #   endif(EXODUS_LIBRARY AND EXODUS_INCLUDE_DIR)
+
+  # endif(IS_DIRECTORY ${FLECSI_TPL_DIR})
+endif(FLECSI_INSTALL_DIR)
+
+
+
+#------------------------------------------------------------------------------#
+# Configure Jali
+# (this includes the TPLs that Jali will need)
+#------------------------------------------------------------------------------#
+
+if (Jali_DIR)
+
+   # Look for the Jali package
+
+   find_package(Jali REQUIRED
+                HINTS ${Jali_DIR}/lib)
+
+   message(STATUS "Located Jali")
+   message(STATUS "Jali_DIR=${Jali_DIR}")
+
+   # add full path to jali libs
+   unset(_LIBS)
+   foreach (_lib ${Jali_LIBRARIES})
+      set(_LIBS ${_LIBS};${Jali_LIBRARY_DIRS}/lib${_lib}.a)
+   endforeach()
+   set(Jali_LIBRARIES ${_LIBS})
+
+   # message(STATUS "Jali_INCLUDE_DIRS=${Jali_INCLUDE_DIRS}")
+   # message(STATUS "Jali_LIBRARY_DIRS=${Jali_LIBRARY_DIRS}")
+   # message(STATUS "Jali_LIBRARIES=${Jali_LIBRARIES}")
+   # message(STATUS "Jali_TPL_INCLUDE_DIRS=${Jali_TPL_INCLUDE_DIRS}")
+   # message(STATUS "Jali_TPL_LIBRARY_DIRS=${Jali_TPL_LIBRARY_DIRS}")
+   # message(STATUS "Jali_TPL_LIBRARIES=${Jali_TPL_LIBRARIES}")
+
+   include_directories(${Jali_INCLUDE_DIRS} ${Jali_TPL_INCLUDE_DIRS})
+
+endif (Jali_DIR)
+
+
+
 #-----------------------------------------------------------------------------
 # General NGC include directory information
 #-----------------------------------------------------------------------------

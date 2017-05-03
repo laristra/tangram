@@ -1,8 +1,8 @@
 #[[
-Copyright (c) 2017, Los Alamos National Security, LLC
+Copyright (c) 2016, Los Alamos National Security, LLC
 All rights reserved.
 
-Copyright 2017. Los Alamos National Security, LLC. This software was produced
+Copyright 2016. Los Alamos National Security, LLC. This software was produced
 under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National
 Laboratory (LANL), which is operated by Los Alamos National Security, LLC for
 the U.S. Department of Energy. The U.S. Government has rights to use,
@@ -44,42 +44,47 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #-----------------------------------------------------------------------------~#
 
-# Add header files
-set(driver_HEADERS
-  CellMatPoly.h
-  PARENT_SCOPE
-)
+if (Jali_DIR)
+    set(jali_wrapper_headers
+        mesh/jali/jali_mesh_wrapper.h
+        )
+endif (Jali_DIR)
 
-# Add source files
-set(driver_SOURCES
-    PARENT_SCOPE
-)
+if (FLECSI_INSTALL_DIR)
+    set(flecsi_wrapper_headers
+        mesh/flecsi/flecsi_mesh_wrapper.h
+        )
+endif (FLECSI_INSTALL_DIR)
 
-# Unit tests
+set(wrappers_HEADERS
+    ${jali_wrapper_headers}
+    ${flecsi_wrapper_headers}
+    mesh/AuxMeshTopology.h
+    mesh/simple_mesh/simple_mesh_wrapper.h
+    PARENT_SCOPE)
 
 if (ENABLE_UNIT_TESTS)
+   if (Jali_DIR)
+      cinch_add_unit(test_jali_mesh_wrapper
+                    SOURCES mesh/jali/test/test_jali_mesh_wrapper.cc
+                    LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+                    INPUTS mesh/jali/test/shotshell.exo
+                    mesh/jali/test/shotshell-v.exo
+                    POLICY MPI
+                    THREADS 1)
+   endif (Jali_DIR)
 
-  if (Jali_DIR)
-    cinch_add_unit(test_CellMatPoly_1D
-      SOURCES test/test_CellMatPoly_1D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
-      POLICY MPI
-      THREADS 1
-      )
-  
-    cinch_add_unit(test_CellMatPoly_2D
-      SOURCES test/test_CellMatPoly_2D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
-      POLICY MPI
-      THREADS 1
-      )
-    
-    cinch_add_unit(test_CellMatPoly_3D
-      SOURCES test/test_CellMatPoly_3D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
-      POLICY MPI
-      THREADS 1
-      )
-  endif (Jali_DIR)
+   if (FLECSI_INSTALL_DIR)
+      cinch_add_unit(test_flecsi_mesh_wrapper
+                     SOURCES mesh/flecsi/test/test_flecsi_mesh_wrapper.cc
+                     LIBRARIES ${FLECSI_LIBRARIES})
+   endif (FLECSI_INSTALL_DIR)
 
-endif (ENABLE_UNIT_TESTS)
+   # Simple Mesh wrapper
+   cinch_add_unit(test_simple_mesh_wrapper
+     SOURCES mesh/simple_mesh/test/test_simple_mesh_wrapper.cc
+#     LIBRARIES tangram
+     POLICY MPI
+     THREADS 1)
+endif(ENABLE_UNIT_TESTS)
+
