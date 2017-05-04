@@ -60,11 +60,11 @@ TEST(WriteCellMatPoly, Mesh2D) {
     mf.framework(Jali::MSTK);
   mf.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
 
-  // Make a 1-cell two-dimensional mesh
+  // Make a 4-cell two-dimensional mesh
   std::shared_ptr<Jali::Mesh> mesh = mf(0.0, 0.0, 2.0, 2.0, 2, 2);
   Tangram::Jali_Mesh_Wrapper mesh_wrapper(*mesh);
 
-  // Make a 2-material CellMatPoly object for the cell
+  // Make a 2-material CellMatPoly object for cell 0
 
   Tangram::CellMatPoly<2> cellmatpoly;
 
