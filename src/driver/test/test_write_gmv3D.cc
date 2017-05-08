@@ -199,16 +199,7 @@ TEST(WriteCellMatPoly, Mesh3D) {
   std::vector<int> cell_num_mats(8, 1);
   cell_num_mats[0] = 2;  // cell 0 has two materials
 
-  std::vector<int> cell_mat_ids;
-  cell_mat_ids.push_back(0);
-  cell_mat_ids.push_back(1);
-  cell_mat_ids.push_back(1);
-  cell_mat_ids.push_back(0);
-  cell_mat_ids.push_back(1);
-  cell_mat_ids.push_back(1);
-  cell_mat_ids.push_back(1);
-  cell_mat_ids.push_back(1);
-  cell_mat_ids.push_back(1);
+  std::vector<int> cell_mat_ids({0, 1, 1, 0, 1, 1, 1, 1, 1});
 
   // Most cells don't have a CellMatPoly structure
   std::vector<Tangram::CellMatPoly<3> *> cellmatpoly_list(8, nullptr);
