@@ -143,7 +143,7 @@ class SLIC {
     for (int iMat(0); iMat < numMats; ++iMat) {
       // If the mass fraction is too small, skip it
       auto vfrac = cell_mat_volfracs_[iStart+iMat];
-      if (vfrac <= 1e-14) continue;
+      //      if (vfrac <= 1e-14) continue;
       // Find the x-direction thickness
       auto thisDx = vfrac*dx;
       // Build the node coords - do this manually for now
@@ -173,6 +173,9 @@ class SLIC {
                            vertsPerFace.size(), &vertsPerFace[0],
                            &faceNodeIDs[0],
                            nullptr, nullptr);
+
+      // thisDx is relative to xloc
+      xloc += thisDx;
     }
 
     return cellpoly;

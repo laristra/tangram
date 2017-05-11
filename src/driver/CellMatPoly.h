@@ -57,7 +57,6 @@ namespace Tangram {
 template <int D>
 class CellMatPoly {
  public:
-  
   /*!
     @brief Constructor with known cell ID
     @param cellid  ID of the cell
