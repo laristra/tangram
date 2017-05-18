@@ -96,8 +96,6 @@ if (ENABLE_UNIT_TESTS)
       THREADS 1
       )
     
-  endif (Jali_DIR)
-
     cinch_add_unit(test_CellMatPoly_3D
       SOURCES test/test_CellMatPoly_3D.cc
       LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
@@ -105,5 +103,5 @@ if (ENABLE_UNIT_TESTS)
       THREADS 1
       )
 
-    endif(Jali_DIR)
+  endif(Jali_DIR)
 endif (ENABLE_UNIT_TESTS)
