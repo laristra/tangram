@@ -39,5 +39,23 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-add_subdirectory(tangramapp)
-add_subdirectory(demoapp)
+#-----------------------------------------------------------------------------~#
+
+
+#-----------------------------------------------------------------------------~#
+
+# Add header files
+set(reconstruct_HEADERS
+    SLIC.h
+    PARENT_SCOPE
+)
+
+# Add source files
+set(reconstruct_SOURCES
+    PARENT_SCOPE
+)
+
+# Unit tests
+
+# if (ENABLE_UNIT_TESTS)
+# endif (ENABLE_UNIT_TESTS)

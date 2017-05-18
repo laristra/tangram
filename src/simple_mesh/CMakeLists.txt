@@ -61,5 +61,4 @@ if (ENABLE_UNIT_TESTS)
     POLICY MPI
     THREADS 1
     )
-
 endif (ENABLE_UNIT_TESTS)
