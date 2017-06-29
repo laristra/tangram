@@ -134,34 +134,36 @@ TEST(CellMatPoly, Mesh2D) {
                           &(fparentid0[0]));
 
 
-  // Specify the second polygon with parent info only for points
+  // Specify the second polygon with parent info only for points.
+  // Trigger a particular check (and possibility of failure) by
+  // specifying the internal face points first
 
   std::vector<Tangram::Point<2>> points1(3);
   std::vector<Tangram::Entity_kind> vparentkind1(3);
   std::vector<int> vparentid1(3);
 
-  points1[0] = Tangram::Point<2>(0.5, 0.0);
-  vparentkind1[0] = Tangram::Entity_kind::FACE;
-  vparentid1[0] = 0;                            // parent is face 0
-  points1[1] = Tangram::Point<2>(1.0, 0.0);
-  vparentkind1[1] = Tangram::Entity_kind::NODE;
-  vparentid1[1] = 1;                            // parent is node 1
-  points1[2] = Tangram::Point<2>(1.0, 1.0);
+  points1[0] = Tangram::Point<2>(1.0, 1.0);
+  vparentkind1[0] = Tangram::Entity_kind::NODE;
+  vparentid1[0] = 2;                            // parent is node 2
+  points1[1] = Tangram::Point<2>(0.5, 0.0);
+  vparentkind1[1] = Tangram::Entity_kind::FACE;
+  vparentid1[1] = 0;                            // parent is face 0
+  points1[2] = Tangram::Point<2>(1.0, 0.0);
   vparentkind1[2] = Tangram::Entity_kind::NODE;
-  vparentid1[2] = 2;                            // parent is node 2
+  vparentid1[2] = 1;                            // parent is node 1
 
   // expected vertices of faces for matpoly 1
 
   std::vector<std::vector<int>> fverts1;
+  fverts1.push_back({1, 2});  // this face got defined earlier as 1, 2
   fverts1.push_back({1, 4});
   fverts1.push_back({4, 2});
-  fverts1.push_back({1, 2});
 
   // expected matpolys connected to each face
   std::vector<std::array<int, 2>> fmatpolys1;
+  fmatpolys1.push_back({0, 1});  // 1st face is internal; cncted to matpolys 0,1
   fmatpolys1.push_back({1, -1});
   fmatpolys1.push_back({1, -1});
-  fmatpolys1.push_back({0, 1});  // 2nd face is internal; cncted to matpolys 0,1
 
   cellmatpoly.add_matpoly(1, 3, &(points1[0]), &(vparentkind1[0]),
                           &(vparentid1[0]), nullptr, nullptr);
@@ -243,9 +245,9 @@ TEST(CellMatPoly, Mesh2D) {
   {
     std::vector<int> mverts_out = cellmatpoly.matpoly_vertices(1);
     ASSERT_EQ(3, mverts_out.size());
-    ASSERT_EQ(1, mverts_out[0]);
-    ASSERT_EQ(4, mverts_out[1]);
-    ASSERT_EQ(2, mverts_out[2]);
+    ASSERT_EQ(2, mverts_out[0]);
+    ASSERT_EQ(1, mverts_out[1]);
+    ASSERT_EQ(4, mverts_out[2]);
     
     for (int i = 0; i < 3; i++) {
       int v = mverts_out[i];
@@ -261,9 +263,9 @@ TEST(CellMatPoly, Mesh2D) {
 
     std::vector<int> const& mfaces_out = cellmatpoly.matpoly_faces(1);
     ASSERT_EQ(3, mfaces_out.size());
-    ASSERT_EQ(4, mfaces_out[0]);
-    ASSERT_EQ(5, mfaces_out[1]);
-    ASSERT_EQ(1, mfaces_out[2]);
+    ASSERT_EQ(1, mfaces_out[0]);
+    ASSERT_EQ(4, mfaces_out[1]);
+    ASSERT_EQ(5, mfaces_out[2]);
 
     for (int i = 0; i < 3; i++) {
       int f = mfaces_out[i];
