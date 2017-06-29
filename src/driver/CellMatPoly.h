@@ -130,11 +130,27 @@ class CellMatPoly {
     assert(matpoly_id < num_matpolys_);
     std::vector<int> matverts;
     std::vector<int> const& matfaces = matpoly_faces_[matpoly_id];
-    for (auto const& f : matfaces) {
+    int nf = matfaces.size();
+    for (int jf = 0; jf < nf; jf++) {
+      int f = matfaces[jf];
       std::vector<int> const& fverts = matface_vertices_[f];
-      for (auto const& fv : fverts)
-        if (std::find(matverts.begin(), matverts.end(), fv) == matverts.end())
-          matverts.push_back(fv);
+      if (D != 2) {  // order does not matter
+        for (auto const& fv : fverts)
+          if (std::find(matverts.begin(), matverts.end(), fv) == matverts.end())
+            matverts.push_back(fv);
+      } else {  // order is important
+        if (matpoly_facedirs_[matpoly_id][jf] == 1) {  // natural order
+          for (auto const& fv : fverts)
+            if (std::find(matverts.begin(), matverts.end(), fv) == matverts.end())
+              matverts.push_back(fv);
+        } else {  // reverse the order
+          for (auto it = fverts.rbegin(); it != fverts.rend(); it++) {
+            auto const &fv = *it;
+            if (std::find(matverts.begin(), matverts.end(), fv) == matverts.end())
+              matverts.push_back(fv);
+          }
+        }
+      }
     }
     return matverts;
   }
