@@ -82,26 +82,18 @@ if (ENABLE_UNIT_TESTS)
       THREADS 1
       )
 
-    cinch_add_unit(test_write_2D
-      SOURCES test/test_write_2D.cc
+    cinch_add_unit(test_write_gmv2D
+      SOURCES test/test_write_gmv2D.cc
       LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
       POLICY MPI
       THREADS 1
       )
     
-    cinch_add_unit(test_write_3D
-      SOURCES test/test_write_3D.cc
+    cinch_add_unit(test_write_gmv3D
+      SOURCES test/test_write_gmv3D.cc
       LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
       POLICY MPI
       THREADS 1
       )
-    
-    cinch_add_unit(test_CellMatPoly_3D
-      SOURCES test/test_CellMatPoly_3D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
-      POLICY MPI
-      THREADS 1
-      )
-
   endif(Jali_DIR)
 endif (ENABLE_UNIT_TESTS)
