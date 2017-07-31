@@ -239,6 +239,11 @@ class Jali_Mesh_Wrapper : public AuxMeshTopology<Jali_Mesh_Wrapper> {
     jali_mesh_.face_get_nodes(faceid, fnodes);
   }
 
+  //! Get cells of a face
+  void face_get_cells(int const faceid, std::vector<int> *fcells) const {
+    jali_mesh_.face_get_cells(faceid, Jali::Entity_type::ALL, fcells);
+  }
+
   //! Get global id
   int get_global_id(int const id, Entity_kind const kind) const {
     return jali_mesh_.GID(id, (Jali::Entity_kind)kind);

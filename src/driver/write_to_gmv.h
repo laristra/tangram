@@ -60,7 +60,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
                   int nmats,
                   std::vector<int> const& cell_num_mats,
                   std::vector<int> const& cell_mat_ids,
-                  std::vector<CellMatPoly<D> *> cellmatpoly_list,
+                  std::vector<std::shared_ptr<CellMatPoly<D>>> cellmatpoly_list,
                   std::string filename) {
   
   int nc = mesh.num_entities(Entity_kind::CELL, Entity_type::PARALLEL_OWNED);
@@ -83,7 +83,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
   int np = mesh.num_entities(Entity_kind::NODE, Entity_type::PARALLEL_OWNED);
   int nmatpnts = np;
   for (int c = 0; c < nc; c++) {
-    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c];
+    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c].get();
 
     if (cellmatpoly) {  // Mixed cell
       int ncp = cellmatpoly->num_matvertices();
@@ -100,7 +100,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
 
   nmatpnts = np;  // reset nmatpnts so it can be used as a counter
   for (int c = 0; c < nc; c++) {
-    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c];
+    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c].get();
 
     if (cellmatpoly) {  // Mixed cell
       int ncp = cellmatpoly->num_matvertices();
@@ -126,7 +126,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
 
   int npoly = 0;
   for (int c = 0; c < nc; c++) {
-    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c];
+    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c].get();
     if (cellmatpoly)
       npoly += cellmatpoly->num_matpolys();
     else
@@ -136,7 +136,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
   fout << "cells " << npoly << std::endl;
 
   for (int c = 0; c < nc; c++) {
-    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c];
+    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c].get();
     
     if (cellmatpoly) {
       
@@ -264,7 +264,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
     fout << "mat" << i+1 << std::endl;
 
   for (int c = 0; c < nc; c++) {
-    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c];
+    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c].get();
     if (cellmatpoly) {
       for (int i = 0; i < cellmatpoly->num_matpolys(); i++)
         fout << cellmatpoly->matpoly_matid(i)+1 << " ";

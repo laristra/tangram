@@ -48,6 +48,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <iterator>
 #include <algorithm>
 #include <string>
+#include <sstream>
 
 #include "tangram/support/tangram.h"
 #include "tangram/simple_mesh/simple_mesh.h"

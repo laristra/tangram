@@ -163,7 +163,34 @@ if (Jali_DIR)
 
 endif (Jali_DIR)
 
+#------------------------------------------------------------------------------#
+# Configure XMOF2D
+#------------------------------------------------------------------------------#
 
+if (XMOF2D_DIR)
+
+   # Look for the XMOF2D package
+
+   find_package(XMOF2D REQUIRED
+                HINTS ${XMOF2D_DIR}/lib)
+
+   message(STATUS "Located XMOF2D")
+   message(STATUS "XMOF2D_DIR=${XMOF2D_DIR}")
+
+   # add full path to XMOF2D libs
+   unset(_LIBS)
+   foreach (_lib ${XMOF2D_LIBRARIES})
+      set(_LIBS ${_LIBS};${XMOF2D_LIBRARY_DIRS}/lib${_lib}.a)
+   endforeach()
+   set(XMOF2D_LIBRARIES ${_LIBS})
+
+   # message(STATUS "XMOF2D_INCLUDE_DIRS=${XMOF2D_INCLUDE_DIRS}")
+   # message(STATUS "XMOF2D_LIBRARY_DIRS=${XMOF2D_LIBRARY_DIRS}")
+   # message(STATUS "XMOF2D_LIBRARIES=${XMOF2D_LIBRARIES}")
+
+   include_directories(${XMOF2D_INCLUDE_DIRS})
+
+endif (XMOF2D_DIR)
 
 #-----------------------------------------------------------------------------
 # General NGC include directory information
@@ -213,6 +240,14 @@ if(ENABLE_THRUST)
       link_directories(${TBB_LIBRARY_DIRS})
       set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ltbb")
     endif(TBB_FOUND)
+  endif()
+
+else (ENABLE_THRUST)
+
+  find_package(Boost REQUIRED)
+  if(Boost_FOUND)
+   message(STATUS "Boost location: ${Boost_INCLUDE_DIRS}")
+   include_directories( ${Boost_INCLUDE_DIRS} )
   endif()
 
 endif(ENABLE_THRUST)
