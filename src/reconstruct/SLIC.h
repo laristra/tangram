@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <memory>
 
 #include "tangram/support/Point.h"
 #include "tangram/driver/CellMatPoly.h"

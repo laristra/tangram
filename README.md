@@ -10,13 +10,12 @@ Example of the configure script:
 #!/bin/bash
 
 BUILD_TYPE=Release
-BASE_PATH=
-JALI_INSTALL_PREFIX=
-TPLS_INSTALL_PREFIX=
-XMOF2D_INSTALL_PREFIX=${BASE_PATH}/XMOF2D/install-${BUILD_TYPE}
-THRUST_PATH=
-BOOST_PATH=
-TCMALLOC_PATH=
+JALI_INSTALL_PREFIX=/path/to/jali/installation
+TPLS_INSTALL_PREFIX=/path/to/jali/tpls/installation
+XMOF2D_INSTALL_PREFIX=/path/to/XMOF2D/installation
+THRUST_PATH=/path/to/thrust
+BOOST_PATH=/path/to/boost
+TCMALLOC_PATH=/path/to/google/performance/tools/installation
 
 CC=`which mpicc`
 CXX=`which mpiCC`
@@ -33,13 +32,13 @@ cmake \
     -D ENABLE_APP_TESTS=True \
     -D ENABLE_MPI=True \
     -D ENABLE_MPI_CXX_BINDINGS=True \
-    -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/lib \
+    -D XMOF2D_DIR:FILEPATH=${XMOF2D_INSTALL_PREFIX}/lib \
     -D BOOST_ROOT:FILEPATH=${BOOST_PATH} \
     -D ENABLE_THRUST:BOOL=True \
-    -D THRUST_DIR:PATH=$THRUST_PATH \
-    -D Jali_DIR:FILEPATH=$JALI_INSTALL_PREFIX/lib \
+    -D THRUST_DIR:PATH=${THRUST_PATH} \
+    -D Jali_DIR:FILEPATH=${JALI_INSTALL_PREFIX}/lib \
     -D ENABLE_TCMALLOC=True \
-    -D TCMALLOC_LIB:FILEPATH=TCMALLOC_PATH/libtcmalloc.so \
+    -D TCMALLOC_LIB:FILEPATH={TCMALLOC_PATH}/libtcmalloc.so \
     ..
 make -j
 ```
