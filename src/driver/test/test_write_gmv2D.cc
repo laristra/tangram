@@ -50,8 +50,6 @@
 #include "Mesh.hh"             // Jali
 #include "MeshFactory.hh"      // Jali
 
-#include <cstddef>
-
 /// Test GMV Output of CellMatPoly structure for two-dimensional cells
 
 TEST(WriteCellMatPoly, Mesh2D) {
@@ -141,8 +139,8 @@ TEST(WriteCellMatPoly, Mesh2D) {
   cell_mat_ids.push_back(1);
 
   // Most cells don't have a CellMatPoly structure
-  std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list(4, std::nullptr_t);
-  cellmatpoly_list[0] = std::shared_ptr(&cellmatpoly);
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list(4);
+  cellmatpoly_list[0] = std::shared_ptr<CellMatPoly<2>>(&cellmatpoly);
 
   Tangram::write_to_gmv<Tangram::Jali_Mesh_Wrapper, 2>(mesh_wrapper, 2,
                                                        cell_num_mats,
