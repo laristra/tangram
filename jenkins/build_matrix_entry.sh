@@ -17,13 +17,23 @@ build_type=$2
 
 # set modules and install paths
 
-openmpi_version=1.10.3
+jali_version=0.9.8
+xmof2d_version=0.9
+
+export NGC=/usr/local/codes/ngc
+ngc_include_dir=$NGC/private/include
 
 # compiler-specific settings
 if [[ $compiler == "intel" ]]; then
-  cxxmodule=intel/16.0.3
+  cxxmodule=intel/17.0.1
+  openmpi_version=1.10.5
+  jali_install_dir=$NGC/private/jali/${jali_version}-intel-17.0.1-openmpi-${openmpi_version}
+  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-intel-17.0.1-openmpi-${openmpi_version}
 elif [[ $compiler == "gcc" ]]; then
   cxxmodule=gcc/5.3.0
+  openmpi_version=1.10.3
+  jali_install_dir=$NGC/private/jali/${jali_version}-gcc-5.3.0-openmpi-${openmpi_version}
+  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-5.3.0-openmpi-${openmpi_version}
 fi
   
 # build-type-specific settings
@@ -56,8 +66,11 @@ cmake \
   -D ENABLE_JENKINS_OUTPUT=True \
   -D ENABLE_MPI=True \
   -D ENABLE_MPI_CXX_BINDINGS=True \
+  -D Jali_DIR:FILEPATH=$jali_install_dir/lib \
+  -D NGC_INCLUDE_DIR:FILEPATH=$ngc_include_dir \
+  -D XMOF2D_DIR:FILEPATH=$xmof2_install_dir/lib \
+  -D BOOST_ROOT:FILEPATH=$boost_dir \
   $extra_flags \
   ..
 make -j2
 ctest --output-on-failure
-
