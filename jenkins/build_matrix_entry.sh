@@ -68,7 +68,7 @@ cmake \
   -D ENABLE_MPI_CXX_BINDINGS=True \
   -D Jali_DIR:FILEPATH=$jali_install_dir/lib \
   -D NGC_INCLUDE_DIR:FILEPATH=$ngc_include_dir \
-  -D XMOF2D_DIR:FILEPATH=$xmof2_install_dir/lib \
+  -D XMOF2D_DIR:FILEPATH=$xmof2d_install_dir/lib \
   -D BOOST_ROOT:FILEPATH=$boost_dir \
   $extra_flags \
   ..
