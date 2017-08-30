@@ -202,8 +202,8 @@ TEST(WriteCellMatPoly, Mesh3D) {
   std::vector<int> cell_mat_ids({0, 1, 1, 0, 1, 1, 1, 1, 1});
 
   // Most cells don't have a CellMatPoly structure
-  std::vector<Tangram::CellMatPoly<3> *> cellmatpoly_list(8, nullptr);
-  cellmatpoly_list[0] = &cellmatpoly;
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list(8, std::nullptr_t);
+  cellmatpoly_list[0] = std::shared_ptr(&cellmatpoly);
 
   Tangram::write_to_gmv<Tangram::Jali_Mesh_Wrapper, 3>(mesh_wrapper, 2,
                                                        cell_num_mats,
