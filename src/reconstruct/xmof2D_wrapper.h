@@ -137,7 +137,7 @@ namespace Tangram {
       xmof_ir->set_global_ind(gid_data);
     }
     /*!
-     @brief Pass in the global mesh volume fraction data for use in the reconstruction.
+     @brief Pass in the global mesh material data for use in the reconstruction.
      @param[in] cell_num_mats A vector of length (num_global_mesh_cells) specifying the
      number of materials in each cell of the global mesh.
      @param[in] cell_mat_ids A vector of length (sum(cell_num_mats)) specifying
