@@ -41,3 +41,5 @@ POSSIBILITY OF SUCH DAMAGE.
 
 add_subdirectory(tangramapp)
 add_subdirectory(demoapp)
+add_subdirectory(demo-xmof-app)
+add_subdirectory(xmof-linetest-app)

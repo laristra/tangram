@@ -113,6 +113,8 @@ class Driver {
   unsigned int dim() const {
     return mesh_.space_dimension();
   }
+  
+  bool is_reconstruction_done() const { return reconstruction_done_; }
 
   /*!
     @brief Send volume fraction (and optional centroid) data to the Driver
@@ -128,19 +130,13 @@ class Driver {
                             std::vector<double> const& cell_mat_volfracs,
                             std::vector<Point<Dim>>
                             const& cell_mat_centroids = {}) {
+    int nc = mesh_.num_entities(Tangram::Entity_kind::CELL);
+    assert(cell_num_mats.size() >= nc);
+    
     cell_num_mats_ = cell_num_mats;
     cell_mat_ids_ = cell_mat_ids;
     cell_mat_volfracs_ = cell_mat_volfracs;
-
-    int nc = mesh_.num_entities(Tangram::Entity_kind::CELL);
-
-    cell_mat_offsets_.resize(nc);
-    cell_mat_offsets_[0] = 0;
-    for (int c = 1; c < nc; c++)
-      cell_mat_offsets_[c] = cell_mat_offsets_[c-1] + cell_num_mats_[c-1];
-
-    // Should this be done in the constructor?
-    cellmatpolys_.resize(nc);
+    cell_mat_centroids_ = cell_mat_centroids;
   }
 
 
@@ -149,41 +145,72 @@ class Driver {
   */
   void reconstruct() {
     int comm_rank = 0;
-
+    int world_size = 1;
 #ifdef ENABLE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 #endif
 
+    assert(!cell_num_mats_.empty());
+    int ncells = mesh_.num_entities(Tangram::Entity_kind::CELL);
+    
     if (comm_rank == 0) std::printf("in Driver::run()...\n");
     {
-      float tot_seconds = 0.0, tot_seconds_srch = 0.0,
-          tot_seconds_xsect = 0.0, tot_seconds_interp = 0.0;
-      struct timeval begin_timeval, end_timeval, diff_timeval;
-
-      gettimeofday(&begin_timeval, 0);
-
       // Instantiate the interface reconstructor class that will
       // compute the interfaces and compute the pure material submesh
       // in each cell
       CellInterfaceReconstructor<Mesh_Wrapper, Dim>
-          reconstructor(mesh_);
+        reconstructor(mesh_);
 
       // Tell the reconstructor what materials are in each cell and
       // what their volume fractions are
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
-                                         cell_mat_volfracs_);
+                                         cell_mat_volfracs_, cell_mat_centroids_);
+      
+      //Normally, we only need CellMatPoly's for multi-material cells,
+      //so we first find their indices
+      std::vector<int> iMMCs;
+      for (int icell = 0; icell < ncells; icell++) {
+        int cell_gid = mesh_.get_global_id(icell, Tangram::Entity_kind::CELL);
+        if (cell_num_mats_[cell_gid] > 1)
+          iMMCs.push_back(icell);
+      }
+      int nMMCs = iMMCs.size();
+      //Reconstructor is set to operate on multi-material cells only:
+      //this is also optimal for load-balancing
+      reconstructor.set_cell_indices_to_operate_on(iMMCs);
 
-      Tangram::transform(mesh_.begin(CELL, PARALLEL_OWNED),
-                         mesh_.end(CELL, PARALLEL_OWNED),
-                         cellmatpolys_.begin(), reconstructor);
+      Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
+
+      float tot_seconds = 0.0, tot_seconds_srch = 0.0,
+            tot_seconds_xsect = 0.0, tot_seconds_interp = 0.0;
+      struct timeval begin_timeval, end_timeval, diff_timeval;
+
+      gettimeofday(&begin_timeval, 0);
+
+      Tangram::transform(make_counting_iterator(0),
+                         make_counting_iterator(nMMCs),
+                         MMCs_cellmatpolys.begin(), reconstructor);
 
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
+      
+      float max_transform_time = tot_seconds;
+      if (world_size > 1) {
+        MPI_Allreduce(&tot_seconds, &max_transform_time, 1, MPI_FLOAT, MPI_MAX,
+          MPI_COMM_WORLD);
+      }
+      if (comm_rank == 0)
+        std::cout << "Max Transform Time over " << world_size << " Ranks (s): " <<
+          max_transform_time << std::endl;
 
-      std::cout << "Transform Time Rank " << comm_rank << " (s): " <<
-          tot_seconds << std::endl;
+      cellmatpolys_.resize(ncells);
+      for (int i = 0; i < nMMCs; i++)
+        cellmatpolys_[iMMCs[i]] = MMCs_cellmatpolys[i];
     }
+    
+    reconstruction_done_ = true;
   }
 
   // /*!
@@ -196,9 +223,12 @@ class Driver {
   //   polygons in the cell
   // */
 
-  CellMatPoly<Dim> const& cell_matpoly_data(int const cellid) {
-    return cellmatpolys_[cellid];
+  CellMatPoly<Dim> const& cell_matpoly_data(int const cellid) const {
+    return *(cellmatpolys_[cellid].get());
   }
+  
+  const std::vector<std::shared_ptr<CellMatPoly<Dim>>>
+    cell_matpoly_ptrs() const { return cellmatpolys_; }
 
   // /*!
   //   @brief Number of material polygons in cell
@@ -339,12 +369,9 @@ class Driver {
   std::vector<int> cell_num_mats_;
   std::vector<int> cell_mat_ids_;
   std::vector<double> cell_mat_volfracs_;
-  std::vector<std::vector<double>> cell_mat_centroids_;
-  std::vector<int> cell_mat_offsets_;
+  std::vector<Point<Dim>> cell_mat_centroids_;
 
-  // For now we are going to store a CellMatPoly data structure for all cells
-  // even pure cells. We could store it only for material
-  std::vector<CellMatPoly<Dim>> cellmatpolys_;
+  std::vector<std::shared_ptr<CellMatPoly<Dim>>> cellmatpolys_;
 
   bool reconstruction_done_ = false;
 };  // class Driver

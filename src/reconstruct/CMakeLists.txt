@@ -44,9 +44,16 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #-----------------------------------------------------------------------------~#
 
+if (XMOF2D_DIR)
+    set(xmof2D_wrapper_headers
+        reconstruct/xmof2D_wrapper.h
+        )
+endif (XMOF2D_DIR)
+
 # Add header files
 set(reconstruct_HEADERS
     SLIC.h
+    xmof2D_wrapper.h
     PARENT_SCOPE
 )
 

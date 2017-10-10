@@ -56,6 +56,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 #endif
 
@@ -182,7 +183,7 @@ template<typename T>
     using vector = std::vector<T>;
 
 template<typename T>
-    using pointer = T*;
+    using pointer = std::shared_ptr<T>;
 
 typedef boost::counting_iterator<int> counting_iterator;
 inline counting_iterator make_counting_iterator(int const i) {
