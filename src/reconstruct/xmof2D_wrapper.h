@@ -47,11 +47,32 @@
 #include "tangram/support/Point.h"
 #include "tangram/driver/CellMatPoly.h"
 
+/*!
+ @file xmof2D_wrapper.h
+ @brief Wrapper for the X-MOF 2D interface reconstruction method.
+ Implements methods required by the standard Tangram driver.
+ Requires XMOF2D library to be linked.
+ */
+
 namespace Tangram {
   
+  /*!
+   @class XMOF2D_Wrapper "xmof2D_wrapper.h"
+   @brief Calculates material interfaces and constructs CellMatPoly objects
+   for specified cells using the eXtended Moments-of-Fluid (X-MOF) method.
+
+   @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
+   implementation that provides required functionality
+   @tparam Dim The spatial dimension of the problem: has to be 2.
+   */
   template <class Mesh_Wrapper, int Dim>
   class XMOF2D_Wrapper {
   public:
+    /*!
+     @brief Constructor initializing the X-MOF 2D reconstructor.
+     @param[in] ir_tolerances User-specified tolerances for interface reconstruction in
+     XMOF2D format
+     */
     XMOF2D_Wrapper(const Mesh_Wrapper& Mesh,
                    const XMOF2D::IRTolerances* ir_tolerances = NULL) : mesh_(Mesh) {
       assert(Dim == 2);
@@ -115,7 +136,17 @@ namespace Tangram {
       xmof_ir = std::make_shared<XMOF2D::XMOF_Reconstructor>(mesh_cfg, ir_tol);
       xmof_ir->set_global_ind(gid_data);
     }
-    
+    /*!
+     @brief Pass in the global mesh volume fraction data for use in the reconstruction.
+     @param[in] cell_num_mats A vector of length (num_global_mesh_cells) specifying the
+     number of materials in each cell of the global mesh.
+     @param[in] cell_mat_ids A vector of length (sum(cell_num_mats)) specifying
+     the ID of each material in each cell
+     @param[in] cell_mat_volfracs A vector of length(sum(cell_num_mats))
+     specifying the volume fraction of each material in each cell.
+     @param[in] cell_mat_centroids A vector of length(sum(cell_num_mats))
+     specifying the centroids of each material in each cell.
+     */
     void set_volume_fractions(std::vector<int> const& cell_num_mats,
                               std::vector<int> const& cell_mat_ids,
                               std::vector<double> const& cell_mat_volfracs,
@@ -149,17 +180,24 @@ namespace Tangram {
       xmof_ir->set_materials_data(mat_data);
     }
     
+    /*!
+     @brief Pass in the local partition indices of cells for which CellMatPoly objects 
+     are to be constructed. If the index is in the list, a CellMatPoly object will be
+     created even for a single-material cell.
+     @param[in] cellIDs_to_op_on A vector of length up to (num_local_partition_cells) 
+     specifying the local indices of cells for which CellMatPoly objects are requested.
+     */
     void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
       icells_to_reconstruct = cellIDs_to_op_on;
     }
 
+    /*!
+     @brief Given a cell index, calculate the CellMatPoly based on the material data
+     */
     std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
       assert(Dim == 2);
       assert(cell_op_ID < icells_to_reconstruct.size());
       int cellID = icells_to_reconstruct[cell_op_ID];
-      
-//      if (xmof_ir->get_cell_materials(cellID).size() == 1) {
-//        return std::shared_ptr<CellMatPoly<Dim>>(nullptr);
       
       CellMatPoly<Dim>* cell_mat_poly = new CellMatPoly<Dim>(cellID);
       const XMOF2D::BaseMesh& mesh = xmof_ir->get_base_mesh();
@@ -209,10 +247,10 @@ namespace Tangram {
     }
 
   private:
-    const Mesh_Wrapper& mesh_;
-    std::shared_ptr<XMOF2D::XMOF_Reconstructor> xmof_ir;
-    std::vector<int> icells_to_reconstruct;
-  };
-}
+    const Mesh_Wrapper& mesh_; // Provided base mesh wrapper
+    std::shared_ptr<XMOF2D::XMOF_Reconstructor> xmof_ir; // XMOF2D reconstructor object
+    std::vector<int> icells_to_reconstruct; // List of cells to create CellMatPoly objects for
+  }; // class XMOF2D_Wrapper
+}  // namespace Tangram
 
 #endif /* xmof2D_h */
