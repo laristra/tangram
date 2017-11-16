@@ -197,10 +197,12 @@ class Driver {
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
       
       float max_transform_time = tot_seconds;
+#ifdef ENABLE_MPI
       if (world_size > 1) {
         MPI_Allreduce(&tot_seconds, &max_transform_time, 1, MPI_FLOAT, MPI_MAX,
           MPI_COMM_WORLD);
       }
+#endif
       if (comm_rank == 0)
         std::cout << "Max Transform Time over " << world_size << " Ranks (s): " <<
           max_transform_time << std::endl;
