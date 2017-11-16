@@ -135,7 +135,7 @@ endif(FLECSI_INSTALL_DIR)
 # (this includes the TPLs that Jali will need)
 #------------------------------------------------------------------------------#
 
-if (Jali_DIR)
+#if (Jali_DIR)    # NOT OPTIONAL IN THIS VERSION
 
    # Look for the Jali package
 
@@ -161,7 +161,7 @@ if (Jali_DIR)
 
    include_directories(${Jali_INCLUDE_DIRS} ${Jali_TPL_INCLUDE_DIRS})
 
-endif (Jali_DIR)
+#endif (Jali_DIR)
 
 #------------------------------------------------------------------------------#
 # Configure XMOF2D
