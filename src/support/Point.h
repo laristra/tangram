@@ -60,8 +60,8 @@ POSSIBILITY OF SUCH DAMAGE.
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef SRC_SUPPORT_POINT_H_
-#define SRC_SUPPORT_POINT_H_
+#ifndef TANGRAM_POINT_H_
+#define TANGRAM_POINT_H_
 
 #include <assert.h>
 #include <iostream>
@@ -321,4 +321,4 @@ createP1(double x) {
 
 }  // namespace Tangram
 
-#endif  // SRC_SUPPORT_POINT_H_
+#endif  // TANGRAM_POINT_H_

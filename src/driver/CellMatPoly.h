@@ -39,8 +39,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef CELLMATPOLY_H_
-#define CELLMATPOLY_H_
+#ifndef TANGRAM_CELLMATPOLY_H_
+#define TANGRAM_CELLMATPOLY_H_
 
 #include <vector>
 #include <array>
@@ -835,4 +835,4 @@ void CellMatPoly<D>::add_matpoly(int matid,
 
 }  // namespace Tangram
 
-#endif  // CELLMATPOLY_H_
+#endif  // TANGRAM_CELLMATPOLY_H_

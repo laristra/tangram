@@ -41,8 +41,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 
-#ifndef SRC_DRIVER_DRIVER_H_
-#define SRC_DRIVER_DRIVER_H_
+#ifndef TANGRAM_DRIVER_H_
+#define TANGRAM_DRIVER_H_
 
 #include <sys/time.h>
 
@@ -78,7 +78,7 @@ namespace Tangram {
   @brief Driver provides the API for reconstructing interfaces in
   multimaterial cells and answering queries about said interfaces
 
-  @tparam  CellReconstruct   A class that can reconstruct the pure material
+  @tparam  CellInterfaceReconstructor   A class that can reconstruct the pure material
   polygons in a cell given the volume fractions in the cell (and if needed
   its neighbors)
   @tparam  Mesh_Wrapper  A lightweight wrapper to a specific input mesh
@@ -382,4 +382,4 @@ class Driver {
 
 }  // namespace Tangram
 
-#endif  // SRC_DRIVER_DRIVER_H_
+#endif  // TANGRAM_DRIVER_H_

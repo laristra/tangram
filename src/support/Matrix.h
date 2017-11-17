@@ -41,8 +41,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 
-#ifndef SRC_SUPPORT_MATRIX_H_
-#define SRC_SUPPORT_MATRIX_H_
+#ifndef TANGRAM_MATRIX_H_
+#define TANGRAM_MATRIX_H_
 
 #include <cassert>
 #include <vector>
