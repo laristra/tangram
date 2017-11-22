@@ -56,11 +56,13 @@ namespace Tangram {
 
 // Some helper functions
 //! Compute volume of 1D side
+inline
 double calc_side_volume(std::array<Point<1>, 2> const& sxyz) {
   return (sxyz[1][0]-sxyz[0][0]);
 }
 
 //! Compute volume of 2D side
+inline
 double calc_side_volume(std::array<Point<2>, 3> const& sxyz) {
   Vector<2> vec1 = sxyz[1]-sxyz[0];
   Vector<2> vec2 = sxyz[2]-sxyz[0];
@@ -68,6 +70,7 @@ double calc_side_volume(std::array<Point<2>, 3> const& sxyz) {
 }
 
 //! Compute volume of 3D side
+inline
 double calc_side_volume(std::array<Point<3>, 4> const& sxyz) {
   Vector<3> vec1 = sxyz[1]-sxyz[0];
   Vector<3> vec2 = sxyz[2]-sxyz[0];
@@ -132,6 +135,7 @@ void build_sides_3D(AuxMeshTopology<BasicMesh>& mesh);
 //! int num_owned_nodes() const;
 //! int num_ghost_nodes() const;
 //! Tangram::Entity_type cell_get_type(int const cellid) const;
+//! Tangram::Entity_type node_get_type(int const nodeid) const;
 //!~~~
 //!
 //! NOTE: Entity_type is Tangram::OWNED or Tangram::GHOST
@@ -158,13 +162,13 @@ void build_sides_3D(AuxMeshTopology<BasicMesh>& mesh);
 //!~~~
 //! void cell_get_nodes(int const cellid, std::vector<int> *cnodes) const;
 //!
-//! void cell_get_node_adj_cells(int const cellid, Tangram::Entity_type etype,
-//!                              std::vector<int> *adjcells) const;
-//!
 //! void face_get_nodes(int const faceid, std::vector<int> *fnodes) const;
 //!
-//! void node_get_cell_adj_nodes(int const nodeid, Tangram::Entity_type etype,
-//!                              std::vector<int> *adjnodes) const;
+//! void face_get_cells(int const faceid, Portage::Entity_type etype,
+//!                     std::vector<int> *fcells) const;
+//!
+//! void node_get_cells(int const nodeid, Portage::Entity_type etype,
+//!                     std::vector<int> *ncells) const;
 //!
 //! int get_global_id(int const id, Entity_kind const kind) const;
 //!
@@ -187,6 +191,10 @@ void build_sides_3D(AuxMeshTopology<BasicMesh>& mesh);
 //! {......}
 //!~~~
 //! and it will automatically have the methods of the AuxMeshTopology class.
+//!
+//! If MY_MESH_WRAPPER has equivalent classes for the ones in
+//! AuxMeshTopology (possibly because they are more efficient), then
+//! the ones from AuxMeshTopology are overridden
 //!
 //! NOTE THAT THIS CLASS IS NOT DESIGNED TO EVER BE INSTANTIATED DIRECTLY
 //!
@@ -343,6 +351,119 @@ class AuxMeshTopology {
     int start_index = 0;
     return (make_counting_iterator(start_index) + num_entities(entity, etype));
   }
+
+
+  /*!
+    @brief Get the list of cell IDs for all cells attached to a specific
+    cell through its nodes.
+    @param[in] cellid The ID of the cell.
+    @param[in] ptype The Entity_type (e.g. PARALLEL_OWNED)
+    @param[out] adjcells The list of cell IDs for all cells attached to
+    cell @c cellid through its nodes, excluding @c cellid.
+   */
+  void cell_get_node_adj_cells(int const cellid,
+                               Entity_type const ptype,
+                               std::vector<int> *adjcells) const {
+
+    // If it does not interfere with the GPU implementation, we could
+    // insert into a std::set (nlog(n) instead of n^2) and then copy
+    // into the output vector
+
+    adjcells->clear();
+
+    // Find the nodes attached to this cell
+    std::vector<int> cellnodes;
+    basicmesh_ptr_->cell_get_nodes(cellid, &cellnodes);
+
+    // Loop over these nodes and find the associated cells; these are the ones
+    // we seek, but make sure there are not duplicates.
+    for (auto const& n : cellnodes) {
+      std::vector<int> nodecells;
+      basicmesh_ptr_->node_get_cells(n, ptype, &nodecells);
+
+      for (auto const& c : nodecells) {
+        if (c == cellid) continue;
+        if (std::find(adjcells->begin(), adjcells->end(), c) == adjcells->end())
+          adjcells->push_back(c);
+      }
+    }
+  }  // cell_get_node_adj_cells
+
+  //! Get cells of given Entity_type connected to face (in no particular order)
+  void face_get_cells(int const faceid, Entity_type const etype,
+                      std::vector<int> *cells) const {
+    cells->clear();
+    int c0 = face_cell_ids_[faceid][0];
+    if (c0 != -1) {
+      Entity_type ctype0 = basicmesh_ptr_->cell_get_type(c0);
+      if (etype == Entity_type::ALL || ctype0 == etype)
+        cells->push_back(c0);
+    }
+    int c1 = face_cell_ids_[faceid][1];
+    if (c1 != -1) {
+      Entity_type ctype1 = basicmesh_ptr_->cell_get_type(c1);
+      if (etype == Entity_type::ALL || ctype1 == etype)
+        cells->push_back(c1);
+    }
+  }
+
+  /*!
+    @brief Get the list of node IDs for all nodes attached to all cells
+    attached to a specific node.
+    @param[in] nodeid The ID of the node.
+    @param[in] ptype The Entity_type (e.g. PARALLEL_OWNED)
+    @param[out] adjnodes The list of node IDs for all cells attached to
+    @c nodeid, excluding @c nodeid.
+   */
+  void node_get_cell_adj_nodes(int const nodeid,
+                               Entity_type const ptype,
+                               std::vector<int> *adjnodes) const {
+    adjnodes->clear();
+
+    // If it does not interfere with the GPU implementation, we could
+    // insert into a std::set (nlog(n) instead of n^2) and then copy
+    // into the output vector
+
+    // Find the cells attached to this node
+    std::vector<int> nodecells;
+    basicmesh_ptr_->node_get_cells(nodeid, Entity_type::ALL, &nodecells);
+
+    // Loop over these cells, and find their nodes; these are the ones we seek
+    // but make sure we aren't duplicating them
+    for (auto const& c : nodecells) {
+      std::vector<int> cellnodes;
+      basicmesh_ptr_->cell_get_nodes(c, &cellnodes);
+
+      for (auto const& n : cellnodes) {
+        if (n == nodeid) continue;
+        Entity_type ntype = basicmesh_ptr_->node_get_type(n);
+        if (ptype == Entity_type::ALL || ntype == ptype) {
+          if (std::find(adjnodes->begin(), adjnodes->end(), n) == adjnodes->end())
+            adjnodes->push_back(n);
+        }
+      }
+    }
+  }  // node_get_cell_adj_nodes
+
+
+  //! if entity is on exterior boundary
+  bool on_exterior_boundary(Entity_kind const entity, int const entity_id) const {
+    switch (entity) {
+      case NODE:
+        return node_on_exterior_boundary_[entity_id];
+      case FACE:
+        return face_on_exterior_boundary_[entity_id];
+      case CELL:
+        return cell_on_exterior_boundary_[entity_id];
+      case SIDE:
+        return cell_on_exterior_boundary_[side_cell_id_[entity_id]];
+      case CORNER:
+        return cell_on_exterior_boundary_[corner_cell_id_[entity_id]];
+      default:
+        return false;
+    }
+  }
+        
 
   //! Coordinates of nodes of cell
 
@@ -1041,6 +1162,10 @@ class AuxMeshTopology {
     assert(basicmesh_ptr_->space_dimension() == 3);
     assert(wedges_requested_);
 
+    // If it does not interfere with the GPU implementation, we could
+    // insert into a std::set (nlog(n) instead of n^2) and then copy
+    // into the output vector
+
     // wedge_get_coordinates - (node, edge center, face centroid, cell centroid)
     std::array<Point<3>, 4> wcoords;
 
@@ -1155,6 +1280,9 @@ class AuxMeshTopology {
 
     if (sides_requested_)
       compute_cell_volumes();  // needs side volumes
+
+    build_face_to_cell_adjacency();
+    flag_entities_on_exterior_boundary();
   }
 
  private:
@@ -1164,6 +1292,9 @@ class AuxMeshTopology {
 
   void build_wedges();
   void build_corners();
+
+  void build_face_to_cell_adjacency();
+  void flag_entities_on_exterior_boundary();
 
   // External helper functions to build dimension-dependent side info
   // - forward declared at the top of the file so that only an
@@ -1206,6 +1337,11 @@ class AuxMeshTopology {
   // Faces
   std::vector<std::vector<double>> face_centroids_;
 
+  // compute this adjacency and store it - while many mesh frameworks
+  // have it some may not and in particular, the flat mesh wrapper we
+  // use within Portage does not.
+  std::vector<std::array<int, 2>> face_cell_ids_;
+
   // Sides
   std::vector<int> side_cell_id_;
   std::vector<int> side_face_id_;
@@ -1229,9 +1365,78 @@ class AuxMeshTopology {
   std::vector<std::vector<int>> node_corner_ids_;
   std::vector<std::vector<int>> corner_wedge_ids_;
 
+  // Flag indicating if entities (cells, faces, nodes) are on exterior boundary 
+  std::vector<bool> cell_on_exterior_boundary_;
+  std::vector<bool> face_on_exterior_boundary_;
+  std::vector<bool> node_on_exterior_boundary_;
+
 };  // class AuxMeshTopology
 
 
+//! build face to cell adjacency
+template<typename BasicMesh>
+void AuxMeshTopology<BasicMesh>::build_face_to_cell_adjacency() {
+  int nfaces = basicmesh_ptr_->num_entities(Entity_kind::FACE,
+                                            Entity_type::ALL);
+  //  face_cell_ids_.resize(nfaces, {-1, -1});  // I think intel 15 barfs
+  //                                            // if I do this
+  std::array<int, 2> iniarr = {-1, -1};
+  face_cell_ids_.resize(nfaces, iniarr);
+  
+  int ncells = basicmesh_ptr_->num_entities(Entity_kind::CELL,
+                                            Entity_type::ALL);
+  for (int c = 0; c < ncells; c++) {
+    std::vector<int> cfaces;
+    std::vector<int> cfdirs;
+    basicmesh_ptr_->cell_get_faces_and_dirs(c, &cfaces, &cfdirs);
+    for (auto const& f : cfaces) {
+      if (face_cell_ids_[f][0] == -1)
+        face_cell_ids_[f][0] = c;
+      else
+        face_cell_ids_[f][1] = c;
+    }
+  }
+}
+
+
+// Flag entities on exterior boundaries
+template <typename BasicMesh>
+void AuxMeshTopology<BasicMesh>::flag_entities_on_exterior_boundary() {  
+
+  // Check and flag all entities, owned or ghost. However, ghost faces that
+  // are the outer faces of the ghost layer of cells will be incorrectly
+  // tagged as being exterior faces because they will have only one (ghost)
+  // cell attached. We expect that this won't be a problem since we won't
+  // have to query these faces anyway but if it is, then we will have to
+  // do an exchange of information across nodes
+
+  int ncells = basicmesh_ptr_->num_entities(Entity_kind::CELL,
+                                            Entity_type::ALL);
+  int nfaces = basicmesh_ptr_->num_entities(Entity_kind::FACE,
+                                            Entity_type::ALL);
+  int nnodes = basicmesh_ptr_->num_entities(Entity_kind::NODE,
+                                            Entity_type::ALL);
+  
+  cell_on_exterior_boundary_.resize(ncells, false);
+  face_on_exterior_boundary_.resize(nfaces, false);
+  node_on_exterior_boundary_.resize(nnodes, false);
+
+  for (int f = 0; f < nfaces; f++) {
+    std::vector<int> fcells;
+    basicmesh_ptr_->face_get_cells(f, Entity_type::ALL, &fcells);
+
+    if (fcells.size() == 1) {
+      face_on_exterior_boundary_[f] = true;
+      cell_on_exterior_boundary_[fcells[0]] = true;
+      
+      // if the face is on an exterior boundary, all its nodes are too
+      std::vector<int> fnodes;
+      basicmesh_ptr_->face_get_nodes(f, &fnodes);
+      for (auto const &n : fnodes)
+        node_on_exterior_boundary_[n] = true;
+    }
+  }
+}
 
 //! side coordinates in 1D
 template<typename BasicMesh>
