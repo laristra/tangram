@@ -112,7 +112,7 @@ namespace Tangram {
       for (int iface = 0; iface < nfaces; iface++) {
         if (mesh_cfg.ifaces_out_cells[iface] == -1) {
           std::vector<int> fcells;
-          mesh_.face_get_cells(iface, &fcells);
+          mesh_.face_get_cells(iface, Tangram::Entity_type::ALL, &fcells);
           assert(fcells.size() == 1);
           mesh_cfg.ifaces_out_cells[iface] = fcells[0];
           std::reverse(mesh_cfg.ifaces_nodes[iface].begin(), mesh_cfg.ifaces_nodes[iface].end());
