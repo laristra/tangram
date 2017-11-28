@@ -262,4 +262,4 @@ class Matrix {
 
 }  // namespace Tangram
 
-#endif
+#endif  // TANGRAM_MATRIX_H_
