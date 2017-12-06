@@ -39,8 +39,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _WRITE_TO_GMV_H_
-#define _WRITE_TO_GMV_H_
+#ifndef TANGRAM_WRITE_TO_GMV_H_
+#define TANGRAM_WRITE_TO_GMV_H_
 
 #include <fstream>
 #include <vector>
@@ -282,4 +282,4 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
 
 }  // namespace Tangram
 
-#endif  // _WRITE_TO_GMV_H_
+#endif  // TANGRAM_WRITE_TO_GMV_H_

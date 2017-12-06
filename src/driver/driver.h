@@ -41,8 +41,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 
-#ifndef SRC_DRIVER_DRIVER_H_
-#define SRC_DRIVER_DRIVER_H_
+#ifndef TANGRAM_DRIVER_H_
+#define TANGRAM_DRIVER_H_
 
 #include <sys/time.h>
 
@@ -78,7 +78,7 @@ namespace Tangram {
   @brief Driver provides the API for reconstructing interfaces in
   multimaterial cells and answering queries about said interfaces
 
-  @tparam  CellReconstruct   A class that can reconstruct the pure material
+  @tparam  CellInterfaceReconstructor   A class that can reconstruct the pure material
   polygons in a cell given the volume fractions in the cell (and if needed
   its neighbors)
   @tparam  Mesh_Wrapper  A lightweight wrapper to a specific input mesh
@@ -197,10 +197,12 @@ class Driver {
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
       
       float max_transform_time = tot_seconds;
+#ifdef ENABLE_MPI
       if (world_size > 1) {
         MPI_Allreduce(&tot_seconds, &max_transform_time, 1, MPI_FLOAT, MPI_MAX,
           MPI_COMM_WORLD);
       }
+#endif
       if (comm_rank == 0)
         std::cout << "Max Transform Time over " << world_size << " Ranks (s): " <<
           max_transform_time << std::endl;
@@ -380,4 +382,4 @@ class Driver {
 
 }  // namespace Tangram
 
-#endif  // SRC_DRIVER_DRIVER_H_
+#endif  // TANGRAM_DRIVER_H_

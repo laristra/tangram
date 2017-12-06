@@ -46,6 +46,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 # Add header files
 set(driver_HEADERS
+  driver.h
   CellMatPoly.h
   write_to_gmv.h
   PARENT_SCOPE

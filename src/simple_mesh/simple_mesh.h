@@ -41,8 +41,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 
-#ifndef SRC_SIMPLE_MESH_SIMPLE_MESH_H_
-#define SRC_SIMPLE_MESH_SIMPLE_MESH_H_
+#ifndef TANGRAM_SIMPLE_MESH_H_
+#define TANGRAM_SIMPLE_MESH_H_
 
 #include <vector>
 #include <memory>
@@ -501,4 +501,4 @@ void Simple_Mesh::node_get_coordinates<3>(const ID nodeid,
 
 }  // namespace Tangram
 
-#endif  // SRC_SIMPLE_MESH_SIMPLE_MESH_H_
+#endif  // TANGRAM_SIMPLE_MESH_H_

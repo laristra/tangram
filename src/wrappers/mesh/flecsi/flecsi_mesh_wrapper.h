@@ -1,532 +1,687 @@
-/*
-Copyright (c) 2016, Los Alamos National Security, LLC
-All rights reserved.
+/*~--------------------------------------------------------------------------~*
+ * Copyright (c) 2016 Los Alamos National Laboratory, LLC
+ * All rights reserved
+ *~--------------------------------------------------------------------------~*/
+////////////////////////////////////////////////////////////////////////////////
+/// \file
+////////////////////////////////////////////////////////////////////////////////
 
-Copyright 2016. Los Alamos National Security, LLC. This software was produced
-under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National
-Laboratory (LANL), which is operated by Los Alamos National Security, LLC for
-the U.S. Department of Energy. The U.S. Government has rights to use,
-reproduce, and distribute this software.  NEITHER THE GOVERNMENT NOR LOS ALAMOS
-NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY
-LIABILITY FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
-derivative works, such modified software should be clearly marked, so as not to
-confuse it with the version available from LANL.
+#pragma once
 
-Additionally, redistribution and use in source and binary forms, with or
-without modification, are permitted provided that the following conditions are
-met:
+// user includes
+//#include "flecsale/geom/shapes/geometric_shapes.h"
+//#include "flecsale/utils/errors.h"
 
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. Neither the name of Los Alamos National Security, LLC, Los Alamos
-   National Laboratory, LANL, the U.S. Government, nor the names of its
-   contributors may be used to endorse or promote products derived from this
-   software without specific prior written permission.
+// library includes
+#include <tangram/support/tangram.h>
+#include <tangram/support/Point.h>
+#include <tangram/support/mesh/AuxMeshTopology.h>
 
-THIS SOFTWARE IS PROVIDED BY LOS ALAMOS NATIONAL SECURITY, LLC AND
-CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL LOS ALAMOS NATIONAL
-SECURITY, LLC OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
-*/
-
-
-
-#ifndef FLECSI_MESH_WRAPPER_H_
-#define FLECSI_MESH_WRAPPER_H_
-
-namespace std
-{
-    typedef decltype(nullptr) nullptr_t;
-}
-
-
-#include <cassert>
-#include <algorithm>
-#include <array>
-
-#include "flecsi/specializations/burton/burton.h"
-
-#include "tangram/support/tangram.h"
-#include "tangram/support/Point.h"
-
-using mesh_t = flecsi::burton_mesh_t;
-
-using real_t = flecsi::mesh_t::real_t;
-using vertex_t = flecsi::mesh_t::vertex_t;
-using point_t = flecsi::mesh_t::point_t;
+// system includes
+#include <map>
+#include <memory>
+#include <vector>
+#include <iostream>
 
 namespace Tangram {
 
-//! helper function to convert to Portage::Point
-template <long D>
-Portage::Point<D> toPortagePoint(const point_t &fp) {
-  assert(fp.size() == D);
-  Portage::Point<D> pp;
-  for (auto i = 0; i < D; ++i)
-    pp[i] = fp[i];
-  return pp;
+////////////////////////////////////////////////////////////////////////////////
+/// \brief A utility function to convert a type to a tangram point
+////////////////////////////////////////////////////////////////////////////////
+// @{
+template<
+  typename T, 
+  template<typename,std::size_t> class A
+>
+Tangram::Point<3> make_point( const A<T,3> & a )
+{
+  return { a[0], a[1], a[2] };
 }
 
-/*!
-  @brief Helper routine to make a cartesian 2d grid in FleCSI
-  @param[in] xmin,xmax,ymin,ymax The extents of the mesh
-  @param[in] ncellsx,ncellsy The number of cells in each direction
-  @param[in,out] mesh The flecsi::burton_mesh_t mesh object
-*/
-void make_mesh_cart2d(const real_t xmin, const real_t xmax,
-                      const real_t ymin, const real_t ymax,
-                      const int ncellsx, const int ncellsy,
-                      mesh_t & mesh) {
-  // grid spacing
-  auto dx = (xmax - xmin) / real_t(ncellsx);
-  auto dy = (ymax - ymin) / real_t(ncellsy);
-  
-  //  mesh_t mesh;
-  auto num_verts = (ncellsx+1)*(ncellsy+1);
-  // this initializes storage for the number of vertices
-  mesh.init_parameters(num_verts);
-  
-  // create the verts
-  std::vector<vertex_t*> verts;
-  for (auto j = 0; j < ncellsy+1; ++j) {
-    for (auto i = 0; i < ncellsx+1; ++i) {
-      auto vert = mesh.create_vertex(
-          {xmin + dx*real_t(i), ymin + dy*real_t(j)});
-      verts.push_back(vert);
-    }
-  }
-  
-  // create the cells
-  auto ncellsx1 = ncellsx+1;
-  for (auto j = 0; j < ncellsy; ++j) {
-    for (auto i = 0; i < ncellsx; ++i) {
-      // go over verts in counter-clockwise fashion
-      auto c = mesh.create_cell({verts[i + j*ncellsx1],
-              verts[i + 1 + j*ncellsx1],
-              verts[i + 1 + (j + 1)*ncellsx1],
-              verts[i + (j + 1)*ncellsx1]});
-    }
-  }
-  
-  // this setups up the faces, edges, wedges, etc and connectivity info
-  mesh.init();
-  
+template<
+  typename T, 
+  template<typename,std::size_t> class A
+>
+Tangram::Point<2> make_point( const A<T,2> & a )
+{
+  return { a[0], a[1] };
 }
 
-/*!
-  @class Flecsi_Mesh_Wrapper flecsi_mesh_wrapper.h
-  @brief Flecsi_Mesh_Wrapper implements mesh methods for Flecsi
+template<typename T>
+Tangram::Point<1> make_1d_point( T && a )
+{
+  return { std::forward<T>(a)[0] };
+}
 
-  Flecsi_Mesh_Wrapper implements methods required for Portage mesh
-  queries for the Flecsi mesh infrastructure
+template<typename T>
+Tangram::Point<2> make_2d_point( T && a )
+{
+  return { std::forward<T>(a)[0], std::forward<T>(a)[1] };
+}
+
+template<typename T>
+Tangram::Point<3> make_3d_point( T && a )
+{
+  return { 
+    std::forward<T>(a)[0], std::forward<T>(a)[1], std::forward<T>(a)[2] 
+  };
+}
+// @}
+
+
+} // namespace tangram 
+
+////////////////////////////////////////////////////////////////////////////////
+/// \brief The base class for the tangram flecsi mesh wrapper.
+///
+/// This is used to hide some static initialization for this header-only
+/// implementation.
+////////////////////////////////////////////////////////////////////////////////
+/*
+template< typename M >
+struct tangram_mesh_base_t {
+
+  //! \brief The mesh type
+  using mesh_t = M;
+
+  //! the gometric shape 
+  using shape_t = typename mesh_t::shape_t;
+  //! \brief the tangram element type
+  using element_type_t = Tangram::Element_type;
+
+  //! \brief a map type for mapping mesh shapes to tangram shapes
+  using shape_map_t = std::map< shape_t, element_type_t >;
+
+  //! \brief a mapping between mesh shapes and tangram
+  static const shape_map_t shapes_to_tangram;
+};
+
+// Static initialization of tangram_mesh_base_t::shapes_to_tangram
+template< typename M >
+const typename tangram_mesh_base_t<M>::shape_map_t 
+  tangram_mesh_base_t<M>::shapes_to_tangram = 
+{ 
+  { 
+    shape_t::triangle, 
+    element_type_t::TRI 
+  },
+  { 
+    shape_t::quadrilateral, 
+    element_type_t::QUAD 
+  },
+  { 
+    shape_t::polygon, 
+    element_type_t::POLYGON 
+  },
+  { 
+    shape_t::tetrahedron, 
+    element_type_t::TET
+  },
+  { 
+    shape_t::hexahedron, 
+    element_type_t::HEX 
+  },
+  { 
+    shape_t::polyhedron, 
+    element_type_t::POLYHEDRON 
+  }
+};
 */
 
-class Flecsi_Mesh_Wrapper {
- public:
+////////////////////////////////////////////////////////////////////////////////
+///  \brief Implements a mesh wrapper for Tangram mesh queries.
+////////////////////////////////////////////////////////////////////////////////
+template< typename M >
+class flecsi_mesh_t : public Wonton::AuxMeshTopology<flecsi_mesh_t<M>> 
+{
 
-  //! Constructor
-  explicit Flecsi_Mesh_Wrapper(mesh_t & mesh) :
-      flecsi_mesh_(mesh)
-  {}
+public:
 
-  //! Copy constructor
-  Flecsi_Mesh_Wrapper(Flecsi_Mesh_Wrapper const & inmesh) :
-      flecsi_mesh_(inmesh.flecsi_mesh_)
-  {}
+  //============================================================================
+  // Typedefs
+  //============================================================================
 
-  //! Assignment operator (disabled)
-  Flecsi_Mesh_Wrapper & operator=(Flecsi_Mesh_Wrapper const &) = delete;
+  //! \brief the auxiliary class
+  using tangram_mesh_aux_t = Wonton::AuxMeshTopology<flecsi_mesh_t<M>>;
 
-  //! Empty destructor
-  ~Flecsi_Mesh_Wrapper() {}
+  //! \brief The mesh type
+  using mesh_t = M;
+  //! \brief the size type
+  using size_t = typename mesh_t::size_t;
+  //! \brief the real type
+  using real_t = typename mesh_t::real_t;
+  //! the gometric shape 
+  using shape_t = typename mesh_t::shape_t;
 
+  //! \brief The entity kind type
+  using entity_kind_t = Tangram::Entity_kind;
+  //! \brief The entity type 
+  using entity_type_t = Tangram::Entity_type;
+  //! \brief the tangram point type
+  using point_t = Tangram::Point< mesh_t::num_dimensions >;
+  //! \brief the tangram element type
+  using element_type_t = Tangram::Element_type;
+
+  //! \brief a map type for mapping mesh shapes to tangram shapes
+  using shape_map_t = std::map< shape_t, element_type_t >;
+
+  //! \brief the 2d tangram point type
+  using point_1d_t = Tangram::Point< 1 >;
+  //! \brief the 2d tangram point type
+  using point_2d_t = Tangram::Point< 2 >;
+  //! \brief the 3d tangram point type
+  using point_3d_t = Tangram::Point< 3 >;
+
+  //============================================================================
+  // Public Static Data
+  //============================================================================
+
+  //! \brief the map between 
+  static const shape_map_t shapes_to_tangram;
+
+  //============================================================================
+  // Constructors
+  //============================================================================
+
+  //!  \brief Constructor for creating a serial, 3D Cartesian mesh.
+  //!  \param[in] mesh The minimum coordinates of the domain.
+  explicit flecsi_mesh_t(mesh_t & mesh) :
+    cells_(mesh.cells()), faces_(mesh.faces()),
+    vertices_(mesh.vertices()), mesh_(&mesh)
+  {
+    // base class (AuxMeshTopology) method that has to be called here
+    // and not in the constructor of the base class because it needs
+    // access to methods in this class which in turn need access to
+    // its member variables. But these member vars don't get
+    // initialized until the base class is constructed
+    if ( mesh_t::num_dimensions == 3 )
+      tangram_mesh_aux_t::build_aux_entities(); 
+  }
+
+  //! Default constructor deleted
+  flecsi_mesh_t() = default;
+
+  //! Default copy constructor
+  flecsi_mesh_t(const flecsi_mesh_t &) = default;
+
+  //! Default assignment operator
+  flecsi_mesh_t & operator=(const flecsi_mesh_t &) = default;
+
+  //============================================================================
+  // Public Members Required By Tangram
+  //============================================================================
 
   //! Dimension of space or mesh points
-  int space_dimension() const {
-    return flecsi_mesh_.dimension();
+  constexpr auto space_dimension() const 
+  {
+    return mesh_t::num_dimensions;
   }
 
   //! Cell area/volume
-  double cell_volume(int const cellID) const {
-    if (space_dimension() > 2)
-      assert(false && "FleCSI 3D not implemented");
-    return flecsi_mesh_.cells()[cellID]->area();
+  auto cell_volume(size_t cell_id) const 
+  {
+    return cells_[cell_id]->volume();
   }
 
   //! Dual cell area/volume
-  double dual_cell_volume(int const nodeid) const {
-    if (space_dimension() > 2)
-      assert(false && "FleCSI 3D not implemented");
-    auto thisNode = flecsi_mesh_.vertices()[nodeid];
-    double vol = 0.0;
-    for (auto corner : flecsi_mesh_.corners(thisNode))
-      vol += corner->area();
-    return vol;
+  //! \param [in] node_id the node index
+  auto dual_cell_volume(size_t node_id) const 
+  {
+    //auto v = mesh_->vertices()[node_id];
+    //real_t vol = 0.0;
+    //for (auto corner : mesh_->corners(v))
+    //  vol += corner->area();
+    //return vol;
+
+ //   raise_implemented_error( "dual_cell_volume not implemented yet!" );
+     std::cerr<<"dual_cell_volume not implemented yet!\n";
+     return 0.0;
   }
 
   //! Number of owned cells in the mesh
-  int num_owned_cells() const {
-    return flecsi_mesh_.num_cells();
-  }
-
-  //! Number of owned nodes in the mesh
-  int num_owned_nodes() const {
-    return flecsi_mesh_.num_vertices();
+  size_t num_owned_cells() const 
+  {
+    return mesh_->num_cells();
   }
 
   //! Number of owned faces in the mesh
-  int num_owned_faces() const {
-    return 0;  // Only 2d is implemented and no faces available in 2D FleCSI
+  size_t num_owned_faces() const 
+  {
+    return mesh_->num_faces();
   }
 
-  // NOTE: I don't know where to get the ghosts yet, so setting this to 0.
+  //! Number of owned edges in the mesh
+  size_t num_owned_edges() const 
+  {
+    return mesh_->num_edges();
+  }
+
+  //! Number of owned nodes in the mesh
+  size_t num_owned_nodes() const 
+  {
+    return mesh_->num_vertices();
+  }
+
   //! Number of ghost cells in the mesh
-  int num_ghost_cells() const {
+  size_t num_ghost_cells() const 
+  {
     return 0;
   }
 
-  // NOTE: I don't know where to get the ghosts yet, so setting this to 0.
   //! Number of ghost faces in the mesh
-  int num_ghost_faces() const {
+  size_t num_ghost_faces() const 
+  {
     return 0;
   }
 
-  // NOTE: I don't know where to get the ghosts yet, so setting this to 0.
   //! Number of ghost nodes in the mesh
-  int num_ghost_nodes() const {
+  size_t num_ghost_nodes() const 
+  {
     return 0;
   }
 
   //! Number of items of given entity
-  int num_entities(Entity_kind const entity, Entity_type const etype=Entity_type::ALL) const {
+  //! \param [in] entity  The enumerated entity of interest
+  //! \param [in] entity_type   The type of entity information (ghost, shared, 
+  //!   all, etc...) 
+  size_t num_entities(
+    entity_kind_t entity, 
+    entity_type_t entity_type = entity_type_t::ALL
+  ) const 
+  {
     switch(entity) {
-      case NODE :
-        return flecsi_mesh_.num_vertices();
+      case entity_kind_t::NODE :
+        return num_owned_nodes();
+      case entity_kind_t::EDGE :
+        return num_owned_edges();
+      case entity_kind_t::FACE :
+        return num_owned_faces();
+      case entity_kind_t::CELL :
+        return num_owned_cells();
+      case entity_kind_t::WEDGE :
+        return mesh_->num_wedges();
         break;
-      case EDGE :
-        return flecsi_mesh_.num_edges();
-        break;
-        // This case does not work in FleCSI because only 2d is implemented and
-        // a 2d face is an edge
-      /* case FACE : */
-      /*   return flecsi_mesh_.num_faces(); */
-      /*   break; */
-      case CELL :
-        return flecsi_mesh_.num_cells();
-        break;
-      case WEDGE :
-        return flecsi_mesh_.num_wedges();
-        break;
-      case CORNER :
-        return flecsi_mesh_.num_corners();
-        break;
+      case entity_kind_t::CORNER :
+        return mesh_->num_corners();
       default :
-        assert(false && "Error: invalid entity request in num_entities");
+        //raise_runtime_error("Unknown entity type");
+        std::cerr<<"Unknown entity type\n";
+        return 0;
     }
   }
 
-  //! Iterators on mesh entity - begin
-  counting_iterator begin(Entity_kind const entity,
-                          Entity_type const etype = Entity_type::ALL) const {
+  //! The begin iterator for iterating over mesh entities.
+  //! \param [in] entity  The enumerated entity of interest
+  //! \param [in] entity_type   The type of entity information (ghost, shared, 
+  //!   all, etc...) 
+  auto begin(
+    entity_kind_t entity,
+    entity_type_t entity_type = entity_type_t::ALL
+  ) const 
+  {
     int start_index = 0;
-    return make_counting_iterator(start_index);
+    return Tangram::make_counting_iterator(start_index);
   }
 
-  //! Iterator on mesh entity - end
-  counting_iterator end(Entity_kind const entity,
-                        Entity_type const etype=Entity_type::ALL) const {
-    int start_index = 0;
-    return (make_counting_iterator(start_index) + num_entities(entity, etype));
+  //! The end Iterator for iterating over mesh entities.
+  //! \param [in] entity  The enumerated entity of interest
+  //! \param [in] entity_type   The type of entity information (ghost, shared, 
+  //!   all, etc...) 
+  auto end(
+    entity_kind_t entity,
+    entity_type_t entity_type = entity_type_t::ALL
+  ) const 
+  {
+    return begin(entity, entity_type) + num_entities(entity, entity_type);
   }
 
   //! Get list of nodes for a cell
-  void cell_get_nodes(int cellid, std::vector<int> *nodes) const {
-    auto thisCell = flecsi_mesh_.cells()[cellid];
+  //! \param [in] cell_id  The id of the cell
+  //! \param [in,out] nodes  The list of nodes to populate
+  template< typename T >
+  void cell_get_nodes(size_t cell_id, std::vector<T> * nodes) const 
+  {
+    auto c = cells_[cell_id];
     nodes->clear();
-    for (auto v : flecsi_mesh_.vertices(thisCell))
-      nodes->emplace_back(v.global_id());
+    for (auto v : mesh_->vertices(c))
+      nodes->emplace_back( v.id() );
   }
 
+
+
   //! Get cell faces and the directions in which they are used
-  void cell_get_faces_and_dirs(int const cellid, std::vector<int> *cfaces,
-                               std::vector<int> *cfdirs) const {
-
-    // Do nothing - faces not represented in 2D flecsi
-    
-    cfaces->clear();
-    cfdirs->clear();
-
+  //! \param [in] cell_id  The id of the cell in question
+  //! \param [in,out] faces  The list of cell faces to populate
+  //! \param [in,out] face_dirs  The list of face directions to populate
+  template< typename T >
+  void cell_get_faces_and_dirs(
+    size_t cell_id, 
+    std::vector<T> *faces,
+    std::vector<T> *face_dirs
+  ) const 
+  {
+    faces->clear();
+    face_dirs->clear();
+    auto c = cells_[cell_id];
+    for (auto f : mesh_->faces(c)) {
+      faces->emplace_back( f.id() );
+      face_dirs->emplace_back( mesh_->cells(f)[0] == c ? 1 : -1 );
+    }
   }
 
   //! Get nodes of a face
-  void face_get_nodes(int const faceid, std::vector<int> *fnodes) const {
-    // Do nothing - faces not represented in 2D flecsi
-
-    fnodes->clear();
+  //! \param [in] face_id  The id of the face in question
+  //! \param [in,out] nodes  The list of face nodes to populate
+  template< typename T >
+  void face_get_nodes(
+    size_t face_id, 
+    std::vector<T> *nodes
+  ) const 
+  {
+    auto f = faces_[face_id];
+    nodes->clear();
+    for (auto v : mesh_->vertices(f))
+      nodes->emplace_back( v.id() );
+    //std::reverse( nodes->begin(), nodes->end() );
   }
 
-  //! Get node connected neighbors of cell
-  void cell_get_node_adj_cells(int const cellid,
-                               Entity_type const ptype,
-                               std::vector<int> *adjcells) const {
-    // I think this is supposed to work, but doesn't:
-    // flecsi_mesh_.cells(mycell);
-    auto thisCell = flecsi_mesh_.cells()[cellid];
-    adjcells->clear();
-    // Loop over all nodes of this cell
-    for (auto node : flecsi_mesh_.vertices(thisCell)) {
-      // Loop over all cells associated with this node
-      for (auto cell : flecsi_mesh_.cells(node)) {
-        if (cell != thisCell)
-          adjcells->emplace_back(cell.global_id());
-      }
-    }
-  }
-
-  //! @brief Get "adjacent" nodes of given node
+  //! \brief Get connected cells of given node
   //!
-  //! Get "adjacent" nodes of given node - nodes that share a common
-  //! cell with given node
-  void node_get_cell_adj_nodes(int const nodeid,
-                               Entity_type const ptype,
-                               std::vector<int> *adjnodes) const {
-    auto thisNode = flecsi_mesh_.vertices()[nodeid];
-    adjnodes->clear();
-    // Loop over cells associated with this node
-    for (auto cell : flecsi_mesh_.cells(thisNode)) {
-      // Loop over nodes of this cell
-      for (auto node : flecsi_mesh_.vertices(cell)) {
-        if (thisNode != node)
-          adjnodes->emplace_back(node.global_id());
-      }
-    }
+  //! Get connected cells of given node 
+  //!
+  //! \param [in] node_id  The node index
+  //! \param [in] type  The type of indexes to include (ghost, shared, 
+  //!   all, etc...) 
+  //! \param [in,out] adj_cells  The list of cell neighbors to populate
+  //!
+  //!  NOTE: For now we are not distinguishing between parallel types
+  template< typename T >
+  void node_get_cells(
+    size_t node_id,
+    entity_type_t type,
+    std::vector<T> *adj_cells
+  ) const 
+  {
+    adj_cells->clear();
+    auto this_node = vertices_[node_id];
+    for (auto cell : mesh_->cells(this_node))
+      adj_cells->emplace_back(cell.id());
   }
 
   //! @brief Get adjacent "dual cells" of a given "dual cell"
-  void dual_cell_get_node_adj_cells(int const nodeid,
-                                    Entity_type const ptype,
-                                    std::vector<int> *adjnodes) const {
-    auto thisNode = flecsi_mesh_.vertices()[nodeid];
-    adjnodes->clear();
+  //!
+  //! \param [in] node_id  The node index
+  //! \param [in] type  The type of indexes to include (ghost, shared, 
+  //!   all, etc...) 
+  //! \param [in,out] adj_nodes  The list of node neighbors to populate
+  template < typename T >
+  void dual_cell_get_node_adj_cells(
+    size_t node_id,
+    entity_type_t const type,
+    std::vector<T> *adj_nodes
+  ) const 
+  {
+    auto this_node = vertices_[node_id];
+    adj_nodes->clear();
     // Loop over cells associated with this node
-    for (auto cell : flecsi_mesh_.cells(thisNode)) {
+    for (auto cell : mesh_->cells(this_node)) {
       // Loop over the nodes associated with this cell
-      for (auto node : flecsi_mesh_.vertices(cell)) {
-        if (thisNode != node)
-          adjnodes->emplace_back(node.global_id());
+      for (auto node : mesh_->vertices(cell)) {
+        if (this_node != node)
+         {
+          adj_nodes->emplace_back(node.id());
+         }
       }
     }
   }
 
-  /*!
-    @brief Templated version of coords of a node
-    @tparam D The dimension of the mesh.
-    @param[in] nodeid The ID of the node.
-    @param[in,out] pp The Portage::Point object containing the coordinate
-    information.
 
-    Note: FleCSI Burton specialization doesn't currently fully support 1 or 3D.
-  */
-  template <long D>
-  void node_get_coordinates(int const nodeid, Portage::Point<D>* pp) const {
-    auto thisVert = flecsi_mesh_.vertices()[nodeid];
-    *pp = toPortagePoint<D>(thisVert->coordinates());
+
+  //!  \brief Get the coords of a node
+  //!  \param[in] node_id The ID of the node.
+  //!  \param[in,out] pp The Tangram::Point object containing the coordinate
+  //!    information.
+  //!
+  //!  \remark FleCSI Burton specialization doesn't currently fully support 1D.
+  void node_get_coordinates(
+    size_t node_id, 
+    point_1d_t * pp
+  ) const 
+  {
+    auto v = vertices_[node_id];
+    *pp = tangram::make_1d_point( v->coordinates() );
+  }
+
+  void node_get_coordinates(
+    size_t node_id, 
+    point_2d_t * pp
+  ) const 
+  {
+    auto v = vertices_[node_id];
+    *pp = tangram::make_2d_point( v->coordinates() );
+  }
+
+  void node_get_coordinates(
+    size_t node_id, 
+    point_3d_t * pp
+  ) const 
+  {
+    auto v = vertices_[node_id];
+    *pp = tangram::make_3d_point( v->coordinates() );
   }
 
 
-  /*!
-    @brief Templated version of coodinates of the nodes of a cell.
-    @tparam D The dimension of the mesh.
-    @param[in] cellid The ID of the cell.
-    @param[in,out] pplist The vector of Portage::Point objects containing the
-    coordinates of a node.  The length of the vector is equal to the number of
-    nodes in the cell with ID @c cellid.
-
-    Note: FleCSI Burton specialization doesn't currently fully support 1 or 3D.
-  */
-  template <long D>
-  void cell_get_coordinates(int const cellid,
-                            std::vector<Portage::Point<D>> *pplist)  const {
+  //! \brief Get the coodinates of the nodes of a cell.
+  //! \param[in] cell_id The ID of the cell.
+  //! \param[in,out] point_list The vector of Tangram::Point objects containing
+  //!   the coordinates of a node.  The length of the vector is equal to the 
+  //!   number of nodes in the cell with ID @c cellid.
+  //! \remark FleCSI Burton specialization doesn't currently fully support 1D.
+  void cell_get_coordinates(
+    size_t const cell_id,
+    std::vector<point_t> *point_list
+  )  const 
+  {
     // Get this cell object
-    auto thisCell = flecsi_mesh_.cells()[cellid];
+    auto cell = cells_[cell_id];
 
     // Loop over vertices of this cell to get their coordinates
-    pplist->clear();
-    auto theseVerts = flecsi_mesh_.vertices(thisCell);
-    for (auto v : theseVerts)
-      pplist->emplace_back(toPortagePoint<D>(v->coordinates()));
+    point_list->clear();
+    auto verts = mesh_->vertices(cell);
+    for (auto v : verts)
+      point_list->emplace_back( tangram::make_point(v->coordinates()) );
+  }
+
+  //! \brief 2D version of coords of nodes of a dual cell
+  //! \param[in] node_id The ID of the node or dual cell in the dual mesh.
+  //! \param[in,out] pplist The vector of Tangram::Point objects containing the
+  //!   coordinates of a node in the dual mesh / cell in the regular mesh.  The
+  //!   length of the vector is equal to the number of nodes in the dual mesh
+  //!   cell with ID @c nodeid.
+  //!  
+  //! The vertices are ordered CCW. For node @c nodeid not on a
+  //! boundary, the vector @c pplist starts with a random vertex, but it is 
+  //! still ordered CCW. Use the dual_cell_coordinates_canonical_rotation() 
+  //! function to rotate the @c pplist into a canonical (unique) form.
+  //! 
+  //! \todo worry about boundary cases
+  void dual_cell_get_coordinates(
+    size_t node_id,
+    std::vector<point_t> *point_list
+  ) const
+  {
+    //raise_implemented_error("dual_cell_get_coordinates not implemented yet!");
+    std::cerr<<"dual_cell_get_coordinates not implemented yet!\n";
+  }
+
+  //! \brief Centroid of a cell.
+  //! \param[in]  cell_id The ID of the cell.
+  //! \param[in,out] centroid The vector of coordinates of the cell @c cellid's
+  //!   centroid.  The length of the vector is equal to the dimension of the 
+  //!    mesh.
+  void cell_centroid(
+    size_t cell_id,
+    point_t * centroid
+  ) const 
+  {
+    auto this_cell = cells_[cell_id];
+    *centroid = tangram::make_point(this_cell->centroid());
+  }
+
+  //! \brief Centroid of a dual cell.
+  //! \param[in] node_id The ID of the node in the normal mesh / cell in the 
+  //!   dual mesh.
+  //! \param[in,out] centroid The vector of coordinates of the node in the 
+  //!   normal mesh / the cell in the dual mesh with ID @c nodeid.  The length 
+  //!   of the vector is equal to the dimension of the mesh.
+  //!
+  //! \todo NOTE: THIS IS ASSUMED TO BE THE NODE COORDINATE BECAUSE
+  //!   THE NODAL VARIABLES LIVE THERE, BUT FOR DISTORTED GRIDS, THE
+  //!   NODE COORDINATED MAY NOT BE THE CENTROID OF THE DUAL CELL
+  void dual_cell_centroid(
+    size_t node_id,
+    point_t *centroid) const 
+  {
+    auto this_node = vertices_[node_id];
+    *centroid = tangram::make_point(this_node->coordinates());
   }
 
 
-  /*!
-    @brief 2D version of coords of nodes of a dual cell
-    @param[in] nodeid The ID of the node or dual cell in the dual mesh.
-    @param[in,out] pplist The vector of Portage::Point objects containing the
-    coordinates of a node in the dual mesh / cell in the regular mesh.  The
-    length of the vector is equal to the number of nodes in the dual mesh cell
-    with ID @c nodeid.
+  //============================================================================
+  // Public Members Required By Tangram
+  // These are only needed in 3D
+  //============================================================================
 
-    The vertices are ordered CCW. For node @c nodeid not on a
-    boundary, the vector @c pplist starts with a random vertex, but it is still
-    ordered CCW. Use the dual_cell_coordinates_canonical_rotation() function to
-    rotate the @c pplist into a canonical (unique) form.
-
-    @TODO worry about boundary cases
-  */
-  void dual_cell_get_coordinates(int const nodeid,
-                                 std::vector<Portage::Point2 > *pplist) const {
-    assert(space_dimension() == 2);
-    auto thisNode = flecsi_mesh_.vertices()[nodeid];
-    pplist->clear();
-    // Loop over the corners associated with this node
-    for (auto corner : flecsi_mesh_.corners(thisNode)) {
-      std::vector<int> wedgeIds;
-      // The two wedges in this corner
-      for (auto wedge : flecsi_mesh_.wedges(corner))
-        wedgeIds.emplace_back(wedge.global_id());
-      order_wedges_ccw(&wedgeIds);
-      // Get the coordinates of each wedgeId, given the new ordering
-      for (auto wId : wedgeIds) {
-        auto w = flecsi_mesh_.wedges()[wId];
-        // push back centroid and then edge midpoint
-        auto cc = w->cell()->centroid();
-        pplist->emplace_back(toPortagePoint<2>(cc));//cc[0], cc[1]);
-        auto nc = w->edge()->midpoint();
-        pplist->emplace_back(toPortagePoint<2>(nc));//nc[0], nc[1]);
-      }
-    }
+  //! \brief Get the type of the cell - PARALLEL_OWNED or PARALLEL_GHOST
+  //!
+  //! Assumes a 1-1 correspondence between integer values of the
+  //! enum types to avoid switch statements
+  //! 
+  //! \param [in] cell_id  The index of the cell in question.
+  //!
+  //! NOTE: Currently FleCSI is not exposing this info
+  auto cell_get_type(size_t cell_id) const 
+  {
+    return entity_type_t::PARALLEL_OWNED;
   }
 
-  void order_wedges_ccw(std::vector<int> *wedgeids) const {
-    assert(wedgeids->size() == 2);
-    auto firstWedge = flecsi_mesh_.wedges()[(*wedgeids)[0]];
-    // NOTE: This mimics the order of Jali in 2d: node, face/edge, cell
-    std::vector<Portage::Point2> wcoords;
-    auto nc = firstWedge->vertex()->coordinates();
-    wcoords.emplace_back(nc[0], nc[1]);
-    auto ec = firstWedge->edge()->midpoint();
-    wcoords.emplace_back(ec[0], ec[1]);
-    auto cc = firstWedge->cell()->centroid();
-    wcoords.emplace_back(cc[0], cc[1]);
+  //! Get the element type of a cell - TRI, QUAD, POLYGON, TET, HEX,
+  //! PRISM OR POLYHEDRON
 
-    // Ensure (*wedgeids)[0] is the first wedge in a CCW direction
-    if (not ccw(wcoords[0], wcoords[1], wcoords[2]))
-      std::swap((*wedgeids)[0], (*wedgeids)[1]);
+  //! \brief Get the element type of a cell
+  //!
+  //! Can be one of: TRI, QUAD, POLYGON, TET, HEX,
+  //!   PRISM OR POLYHEDRON.
+  //! 
+  //! \param [in] cell_id  The index of the cell in question.
+  auto cell_get_element_type(size_t cell_id) const 
+  {
+    // search for the type in the map
+    /*auto tp = cells_[cell_id]->type();
+    auto it = shapes_to_tangram.find( tp );
+    // if it was found, return the mapped type
+    if ( it != shapes_to_tangram.end() )
+      return it->second;
+    // otherwise we dont know what it is
+    return element_type_t::UNKNOWN_TOPOLOGY;*/
+ 
+    auto this_cell = cells_[cell_id];
+    auto conn = mesh_->vertices(this_cell);
+    if (conn.size() == 8)
+       return element_type_t::HEX;
+    else
+      return element_type_t::UNKNOWN_TOPOLOGY;
   }
 
-  // Returns true if the three 2D points (p1, p2, p3) are a counter-clockwise
-  // turn, otherwise returns false (corresponding to clockwise or collinear)
-  bool ccw(const Portage::Point2 p1,
-           const Portage::Point2 p2,
-           const Portage::Point2 p3) const {
-    return (p2[0]-p1[0])*(p3[1]-p1[1]) - (p2[1]-p1[1])*(p3[0]-p1[0]) > 0;
-  }
-
-  std::vector<Portage::Point2> cellToXY(int const cellID) const {
-    std::vector<Portage::Point2> cellPoints;
-    cell_get_coordinates(cellID, &cellPoints);
-    return cellPoints;
-  }
-
-  // NOTE: This ASSUMES 3D - the "3" is for the 3 coordinates of a spatial point
-  // and the "4" is for the four points that make up a wedge (tet) in 3d
-  // NOTE: FleCSI doesn't have 3D yet!!!
-  void wedges_get_coordinates(int const cellID,
-                              std::vector<std::array<Portage::Point3, 4>>
-                              *wcoords) const {
-    assert(space_dimension() == 3);
-
-    assert(false && "FleCSI 3D not implemented");
-  }
-
-  // Get the simplest possible decomposition of a 3D cell into tets.
-  // NOTE: FleCSI doesn't have 3D yet!!!
-  void decompose_cell_into_tets(int const cellID,
-                                std::vector<std::array<Portage::Point3, 4>>
-                                *tcoords, const bool planar_hex) const {
-    assert(space_dimension() == 3);
-
-    assert(false && "FleCSI 3D not implemented");
-  }
-
-  // NOTE: FleCSI doesn't have 3D yet!!!
-  //! 3D version of coords of nodes of a dual cell
-  // Input is the node ID 'nodeid', and it returns the vertex coordinates of
-  // the dual cell around this node in `pplist`.  The vertices are NOT ordered
-  // in any particular way
-  void dual_cell_get_coordinates(int const nodeid,
-        			 std::vector<Portage::Point3> *pplist) const {
-    assert(space_dimension() == 3);
-
-    assert(false && "FleCSI 3D not implemented");
-  }
-
-  // NOTE: This ASSUMES 3D - the "3" is for the 3 coordinates of a spatial point
-  // and the "4" is for the four points that make up a wedge (tet) in 3d
-  // NOTE: FleCSI doesn't have 3D yet!!!
-  // Get the coordinates of the wedges of the dual mesh
-  void dual_wedges_get_coordinates(int const nodeID,
-                                   std::vector<std::array<Portage::Point3, 4>>
-                                   *wcoords) const {
-    assert(space_dimension() == 3);
-
-    assert(false && "FleCSI 3D not implemented yet");
-  }
-
-
-  /*!
-    @brief Centroid of a cell.
-    @param[in] cellid The ID of the cell.
-    @param[in,out] centroid The vector of coordinates of the cell @c cellid's
-    centroid.  The length of the vector is equal to the dimension of the mesh.
-  */
-
-  template<long D>
-  void cell_centroid(int const cellid,
-                     Point<D> *centroid) const {
-    auto thisCell = flecsi_mesh_.cells()[cellid];
-    *centroid = toPortagePoint<D>(thisCell->centroid());
+  //! \brief Get the type of the node - PARALLEL_OWNED or PARALLEL_GHOST
+  //!
+  //! Assumes a 1-1 correspondence between integer values of the
+  //! enum types to avoid switch statements
+  //! 
+  //! \param [in] cell_id  The index of the node in question.
+  //!
+  //! NOTE: Currently FleCSI is not exposing this info
+  auto node_get_type(size_t node_id) const 
+  {
+    return entity_type_t::PARALLEL_OWNED;
   }
 
   //! Get global id
-  int get_global_id(int const id, Entity_kind const kind) const {
-    return id;
+  int get_global_id(size_t id, entity_kind_t const kind) const
+  {
+    std::cerr<<"get_global_id not implemented yet!\n";  
+    return 0;
+  }  
+
+  /*int get_global_id(size_t id, entity_kind_t const kind) const
+  {
+     if (kind == entity_kind_t::NODE)
+     {
+       auto ent = vertices_[id];
+       auto gid = ent.global_id();
+       return gid.global();
+     }    
+     else if (kind == entity_kind_t::CELL)
+     { 
+       auto ent = cells_[id];
+       auto gid = ent.global_id();
+       return gid.global();
+     }
+     else
+       return 0; 
+  }*/
+
+  //============================================================================
+  // Private Members
+  //============================================================================
+
+private:
+
+  //! \brief a pointer to the mesh
+  const mesh_t * mesh_ = nullptr;
+  //! \brief the list of cells
+  decltype( mesh_->cells() ) cells_;
+  //! \brief the list of faces
+  decltype( mesh_->faces() ) faces_;
+  //! \brief the list of veritices
+  decltype( mesh_->vertices() ) vertices_;
+
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Static Initialization
+////////////////////////////////////////////////////////////////////////////////
+
+/*template< typename M >
+const typename tangram_mesh_t<M>::shape_map_t 
+  tangram_mesh_t<M>::shapes_to_tangram = 
+{ 
+  { 
+    shape_t::triangle, 
+    element_type_t::TRI 
+  },
+  { 
+    shape_t::quadrilateral, 
+    element_type_t::QUAD 
+  },
+  { 
+    shape_t::polygon, 
+    element_type_t::POLYGON 
+  },
+  { 
+    shape_t::tetrahedron, 
+    element_type_t::TET
+  },
+  { 
+    shape_t::hexahedron, 
+    element_type_t::HEX 
+  },
+  { 
+    shape_t::polyhedron, 
+    element_type_t::POLYHEDRON 
   }
+};*/
 
-  /*!
-    @brief Centroid of a dual cell.
-    @param[in] nodeid The ID of the node in the normal mesh / cell in the dual
-    mesh.
-    @param[in,out] centroid The vector of coordinates of the node in the normal
-    mesh / the cell in the dual mesh with ID @c nodeid.  The length of the
-    vector is equal to the dimension of the mesh.
 
-    @TODO NOTE: THIS IS ASSUMED TO BE THE NODE COORDINATE BECAUSE
-    THE NODAL VARIABLES LIVE THERE, BUT FOR DISTORTED GRIDS, THE
-    NODE COORDINATED MAY NOT BE THE CENTROID OF THE DUAL CELL
-   */
-  template<long D>
-  void dual_cell_centroid(int const nodeid,
-                          Point<D> *centroid) const {
-    auto thisNode = flecsi_mesh_.vertices()[nodeid];
-    *centroid = toPortagePoint<D>(thisNode->coordinates());
-  }
+//} // namespace
 
- private:
-  mesh_t & flecsi_mesh_;
-
-};  // class Flecsi_Mesh_Wrapper
-
-}  // end namespace Portage
-
-#endif  // FLECSI_MESH_WRAPPER_H_
