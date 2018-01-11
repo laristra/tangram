@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # TODO - error checking on args
 fname = sys.argv[1]
 # the first two lines are diagnostics
-data = np.loadtxt(fname, skiprows=2, usecols = (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24))
+data = np.loadtxt(fname, skiprows=2, usecols = range(25))
 # to color the polygons
 colors = ['y','b','g','c','m']
 fig = plt.figure()
