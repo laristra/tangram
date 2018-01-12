@@ -24,9 +24,9 @@ The resulting python plot is named [filename2].png
 Example: 
 --------
 
-/../../build/bin/demoapp3d 3d_diamond_6x6x6_vfracs.txt > 3ddiamondout.txt
+./../../build/bin/demoapp3d 3d_diamond_6x6x6_vfracs.txt > 3ddiamondout.txt
 or  
-/../../build/bin/demoapp3d > 3ddiamondout.txt
+./../../build/bin/demoapp3d > 3ddiamondout.txt
 (this version uses 3d_diamond_6x6x6_vfracs.txt as the default for [filename1])
 
 python plot.py 3ddiamondout.txt
