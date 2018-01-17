@@ -401,24 +401,24 @@ TEST(CellMatPoly, Mesh3D) {
   
   // Extract matpoly 1 as a MatPoly object
   {
-    Tangram::MatPoly<3> MatPoly1 = cellmatpoly.get_matpoly(1);
+    Tangram::MatPoly<3> MatPoly1 = cellmatpoly.get_ith_matpoly(1);
     
     //Verify material ID
     ASSERT_EQ(1, MatPoly1.mat_id());
     
     //Verify coordinates
     std::vector<int> exp_vrt_id = {0, 1, 2, 3, 5, 4};
-    const std::vector<Tangram::Point3>& matpoly_points = MatPoly1.matpoly_points();
-    ASSERT_EQ(6, MatPoly1.nvertices());
+    const std::vector<Tangram::Point3>& matpoly_points = MatPoly1.points();
+    ASSERT_EQ(6, MatPoly1.num_vertices());
     for (int ivrt = 0; ivrt < 6; ivrt++)
       ASSERT_TRUE(approxEq(points1[exp_vrt_id[ivrt]], matpoly_points[ivrt], 1.0e-15));
     
     //Verify faces
     std::vector<std::vector<int>> exp_face_vrts = {
       {0, 1, 2}, {3, 4, 5}, {0, 3, 5, 1}, {1, 5, 4, 2}, {2, 4, 3, 0} };
-    ASSERT_EQ(5, MatPoly1.nfaces());
+    ASSERT_EQ(5, MatPoly1.num_faces());
     for (int iface = 0; iface < 5; iface++) {
-      const std::vector<int>& face_vertices = MatPoly1.face_vertices(iface);      
+      const std::vector<int>& face_vertices = MatPoly1.face_vertices(iface);
       ASSERT_EQ(exp_face_vrts[iface].size(), face_vertices.size());
       for (int ivrt = 0; ivrt < exp_face_vrts[iface].size(); ivrt++)
         ASSERT_EQ(exp_face_vrts[iface][ivrt], face_vertices[ivrt]);

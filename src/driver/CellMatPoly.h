@@ -370,7 +370,7 @@ class CellMatPoly {
    @param matpoly_id  ID of the material poly
    @return  Corresponding MatPoly object
   */
-  MatPoly<D> get_matpoly(int matpoly_id) const;
+  MatPoly<D> get_ith_matpoly(int matpoly_id) const;
   
   /*!
    @brief Extracts all polys containing a particular material
@@ -379,11 +379,11 @@ class CellMatPoly {
    @return  Vector of MatPoly objects containing that material,
             vector is empty if no polys with that material are present
   */
-  std::vector<MatPoly<D>> get_polys_by_mat_id(int mat_id) const {
+  std::vector<MatPoly<D>> get_matpolys(int mat_id) const {
     std::vector<MatPoly<D>> mat_polys;
     for (int ipoly = 0; ipoly < num_matpolys_; ipoly++) {
       if (materialids_[ipoly] == mat_id)
-        mat_polys.push_back(get_matpoly(ipoly));
+        mat_polys.push_back(get_ith_matpoly(ipoly));
     }
     return mat_polys;
   }
@@ -862,7 +862,7 @@ void CellMatPoly<D>::add_matpoly(int matid,
    @return  Corresponding MatPoly object
   */
   template<>
-  MatPoly<2> CellMatPoly<2>::get_matpoly(int matpoly_id) const {
+  MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
 #ifdef DEBUG
     assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
 #endif
@@ -879,7 +879,7 @@ void CellMatPoly<D>::add_matpoly(int matid,
    @return  Corresponding MatPoly object
   */
   template<>
-  MatPoly<3> CellMatPoly<3>::get_matpoly(int matpoly_id) const {
+  MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
 #ifdef DEBUG
     assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
 #endif

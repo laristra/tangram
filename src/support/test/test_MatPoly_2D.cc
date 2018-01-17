@@ -36,13 +36,13 @@ TEST(MatPoly, Mesh2D) {
   square_matpoly.initialize(square_points);
   
   //Verify coordinates
-  const std::vector<Tangram::Point2>& matpoly_points = square_matpoly.matpoly_points();
-  ASSERT_EQ(square_points.size(), square_matpoly.nvertices());
+  const std::vector<Tangram::Point2>& matpoly_points = square_matpoly.points();
+  ASSERT_EQ(square_points.size(), square_matpoly.num_vertices());
   for (int ivrt = 0; ivrt < square_points.size(); ivrt++)
     ASSERT_TRUE(approxEq(square_points[ivrt], matpoly_points[ivrt], 1.0e-15));
   
   //Verify faces
-  ASSERT_EQ(square_faces.size(), square_matpoly.nfaces());
+  ASSERT_EQ(square_faces.size(), square_matpoly.num_faces());
   for (int iface = 0; iface < square_faces.size(); iface++) {
     const std::vector<int>& face_vertices = square_matpoly.face_vertices(iface);
     ASSERT_EQ(2, face_vertices.size());

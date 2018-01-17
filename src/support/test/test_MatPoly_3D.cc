@@ -34,13 +34,13 @@ TEST(MatPoly, Mesh3D) {
   prism_matpoly.initialize(prism_points, prism_faces);
   
   //Verify coordinates
-  const std::vector<Tangram::Point3>& matpoly_points = prism_matpoly.matpoly_points();
-  ASSERT_EQ(prism_points.size(), prism_matpoly.nvertices());
+  const std::vector<Tangram::Point3>& matpoly_points = prism_matpoly.points();
+  ASSERT_EQ(prism_points.size(), prism_matpoly.num_vertices());
   for (int ivrt = 0; ivrt < prism_points.size(); ivrt++)
     ASSERT_TRUE(approxEq(prism_points[ivrt], matpoly_points[ivrt], 1.0e-15));
   
   //Verify faces
-  ASSERT_EQ(prism_faces.size(), prism_matpoly.nfaces());
+  ASSERT_EQ(prism_faces.size(), prism_matpoly.num_faces());
   for (int iface = 0; iface < prism_faces.size(); iface++) {
     const std::vector<int>& face_vertices = prism_matpoly.face_vertices(iface);
     ASSERT_EQ(prism_faces[iface].size(), face_vertices.size());
@@ -77,14 +77,14 @@ TEST(MatPoly, Mesh3D) {
   //Verify facetization
   //Verify node coordinates
   const std::vector<Tangram::Point3>& faceted_matpoly_points =
-    faceted_prism_matpoly.matpoly_points();
-  ASSERT_EQ(faceted_prism_points.size(), faceted_prism_matpoly.nvertices());
+    faceted_prism_matpoly.points();
+  ASSERT_EQ(faceted_prism_points.size(), faceted_prism_matpoly.num_vertices());
   for (int ivrt = 0; ivrt < faceted_prism_points.size(); ivrt++)
     ASSERT_TRUE(approxEq(faceted_prism_points[ivrt],
                          faceted_matpoly_points[ivrt], 1.0e-15));
   
   //Verify facets
-  ASSERT_EQ(faceted_prism_faces.size(), faceted_prism_matpoly.nfaces());
+  ASSERT_EQ(faceted_prism_faces.size(), faceted_prism_matpoly.num_faces());
   for (int iface = 0; iface < faceted_prism_faces.size(); iface++) {
     const std::vector<int>& face_vertices = faceted_prism_matpoly.face_vertices(iface);
     ASSERT_EQ(faceted_prism_faces[iface].size(), face_vertices.size());

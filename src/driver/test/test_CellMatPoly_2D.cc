@@ -308,14 +308,14 @@ TEST(CellMatPoly, Mesh2D) {
   
   // Extract matpoly 1 as a MatPoly object
   {
-    Tangram::MatPoly<2> MatPoly1 = cellmatpoly.get_matpoly(1);
+    Tangram::MatPoly<2> MatPoly1 = cellmatpoly.get_ith_matpoly(1);
     
     //Verify material ID
     ASSERT_EQ(1, MatPoly1.mat_id());
     
     //Verify vertices
-    const std::vector<Tangram::Point2>& matpoly_points = MatPoly1.matpoly_points();
-    ASSERT_EQ(3, MatPoly1.nvertices());
+    const std::vector<Tangram::Point2>& matpoly_points = MatPoly1.points();
+    ASSERT_EQ(3, MatPoly1.num_vertices());
     for (int ivrt = 0; ivrt < 3; ivrt++)
       ASSERT_TRUE(approxEq(points1[ivrt], matpoly_points[ivrt], 1.0e-15));
     
@@ -323,7 +323,7 @@ TEST(CellMatPoly, Mesh2D) {
       {0, 1}, {1, 2}, {2, 0} };
     
     //Verify faces
-    ASSERT_EQ(3, MatPoly1.nfaces());
+    ASSERT_EQ(3, MatPoly1.num_faces());
     for (int iface = 0; iface < 3; iface++) {
       const std::vector<int>& face_vertices = MatPoly1.face_vertices(iface);
       ASSERT_EQ(2, face_vertices.size());

@@ -82,7 +82,7 @@ class MatPoly {
    @brief Points for all the vertices of the material poly
    @return  Vector of points of matpoly
   */
-  const std::vector< Point<D> >& matpoly_points() const { return vertex_points_; }
+  const std::vector< Point<D> >& points() const { return vertex_points_; }
 
   /*!
    @brief Indices of vertices of the material poly's face
@@ -138,12 +138,12 @@ class MatPoly {
    @brief Number of material poly's vertices
    @return  Number of vertices
   */
-  int nvertices() const { return nvertices_; }
+  int num_vertices() const { return nvertices_; }
   /*!
    @brief Number of material poly's faces
    @return  Number of faces
   */
-  int nfaces() const { return nfaces_; }
+  int num_faces() const { return nfaces_; }
  private:
 
   int material_id_;  // material ID of this matpoly
