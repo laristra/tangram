@@ -39,8 +39,8 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SRC_RECONSTRUCT_SLIC_H_
-#define SRC_RECONSTRUCT_SLIC_H_
+#ifndef TANGRAM_SLIC_H_
+#define TANGRAM_SLIC_H_
 
 #include <vector>
 #include <algorithm>
@@ -203,4 +203,4 @@ namespace Tangram {
 }  // namespace Tangram
 
 
-#endif  // SRC_RECONSTRUCT_SLIC_H_
+#endif  // TANGRAM_SLIC_H_

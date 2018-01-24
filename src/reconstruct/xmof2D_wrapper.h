@@ -39,8 +39,8 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef xmof2D_h
-#define xmof2D_h
+#ifndef TANGRAM_xmof2D_h
+#define TANGRAM_xmof2D_h
 
 #include <memory>
 #include "xmof2D.h"
@@ -112,7 +112,7 @@ namespace Tangram {
       for (int iface = 0; iface < nfaces; iface++) {
         if (mesh_cfg.ifaces_out_cells[iface] == -1) {
           std::vector<int> fcells;
-          mesh_.face_get_cells(iface, &fcells);
+          mesh_.face_get_cells(iface, Tangram::Entity_type::ALL, &fcells);
           assert(fcells.size() == 1);
           mesh_cfg.ifaces_out_cells[iface] = fcells[0];
           std::reverse(mesh_cfg.ifaces_nodes[iface].begin(), mesh_cfg.ifaces_nodes[iface].end());
@@ -253,4 +253,4 @@ namespace Tangram {
   }; // class XMOF2D_Wrapper
 }  // namespace Tangram
 
-#endif /* xmof2D_h */
+#endif /* TANGRAM_xmof2D_h */

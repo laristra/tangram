@@ -50,6 +50,7 @@ set(support_HEADERS
     Vector.h
     Point.h
     Matrix.h
+    MatPoly.h
     PARENT_SCOPE
 )
 
@@ -67,4 +68,13 @@ if (ENABLE_UNIT_TESTS)
     POLICY MPI
     THREADS 1)
 
+  cinch_add_unit(test_MatPoly_2D
+    SOURCES test/test_MatPoly_2D.cc
+    POLICY SERIAL
+    )
+
+  cinch_add_unit(test_MatPoly_3D
+    SOURCES test/test_MatPoly_3D.cc
+    POLICY SERIAL
+    )
 endif(ENABLE_UNIT_TESTS)

@@ -54,8 +54,8 @@ POSSIBILITY OF SUCH DAMAGE.
 // Modified for Portage/Tangram by: Rao Garimella, rao@lanl.gov              //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef SRC_SUPPORT_VECTOR_H_
-#define SRC_SUPPORT_VECTOR_H_
+#ifndef TANGRAM_VECTOR_H_
+#define TANGRAM_VECTOR_H_
 
 #include <math.h>
 #include <assert.h>
@@ -298,4 +298,4 @@ inline double MaxComponent(const Vector<D>& v, long& icomp) {
 }  // namespace Tangram
 
 
-#endif  // SRC_SUPPORT_VECTOR_H_
+#endif  // TANGRAM_VECTOR_H_

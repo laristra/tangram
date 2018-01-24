@@ -39,8 +39,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef CELLMATPOLY_H_
-#define CELLMATPOLY_H_
+#ifndef TANGRAM_CELLMATPOLY_H_
+#define TANGRAM_CELLMATPOLY_H_
 
 #include <vector>
 #include <array>
@@ -48,6 +48,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "tangram/support/tangram.h"
 #include "tangram/support/Point.h"
+#include "tangram/support/MatPoly.h"
 
 namespace Tangram {
 
@@ -363,7 +364,30 @@ class CellMatPoly {
                    int const * const faces_point_ids,
                    Entity_kind const * const faces_parentkind,
                    int const * const faces_parentid);
-
+  
+  /*!
+   @brief Extracts material poly as a MatPoly object
+   @param matpoly_id  ID of the material poly
+   @return  Corresponding MatPoly object
+  */
+  MatPoly<D> get_ith_matpoly(int matpoly_id) const;
+  
+  /*!
+   @brief Extracts all polys containing a particular material
+          as a vector of MatPoly objects
+   @param mat_id  ID of the material for material polys to contain
+   @return  Vector of MatPoly objects containing that material,
+            vector is empty if no polys with that material are present
+  */
+  std::vector<MatPoly<D>> get_matpolys(int mat_id) const {
+    std::vector<MatPoly<D>> mat_polys;
+    for (int ipoly = 0; ipoly < num_matpolys_; ipoly++) {
+      if (materialids_[ipoly] == mat_id)
+        mat_polys.push_back(get_ith_matpoly(ipoly));
+    }
+    return mat_polys;
+  }
+  
  private:
   int cellid_ = -1;  // ID of the cell which we are describing
 
@@ -832,7 +856,61 @@ void CellMatPoly<D>::add_matpoly(int matid,
   num_matpolys_++;
 }  // add_matpoly for 3D
 
+  /*!
+   @brief Extracts 2D material polygon as a MatPoly object
+   @param matpoly_id  ID of the material poly
+   @return  Corresponding MatPoly object
+  */
+  template<>
+  MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
+#ifdef DEBUG
+    assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
+#endif
+    std::vector<Point<2>> mp_pts = matpoly_points(matpoly_id);
+    MatPoly<2> matpoly(matpoly_matid(matpoly_id));
+    matpoly.initialize(mp_pts);
+    
+    return matpoly;
+  }
 
+  /*!
+   @brief Extracts 3D material polyhedron as a MatPoly object
+   @param matpoly_id  ID of the material poly
+   @return  Corresponding MatPoly object
+  */
+  template<>
+  MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
+#ifdef DEBUG
+    assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
+#endif
+    const std::vector<int>& mp_vrt_ids = matpoly_vertices(matpoly_id);
+    int nvrts = (int) mp_vrt_ids.size();
+    std::vector<Point<3>> mp_pts;
+    mp_pts.reserve(nvrts);
+    for (int ivrt = 0; ivrt < nvrts; ivrt++)
+      mp_pts.push_back(matvertex_points_[mp_vrt_ids[ivrt]]);
+    
+    const std::vector<int>& mp_faces = matpoly_faces(matpoly_id);
+    int nfaces = (int) mp_faces.size();
+    std::vector<std::vector<int>> mf_vrts(nfaces);
+    for (int iface = 0; iface < nfaces; iface++) {
+      mf_vrts[iface] = matface_vertices(mp_faces[iface]);
+      if (matpoly_facedirs_[matpoly_id][iface] == 0)
+        std::reverse(mf_vrts[iface].begin(), mf_vrts[iface].end());
+      for (int ivrt = 0; ivrt < mf_vrts[iface].size(); ivrt++) {
+        int local_vrt_id = (int) (std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(),
+                                            mf_vrts[iface][ivrt]) -
+                                  mp_vrt_ids.begin());
+        mf_vrts[iface][ivrt] = local_vrt_id;
+      }
+    }
+  
+    MatPoly<3> matpoly(matpoly_matid(matpoly_id));
+    matpoly.initialize(mp_pts, mf_vrts);
+    
+    return matpoly;
+  }
+  
 }  // namespace Tangram
 
-#endif  // CELLMATPOLY_H_
+#endif  // TANGRAM_CELLMATPOLY_H_

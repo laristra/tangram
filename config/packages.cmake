@@ -40,60 +40,49 @@ POSSIBILITY OF SUCH DAMAGE.
 ]]
 
 
-#-----------------------------------------------------------------------------
-# Wonton
-#-----------------------------------------------------------------------------
-# find_package(Wonton, REQUIRED)
-# if(WONTON_FOUND)
-#   include_directories(${WONTON_INCLUDE_DIRS})
-#   link_directories(${WONTON_LIBRARY_DIRS})
-# endif(WONTON_FOUND)
-
-
-
 #------------------------------------------------------------------------------#
 # If we are building with FleCSI, then we need a modern C++ compiler
 #------------------------------------------------------------------------------#
-if(FLECSI_INSTALL_DIR)
-  include(cxx14)
-
-  check_for_cxx14_compiler(CXX14_COMPILER)
-
-#------------------------------------------------------------------------------#
-# If a C++14 compiler is available, then set the appropriate flags
-#------------------------------------------------------------------------------#
-  if(CXX14_COMPILER)
-    enable_cxx14()
-  else()
-    message(FATAL_ERROR "C++14 compatible compiler not found")
+if(ENABLE_FleCSI)
+  # we already checked for CXX14 in project.cmake
+  if(NOT CXX14_COMPILER)
+    message(STATUS "C++14 compatible compiler not found")
   endif()
-
-else()
-  include(cxx11)
-
-  check_for_cxx11_compiler(CXX11_COMPILER)
+endif()
 
 #------------------------------------------------------------------------------#
-# If a C++11 compiler is available, then set the appropriate flags
+# Set up MPI builds
+# (eventually most of this should be pushed down into cinch)
 #------------------------------------------------------------------------------#
-  if(CXX11_COMPILER)
-    enable_cxx11()
-  else()
-    message(FATAL_ERROR "C++11 compatible compiler not found")
-  endif()
-endif(FLECSI_INSTALL_DIR)
-#-----------------------------------------------------------------------------
-# FleCSI location
-#-----------------------------------------------------------------------------
-set(FLECSI_INSTALL_DIR "$ENV{FLECSI_INCLUDE_DIR}" CACHE
-  PATH "Installed FleCSI location.")
-if(FLECSI_INSTALL_DIR)
-  message(STATUS "Using FLECSI_INSTALL_DIR=${FLECSI_INSTALL_DIR}")
-  set(FLECSI_INCLUDE_DIRS ${FLECSI_INSTALL_DIR}/include)
-  set(FLECSI_LIBRARY_DIR ${FLECSI_INSTALL_DIR}/lib)
-  set(FLECSI_LIBRARIES ${FLECSI_LIBRARY_DIR}/libflecsi.a)
+if (ENABLE_MPI)
+  find_package(MPI REQUIRED)
 
-  include_directories(${FLECSI_INCLUDE_DIRS})
+# TODO:  Modify the below to use wrapper compilers instead of flags
+#        (there isn't an obvious good way to do this)
+  add_definitions(${MPI_CXX_COMPILE_FLAGS})
+  include_directories(${MPI_CXX_INCLUDE_PATH})
+  link_directories(${MPI_CXX_LIBRARY_DIRS})
+endif ()
+
+
+set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
+
+#-----------------------------------------------------------------------------
+# FleCSI and FleCSI-SP location
+#-----------------------------------------------------------------------------
+
+set(ENABLE_FleCSI FALSE CACHE BOOL "Use FleCSI")
+if (ENABLE_FleCSI)
+ 
+ find_package(FleCSI REQUIRED)
+ message(STATUS "FleCSI_LIBRARIES=${FleCSI_LIBRARIES}" )
+ include_directories(${FleCSI_INCLUDE_DIR})
+ message(STATUS "FleCSI_INCLUDE_DIRS=${FleCSI_INCLUDE_DIR}")
+
+ find_package(FleCSISP REQUIRED)
+ message(STATUS "FleCSISP_LIBRARIES=${FleCSISP_LIBRARIES}" )
+ include_directories(${FleCSISP_INCLUDE_DIR})
+ message(STATUS "FleCSISP_INCLUDE_DIRS=${FleCSISP_INCLUDE_DIR}")
 
   ######################################################################
   # This is a placeholder for how we would do IO with FleCSI
@@ -126,7 +115,7 @@ if(FLECSI_INSTALL_DIR)
   #   endif(EXODUS_LIBRARY AND EXODUS_INCLUDE_DIR)
 
   # endif(IS_DIRECTORY ${FLECSI_TPL_DIR})
-endif(FLECSI_INSTALL_DIR)
+endif()
 
 
 
@@ -135,7 +124,7 @@ endif(FLECSI_INSTALL_DIR)
 # (this includes the TPLs that Jali will need)
 #------------------------------------------------------------------------------#
 
-if (Jali_DIR)
+#if (Jali_DIR)    # NOT OPTIONAL IN THIS VERSION
 
    # Look for the Jali package
 
@@ -161,7 +150,7 @@ if (Jali_DIR)
 
    include_directories(${Jali_INCLUDE_DIRS} ${Jali_TPL_INCLUDE_DIRS})
 
-endif (Jali_DIR)
+#endif (Jali_DIR)
 
 #------------------------------------------------------------------------------#
 # Configure XMOF2D

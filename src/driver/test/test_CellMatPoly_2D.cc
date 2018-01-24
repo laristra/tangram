@@ -48,8 +48,9 @@
 #include "MeshFactory.hh"
 
 #include "tangram/support/tangram.h"
+#include "tangram/support/MatPoly.h"
 
-/// Test the CellMatPoly structure for one-dimensional cells
+/// Test the CellMatPoly structure for two-dimensional cells
 
 TEST(CellMatPoly, Mesh2D) {
 
@@ -303,5 +304,31 @@ TEST(CellMatPoly, Mesh2D) {
     Tangram::Point<2> expcen1(2.5/3.0, 1.0/3.0);
     Tangram::Point<2> mcen1 = cellmatpoly.matpoly_centroid(1);
     ASSERT_TRUE(approxEq(expcen1, mcen1, 1.0e-08));
+  }
+  
+  // Extract matpoly 1 as a MatPoly object
+  {
+    Tangram::MatPoly<2> MatPoly1 = cellmatpoly.get_ith_matpoly(1);
+    
+    //Verify material ID
+    ASSERT_EQ(1, MatPoly1.mat_id());
+    
+    //Verify vertices
+    const std::vector<Tangram::Point2>& matpoly_points = MatPoly1.points();
+    ASSERT_EQ(3, MatPoly1.num_vertices());
+    for (int ivrt = 0; ivrt < 3; ivrt++)
+      ASSERT_TRUE(approxEq(points1[ivrt], matpoly_points[ivrt], 1.0e-15));
+    
+    std::vector<std::vector<int>> expected_mp1_faces = {
+      {0, 1}, {1, 2}, {2, 0} };
+    
+    //Verify faces
+    ASSERT_EQ(3, MatPoly1.num_faces());
+    for (int iface = 0; iface < 3; iface++) {
+      const std::vector<int>& face_vertices = MatPoly1.face_vertices(iface);
+      ASSERT_EQ(2, face_vertices.size());
+      ASSERT_EQ(expected_mp1_faces[iface][0], face_vertices[0]);
+      ASSERT_EQ(expected_mp1_faces[iface][1], face_vertices[1]);
+    }
   }
 }

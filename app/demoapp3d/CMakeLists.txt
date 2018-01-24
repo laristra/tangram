@@ -39,8 +39,19 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-add_subdirectory(tangramapp)
-add_subdirectory(demoapp)
-add_subdirectory(demoapp3d)
-add_subdirectory(demo-xmof-app)
-add_subdirectory(xmof-linetest-app)
+#-------------------------------------------------------------------------------
+# demoapp3 - uses Simple_Mesh from portage
+#-------------------------------------------------------------------------------
+add_executable(demoapp3d demoapp3d.cc)
+target_link_libraries(demoapp3d ${EXTRA_LIBS})
+
+#-------------------------------------------------------------------------------
+# Other libraries
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Testing
+#-------------------------------------------------------------------------------
+# if (ENABLE_APP_TESTS)
+#   add_subdirectory(test)
+# endif (ENABLE_APP_TESTS)
