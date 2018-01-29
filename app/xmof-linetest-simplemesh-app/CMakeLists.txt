@@ -38,10 +38,9 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
-
-add_subdirectory(tangramapp)
-add_subdirectory(demoapp)
-add_subdirectory(demoapp3d)
-add_subdirectory(demo-xmof-app)
-add_subdirectory(xmof-linetest-app)
-add_subdirectory(xmof-linetest-simplemesh-app)
+#-------------------------------------------------------------------------------
+# xmof-linetest-simplemesh-app - uses 2D mesh SimpleMesh
+#-------------------------------------------------------------------------------
+add_executable(xmof-linetest-simplemesh-app xmof-linetest-simplemesh-app.cc)
+target_link_libraries(xmof-linetest-simplemesh-app 
+                      ${XMOF2D_LIBRARIES} ${EXTRA_LIBS})
