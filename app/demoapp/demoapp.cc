@@ -103,6 +103,8 @@ std::vector<std::vector<double>> inputData(const int probNum) {
 }
 
 int main(int argc, char** argv) {
+    MPI_Init(&argc, &argv);
+
   // Read the input data
   // TODO - error checking on argv
   auto vfracs = inputData(atoi(argv[1]));
@@ -150,5 +152,6 @@ int main(int argc, char** argv) {
     }
   }
 
+  MPI_Finalize();
   return 0;
 }

@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
       if (ref_int_pts.size() != 2) {
         std::ostringstream os;
         os << std::endl <<
-        "Interfce line should have two intersections with a multi-material cell!" <<
+        "Interface line should have two intersections with a multi-material cell!" <<
         std::endl;
         throw XMOF2D::Exception(os.str());
       }
