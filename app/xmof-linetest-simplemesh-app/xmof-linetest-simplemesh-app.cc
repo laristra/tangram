@@ -148,9 +148,10 @@ int PosWRTLine(const XMOF2D::Point2D& p, double line_slope, double line_shift, d
 }
 
 int main(int argc, char** argv) {
+#ifdef ENABLE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
-
+#endif
   if (argc != 4) {
     std::ostringstream os;
     os << std::endl <<
@@ -282,6 +283,7 @@ int main(int argc, char** argv) {
     " in-cell material interfaces" << std::endl;
   std::cout << "Max Hausdorff distance between actual and reference " <<
     "material interface segments -> " << max_hausdorff << std::endl;
-
+#ifdef ENABLE_MPI
   MPI_Finalize();
+#endif
 }
