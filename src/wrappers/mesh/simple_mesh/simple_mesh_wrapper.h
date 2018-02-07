@@ -1,43 +1,10 @@
 /*
-Copyright (c) 2016, Los Alamos National Security, LLC
-All rights reserved.
-
-Copyright 2016. Los Alamos National Security, LLC. This software was produced
-under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National
-Laboratory (LANL), which is operated by Los Alamos National Security, LLC for
-the U.S. Department of Energy. The U.S. Government has rights to use,
-reproduce, and distribute this software.  NEITHER THE GOVERNMENT NOR LOS ALAMOS
-NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY
-LIABILITY FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
-derivative works, such modified software should be clearly marked, so as not to
-confuse it with the version available from LANL.
-
-Additionally, redistribution and use in source and binary forms, with or
-without modification, are permitted provided that the following conditions are
-met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. Neither the name of Los Alamos National Security, LLC, Los Alamos
-   National Laboratory, LANL, the U.S. Government, nor the names of its
-   contributors may be used to endorse or promote products derived from this
-   software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY LOS ALAMOS NATIONAL SECURITY, LLC AND
-CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL LOS ALAMOS NATIONAL
-SECURITY, LLC OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+This file is part of the Ristra tangram project.
+Please see the license file at the root of this repository, or at:
+    https://github.com/laristra/tangram/blob/master/LICENSE
 */
+
+
 
 
 
@@ -63,7 +30,7 @@ namespace Tangram {
     @class Simple_Mesh_Wrapper simple_mesh_wrapper.h
     @brief A thin wrapper that implements mesh methods for Simple_Mesh
 
-    The methods implemented are those required elsewhere in Portage to
+    The methods implemented are those required elsewhere in Tangram to
     answer specific queries about the mesh.  Simple_Mesh_Wrapper derives
     from the AuxMeshTopology class, which helps to build further mesh
     entities and connectivities (e.g. CORNERS and WEDGES) from the existant
@@ -237,22 +204,37 @@ class Simple_Mesh_Wrapper : public AuxMeshTopology<Simple_Mesh_Wrapper> {
     return id;
   }
 
+
   /*!
-    @brief Get the coordinates of a specific node as a Portage::Point.
+    @brief Get the coordinates of a specific node as a Tangram::Point.
     @tparam D Dimensionality -- this is a specialization, as Simple_Mesh
     only supports 3D.
     @param[in] nodeid The ID of the node.
-    @param[out] The Portage::Point containing the coordiantes of node @c nodeid.
+    @param[out] The Tangram::Point containing the coordiantes of node @c nodeid.
    */
   template<long D=3>
   void node_get_coordinates(int const nodeid, Point<D>* pp) const {
     mesh_.node_get_coordinates(nodeid, pp);
   }
 
+#ifdef HAVE_TANGRAM
+  // TEMPORARY - until we pull WONTON out as a separate repository
+  int get_global_id(int const id, Tangram::Entity_kind const kind) const {
+    return get_global_id(id, static_cast<Tangram::Entity_kind>(kind));
+  }
+
+  template<long D=3>
+  void node_get_coordinates(int const nodeid, Tangram::Point<D>* tcoord) const {
+    Point<D> pcoord;
+    node_get_coordinates(nodeid, &pcoord);
+    *tcoord = pcoord;
+  }
+#endif
+    
  private:
   /// The mesh to wrap.
   Simple_Mesh const & mesh_;
 };  // class Simple_Mesh_Wrapper
-}  // namespace Portage
+}  // namespace Tangram
 
 #endif  // SIMPLE_MESH_WRAPPER_H_

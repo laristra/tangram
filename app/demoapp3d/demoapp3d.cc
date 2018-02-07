@@ -97,6 +97,9 @@ std::vector<std::vector<double>> inputData(std::string fname) {
 }
 
 int main(int argc, char** argv) {
+#ifdef ENABLE_MPI
+  MPI_Init(&argc, &argv);
+#endif
   // Read the input data
   // TODO - error checking on argv
   std::string fname = std::string("3d_diamond_6x6x6_vfracs.txt");
@@ -147,6 +150,8 @@ int main(int argc, char** argv) {
       }
     }
   }
-
+#ifdef ENABLE_MPI
+  MPI_Finalize();
+#endif
   return 0;
 }

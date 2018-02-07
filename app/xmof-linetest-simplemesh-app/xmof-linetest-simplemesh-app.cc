@@ -40,18 +40,17 @@
  */
 
 #include <fstream>
-#include "mpi.h"
-#include "Mesh.hh"
-#include "MeshFactory.hh"
 #include "tangram/support/tangram.h"
-#include "tangram/wrappers/mesh/jali/jali_mesh_wrapper.h"
+#include "tangram/wrappers/mesh/simple_mesh/simple_mesh_wrapper.h"
+#include "tangram/simple_mesh/simple_mesh.h"
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/xmof2D_wrapper.h"
 #include "simple_vector.h"
+#include "tangram/driver/write_to_gmv.h"
 
 /* A simple test for a rectangular grid
    with a single linear material interface.
-   Uses Jali.
+   Uses 2D SimpleMesh.
    Generates an nx x ny mesh, loads materials data from file,
    performs interface reconstruction and finds the max
    Hausdorff distance between recovered and reference
@@ -95,7 +94,7 @@ void read_mat_data(const std::string& mesh_data_fname,
   int nmatpoly = 0;
   for (int iy = 0; iy < ny; iy++)
     for (int ix = 0; ix < nx; ix++) {
-      int icell = ix*ny + iy;
+      int icell = iy*nx + ix;
       os.read(reinterpret_cast<char *>(&cell_num_mats[icell]), sizeof(int));
       nmatpoly += cell_num_mats[icell];
       icell_mats[icell].resize(cell_num_mats[icell]);
@@ -112,7 +111,7 @@ void read_mat_data(const std::string& mesh_data_fname,
   cell_mat_volfracs.resize(nmatpoly);
   for (int iy = 0; iy < ny; iy++)
     for (int ix = 0; ix < nx; ix++) {
-      int icell = ix*ny + iy;
+      int icell = iy*nx + ix;
       if (cell_num_mats[icell] == 1) {
         cell_mat_volfracs[offset[icell]] = 1.0;
         continue;
@@ -123,7 +122,7 @@ void read_mat_data(const std::string& mesh_data_fname,
   cell_mat_centroids.resize(nmatpoly);
   for (int iy = 0; iy < ny; iy++)
     for (int ix = 0; ix < nx; ix++) {
-      int icell = ix*ny + iy;
+      int icell = iy*nx + ix;
       if (cell_num_mats[icell] == 1) {
         cell_mat_centroids[offset[icell]] = Tangram::Point2(DBL_MAX, DBL_MAX);
         continue;
@@ -149,13 +148,14 @@ int PosWRTLine(const XMOF2D::Point2D& p, double line_slope, double line_shift, d
 }
 
 int main(int argc, char** argv) {
+#ifdef ENABLE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
-  
+#endif
   if (argc != 4) {
     std::ostringstream os;
     os << std::endl <<
-    "Correct usage: xmof-linetest-app <mat_data_file> <nx> <ny>" << std::endl;
+    "Correct usage: xmof-linetest-simplemesh-app <mat_data_file> <nx> <ny>" << std::endl;
     throw XMOF2D::Exception(os.str());
   }
 
@@ -165,14 +165,11 @@ int main(int argc, char** argv) {
   std::vector<double> xbnds = {0.0, 1.0};
   std::vector<double> ybnds = {0.0, 1.0};
  
-  Jali::MeshFactory mesh_factory(comm);
-  mesh_factory.framework(Jali::MSTK);
-  mesh_factory.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
-  std::shared_ptr<Jali::Mesh> mesh =
-    mesh_factory(xbnds[0], ybnds[0], xbnds[1], ybnds[1], nx, ny);
-  
-  assert(mesh != nullptr);
-  Tangram::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, false, false);
+  Tangram::Simple_Mesh mesh(xbnds[0], ybnds[0],
+                            xbnds[1], ybnds[1],
+                            nx, ny);
+  Tangram::Simple_Mesh_Wrapper mesh_wrapper(mesh);
+
   int ncells = mesh_wrapper.num_owned_cells();
 
   std::vector<int> cell_num_mats;
@@ -183,13 +180,16 @@ int main(int argc, char** argv) {
                 cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
   
   Tangram::Driver<Tangram::XMOF2D_Wrapper, 2,
-    Tangram::Jali_Mesh_Wrapper> xmof_driver(mesh_wrapper);
+    Tangram::Simple_Mesh_Wrapper> xmof_driver(mesh_wrapper);
   
   xmof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
   xmof_driver.reconstruct();
   
   const std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>>&
     cellmatpoly_list = xmof_driver.cell_matpoly_ptrs();
+  
+  Tangram::write_to_gmv(mesh_wrapper, 2, cell_num_mats, cell_mat_ids,
+                        cellmatpoly_list, "out.gmv");
   
   std::vector<XMOF2D::Point2D> ref_line = {
     XMOF2D::Point2D(0.0, mat_int_shift),
@@ -283,6 +283,7 @@ int main(int argc, char** argv) {
     " in-cell material interfaces" << std::endl;
   std::cout << "Max Hausdorff distance between actual and reference " <<
     "material interface segments -> " << max_hausdorff << std::endl;
-
+#ifdef ENABLE_MPI
   MPI_Finalize();
+#endif
 }
