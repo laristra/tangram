@@ -97,6 +97,14 @@ class MatPoly {
   }
   
   /*!
+   @brief All indices of vertices of the material poly's faces
+   @return  Vector of indices of face's vertices
+  */
+  const std::vector<std::vector<int>>& face_vertices() const {
+    return face_vertices_;
+  }
+  
+  /*!
    @brief Coordinates of the material poly's vertex
    @param vertex_id  ID of the vertex of the material poly
    @return  Coordinates of that vertex
