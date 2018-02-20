@@ -15,6 +15,12 @@ set -x
 compiler=$1
 build_type=$2
 
+# special case for README builds
+if [[ $build_type == "readme" ]]; then
+  python2 $WORKSPACE/jenkins/parseREADME.py $WORKSPACE/README.md $WORKSPACE
+  exit
+fi
+
 # set modules and install paths
 
 jali_version=0.9.8
