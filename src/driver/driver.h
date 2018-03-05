@@ -171,8 +171,11 @@ class Driver {
       //so we first find their indices
       std::vector<int> iMMCs;
       for (int icell = 0; icell < ncells; icell++) {
-        int cell_gid = mesh_.get_global_id(icell, Tangram::Entity_kind::CELL);
-        if (cell_num_mats_[cell_gid] > 1)
+#ifdef ENABLE_MPI
+        if (mesh_.cell_get_type(icell) == Tangram::Entity_type::PARALLEL_GHOST)
+          continue;
+#endif
+        if (cell_num_mats_[icell] > 1)
           iMMCs.push_back(icell);
       }
       int nMMCs = iMMCs.size();
