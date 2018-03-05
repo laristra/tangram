@@ -56,7 +56,7 @@ Execute the following from the tangram root directory:
 # machine=varan
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
-module load intel/17.0.1 openmpi/1.10.5 cmake/3.8.2 
+module load intel/17.0.1 openmpi/1.10.7 cmake/3.10.2 
 TPL_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali-tpl/1.0.9-intel-17.0.1-openmpi-1.10.5
 NGC_INCLUDE_DIR=/usr/local/codes/ngc/private/include
 XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/0.9-intel-17.0.1-openmpi-1.10.5
