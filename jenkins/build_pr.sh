@@ -48,7 +48,8 @@ export SHELL=/bin/sh
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
 module load intel/17.0.1
-module load openmpi/1.10.5
+module load openmpi/1.10.7
+module load cmake # 3.0 or higher is required
 
 echo $WORKSPACE
 cd $WORKSPACE
