@@ -86,13 +86,11 @@ void read_mat_data(const Mesh_Wrapper& Mesh,
     rank_cells_gid[irc] = Mesh.get_global_id(irc, Tangram::Entity_kind::CELL);
 
   std::vector<int> on_rank_ids(ncells);
+  std::vector<int> mesh_cell_num_mats(ncells);
   for (int icell = 0; icell < ncells; icell++) {
     on_rank_ids[icell] = (int) (std::find(rank_cells_gid.begin(),
                                           rank_cells_gid.end(), icell) -
                                 rank_cells_gid.begin());
-  }
-  std::vector<int> mesh_cell_num_mats(ncells);
-  for (int icell = 0; icell < ncells; icell++) {
     int on_rank_id = on_rank_ids[icell];
     bool on_rank = (on_rank_id < nrank_cells);
     os.read(reinterpret_cast<char *>(&mesh_cell_num_mats[icell]), sizeof(int));
@@ -169,6 +167,9 @@ int main(int argc, char** argv) {
   std::string in_data_fname = argv[1];
   std::string out_gmv_fname = in_data_fname;
   out_gmv_fname.resize(out_gmv_fname.size() - 4);
+  std::size_t path_end = out_gmv_fname.rfind('/');
+  if (path_end != std::string::npos)
+    out_gmv_fname = out_gmv_fname.substr(path_end + 1);
   out_gmv_fname += "_post_xmof_rank" + std::to_string(comm_rank) + ".gmv";
   
   Jali::MeshFactory mesh_factory(comm);
