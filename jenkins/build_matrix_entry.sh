@@ -24,7 +24,7 @@ fi
 # set modules and install paths
 
 jali_version=0.9.8
-xmof2d_version=0.9
+xmof2d_version=628f089edff
 
 export NGC=/usr/local/codes/ngc
 ngc_include_dir=$NGC/private/include
@@ -80,7 +80,7 @@ cmake \
   -D ENABLE_MPI_CXX_BINDINGS=True \
   -D Jali_DIR:FILEPATH=$jali_install_dir/lib \
   -D NGC_INCLUDE_DIR:FILEPATH=$ngc_include_dir \
-  -D XMOF2D_DIR:FILEPATH=$xmof2d_install_dir/lib \
+  -D XMOF2D_DIR:FILEPATH=$xmof2d_install_dir/share/cmake \
   -D BOOST_ROOT:FILEPATH=$boost_dir \
   $extra_flags \
   ..

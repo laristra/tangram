@@ -91,24 +91,9 @@ namespace Tangram {
       
       int ncells = mesh_.num_owned_cells() + mesh_.num_ghost_cells();
       mesh_cfg.icells_faces.resize(ncells);
-      mesh_cfg.ifaces_out_cells.resize(nfaces, -1);
       for (int icell = 0; icell < ncells; icell++) {
         std::vector<int> fdirs;
         mesh_.cell_get_faces_and_dirs(icell, &mesh_cfg.icells_faces[icell], &fdirs);
-        for (int iside = 0; iside < fdirs.size(); iside++) {
-          int iface = mesh_cfg.icells_faces[icell][iside];
-          if (fdirs[iside] == 1)
-            mesh_cfg.ifaces_out_cells[iface] = icell;
-        }
-      }
-      for (int iface = 0; iface < nfaces; iface++) {
-        if (mesh_cfg.ifaces_out_cells[iface] == -1) {
-          std::vector<int> fcells;
-          mesh_.face_get_cells(iface, Tangram::Entity_type::ALL, &fcells);
-          assert(fcells.size() == 1);
-          mesh_cfg.ifaces_out_cells[iface] = fcells[0];
-          std::reverse(mesh_cfg.ifaces_nodes[iface].begin(), mesh_cfg.ifaces_nodes[iface].end());
-        }
       }
       mesh_cfg.cells_material.clear();
       mesh_cfg.cells_material.resize(ncells, -1);
