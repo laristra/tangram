@@ -171,16 +171,12 @@ class Driver {
       //so we first find their indices
       std::vector<int> iMMCs;
       for (int icell = 0; icell < ncells; icell++) {
-#ifdef ENABLE_MPI
-        if (mesh_.cell_get_type(icell) == Tangram::Entity_type::PARALLEL_GHOST)
-          continue;
-#endif
         if (cell_num_mats_[icell] > 1)
           iMMCs.push_back(icell);
       }
       int nMMCs = iMMCs.size();
       //Reconstructor is set to operate on multi-material cells only:
-      //this is also optimal for load-balancing
+      //this is also better for load-balancing
       reconstructor.set_cell_indices_to_operate_on(iMMCs);
 
       Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
