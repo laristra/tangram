@@ -259,7 +259,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
   // Write out material ID of polygons
 
   fout << "material " << std::endl;
-  fout << nmats << std::endl;
+  fout << nmats << " 0" << std::endl;
   for (int i = 0; i < nmats; i++)
     fout << "mat" << i+1 << std::endl;
 
