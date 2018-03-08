@@ -42,7 +42,8 @@ POSSIBILITY OF SUCH DAMAGE.
 # demo-xmof-app - uses 2D mesh from Jali
 #-------------------------------------------------------------------------------
 add_executable(demo-xmof-app demo-xmof-app.cc)
-target_link_libraries(demo-xmof-app ${XMOF2D_LIBRARIES} ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} ${EXTRA_LIBS})
+target_link_libraries(demo-xmof-app ${XMOF2D_LIBRARIES} ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+                                    ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 #TCMalloc option
 set(ENABLE_TCMALLOC TRUE CACHE BOOL "Use TCMalloc")

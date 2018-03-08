@@ -50,11 +50,17 @@
 #include "tangram/reconstruct/xmof2D_wrapper.h"
 #include "simple_vector.h"
 
-void read_mat_data(const std::string& mesh_data_fname,
+template <class Mesh_Wrapper>
+void read_mat_data(const Mesh_Wrapper& Mesh,
+                   const std::string& mesh_data_fname,
                    std::vector<int>& cell_num_mats,
                    std::vector<int>& cell_mat_ids,
                    std::vector<double>& cell_mat_volfracs,
                    std::vector<Tangram::Point2>& cell_mat_centroids) {
+  cell_mat_ids.clear();
+  cell_mat_volfracs.clear();
+  cell_mat_centroids.clear();
+  
   std::ifstream os(mesh_data_fname.c_str(), std::ifstream::binary);
   if (!os.good()) {
     std::ostringstream os;
@@ -62,46 +68,84 @@ void read_mat_data(const std::string& mesh_data_fname,
       " for binary input" << std::endl;
     throw XMOF2D::Exception(os.str());
   }
-
+  
+  int nrank_cells = Mesh.num_owned_cells() + Mesh.num_ghost_cells();
+  cell_num_mats.resize(nrank_cells);
+  std::vector<std::vector<int>> on_rank_mat_ids(nrank_cells);
+  std::vector<std::vector<double>> on_rank_mat_volfracs(nrank_cells);
+  std::vector<std::vector<Tangram::Point2>> on_rank_mat_centroids(nrank_cells);
+  
   int data_dim;
   os.read(reinterpret_cast<char *>(&data_dim), sizeof(int));
   assert(data_dim == 2);
   int ncells;
   os.read(reinterpret_cast<char *>(&ncells), sizeof(int));
-  cell_num_mats.resize(ncells);
   
+  std::vector<int> rank_cells_gid(nrank_cells);
+  for (int irc = 0; irc < nrank_cells; irc++)
+    rank_cells_gid[irc] = Mesh.get_global_id(irc, Tangram::Entity_kind::CELL);
+
+  std::vector<int> on_rank_ids(ncells);
+  std::vector<int> mesh_cell_num_mats(ncells);
   for (int icell = 0; icell < ncells; icell++) {
-    os.read(reinterpret_cast<char *>(&cell_num_mats[icell]), sizeof(int));
-    for (int im = 0; im < cell_num_mats[icell]; im++) {
+    on_rank_ids[icell] = (int) (std::find(rank_cells_gid.begin(),
+                                          rank_cells_gid.end(), icell) -
+                                rank_cells_gid.begin());
+    int on_rank_id = on_rank_ids[icell];
+    bool on_rank = (on_rank_id < nrank_cells);
+    os.read(reinterpret_cast<char *>(&mesh_cell_num_mats[icell]), sizeof(int));
+    if (on_rank) {
+      cell_num_mats[on_rank_id] = mesh_cell_num_mats[icell];
+      on_rank_mat_ids[on_rank_id].resize(cell_num_mats[on_rank_id]);
+      on_rank_mat_volfracs[on_rank_id].resize(cell_num_mats[on_rank_id]);
+      on_rank_mat_centroids.reserve(cell_num_mats[on_rank_id]);
+      if (cell_num_mats[on_rank_id] == 1) {
+        on_rank_mat_volfracs[on_rank_id][0] = 1.0;
+        Tangram::Point2 cur_cell_cen;
+        Mesh.cell_centroid(on_rank_id, &cur_cell_cen);
+        on_rank_mat_centroids[on_rank_id].push_back(cur_cell_cen);
+      }
+    }
+    
+    for (int im = 0; im < mesh_cell_num_mats[icell]; im++) {
       int imat;
       os.read(reinterpret_cast<char *>(&imat), sizeof(int));
-      cell_mat_ids.push_back(imat);
+      if (on_rank)
+        on_rank_mat_ids[on_rank_id][im] = imat;
     }
   }
   for (int icell = 0; icell < ncells; icell++) {
-    if (cell_num_mats[icell] == 1) {
-      cell_mat_volfracs.push_back(1.0);
-      continue;
-    }
-    for (int im = 0; im < cell_num_mats[icell]; im++) {
-      double vfrac;
-      os.read(reinterpret_cast<char *>(&vfrac), sizeof(double));
-      cell_mat_volfracs.push_back(vfrac);
-    }
+    int on_rank_id = on_rank_ids[icell];
+    bool on_rank = (on_rank_id < nrank_cells);
+    if (mesh_cell_num_mats[icell] > 1)
+      for (int im = 0; im < mesh_cell_num_mats[icell]; im++) {
+        double vfrac;
+        os.read(reinterpret_cast<char *>(&vfrac), sizeof(double));
+        if (on_rank)
+          on_rank_mat_volfracs[on_rank_id][im] = vfrac;
+      }
   }
   for (int icell = 0; icell < ncells; icell++) {
-    if (cell_num_mats[icell] == 1) {
-      cell_mat_centroids.push_back(Tangram::Point2(DBL_MAX, DBL_MAX));
-      continue;
-    }
-    for (int im = 0; im < cell_num_mats[icell]; im++) {
-      double cen_x, cen_y;
-      os.read(reinterpret_cast<char *>(&cen_x), sizeof(double));
-      os.read(reinterpret_cast<char *>(&cen_y), sizeof(double));
-      cell_mat_centroids.push_back(Tangram::Point2(cen_x, cen_y));
-    }
+    int on_rank_id = on_rank_ids[icell];
+    bool on_rank = (on_rank_id < nrank_cells);
+    if (mesh_cell_num_mats[icell] > 1)
+      for (int im = 0; im < mesh_cell_num_mats[icell]; im++) {
+        double cen_x, cen_y;
+        os.read(reinterpret_cast<char *>(&cen_x), sizeof(double));
+        os.read(reinterpret_cast<char *>(&cen_y), sizeof(double));
+        if (on_rank)
+          on_rank_mat_centroids[on_rank_id].push_back(Tangram::Point2(cen_x, cen_y));
+      }
   }
   os.close();
+  for (int irc = 0; irc < nrank_cells; irc++) {
+    cell_mat_ids.insert(cell_mat_ids.end(), on_rank_mat_ids[irc].begin(),
+                        on_rank_mat_ids[irc].end());
+    cell_mat_volfracs.insert(cell_mat_volfracs.end(), on_rank_mat_volfracs[irc].begin(),
+                             on_rank_mat_volfracs[irc].end());
+    cell_mat_centroids.insert(cell_mat_centroids.end(), on_rank_mat_centroids[irc].begin(),
+                              on_rank_mat_centroids[irc].end());
+  }
 }
 
 int main(int argc, char** argv) {
@@ -123,6 +167,9 @@ int main(int argc, char** argv) {
   std::string in_data_fname = argv[1];
   std::string out_gmv_fname = in_data_fname;
   out_gmv_fname.resize(out_gmv_fname.size() - 4);
+  std::size_t path_end = out_gmv_fname.rfind('/');
+  if (path_end != std::string::npos)
+    out_gmv_fname = out_gmv_fname.substr(path_end + 1);
   out_gmv_fname += "_post_xmof_rank" + std::to_string(comm_rank) + ".gmv";
   
   Jali::MeshFactory mesh_factory(comm);
@@ -138,7 +185,7 @@ int main(int argc, char** argv) {
   std::vector<int> cell_mat_ids;
   std::vector<double> cell_mat_volfracs;
   std::vector<Tangram::Point2> cell_mat_centroids;
-  read_mat_data(in_data_fname, cell_num_mats, cell_mat_ids,
+  read_mat_data(mesh_wrapper, in_data_fname, cell_num_mats, cell_mat_ids,
                 cell_mat_volfracs, cell_mat_centroids);
   
   Tangram::Driver<Tangram::XMOF2D_Wrapper, 2,

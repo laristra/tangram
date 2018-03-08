@@ -48,7 +48,8 @@ export SHELL=/bin/sh
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
 module load intel/17.0.1
-module load openmpi/1.10.5
+module load openmpi/1.10.7
+module load cmake # 3.0 or higher is required
 
 echo $WORKSPACE
 cd $WORKSPACE
@@ -93,10 +94,6 @@ cmake \
   -D CMAKE_CXX_COMPILER=`which mpiCC` \
   -D CMAKE_CXX_FLAGS='-std=c++11' \
   -D INSTALL_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX \
-  -D INSTALL_ADD_VERSION=yes \
-  -D XMOF2D_VERSION_MAJOR=0 \
-  -D XMOF2D_VERSION_MINOR=9 \
-  -D INSTALL_PREFIX_ARCHOS=no \
   ..
 make -j2
 ctest -j2 --output-on-failure
@@ -117,7 +114,7 @@ cmake \
   -D ENABLE_MPI_CXX_BINDINGS=True \
   -D ENABLE_JENKINS_OUTPUT=True \
   -D Jali_DIR:FILEPATH=$JALI_INSTALL_PREFIX/lib \
-  -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/lib \
+  -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
   -D BOOST_ROOT:FILEPATH=$TPL_INSTALL_PREFIX \
   -D NGC_INCLUDE_DIR:FILEPATH=$NGC_INCLUDE_DIR \
   -D ENABLE_THRUST=True \
@@ -143,7 +140,7 @@ cmake \
   -D ENABLE_MPI=True \
   -D ENABLE_MPI_CXX_BINDINGS=True \
   -D Jali_DIR:FILEPATH=$JALI_INSTALL_PREFIX/lib \
-  -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/lib \
+  -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
   -D BOOST_ROOT:FILEPATH=$TPL_INSTALL_PREFIX \
   -D NGC_INCLUDE_DIR:FILEPATH=$NGC_INCLUDE_DIR \
   -D ENABLE_THRUST=False \

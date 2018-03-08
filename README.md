@@ -32,7 +32,7 @@ cmake \
     -D ENABLE_APP_TESTS=True \
     -D ENABLE_MPI=True \
     -D ENABLE_MPI_CXX_BINDINGS=True \
-    -D XMOF2D_DIR:FILEPATH=${XMOF2D_INSTALL_PREFIX}/lib \
+    -D XMOF2D_DIR:FILEPATH=${XMOF2D_INSTALL_PREFIX}/share/cmake \
     -D BOOST_ROOT:FILEPATH=${BOOST_PATH} \
     -D ENABLE_THRUST:BOOL=True \
     -D THRUST_DIR:PATH=${THRUST_PATH} \
@@ -56,10 +56,10 @@ Execute the following from the tangram root directory:
 # machine=varan
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
-module load intel/17.0.1 openmpi/1.10.5 cmake/3.8.2 
+module load intel/17.0.1 openmpi/1.10.7 cmake/3.10.2 
 TPL_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali-tpl/1.0.9-intel-17.0.1-openmpi-1.10.5
 NGC_INCLUDE_DIR=/usr/local/codes/ngc/private/include
-XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/0.9-intel-17.0.1-openmpi-1.10.5
+XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/628f089edff-intel-17.0.1-openmpi-1.10.5
 JALI_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali/0.9.8-intel-17.0.1-openmpi-1.10.5
 mkdir build
 cd build

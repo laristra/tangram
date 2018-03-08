@@ -24,7 +24,7 @@ fi
 # set modules and install paths
 
 jali_version=0.9.8
-xmof2d_version=0.9
+xmof2d_version=628f089edff
 
 export NGC=/usr/local/codes/ngc
 ngc_include_dir=$NGC/private/include
@@ -32,12 +32,18 @@ ngc_include_dir=$NGC/private/include
 # compiler-specific settings
 if [[ $compiler == "intel" ]]; then
   cxxmodule=intel/17.0.1
+  # openmpi version that libs were built against
   openmpi_version=1.10.5
+  # openmpi module for compiling and linking
+  mpi_module=openmpi/1.10.7
   jali_install_dir=$NGC/private/jali/${jali_version}-intel-17.0.1-openmpi-${openmpi_version}
   xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-intel-17.0.1-openmpi-${openmpi_version}
 elif [[ $compiler == "gcc" ]]; then
   cxxmodule=gcc/5.3.0
+  # openmpi version that libs were built against
   openmpi_version=1.10.3
+  # openmpi module for compiling and linking
+  mpi_module=openmpi/1.10.7
   jali_install_dir=$NGC/private/jali/${jali_version}-gcc-5.3.0-openmpi-${openmpi_version}
   xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-5.3.0-openmpi-${openmpi_version}
 fi
@@ -54,7 +60,7 @@ export SHELL=/bin/sh
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
 module load $cxxmodule
-module load openmpi/${openmpi_version}
+module load ${mpi_module}
 module load cmake # 3.0 or higher is required
 
 echo $WORKSPACE
@@ -74,7 +80,7 @@ cmake \
   -D ENABLE_MPI_CXX_BINDINGS=True \
   -D Jali_DIR:FILEPATH=$jali_install_dir/lib \
   -D NGC_INCLUDE_DIR:FILEPATH=$ngc_include_dir \
-  -D XMOF2D_DIR:FILEPATH=$xmof2d_install_dir/lib \
+  -D XMOF2D_DIR:FILEPATH=$xmof2d_install_dir/share/cmake \
   -D BOOST_ROOT:FILEPATH=$boost_dir \
   $extra_flags \
   ..
