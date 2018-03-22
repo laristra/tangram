@@ -175,7 +175,11 @@ class Driver {
 
       //Normally, we only need CellMatPoly's for multi-material cells,
       //so we first find their indices and group MMC's based on the number
-      //of contained materials
+      //of contained materials.
+      //Because we only store indices of MMC's, iMMCs[0] vector corresponds
+      //to two-material cells, and iMMCs[i] vector corresponds to MMC's with
+      //(i+2) materials. If the partition contains MMC's with up to n_max
+      //materials, the size of iMMCs vector is therefore (n_max-1).
       std::vector<std::vector<int>> iMMCs;
       for (int icell = 0; icell < ncells; icell++) {
         int nmats = cell_num_mats_[icell];
