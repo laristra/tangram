@@ -167,30 +167,46 @@ class Driver {
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
                                          cell_mat_volfracs_, cell_mat_centroids_);
       
-      //Normally, we only need CellMatPoly's for multi-material cells,
-      //so we first find their indices
-      std::vector<int> iMMCs;
-      for (int icell = 0; icell < ncells; icell++) {
-        if (cell_num_mats_[icell] > 1)
-          iMMCs.push_back(icell);
-      }
-      int nMMCs = iMMCs.size();
-      //Reconstructor is set to operate on multi-material cells only:
-      //this is also better for load-balancing
-      reconstructor.set_cell_indices_to_operate_on(iMMCs);
-
-      Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
-
       float tot_seconds = 0.0, tot_seconds_srch = 0.0,
             tot_seconds_xsect = 0.0, tot_seconds_interp = 0.0;
       struct timeval begin_timeval, end_timeval, diff_timeval;
 
       gettimeofday(&begin_timeval, 0);
 
-      Tangram::transform(make_counting_iterator(0),
-                         make_counting_iterator(nMMCs),
-                         MMCs_cellmatpolys.begin(), reconstructor);
+      //Normally, we only need CellMatPoly's for multi-material cells,
+      //so we first find their indices and group MMC's based on the number
+      //of contained materials.
+      //Because we only store indices of MMC's, iMMCs[0] vector corresponds
+      //to two-material cells, and iMMCs[i] vector corresponds to MMC's with
+      //(i+2) materials. If the partition contains MMC's with up to n_max
+      //materials, the size of iMMCs vector is therefore (n_max-1).
+      std::vector<std::vector<int>> iMMCs;
+      for (int icell = 0; icell < ncells; icell++) {
+        int nmats = cell_num_mats_[icell];
+        if (nmats == 1)
+          continue;
+        else if (nmats - 1 > iMMCs.size()) 
+          iMMCs.resize(nmats - 1);
+        iMMCs[nmats - 2].push_back(icell);
+      }
+      cellmatpolys_.resize(ncells);
 
+      //Reconstructor is set to operate on multi-material cells only.
+      //To improve load balancing, we operate on the cells with the same
+      //number of materials at a time
+      for (int inm = 0; inm < iMMCs.size(); inm++) {      
+        int nMMCs = iMMCs[inm].size();
+        if (nMMCs == 0)
+          continue;
+        reconstructor.set_cell_indices_to_operate_on(iMMCs[inm]);
+        Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
+
+        Tangram::transform(make_counting_iterator(0),
+                           make_counting_iterator(nMMCs),
+                           MMCs_cellmatpolys.begin(), reconstructor);
+        for (int immc = 0; immc < nMMCs; immc++)
+          cellmatpolys_[iMMCs[inm][immc]] = MMCs_cellmatpolys[immc];
+      }
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
@@ -205,10 +221,6 @@ class Driver {
       if (comm_rank == 0)
         std::cout << "Max Transform Time over " << world_size << " Ranks (s): " <<
           max_transform_time << std::endl;
-
-      cellmatpolys_.resize(ncells);
-      for (int i = 0; i < nMMCs; i++)
-        cellmatpolys_[iMMCs[i]] = MMCs_cellmatpolys[i];
     }
     
     reconstruction_done_ = true;
