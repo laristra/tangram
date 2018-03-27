@@ -54,4 +54,18 @@ TEST(MatPoly, Mesh2D) {
   for (int iface = 0; iface < square_faces.size(); iface++)
     ASSERT_TRUE(approxEq(face_centroids[iface],
                          square_matpoly.face_centroid(iface), 1.0e-15));
+
+  //Test moments for a non-convex pentagon
+  std::vector<Tangram::Point2> ncv_poly_points = {
+    Tangram::Point2(0.0, 0.0), Tangram::Point2(1.0, 0.0),
+    Tangram::Point2(1.0, 1.0), Tangram::Point2(0.5, 0.5),
+    Tangram::Point2(0.0, 1.0) };
+  std::vector<double> ncv_poly_moments = {0.75, 0.375, 21.0/72.0};
+  Tangram::MatPoly<2> ncv_matpoly(mat_id);
+  ncv_matpoly.initialize(ncv_poly_points);
+
+  //Verify moments
+  std::vector<double> matpoly_moments = ncv_matpoly.moments();
+  for (int im = 0; im < 3; im++)
+    ASSERT_NEAR(ncv_poly_moments[im], matpoly_moments[im], 1.0e-15);
 }

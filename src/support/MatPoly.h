@@ -38,7 +38,6 @@ class MatPoly {
     face_vertices_ = source_poly.face_vertices_;
     nvertices_ = source_poly.nvertices_;
     nfaces_ = source_poly.nfaces_;
-    face_centroids_ = source_poly.face_centroids_;
   }
   
   /*!
@@ -121,12 +120,7 @@ class MatPoly {
    @param face_id  ID of the face of the material poly
    @return  Coordinates of the centroid of that face
   */
-  Point<D> face_centroid(int const face_id) const {
-#ifdef DEBUG
-    assert((face_id >= 0) && (face_id < nfaces_));
-#endif
-    return face_centroids_[face_id];
-  }
+  Point<D> face_centroid(int const face_id) const;
   
   /*!
    @brief Facetization of the 2D polygon's boundary: simply creates a copy of the polygon
@@ -152,6 +146,13 @@ class MatPoly {
    @return  Number of faces
   */
   int num_faces() const { return nfaces_; }
+
+  /*!
+   @brief Moments of material poly
+   @return  Vector of moments; moments[0] is the size, moments[i+1]/moments[0] is i-th
+   coordinate of the centroid
+  */  
+  std::vector<double> moments();
  private:
 
   int material_id_;  // material ID of this matpoly
@@ -160,7 +161,6 @@ class MatPoly {
   
   int nvertices_;  // number of vertices
   int nfaces_;  //number of faces
-  std::vector< Point<D> > face_centroids_;  // centroids of faces
 };  // class MatPoly
 
 /*!
@@ -178,12 +178,8 @@ void MatPoly<2>::initialize(const std::vector<Point2>& poly_points) {
  
   vertex_points_ = poly_points;
   face_vertices_.resize(nfaces_);
-  face_centroids_.reserve(nfaces_);
-  for (int iface = 0; iface < nfaces_; iface++) {
-    int ifv = iface, isv = (iface + 1)%nfaces_;
-    face_vertices_[iface] = { ifv, isv };
-    face_centroids_.push_back(0.5*(vertex_points_[ifv] + vertex_points_[isv]));
-  }
+  for (int iface = 0; iface < nfaces_; iface++)
+    face_vertices_[iface] = { iface, (iface + 1)%nfaces_ };
 }
 
 /*!
@@ -204,30 +200,52 @@ void MatPoly<3>::initialize(const std::vector<Point3>& vertex_points,
   
   vertex_points_ = vertex_points;
   face_vertices_ = face_vertices;
+}
+
+/*!
+  @brief Coordinates of the centroid of the material polygon's face
+  @param face_id  ID of the face of the material polygon
+  @return  Coordinates of the centroid of that face
+*/
+template<>  
+Point2 MatPoly<2>::face_centroid(int const face_id) const {
+#ifdef DEBUG
+  assert((face_id >= 0) && (face_id < nfaces_));
+#endif
+  return 0.5*(vertex_points_[face_id] + vertex_points_[(face_id + 1)%nvertices_]);
+}
+
+/*!
+  @brief Coordinates of the centroid of the material polyhedron's face
+  @param face_id  ID of the face of the material polyhedron
+  @return  Coordinates of the centroid of that face
+*/
+template<>  
+Point3 MatPoly<3>::face_centroid(int const face_id) const {
+#ifdef DEBUG
+  assert((face_id >= 0) && (face_id < nfaces_));
+#endif
+  int nvrts = (int) face_vertices_[face_id].size();
+  Point3 gcenter;
+  for (int ivrt = 0; ivrt < nvrts; ivrt++)
+    gcenter += vertex_points_[face_vertices_[face_id][ivrt]];
+  gcenter /= nvrts;
   
-  face_centroids_.reserve(nfaces_);
-  for (int iface = 0; iface < nfaces_; iface++) {
-    int nvrts = (int) face_vertices_[iface].size();
-    Point3 gcenter;
-    for (int ivrt = 0; ivrt < nvrts; ivrt++)
-      gcenter += vertex_points_[face_vertices_[iface][ivrt]];
-    gcenter /= nvrts;
-    
-    double size = 0.0;
-    Point3 centroid;
-    for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-      int ifv = face_vertices_[iface][ivrt];
-      int isv = face_vertices_[iface][(ivrt + 1)%nvrts];
-      Vector3 vec0 = vertex_points_[isv] - vertex_points_[ifv];
-      Vector3 vec1 = gcenter - vertex_points_[ifv];
-      double tri_size = 0.5*cross(vec0, vec1).norm();
-      size += tri_size;
-      Point3 tri_centroid = (vertex_points_[ifv] + vertex_points_[isv] + gcenter)/3.0;
-      centroid += tri_size*tri_centroid;
-    }
-    centroid /= size;
-    face_centroids_.push_back(centroid);
+  double size = 0.0;
+  Point3 centroid;
+  for (int ivrt = 0; ivrt < nvrts; ivrt++) {
+    int ifv = face_vertices_[face_id][ivrt];
+    int isv = face_vertices_[face_id][(ivrt + 1)%nvrts];
+    Vector3 vec0 = vertex_points_[isv] - vertex_points_[ifv];
+    Vector3 vec1 = gcenter - vertex_points_[ifv];
+    double tri_size = 0.5*cross(vec0, vec1).norm();
+    size += tri_size;
+    Point3 tri_centroid = (vertex_points_[ifv] + vertex_points_[isv] + gcenter)/3.0;
+    centroid += tri_size*tri_centroid;
   }
+  centroid /= size;
+
+  return centroid;
 }
 
 /*!
@@ -260,13 +278,65 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
       continue;
     }
     int icenvrt = (int) facetedpoly_vertices.size();
-    facetedpoly_vertices.push_back(face_centroids_[iface]);
+    facetedpoly_vertices.push_back(face_centroid(iface));
     for (int ivrt = 0; ivrt < nvrts; ivrt++)
       facetedpoly_faces_.push_back({ icenvrt, face_vertices_[iface][ivrt],
                                      face_vertices_[iface][(ivrt + 1)%nvrts] });
   }
   
   faceted_poly->initialize(facetedpoly_vertices, facetedpoly_faces_);
+}
+
+/*!
+  @brief Moments of material polygon
+  @return  Vector of moments; moments[0] is area, moments[i+1]/moments[0] is i-th
+  coordinate of the centroid, i=1,2
+*/   
+template<>
+std::vector<double> MatPoly<2>::moments() {
+  std::vector<double> mpoly_moments(3, 0.0);
+  for (int ivrt = 0; ivrt < nvertices_; ivrt++) {
+    double cur_term = vertex_points_[ivrt][0]*vertex_points_[(ivrt + 1)%nvertices_][1] - 
+                      vertex_points_[ivrt][1]*vertex_points_[(ivrt + 1)%nvertices_][0];
+    mpoly_moments[0] += cur_term;
+    for (int idim = 0; idim < 2; idim++)
+      mpoly_moments[idim + 1] += cur_term*(
+        vertex_points_[ivrt][idim] + vertex_points_[(ivrt + 1)%nvertices_][idim]);
+  }
+  mpoly_moments[0] /= 2.0;  
+  for (int idim = 0; idim < 2; idim++)
+    mpoly_moments[idim + 1] /= 6.0;
+
+  return mpoly_moments;
+}
+
+/*!
+  @brief Moments of material polyhedron
+  @return  Vector of moments; moments[0] is volume, moments[i+1]/moments[0] is i-th
+  coordinate of the centroid, i=1,2,3
+*/   
+template<>
+std::vector<double> MatPoly<3>::moments() {
+  std::vector<double> mpoly_moments(4, 0.0);
+  MatPoly<3> faceted_poly;
+  faceted_matpoly(&faceted_poly);
+  int nfaces = faceted_poly.num_faces();
+  for (int iface = 0; iface < nfaces; iface++) {
+    std::vector<Point3> tri_pts;
+    tri_pts.reserve(3);
+    for (int ivrt = 0; ivrt < 3; ivrt++)
+      tri_pts.push_back(faceted_poly.points()[faceted_poly.face_vertices(iface)[ivrt]]);
+    Vector3 vcp = cross(tri_pts[1] - tri_pts[0], tri_pts[2] - tri_pts[0]);
+    mpoly_moments[0] += dot(vcp, tri_pts[0].asV());
+    for (int idim = 0; idim < 3; idim++)
+      for (int ivrt = 0; ivrt < 3; ivrt++)
+        mpoly_moments[idim + 1] += vcp[idim]*pow(tri_pts[ivrt][idim] + tri_pts[(ivrt + 1)%3][idim], 2);
+  }
+  mpoly_moments[0] /= 6.0;
+  for (int idim = 0; idim < 3; idim++)
+    mpoly_moments[idim + 1] /= 48.0;
+
+  return mpoly_moments;  
 }
 }  // namespace Tangram
 
