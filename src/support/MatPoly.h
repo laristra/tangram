@@ -152,7 +152,7 @@ class MatPoly {
    @return  Vector of moments; moments[0] is the size, moments[i+1]/moments[0] is i-th
    coordinate of the centroid
   */  
-  std::vector<double> moments();
+  std::vector<double> moments() const;
  private:
 
   int material_id_;  // material ID of this matpoly
@@ -302,7 +302,7 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
   coordinate of the centroid, i=1,2
 */   
 template<>
-std::vector<double> MatPoly<2>::moments() {
+std::vector<double> MatPoly<2>::moments() const {
   std::vector<double> mpoly_moments(3, 0.0);
   for (int ivrt = 0; ivrt < nvertices_; ivrt++) {
     double cur_term = vertex_points_[ivrt][0]*vertex_points_[(ivrt + 1)%nvertices_][1] - 
@@ -325,7 +325,7 @@ std::vector<double> MatPoly<2>::moments() {
   coordinate of the centroid, i=1,2,3
 */   
 template<>
-std::vector<double> MatPoly<3>::moments() {
+std::vector<double> MatPoly<3>::moments() const {
   std::vector<double> mpoly_moments(4, 0.0);
   MatPoly<3> faceted_poly;
   faceted_matpoly(&faceted_poly);
