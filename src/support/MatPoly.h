@@ -225,14 +225,23 @@ Point3 MatPoly<3>::face_centroid(int const face_id) const {
 #ifdef DEBUG
   assert((face_id >= 0) && (face_id < nfaces_));
 #endif
+  Point3 centroid;
+
   int nvrts = (int) face_vertices_[face_id].size();
+  if (nvrts == 3) {
+    for (int ivrt = 0; ivrt < 3; ivrt++)
+      centroid += vertex_points_[face_vertices_[face_id][ivrt]];
+    centroid /= 3.0;
+    
+    return centroid;
+  }
+
   Point3 gcenter;
   for (int ivrt = 0; ivrt < nvrts; ivrt++)
     gcenter += vertex_points_[face_vertices_[face_id][ivrt]];
   gcenter /= nvrts;
   
   double size = 0.0;
-  Point3 centroid;
   for (int ivrt = 0; ivrt < nvrts; ivrt++) {
     int ifv = face_vertices_[face_id][ivrt];
     int isv = face_vertices_[face_id][(ivrt + 1)%nvrts];
