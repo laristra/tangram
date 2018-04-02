@@ -23,7 +23,7 @@ class MatPoly {
     @brief Constructor, undefined material ID corresponds to -1 value
     @param material_id  ID of the material this poly contains
   */
-  MatPoly(int const material_id = -1) : material_id_(material_id) { }
+  MatPoly(int const material_id = -1) : material_id_(material_id) {}
 
   /*! Destructor */
   ~MatPoly() {}
@@ -152,15 +152,28 @@ class MatPoly {
    @return  Vector of moments; moments[0] is the size, moments[i+1]/moments[0] is i-th
    coordinate of the centroid
   */  
-  std::vector<double> moments() const;
+  const std::vector<double>& moments() {
+    if (moments_.empty())
+      compute_moments();
+    return moments_;
+  }
+
+ protected:
+  /*!
+   @brief Computes moments of this material poly,
+   moments_[0] is the size, moments_[i+1]/moments_[0] is i-th
+   coordinate of the centroid
+  */  
+  void compute_moments();
  private:
 
   int material_id_;  // material ID of this matpoly
   std::vector< Point<D> > vertex_points_;  // coordinates of vertices
   std::vector< std::vector<int> > face_vertices_;  // vertices of faces
   
-  int nvertices_;  // number of vertices
-  int nfaces_;  //number of faces
+  int nvertices_ = 0;  // number of vertices
+  int nfaces_ = 0;  //number of faces
+  std::vector<double> moments_; //moments of this matpoly
 };  // class MatPoly
 
 /*!
@@ -275,7 +288,10 @@ void MatPoly<2>::faceted_matpoly(MatPoly<2>* faceted_poly) const {
 */
 template<>
 void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
-  faceted_poly->set_mat_id(material_id_);
+  if (material_id_ >= 0)
+    faceted_poly->set_mat_id(material_id_);
+  else
+    faceted_poly->reset_mat_id();
   
   std::vector<Point3> facetedpoly_vertices = vertex_points_;
   std::vector< std::vector<int> > facetedpoly_faces_;
@@ -297,36 +313,38 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
 }
 
 /*!
-  @brief Moments of material polygon
-  @return  Vector of moments; moments[0] is area, moments[i+1]/moments[0] is i-th
+  @brief Computes moments of this material polygon,
+  moments_[0] is area, moments_[i+1]/moments_[0] is i-th
   coordinate of the centroid, i=1,2
-*/   
+*/ 
 template<>
-std::vector<double> MatPoly<2>::moments() const {
-  std::vector<double> mpoly_moments(3, 0.0);
+void MatPoly<2>::compute_moments() {
+  moments_.clear();
+  moments_.resize(3, 0.0);
+
   for (int ivrt = 0; ivrt < nvertices_; ivrt++) {
     double cur_term = vertex_points_[ivrt][0]*vertex_points_[(ivrt + 1)%nvertices_][1] - 
                       vertex_points_[ivrt][1]*vertex_points_[(ivrt + 1)%nvertices_][0];
-    mpoly_moments[0] += cur_term;
+    moments_[0] += cur_term;
     for (int idim = 0; idim < 2; idim++)
-      mpoly_moments[idim + 1] += cur_term*(
+      moments_[idim + 1] += cur_term*(
         vertex_points_[ivrt][idim] + vertex_points_[(ivrt + 1)%nvertices_][idim]);
   }
-  mpoly_moments[0] /= 2.0;  
+  moments_[0] /= 2.0;  
   for (int idim = 0; idim < 2; idim++)
-    mpoly_moments[idim + 1] /= 6.0;
-
-  return mpoly_moments;
+    moments_[idim + 1] /= 6.0;
 }
 
 /*!
-  @brief Moments of material polyhedron
-  @return  Vector of moments; moments[0] is volume, moments[i+1]/moments[0] is i-th
+  @brief Computes moments of this material polyhedron,
+  moments_[0] is volume, moments_[i+1]/moments_[0] is i-th
   coordinate of the centroid, i=1,2,3
-*/   
+*/  
 template<>
-std::vector<double> MatPoly<3>::moments() const {
-  std::vector<double> mpoly_moments(4, 0.0);
+void MatPoly<3>::compute_moments() {
+  moments_.clear();
+  moments_.resize(4, 0.0); 
+
   MatPoly<3> faceted_poly;
   faceted_matpoly(&faceted_poly);
   int nfaces = faceted_poly.num_faces();
@@ -334,18 +352,16 @@ std::vector<double> MatPoly<3>::moments() const {
     std::vector<Point3> tri_pts;
     tri_pts.reserve(3);
     for (int ivrt = 0; ivrt < 3; ivrt++)
-      tri_pts.push_back(faceted_poly.points()[faceted_poly.face_vertices(iface)[ivrt]]);
+      tri_pts.push_back(faceted_poly.vertex_point(faceted_poly.face_vertices(iface)[ivrt]));
     Vector3 vcp = cross(tri_pts[1] - tri_pts[0], tri_pts[2] - tri_pts[0]);
-    mpoly_moments[0] += dot(vcp, tri_pts[0].asV());
+    moments_[0] += dot(vcp, tri_pts[0].asV());
     for (int idim = 0; idim < 3; idim++)
       for (int ivrt = 0; ivrt < 3; ivrt++)
-        mpoly_moments[idim + 1] += vcp[idim]*pow(tri_pts[ivrt][idim] + tri_pts[(ivrt + 1)%3][idim], 2);
+        moments_[idim + 1] += vcp[idim]*pow(tri_pts[ivrt][idim] + tri_pts[(ivrt + 1)%3][idim], 2);
   }
-  mpoly_moments[0] /= 6.0;
+  moments_[0] /= 6.0;
   for (int idim = 0; idim < 3; idim++)
-    mpoly_moments[idim + 1] /= 48.0;
-
-  return mpoly_moments;  
+    moments_[idim + 1] /= 48.0;
 }
 }  // namespace Tangram
 
