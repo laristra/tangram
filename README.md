@@ -2,7 +2,9 @@
 
 To obtain the code, simply clone it recursively from our BitBucket Server:
 
-```git clone --recursive ssh://git@xcp-stash.lanl.gov:7999/laristra/tangram.git```
+```
+git clone --recursive ssh://git@xcp-stash.lanl.gov:7999/laristra/tangram.git
+```
 
 Example of the configure script:
 
@@ -52,15 +54,15 @@ below to ensure they build.
 
 Execute the following from the tangram root directory:
 
-'''c++
+```c++
 # machine=varan
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
-module load intel/17.0.1 openmpi/1.10.7 cmake/3.10.2 
-TPL_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali-tpl/1.0.9-intel-17.0.1-openmpi-1.10.5
+module load intel/18.0.1 openmpi/2.1.2 cmake/3.10.2
+TPL_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali-tpl/1.0.9-intel-18.0.1-openmpi-2.1.2
 NGC_INCLUDE_DIR=/usr/local/codes/ngc/private/include
-XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/628f089edff-intel-17.0.1-openmpi-1.10.5
-JALI_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali/0.9.8-intel-17.0.1-openmpi-1.10.5
+XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/6023dea445c-intel-18.0.1
+JALI_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali/0.9.8-intel-18.0.1-openmpi-2.1.2
 mkdir build
 cd build
 cmake \
@@ -75,10 +77,9 @@ cmake \
   -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/lib \
   -D BOOST_ROOT:FILEPATH=$TPL_INSTALL_PREFIX \
   -D NGC_INCLUDE_DIR:FILEPATH=$NGC_INCLUDE_DIR \
-  -D ENABLE_THRUST=True \
   ..
 make -j2
 ctest --output-on-failure
-'''
+```
 
 ---
