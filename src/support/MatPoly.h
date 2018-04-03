@@ -38,6 +38,7 @@ class MatPoly {
     face_vertices_ = source_poly.face_vertices_;
     nvertices_ = source_poly.nvertices_;
     nfaces_ = source_poly.nfaces_;
+    moments_ = source_poly.moments_;
   }
   
   /*!
@@ -61,6 +62,18 @@ class MatPoly {
    @brief Set the material ID for this poly to the undefined state
   */
   void reset_mat_id() { material_id_ = -1; }
+
+  /*!
+   @brief Resets the MatPoly data
+  */
+  void clear() {
+    material_id_ = -1;
+    vertex_points_.clear();
+    face_vertices_.clear();
+    nvertices_ = 0;
+    nfaces_ = 0;
+    moments_.clear();    
+  }
 
   /*!
    @brief Initialize a 2D polygon from its vertices

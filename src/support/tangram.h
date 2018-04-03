@@ -60,6 +60,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #endif
 
+#include "tangram/support/Vector.h"
+
 /*
   @file tangram.h
   @brief Several utility types and functions within the Tangram namespace.
@@ -217,6 +219,13 @@ inline void for_each(InputIterator first, InputIterator last,
 struct Weights_t {
   int entityID;
   std::vector<double> weights;
+};
+
+struct Plane_t {
+  Vector3 normal;
+  double  dist2origin; // Distance from the plane to the origin.
+                       // If P is a point of a plane and PO is the vector
+                       // from P to the origin, then dist2origin = dot(PO, normal)
 };
 
 }  // namespace Tangram
