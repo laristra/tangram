@@ -24,28 +24,30 @@ fi
 # set modules and install paths
 
 jali_version=0.9.8
-xmof2d_version=628f089edff
+xmof2d_version=6023dea445c
 
 export NGC=/usr/local/codes/ngc
 ngc_include_dir=$NGC/private/include
 
 # compiler-specific settings
 if [[ $compiler == "intel" ]]; then
-  cxxmodule=intel/17.0.1
+  intel_version=18.0.1
+  cxxmodule=intel/${intel_version}
   # openmpi version that libs were built against
-  openmpi_version=1.10.5
+  openmpi_version=2.1.2
   # openmpi module for compiling and linking
-  mpi_module=openmpi/1.10.7
-  jali_install_dir=$NGC/private/jali/${jali_version}-intel-17.0.1-openmpi-${openmpi_version}
-  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-intel-17.0.1-openmpi-${openmpi_version}
+  mpi_module=openmpi/2.1.2
+  jali_install_dir=$NGC/private/jali/${jali_version}-intel-${intel_version}-openmpi-${openmpi_version}
+  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-intel-${intel_version}
 elif [[ $compiler == "gcc" ]]; then
-  cxxmodule=gcc/5.3.0
+  gcc_version=6.4.0
+  cxxmodule=gcc/${gcc_version}
   # openmpi version that libs were built against
-  openmpi_version=1.10.3
+  openmpi_version=2.1.2
   # openmpi module for compiling and linking
-  mpi_module=openmpi/1.10.7
-  jali_install_dir=$NGC/private/jali/${jali_version}-gcc-5.3.0-openmpi-${openmpi_version}
-  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-5.3.0-openmpi-${openmpi_version}
+  mpi_module=openmpi/2.1.2
+  jali_install_dir=$NGC/private/jali/${jali_version}-gcc-${gcc_version}-openmpi-${openmpi_version}
+  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-${gcc_version}
 fi
   
 # build-type-specific settings
