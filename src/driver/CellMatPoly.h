@@ -96,17 +96,11 @@ class CellMatPoly {
   int num_materials() const { return num_materials_; }
 
   /*!
-    @brief Min ID over materials in cell
-    @return Min ID of material over all polygons
+    @brief Which material do material polygons in cell contain?
+    @return Vector of IDs of material for all polygons in cell
   */
-  int min_matid() const { return min_materialid_; }
-
-  /*!
-    @brief Max ID over materials in cell
-    @return Max ID of material over all polygons
-  */
-  int max_matid() const { return max_materialid_; }
-
+  const std::vector<int>& matpoly_matids() const { return materialids_; }
+  
   /*!
     @brief Which material does a material polygon in cell contain?
     @param matpoly_id    Local polygon ID in the cell
@@ -400,9 +394,6 @@ class CellMatPoly {
   */
   std::vector<MatPoly<D>> get_matpolys(int mat_id) const {
     std::vector<MatPoly<D>> mat_polys;
-    if ((mat_id < min_materialid_) || (mat_id > max_materialid_))
-      return mat_polys;
-
     for (int ipoly = 0; ipoly < num_matpolys_; ipoly++) {
       if (materialids_[ipoly] == mat_id)
         mat_polys.push_back(get_ith_matpoly(ipoly));
@@ -418,8 +409,6 @@ class CellMatPoly {
   //                      // Redundant but convenient!
   std::vector<int> materialids_;  // Material IDs of matpolys (can be repeated)
   int num_materials_ = 0; // Number of distinct materials
-  int min_materialid_ = INT_MAX; // Min material ID
-  int max_materialid_ = INT_MIN; // Max material ID
   std::vector<std::vector<int>> matpoly_faces_;  // IDs of faces of matpolys
   std::vector<std::vector<int>> matpoly_facedirs_;  // Dirs of faces of matpolys
   //                          // 1 means face normal points out of matpoly
@@ -467,11 +456,9 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   assert(D == 1);
 
   int new_matpoly_id = num_matpolys_;
-  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end()) {
+  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end())
     num_materials_++;
-    if (matid > max_materialid_) max_materialid_ = matid;
-    else if (matid < min_materialid_) min_materialid_ = matid;
-  }
+
   materialids_.push_back(matid);
   matpoly_faces_.resize(num_matpolys_+1);
   matpoly_facedirs_.resize(num_matpolys_+1);
@@ -581,11 +568,9 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   assert(D == 2);
 
   int new_matpoly_id = num_matpolys_;
-  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end()) {
+  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end())
     num_materials_++;
-    if (matid > max_materialid_) max_materialid_ = matid;
-    else if (matid < min_materialid_) min_materialid_ = matid;
-  }  
+
   materialids_.push_back(matid);
 
   std::vector<int> matverts(numverts);
@@ -723,11 +708,9 @@ void CellMatPoly<D>::add_matpoly(int matid,
   assert(D == 3);
 
   int new_matpoly_id = num_matpolys_;
-  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end()) {
+  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end())
     num_materials_++;
-    if (matid > max_materialid_) max_materialid_ = matid;
-    else if (matid < min_materialid_) min_materialid_ = matid;
-  }  
+
   materialids_.push_back(matid);
 
   std::vector<int> matverts(numverts);
