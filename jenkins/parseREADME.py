@@ -5,17 +5,17 @@ Please see the license file at the root of this repository, or at:
 '''
 import subprocess, sys
 # This script parses the README file which describes how to build tangram
-# It looks for code blocks enclosed in ''' and requires that the first
+# It looks for code blocks enclosed in ``` and requires that the first
 # line of a block be a followed by a hostname.  The script will then
 # execute all commands specified after that point on the host machine
-# until the block is closed with a '''.
+# until the block is closed with a ```.
 # Args: Arg 1 is file to parse, Arg 2 is the workspace
 code = False
 scripts = {}
 mach_kw = "machine="
 for line in open(sys.argv[1]):
-    if line.startswith("'''"): 
-        code = not code        
+    if line.startswith("```"):
+        code = not code
         currentScript = None
     elif code:
         if currentScript is None:
