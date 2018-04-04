@@ -304,8 +304,9 @@ void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpol
       for (int i = 0; i < ncp; i++)
         points.push_back(cellmatpoly->matvertex_point(i));
       npoly += cellmatpoly->num_matpolys();
-      if (cellmatpoly->max_matid() >= nmats)
-        nmats = cellmatpoly->max_matid() + 1;
+      const std::vector<int>& matpoly_matids = cellmatpoly->matpoly_matids();
+      int max_matid = *std::max_element(matpoly_matids.begin(), matpoly_matids.end());
+      if (max_matid >= nmats) nmats = max_matid + 1;
     }
   }
 
