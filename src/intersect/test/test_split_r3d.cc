@@ -177,7 +177,7 @@ TEST(split_r3d, Mesh3D) {
 
   //Get moments using ChopR3D class and facetizing faces
   std::vector< Tangram::MatPoly<3> > chop_matpolys;
-  chop_matpolys.push_back(std::move(ncv_matpoly));
+  chop_matpolys.push_back(ncv_matpoly);
   Tangram::ChopR3D chopper(chop_matpolys, cutting_plane);
   Tangram::Weights_t chopper_weights = chopper(0);
 
