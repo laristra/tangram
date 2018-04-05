@@ -65,10 +65,35 @@ TEST(split_r3d, Mesh3D) {
   for (int ihs = 0; ihs < 2; ihs++) {
     ASSERT_EQ(ref_cp_points[ihs].size(), convex_polys[ihs].num_vertices());
     for (int ivrt = 0; ivrt < ref_cp_points[ihs].size(); ivrt++)
-      ASSERT_TRUE(approxEq(ref_cp_points[ihs][ivrt], convex_polys[ihs].vertex_point(ivrt), 1.0e-15));
+      ASSERT_TRUE(approxEq(ref_cp_points[ihs][ivrt], 
+                           convex_polys[ihs].vertex_point(ivrt), 1.0e-15));
     ASSERT_EQ(ref_cp_faces[ihs].size(), convex_polys[ihs].num_faces()); 
     for (int iface = 0; iface < ref_cp_faces[ihs].size(); iface++) {
       const std::vector<int>& face_vrts = convex_polys[ihs].face_vertices(iface);
+      ASSERT_EQ(ref_cp_faces[ihs][iface].size(), face_vrts.size());
+      for (int ivrt = 0; ivrt < ref_cp_faces[ihs][iface].size(); ivrt++)
+        ASSERT_EQ(ref_cp_faces[ihs][iface][ivrt], face_vrts[ivrt]); 
+    }
+  }
+
+  //Use the class instead
+  std::vector< Tangram::MatPoly<3> > convex_matpolys = {prism_matpoly};
+  Tangram::SplitR3D split_poly(convex_matpolys, cutting_plane, true);
+  Tangram::HalfSpaceSets_t<3> hs_poly_sets = split_poly();
+
+  ASSERT_EQ(hs_poly_sets.lower_halfspace_set.matpolys.size(), 1);
+  ASSERT_EQ(hs_poly_sets.upper_halfspace_set.matpolys.size(), 1);                                          
+  Tangram::MatPoly<3>* hs_poly_ptrs[2] = {&hs_poly_sets.lower_halfspace_set.matpolys[0],
+                                          &hs_poly_sets.upper_halfspace_set.matpolys[0]};
+  //Check that we obtained the same MatPoly's as before                                        
+  for (int ihs = 0; ihs < 2; ihs++) {                                        
+    ASSERT_EQ(ref_cp_points[ihs].size(), hs_poly_ptrs[ihs]->num_vertices());
+    for (int ivrt = 0; ivrt < ref_cp_points[ihs].size(); ivrt++)
+      ASSERT_TRUE(approxEq(ref_cp_points[ihs][ivrt], 
+                           hs_poly_ptrs[ihs]->vertex_point(ivrt), 1.0e-15));
+    ASSERT_EQ(ref_cp_faces[ihs].size(), hs_poly_ptrs[ihs]->num_faces()); 
+    for (int iface = 0; iface < ref_cp_faces[ihs].size(); iface++) {
+      const std::vector<int>& face_vrts = hs_poly_ptrs[ihs]->face_vertices(iface);
       ASSERT_EQ(ref_cp_faces[ihs][iface].size(), face_vrts.size());
       for (int ivrt = 0; ivrt < ref_cp_faces[ihs][iface].size(); ivrt++)
         ASSERT_EQ(ref_cp_faces[ihs][iface][ivrt], face_vrts[ivrt]); 
@@ -135,39 +160,78 @@ TEST(split_r3d, Mesh3D) {
   ncv_matpoly.initialize(ncv_poly_points, ncv_poly_faces);
 
   //Split non-convex MatPoly with the horizontal cutting plane
-  std::vector< Tangram::MatPoly<3> > sub_polys[2];
-  std::vector<double> halfspace_moments[2];
-  Tangram::split_nonconvex_matpoly_r3d(ncv_matpoly, cutting_plane, 
-                                       sub_polys[0], sub_polys[1],
-                                       halfspace_moments[0], halfspace_moments[1]);
+  std::vector< Tangram::MatPoly<3> > ncv_matpolys = {ncv_matpoly};
+  Tangram::SplitR3D split_ncv_poly(ncv_matpolys, cutting_plane);
+  hs_poly_sets = split_ncv_poly();
+
+  std::vector< Tangram::MatPoly<3> >* hs_poly_sets_ptr[2] = {
+    &hs_poly_sets.lower_halfspace_set.matpolys,
+    &hs_poly_sets.upper_halfspace_set.matpolys };
+
+  std::vector<double>* hs_moments_ptrs[2] = {
+    &hs_poly_sets.lower_halfspace_set.moments, 
+    &hs_poly_sets.upper_halfspace_set.moments }; 
 
   //Check the number of MatPoly below and above the plane
-  ASSERT_EQ(sub_polys[0].size(), 14);
-  ASSERT_EQ(sub_polys[1].size(), 8);
+  ASSERT_EQ(hs_poly_sets_ptr[0]->size(), 14);
+  ASSERT_EQ(hs_poly_sets_ptr[1]->size(), 8);
 
   //Check consistency between moments values from r3d and MatPoly
   std::vector< std::vector<double> > acc_moments(2);
   for (int ihs = 0; ihs < 2; ihs++) {
     acc_moments[ihs].resize(4, 0.0);
-    for(int ipoly = 0; ipoly < sub_polys[ihs].size(); ipoly++) {
-      std::vector<double> cur_moments = sub_polys[ihs][ipoly].moments();
+    for(int ipoly = 0; ipoly < hs_poly_sets_ptr[ihs]->size(); ipoly++) {
+      std::vector<double> cur_moments = (*hs_poly_sets_ptr[ihs])[ipoly].moments();
       for(int im = 0; im < 4; im++)
         acc_moments[ihs][im] += cur_moments[im];
     }
     for(int im = 0; im < 4; im++)
-      ASSERT_NEAR(halfspace_moments[ihs][im], acc_moments[ihs][im], 1.0e-15);
+      ASSERT_NEAR((*hs_moments_ptrs[ihs])[im], acc_moments[ihs][im], 1.0e-15);
   }
 
   //Confirm moments values for the part above the plane
   for(int im = 0; im < 4; im++)
-    ASSERT_NEAR(halfspace_moments[1][im], above_plane_moments[im], 1.0e-15);
+    ASSERT_NEAR((*hs_moments_ptrs[1])[im], above_plane_moments[im], 1.0e-15);
 
   //Confirm moments values for the components above the plane  
-  for(int ipoly = 0; ipoly < sub_polys[1].size(); ipoly++) {
-    std::vector<double> cur_moments = sub_polys[1][ipoly].moments();
+  for(int ipoly = 0; ipoly < hs_poly_sets_ptr[1]->size(); ipoly++) {
+    std::vector<double> cur_moments = (*hs_poly_sets_ptr[1])[ipoly].moments();
     for(int im = 0; im < 4; im++)
       ASSERT_NEAR(cur_moments[im], above_plane_components_moments[ipoly][im], 1.0e-15);
   }
+
+  //Decompose manually
+  std::vector< Tangram::MatPoly<3> > cv_matpolys;
+  Tangram::decompose_matpoly(ncv_matpoly, cv_matpolys);
+  Tangram::SplitR3D split_cv_poly(cv_matpolys, cutting_plane, true);
+  Tangram::HalfSpaceSets_t<3> alt_hs_poly_sets = split_cv_poly();
+
+  std::vector< Tangram::MatPoly<3> >* alt_hs_poly_sets_ptr[2] = {
+    &alt_hs_poly_sets.lower_halfspace_set.matpolys,
+    &alt_hs_poly_sets.upper_halfspace_set.matpolys };
+
+  //Check that we obtained the same MatPoly's as before                                        
+  for (int ihs = 0; ihs < 2; ihs++) {                          
+    ASSERT_EQ(hs_poly_sets_ptr[0]->size(), alt_hs_poly_sets_ptr[0]->size());
+    for(int ipoly = 0; ipoly < hs_poly_sets_ptr[ihs]->size(); ipoly++) {
+      ASSERT_EQ((*hs_poly_sets_ptr[ihs])[ipoly].num_vertices(), 
+                (*alt_hs_poly_sets_ptr[ihs])[ipoly].num_vertices());
+      for (int ivrt = 0; ivrt < (*hs_poly_sets_ptr[ihs])[ipoly].num_vertices(); ivrt++)
+        ASSERT_TRUE(approxEq((*hs_poly_sets_ptr[ihs])[ipoly].vertex_point(ivrt),
+                             (*alt_hs_poly_sets_ptr[ihs])[ipoly].vertex_point(ivrt), 1.0e-15));
+      ASSERT_EQ((*hs_poly_sets_ptr[ihs])[ipoly].num_faces(), 
+                (*alt_hs_poly_sets_ptr[ihs])[ipoly].num_faces()); 
+      for (int iface = 0; iface < (*hs_poly_sets_ptr[ihs])[ipoly].num_faces(); iface++) {
+        const std::vector<int>& face_vrts = 
+          (*hs_poly_sets_ptr[ihs])[ipoly].face_vertices(iface);
+        const std::vector<int>& alt_face_vrts = 
+          (*alt_hs_poly_sets_ptr[ihs])[ipoly].face_vertices(iface);
+        ASSERT_EQ(face_vrts.size(), alt_face_vrts.size());
+        for (int ivrt = 0; ivrt < face_vrts.size(); ivrt++)
+          ASSERT_EQ(face_vrts[ivrt], alt_face_vrts[ivrt]); 
+      }
+    }
+  }  
 
   //Get moments without decomposing into convex components
   std::vector<double> fast_below_plane_moments;
@@ -175,16 +239,14 @@ TEST(split_r3d, Mesh3D) {
                                        fast_below_plane_moments);
   ASSERT_EQ(fast_below_plane_moments.size(), 4);
 
-  //Get moments using ChopR3D class and facetizing faces
-  std::vector< Tangram::MatPoly<3> > chop_matpolys;
-  chop_matpolys.push_back(ncv_matpoly);
-  Tangram::ChopR3D chopper(chop_matpolys, cutting_plane);
-  Tangram::Weights_t chopper_weights = chopper(0);
+  //Get moments using ClipR3D class and facetizing faces
+  Tangram::ClipR3D clip_poly(ncv_matpolys, cutting_plane);
+  std::vector<double> clipper_moments = clip_poly();
 
   //Check that all methods return the same values
   for(int im = 0; im < 4; im++) {
-    ASSERT_NEAR(halfspace_moments[0][im], fast_below_plane_moments[im], 1.0e-15);
-    ASSERT_NEAR(halfspace_moments[0][im], chopper_weights.weights[im], 1.0e-15);
+    ASSERT_NEAR((*hs_moments_ptrs[0])[im], fast_below_plane_moments[im], 1.0e-15);
+    ASSERT_NEAR((*hs_moments_ptrs[0])[im], clipper_moments[im], 1.0e-15);
   }
 
 #ifdef OUTPUT_TO_GMV

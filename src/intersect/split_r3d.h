@@ -179,20 +179,26 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
 /*!
   @brief Decomposes a MatPoly into convex MatPoly's using its centroid.
   @param[in] mat_poly MatPoly to decompose
-  @param[out] convex_matpolys Corresponding vector of MatPoly's: 
-  will contain as many MatPoly's as mat_poly has faces
+  @param[out] convex_matpolys Vector of MatPoly's: 
+  as many MatPoly's as mat_poly has faces will be appended to it
 */
 void
-decompose_matpoly(MatPoly<3>& mat_poly,
+decompose_matpoly(const MatPoly<3>& mat_poly,
                   std::vector< MatPoly<3> >& convex_matpolys) {
-  std::vector<double> matpoly_moments = mat_poly.moments();
+  std::vector<double> matpoly_moments = mat_poly.stored_moments();
+  if (matpoly_moments.empty()) {
+    MatPoly<3> faceted_poly;
+    mat_poly.faceted_matpoly(&faceted_poly);
+    matpoly_moments = faceted_poly.moments();
+  }
+
   Point3 matpoly_cen;
   for (int ixyz = 0; ixyz < 3; ixyz++)
     matpoly_cen[ixyz] = matpoly_moments[ixyz + 1]/matpoly_moments[0];
 
   int nfaces = mat_poly.num_faces();
-  convex_matpolys.clear();
-  convex_matpolys.resize(nfaces);
+  int offset = (int) convex_matpolys.size();
+  convex_matpolys.resize(offset + nfaces);
 
   for (int icpoly = 0; icpoly < nfaces; icpoly++) {
     const std::vector<int>& face_vrts = mat_poly.face_vertices(icpoly);
@@ -206,55 +212,102 @@ decompose_matpoly(MatPoly<3>& mat_poly,
     }
     convex_matpoly_vrts[face_nvrts] = matpoly_cen;
     convex_matpoly_faces[face_nvrts].resize(face_nvrts);
-    std::iota(convex_matpoly_faces[face_nvrts].begin(), convex_matpoly_faces[face_nvrts].end(), 0);      
+    std::iota(convex_matpoly_faces[face_nvrts].begin(), 
+              convex_matpoly_faces[face_nvrts].end(), 0);      
     
-    convex_matpolys[icpoly].initialize(convex_matpoly_vrts, convex_matpoly_faces);
+    convex_matpolys[offset + icpoly].initialize(convex_matpoly_vrts, convex_matpoly_faces);
   }
 }
 
 /*!
-  @brief Splits a non-convex MatPoly into two collections of convex MatPoly's
-  with a cutting plane.
-  @param[in] mat_poly MatPoly to split
-  @param[in] cutting_plane Cutting plane to split with
-  @param[out] lower_halfspace_polys Vector of MatPoly's below the plane
-  @param[out] upper_halfspace_polys Vector of MatPoly's above the plane
-  @param[out] lower_halfspace_moments Aggregated moments of all MatPoly's below the plane
-  @param[out] upper_halfspace_moments Aggregated moments of all MatPoly's above the plane
-*/
-void
-split_nonconvex_matpoly_r3d(MatPoly<3>& mat_poly,
-                            const Plane_t& cutting_plane,
-                            std::vector< MatPoly<3> >& lower_halfspace_polys,
-                            std::vector< MatPoly<3> >& upper_halfspace_polys,
-                            std::vector<double>& lower_halfspace_moments,
-                            std::vector<double>& upper_halfspace_moments) {
+ * \class SplitR3D  3-D splitting algorithm
+ *
+ * Splits a vector of MatPoly's with a cutting plane. The result is HalfSpaceSets_t
+ * structure that contains two sets of convex MatPoly's: one corresponds to components below,
+ * and the other to components above the plane. Each set has associated moments, which
+ * are aggregated moments of all components in the set.
+ * 
+ * Important: input MatPoly's are assumed to have planar faces.
+ * By default, input MatPoly's are assumed to be non-covex and are decomposed into
+ * convex components. If all_convex is set to true in the constructor, all input
+ * MatPoly's are assumed to be convex and will NOT be decomposed.
+ */
 
-  std::vector< MatPoly<3> >* halfspace_subpoly_ptrs[2] = {&lower_halfspace_polys, 
-                                                          &upper_halfspace_polys};
-  std::vector<double>* halfspace_moments_ptrs[2] = {&lower_halfspace_moments, 
-                                                    &upper_halfspace_moments};                              
-  for (int ihs = 0; ihs < 2; ihs++)
-    halfspace_moments_ptrs[ihs]->assign(4, 0.0);
+class SplitR3D {
+ public:
+  SplitR3D(const std::vector< MatPoly<3> >& matpolys,
+           const Plane_t& cutting_plane, 
+           const bool all_convex = false) : 
+           matpolys_(matpolys), 
+           cutting_plane_(cutting_plane),
+           all_convex_(all_convex) {}
 
-  std::vector< MatPoly<3> > convex_matpolys;
-  decompose_matpoly(mat_poly, convex_matpolys);
+  /*! 
+    @brief Splits a MatPoly into two sets of convex MatPoly's
+    @return Structure containing two sets of MatPoly's, one for each half-space,
+    with respective aggregated moments.
+  */
+  HalfSpaceSets_t<3> operator() () const {
+    HalfSpaceSets_t<3> hs_sets;
 
-  int ncpolys = (int) convex_matpolys.size();
-  for (int icpoly = 0; icpoly < ncpolys; icpoly++) {
-    MatPoly<3> cur_polys[2];
-    std::vector<double> cur_moments[2];
-    split_convex_matpoly_r3d(convex_matpolys[icpoly], cutting_plane, 
-                             cur_polys[0], cur_polys[1],
-                             cur_moments[0], cur_moments[1]);
+    std::vector< MatPoly<3> >* hs_subpolys_ptrs[2] = {
+      &hs_sets.lower_halfspace_set.matpolys, &hs_sets.upper_halfspace_set.matpolys};
+    std::vector<double>* hs_moments_ptrs[2] = {
+      &hs_sets.lower_halfspace_set.moments, &hs_sets.upper_halfspace_set.moments}; 
+
+    std::vector< MatPoly<3> > convex_components;
+    const std::vector< MatPoly<3> >* convex_polys;
+    if (all_convex_)
+      convex_polys = &matpolys_;
+    else {
+      int nncpolys = (int) matpolys_.size();
+      for (int incp = 0; incp < nncpolys; incp++)
+        decompose_matpoly(matpolys_[incp], convex_components);
+
+      convex_polys = &convex_components;
+    }
+
     for (int ihs = 0; ihs < 2; ihs++)
-      if (cur_polys[ihs].num_vertices() != 0) {
-        halfspace_subpoly_ptrs[ihs]->emplace_back(cur_polys[ihs]);
-        for (int im = 0; im < 4; im++)
-          (*halfspace_moments_ptrs[ihs])[im] += cur_moments[ihs][im];
-      }
+      hs_moments_ptrs[ihs]->assign(4, 0.0);
+
+    int hs_poly_count[2] = {0, 0};
+    int npolys = (int) convex_polys->size();
+
+    for (int icp = 0; icp < npolys; icp++) {
+      MatPoly<3> cur_subpolys[2];
+      std::vector<double> cur_moments[2];
+      split_convex_matpoly_r3d((*convex_polys)[icp], cutting_plane_,
+                               cur_subpolys[0], cur_subpolys[1],
+                               cur_moments[0], cur_moments[1]);
+
+      for (int ihs = 0; ihs < 2; ihs++)
+        if (!cur_moments[ihs].empty()) {
+          hs_subpolys_ptrs[ihs]->emplace_back(cur_subpolys[ihs]);
+          for (int im = 0; im < 4; im++)
+            (*hs_moments_ptrs[ihs])[im] += cur_moments[ihs][im];
+          hs_poly_count[ihs]++;
+        }
+    }
+
+    for (int ihs = 0; ihs < 2; ihs++)
+      if (hs_poly_count[ihs] == 0)
+        hs_moments_ptrs[ihs]->clear();
+
+    return hs_sets;
   }
-}
+
+  //! Default constructor (disabled)
+  SplitR3D() = delete;
+
+  //! Assignment operator (disabled)
+  SplitR3D& operator = (const SplitR3D&) = delete;
+
+ private:
+  const std::vector< MatPoly<3> >& matpolys_;
+  const Plane_t& cutting_plane_;
+  bool all_convex_;
+};
+
 
 /*!
   @brief Moments of MatPoly's components below the cutting plane.
@@ -290,58 +343,82 @@ lower_halfspace_moments_r3d(const MatPoly<3>& mat_poly,
 }
 
 /*!
- * \class ChopR3D  3-D chopping algorithm
+ * \class ClipR3D  3-D clipping algorithm
  *
- * In this routine, we will utilize the fact that R3D can clip a 
- * non-convex polyhedron with a plane. We are given a target material
- * polyhedron with planar faces and a plane to split it. By default, 
- * material polyhedron is assumed to have non-planar faces which 
- * are facetized.
+ * For a vector of MatPoly's, computes the aggregated moments of their 
+ * parts below the cutting plane.
+ * This can be interpreted as moments of chopped off parts in the nested 
+ * dissections algorithm.
+ * 
+ * In this routine, we utilize the fact that R3D can clip a non-convex 
+ * polyhedron with a plane.
+ * 
+ * By default, the faces of MatPoly's are assumed to be non-planar
+ * and are facetized. If planar_faces is set to true,
+ * faces of all MatPoly's are assumed to be planar and are NOT facetized.
  *
- * The moments of the part of the polyhedron that is below the plane
- * are computed. This can be interpreted as moments of a chopped off part
- * in the nested dissections algorithm.
  */
 
-class ChopR3D {
+class ClipR3D {
  public:
-  ChopR3D(const std::vector< MatPoly<3> >& mat_polys,
+  ClipR3D(const std::vector< MatPoly<3> >& matpolys,
           const Plane_t& cutting_plane, 
           const bool planar_faces = false) : 
-          mat_polys_(mat_polys), 
+          matpolys_(matpolys), 
           cutting_plane_(cutting_plane),
           planar_faces_(planar_faces) {}
 
-  /*! \brief Computes moments of a chopped off poly: the part of MatPoly
-  below the plane
-   * \param[in] matpoly_ID ID of a MatPoly to chop
-   * \return Weights_t structure containing moments of chopped off part
+  /*! 
+    @brief Computes moments of chopped off components: 
+    the parts of MatPoly's below the plane
+    @return Vector containing aggreagted moments 
+    of the chopped off part of all MatPoly's
    */
-  Weights_t operator() (const int matpoly_ID) const {
-    Weights_t curpoly_weights;
-    curpoly_weights.entityID = matpoly_ID;
+  std::vector<double> operator() () const {
+    std::vector<double> below_plane_moments(4, 0.0);
 
+    int poly_counter = 0;
     if (planar_faces_)
-      lower_halfspace_moments_r3d(mat_polys_[matpoly_ID], cutting_plane_, 
-                                  curpoly_weights.weights);
-    else {
-      MatPoly<3> faceted_poly;
-      mat_polys_[matpoly_ID].faceted_matpoly(&faceted_poly);
-      lower_halfspace_moments_r3d(faceted_poly, cutting_plane_, 
-                                  curpoly_weights.weights);
-    }
+      for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
+        std::vector<double> cur_moments;
+        lower_halfspace_moments_r3d(matpolys_[ipoly], cutting_plane_, 
+                                    cur_moments);
+
+        if (!cur_moments.empty()) {
+          for (int im = 0; im < 4; im++)
+            below_plane_moments[im] += cur_moments[im];
+          poly_counter++;
+        }
+      }
+    else 
+      for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
+        MatPoly<3> faceted_poly;
+        matpolys_[ipoly].faceted_matpoly(&faceted_poly);
+        std::vector<double> cur_moments;
+        lower_halfspace_moments_r3d(faceted_poly, cutting_plane_, 
+                                    cur_moments);
+
+        if (!cur_moments.empty()) {
+          for (int im = 0; im < 4; im++)
+            below_plane_moments[im] += cur_moments[im];
+          poly_counter++;
+        }                            
+      }
     
-    return curpoly_weights;
+    if (poly_counter == 0)
+      below_plane_moments.clear();
+      
+    return below_plane_moments;
   }
 
 //! Default constructor (disabled)
-  ChopR3D() = delete;
+  ClipR3D() = delete;
 
   //! Assignment operator (disabled)
-  ChopR3D& operator = (const ChopR3D&) = delete;
+  ClipR3D& operator = (const ClipR3D&) = delete;
 
  private:
-  const std::vector< MatPoly<3> >& mat_polys_;
+  const std::vector< MatPoly<3> >& matpolys_;
   const Plane_t& cutting_plane_;
   bool planar_faces_;
 };

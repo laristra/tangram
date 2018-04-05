@@ -279,9 +279,13 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
   fout << "endgmv" << std::endl;
 }
 
-//Simplified version: outputs CellMatPoly's list. 
-//Nodes and faces of CellMatPoly's are written as is 
-//and will be duplicated if shared by different CellMatPoly's
+//Simplified version: outputs CellMatPoly's list. If CellMatPoly's list
+//was obtained from a reconstructor, it corresponds to writing out only
+//multi-material cells. Does not require the base mesh and is therefore
+//convenient for debugging and/or when a single CellMatPoly needs to be 
+//written out.
+//Note that unlike in the full version, nodes and faces of CellMatPoly's 
+//are written as is and will be duplicated if shared by different CellMatPoly's.
 template<int D>
 void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpoly_list,
                   const std::string& filename) {  

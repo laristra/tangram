@@ -109,6 +109,24 @@ class MatPoly {
   }
   
   /*!
+   @brief Coordinates of vertices of the material poly's face
+   @param face_id  ID of the face of the material poly
+   @return  Vector of coordinates of face's vertices
+  */
+  std::vector< Point<D> > face_points(int const face_id) const {
+#ifdef DEBUG
+    assert((face_id >= 0) && (face_id < nfaces_));
+#endif
+    int nvrts = (int) face_vertices_[face_id].size();
+    std::vector< Point<D> > fpoints;
+    fpoints.reserve(nvrts);
+    for (int ivrt = 0; ivrt < nvrts; ivrt++)
+      fpoints.push_back(vertex_points_[face_vertices_[face_id][ivrt]]);
+
+    return fpoints;
+  }
+
+  /*!
    @brief All indices of vertices of the material poly's faces
    @return  Vector of indices of face's vertices
   */
@@ -170,6 +188,12 @@ class MatPoly {
       compute_moments();
     return moments_;
   }
+  
+  /*!
+   @brief Stored moments of material poly
+   @return  Currently stored vector of moments, can be empty
+  */   
+  const std::vector<double>& stored_moments() const { return moments_; }
 
  protected:
   /*!
@@ -305,7 +329,7 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
     faceted_poly->set_mat_id(material_id_);
   else
     faceted_poly->reset_mat_id();
-  
+
   std::vector<Point3> facetedpoly_vertices = vertex_points_;
   std::vector< std::vector<int> > facetedpoly_faces_;
   facetedpoly_faces_.reserve(nfaces_);
@@ -316,7 +340,7 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
       continue;
     }
     int icenvrt = (int) facetedpoly_vertices.size();
-    facetedpoly_vertices.push_back(face_centroid(iface));
+    facetedpoly_vertices.emplace_back(face_centroid(iface));
     for (int ivrt = 0; ivrt < nvrts; ivrt++)
       facetedpoly_faces_.push_back({ icenvrt, face_vertices_[iface][ivrt],
                                      face_vertices_[iface][(ivrt + 1)%nvrts] });
@@ -355,23 +379,33 @@ void MatPoly<2>::compute_moments() {
 */  
 template<>
 void MatPoly<3>::compute_moments() {
-  moments_.clear();
-  moments_.resize(4, 0.0); 
+  moments_.assign(4, 0.0); 
 
-  MatPoly<3> faceted_poly;
-  faceted_matpoly(&faceted_poly);
-  int nfaces = faceted_poly.num_faces();
-  for (int iface = 0; iface < nfaces; iface++) {
-    std::vector<Point3> tri_pts;
-    tri_pts.reserve(3);
-    for (int ivrt = 0; ivrt < 3; ivrt++)
-      tri_pts.push_back(faceted_poly.vertex_point(faceted_poly.face_vertices(iface)[ivrt]));
-    Vector3 vcp = cross(tri_pts[1] - tri_pts[0], tri_pts[2] - tri_pts[0]);
-    moments_[0] += dot(vcp, tri_pts[0].asV());
-    for (int idim = 0; idim < 3; idim++)
-      for (int ivrt = 0; ivrt < 3; ivrt++)
-        moments_[idim + 1] += vcp[idim]*pow(tri_pts[ivrt][idim] + tri_pts[(ivrt + 1)%3][idim], 2);
+  for (int iface = 0; iface < nfaces_; iface++) {
+    std::vector<Point3> face_pts = face_points(iface);
+    std::vector< std::vector<int> > itri_pts;
+    
+    int nvrts = face_vertices_[iface].size();
+    if (nvrts == 3)
+      itri_pts.push_back({0, 1, 2});
+    else {
+      itri_pts.reserve(nvrts);
+      face_pts.emplace_back(face_centroid(iface));
+      for (int ivrt = 0; ivrt < nvrts; ivrt++)
+        itri_pts.push_back({nvrts, ivrt, (ivrt + 1)%nvrts});
+    }
+
+    for (int itri = 0; itri < itri_pts.size(); itri++) {
+      Vector3 vcp = cross(face_pts[itri_pts[itri][1]] - face_pts[itri_pts[itri][0]], 
+                          face_pts[itri_pts[itri][2]] - face_pts[itri_pts[itri][0]]);
+      moments_[0] += dot(vcp, face_pts[itri_pts[itri][0]].asV());
+      for (int idim = 0; idim < 3; idim++)
+        for (int ivrt = 0; ivrt < 3; ivrt++)
+          moments_[idim + 1] += vcp[idim]*pow(face_pts[itri_pts[itri][ivrt]][idim] + 
+                                              face_pts[itri_pts[itri][(ivrt + 1)%3]][idim], 2);
+    }
   }
+
   moments_[0] /= 6.0;
   for (int idim = 0; idim < 3; idim++)
     moments_[idim + 1] /= 48.0;

@@ -228,6 +228,22 @@ struct Plane_t {
                        // from P to the origin, then dist2origin = dot(PO, normal)
 };
 
+template <int D>
+class MatPoly;
+
+template <int D>
+struct MatPolySet_t {
+  std::vector< MatPoly<D> > matpolys;  // MatPoly's in the set
+  std::vector<double> moments;         // Aggregated moments of all MatPoly's
+                                       // in the set.
+};
+
+template <int D>
+struct HalfSpaceSets_t {
+  MatPolySet_t<D> lower_halfspace_set;  // Set of MatPoly's below the line/plane
+  MatPolySet_t<D> upper_halfspace_set;  // Set of MatPoly's above the line/plane
+};
+
 }  // namespace Tangram
 
 #endif  // TANGRAM_H_
