@@ -177,49 +177,6 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
 }
 
 /*!
-  @brief Decomposes a MatPoly into convex MatPoly's using its centroid.
-  @param[in] mat_poly MatPoly to decompose
-  @param[out] convex_matpolys Vector of MatPoly's: 
-  as many MatPoly's as mat_poly has faces will be appended to it
-*/
-void
-decompose_matpoly(const MatPoly<3>& mat_poly,
-                  std::vector< MatPoly<3> >& convex_matpolys) {
-  std::vector<double> matpoly_moments = mat_poly.stored_moments();
-  if (matpoly_moments.empty()) {
-    MatPoly<3> faceted_poly;
-    mat_poly.faceted_matpoly(&faceted_poly);
-    matpoly_moments = faceted_poly.moments();
-  }
-
-  Point3 matpoly_cen;
-  for (int ixyz = 0; ixyz < 3; ixyz++)
-    matpoly_cen[ixyz] = matpoly_moments[ixyz + 1]/matpoly_moments[0];
-
-  int nfaces = mat_poly.num_faces();
-  int offset = (int) convex_matpolys.size();
-  convex_matpolys.resize(offset + nfaces);
-
-  for (int icpoly = 0; icpoly < nfaces; icpoly++) {
-    const std::vector<int>& face_vrts = mat_poly.face_vertices(icpoly);
-    int face_nvrts = (int) face_vrts.size();
-
-    std::vector<Point3> convex_matpoly_vrts(face_nvrts + 1);
-    std::vector< std::vector<int> > convex_matpoly_faces(face_nvrts + 1);
-    for (int ivrt = 0; ivrt < face_nvrts; ivrt++) {
-      convex_matpoly_vrts[ivrt] = mat_poly.vertex_point(face_vrts[ivrt]);
-      convex_matpoly_faces[ivrt] = {face_nvrts, (ivrt + 1)%face_nvrts, ivrt};
-    }
-    convex_matpoly_vrts[face_nvrts] = matpoly_cen;
-    convex_matpoly_faces[face_nvrts].resize(face_nvrts);
-    std::iota(convex_matpoly_faces[face_nvrts].begin(), 
-              convex_matpoly_faces[face_nvrts].end(), 0);      
-    
-    convex_matpolys[offset + icpoly].initialize(convex_matpoly_vrts, convex_matpoly_faces);
-  }
-}
-
-/*!
  * \class SplitR3D  3-D splitting algorithm
  *
  * Splits a vector of MatPoly's with a cutting plane. The result is HalfSpaceSets_t
@@ -262,7 +219,7 @@ class SplitR3D {
     else {
       int nncpolys = (int) matpolys_.size();
       for (int incp = 0; incp < nncpolys; incp++)
-        decompose_matpoly(matpolys_[incp], convex_components);
+        matpolys_[incp].decompose(convex_components);
 
       convex_polys = &convex_components;
     }

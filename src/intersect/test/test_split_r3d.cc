@@ -202,7 +202,7 @@ TEST(split_r3d, Mesh3D) {
 
   //Decompose manually
   std::vector< Tangram::MatPoly<3> > cv_matpolys;
-  Tangram::decompose_matpoly(ncv_matpoly, cv_matpolys);
+  ncv_matpoly.decompose(cv_matpolys);
   Tangram::SplitR3D split_cv_poly(cv_matpolys, cutting_plane, true);
   Tangram::HalfSpaceSets_t<3> alt_hs_poly_sets = split_cv_poly();
 

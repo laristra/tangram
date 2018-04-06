@@ -10,6 +10,7 @@
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <numeric>
 
 #include "tangram/support/tangram.h"
 #include "tangram/support/Point.h"
@@ -179,13 +180,13 @@ class MatPoly {
   int num_faces() const { return nfaces_; }
 
   /*!
-   @brief Moments of material poly
+   @brief Moments of material poly, will be computed the first time
    @return  Vector of moments; moments[0] is the size, moments[i+1]/moments[0] is i-th
    coordinate of the centroid
   */  
   const std::vector<double>& moments() {
     if (moments_.empty())
-      compute_moments();
+      compute_moments(moments_);
     return moments_;
   }
   
@@ -195,13 +196,23 @@ class MatPoly {
   */   
   const std::vector<double>& stored_moments() const { return moments_; }
 
+/*!
+  @brief Decomposes this MatPoly into MatPoly's using its centroid.
+  If faces of MatPoly are planar, MatPoly's in the decomposition will be convex.
+  @param[in] mat_poly MatPoly to decompose
+  @param[out] convex_matpolys Vector of MatPoly's: 
+  as many MatPoly's as mat_poly has faces will be appended to it.
+*/
+void decompose(std::vector< MatPoly<D> >& sub_polys) const;
+
+
  protected:
   /*!
-   @brief Computes moments of this material poly,
-   moments_[0] is the size, moments_[i+1]/moments_[0] is i-th
-   coordinate of the centroid
+   @brief Computes moments of this material poly
+   @param moments Computed moments, moments[0] is the size, 
+   moments[i+1]/moments[0] is i-th coordinate of the centroid
   */  
-  void compute_moments();
+  void compute_moments(std::vector<double>& moments) const;
  private:
 
   int material_id_;  // material ID of this matpoly
@@ -351,35 +362,34 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
 
 /*!
   @brief Computes moments of this material polygon,
-  moments_[0] is area, moments_[i+1]/moments_[0] is i-th
-  coordinate of the centroid, i=1,2
+  @param moments Computed moments: moments[0] is area, 
+  moments[i+1]/moments[0] is i-th coordinate of the centroid, i=1,2
 */ 
 template<>
-void MatPoly<2>::compute_moments() {
-  moments_.clear();
-  moments_.resize(3, 0.0);
+void MatPoly<2>::compute_moments(std::vector<double>& moments) const {
+  moments.assign(3, 0.0);
 
   for (int ivrt = 0; ivrt < nvertices_; ivrt++) {
     double cur_term = vertex_points_[ivrt][0]*vertex_points_[(ivrt + 1)%nvertices_][1] - 
                       vertex_points_[ivrt][1]*vertex_points_[(ivrt + 1)%nvertices_][0];
-    moments_[0] += cur_term;
+    moments[0] += cur_term;
     for (int idim = 0; idim < 2; idim++)
-      moments_[idim + 1] += cur_term*(
+      moments[idim + 1] += cur_term*(
         vertex_points_[ivrt][idim] + vertex_points_[(ivrt + 1)%nvertices_][idim]);
   }
-  moments_[0] /= 2.0;  
+  moments[0] /= 2.0;  
   for (int idim = 0; idim < 2; idim++)
-    moments_[idim + 1] /= 6.0;
+    moments[idim + 1] /= 6.0;
 }
 
 /*!
-  @brief Computes moments of this material polyhedron,
-  moments_[0] is volume, moments_[i+1]/moments_[0] is i-th
-  coordinate of the centroid, i=1,2,3
+  @brief Computes moments of this material polyhedron
+  @param moments Computed moments, moments[0] is volume, 
+  moments[i+1]/moments[0] is i-th coordinate of the centroid, i=1,2,3
 */  
 template<>
-void MatPoly<3>::compute_moments() {
-  moments_.assign(4, 0.0); 
+void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
+  moments.assign(4, 0.0); 
 
   for (int iface = 0; iface < nfaces_; iface++) {
     std::vector<Point3> face_pts = face_points(iface);
@@ -398,18 +408,87 @@ void MatPoly<3>::compute_moments() {
     for (int itri = 0; itri < itri_pts.size(); itri++) {
       Vector3 vcp = cross(face_pts[itri_pts[itri][1]] - face_pts[itri_pts[itri][0]], 
                           face_pts[itri_pts[itri][2]] - face_pts[itri_pts[itri][0]]);
-      moments_[0] += dot(vcp, face_pts[itri_pts[itri][0]].asV());
+      moments[0] += dot(vcp, face_pts[itri_pts[itri][0]].asV());
       for (int idim = 0; idim < 3; idim++)
         for (int ivrt = 0; ivrt < 3; ivrt++)
-          moments_[idim + 1] += vcp[idim]*pow(face_pts[itri_pts[itri][ivrt]][idim] + 
+          moments[idim + 1] += vcp[idim]*pow(face_pts[itri_pts[itri][ivrt]][idim] + 
                                               face_pts[itri_pts[itri][(ivrt + 1)%3]][idim], 2);
     }
   }
 
-  moments_[0] /= 6.0;
+  moments[0] /= 6.0;
   for (int idim = 0; idim < 3; idim++)
-    moments_[idim + 1] /= 48.0;
+    moments[idim + 1] /= 48.0;
 }
+
+/*!
+  @brief Decomposes a 2D MatPoly into triangular MatPoly's using its centroid.
+  @param[in] mat_poly MatPoly to decompose
+  @param[out] convex_matpolys Vector of MatPoly's: 
+  as many MatPoly's as mat_poly has faces will be appended to it.
+*/
+template <>
+void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys) const {
+  std::vector<double> moments;
+  if (!moments_.empty()) 
+    moments = moments_;
+  else
+    compute_moments(moments);
+
+  Point2 matpoly_cen;
+  for (int ixy = 0; ixy < 2; ixy++)
+    matpoly_cen[ixy] = moments[ixy + 1]/moments[0];
+
+  int offset = (int) sub_polys.size();
+  sub_polys.resize(offset + nfaces_);
+
+  for (int iface = 0; iface < nfaces_; iface++) {
+    std::vector<Point2> subpoly_points = face_points(iface);
+    subpoly_points.push_back(matpoly_cen);
+    sub_polys[offset + iface].initialize(subpoly_points);
+  }
+}
+
+/*!
+  @brief Decomposes a 3D MatPoly into MatPoly's using its centroid.
+  If faces of MatPoly are planar, MatPoly's in the decomposition will be convex.
+  @param[in] mat_poly MatPoly to decompose
+  @param[out] convex_matpolys Vector of MatPoly's: 
+  as many MatPoly's as mat_poly has faces will be appended to it.
+*/
+template <>
+void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys) const {
+  std::vector<double> moments;
+  if (!moments_.empty()) 
+    moments = moments_;
+  else
+    compute_moments(moments);
+
+  Point3 matpoly_cen;
+  for (int ixyz = 0; ixyz < 3; ixyz++)
+    matpoly_cen[ixyz] = moments[ixyz + 1]/moments[0];
+
+  int offset = (int) sub_polys.size();
+  sub_polys.resize(offset + nfaces_);
+
+  for (int iface = 0; iface < nfaces_; iface++) {
+    int face_nvrts = (int) face_vertices_[iface].size();
+
+    std::vector<Point3> subpoly_vrts(face_nvrts + 1);
+    std::vector< std::vector<int> > subpoly_faces(face_nvrts + 1);
+    for (int ivrt = 0; ivrt < face_nvrts; ivrt++) {
+      subpoly_vrts[ivrt] = vertex_points_[face_vertices_[iface][ivrt]];
+      subpoly_faces[ivrt] = {face_nvrts, (ivrt + 1)%face_nvrts, ivrt};
+    }
+    subpoly_vrts[face_nvrts] = matpoly_cen;
+    subpoly_faces[face_nvrts].resize(face_nvrts);
+    std::iota(subpoly_faces[face_nvrts].begin(), 
+              subpoly_faces[face_nvrts].end(), 0);      
+    
+    sub_polys[offset + iface].initialize(subpoly_vrts, subpoly_faces);
+  }
+}
+
 }  // namespace Tangram
 
 #endif  // TANGRAM_MATPOLY_H_
