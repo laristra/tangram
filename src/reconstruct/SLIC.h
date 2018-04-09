@@ -189,7 +189,7 @@ namespace Tangram {
           std::vector<int> nface_vrts(nfaces);
           std::vector<int> faces_vrts;
           for (int iface = 0; iface < nfaces; iface++) {
-            const std::vector<int> face_ivrts = cur_matpoly.face_vertices(iface);
+            const std::vector<int>& face_ivrts = cur_matpoly.face_vertices(iface);
             nface_vrts[iface] = face_ivrts.size();
             faces_vrts.insert(faces_vrts.end(), face_ivrts.begin(), face_ivrts.end());
           }
