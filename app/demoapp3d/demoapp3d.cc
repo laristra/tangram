@@ -53,8 +53,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "tangram/support/tangram.h"
 #include "tangram/simple_mesh/simple_mesh.h"
 #include "tangram/wrappers/mesh/simple_mesh/simple_mesh_wrapper.h"
+#include "tangram/intersect/split_r3d.h"
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/SLIC.h"
+#include "tangram/driver/write_to_gmv.h"
 
 using Tangram::Simple_Mesh;
 using Tangram::Simple_Mesh_Wrapper;
@@ -103,7 +105,13 @@ int main(int argc, char** argv) {
   // Read the input data
   // TODO - error checking on argv
   std::string fname = std::string("3d_diamond_6x6x6_vfracs.txt");
-  if (argc > 1) fname = argv[1];
+  std::string out_fname = std::string("3d_diamond_6x6x6.gmv");
+  if (argc > 1) {
+    fname = argv[1];
+    if (argc > 2) out_fname = argv[2];
+    else out_fname = fname + ".gmv";
+  }
+
   auto vfracs = inputData(fname);
 
   auto numMats = vfracs.size();
@@ -120,7 +128,7 @@ int main(int argc, char** argv) {
   Simple_Mesh_Wrapper mymeshWrapper(*mymesh);
 
   // Build the driver
-  Driver<SLIC, 3, Simple_Mesh_Wrapper> d(mymeshWrapper);
+  Driver<SLIC, 3, Simple_Mesh_Wrapper, Tangram::SplitR3D> d(mymeshWrapper);
 
   // Load the volume fractions
   // I'm going to be dumb here - all cells will have all materials, even
@@ -136,20 +144,9 @@ int main(int argc, char** argv) {
   d.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs);
   d.reconstruct();
 
-  // Do some dumb dumping of data for python plotting
-  for (int c(0); c < ncells; ++c) {
-    auto matpoly = d.cell_matpoly_data(c);
-    auto numPolys = matpoly.num_matpolys();
-    for (int ipoly(0); ipoly < numPolys; ++ipoly) {
-      auto matID = matpoly.matpoly_matid(ipoly);
-      auto nodeCoords = matpoly.matpoly_points(ipoly);
-      if(nodeCoords.size()==8){
-	std::cout << matID << " ";
-	for (auto p : nodeCoords) std::cout << p << " ";
-	std::cout << std::endl;
-      }
-    }
-  }
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list = d.cell_matpoly_ptrs();
+  write_to_gmv(cellmatpoly_list, out_fname);
+
 #ifdef ENABLE_MPI
   MPI_Finalize();
 #endif

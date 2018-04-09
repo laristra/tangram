@@ -65,7 +65,7 @@ namespace Tangram {
    implementation that provides required functionality
    @tparam Dim The spatial dimension of the problem: has to be 2.
    */
-  template <class Mesh_Wrapper, int Dim>
+  template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter=void>
   class XMOF2D_Wrapper {
   public:
     /*!

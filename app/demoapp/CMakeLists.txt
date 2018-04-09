@@ -43,7 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.
 # demoapp - uses Simple_Mesh from portage
 #-------------------------------------------------------------------------------
 add_executable(demoapp demoapp.cc)
-target_link_libraries(demoapp ${EXTRA_LIBS})
+target_link_libraries(demoapp tangram ${EXTRA_LIBS})
 
 
 #-------------------------------------------------------------------------------

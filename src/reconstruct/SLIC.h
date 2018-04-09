@@ -47,9 +47,12 @@
 #include <numeric>
 #include <cmath>
 #include <memory>
+#include <float.h>
 
 #include "tangram/support/Point.h"
 #include "tangram/driver/CellMatPoly.h"
+#include "tangram/support/MatPoly.h"
+#include "tangram/intersect/split_r3d.h"
 
 /*!
  @file SLIC.h
@@ -70,8 +73,8 @@ namespace Tangram {
    implementation that provides certain functionality
    @tparam Dim The spatial dimension of the problem.
    */
-  
-  template <class Mesh_Wrapper, int Dim>
+
+  template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter>
   class SLIC {
   public:
     /*!
@@ -115,10 +118,10 @@ namespace Tangram {
      @brief Given a cell index, calculate the CellMatPoly for this reconstruction
      */
     std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
+      double vfrac_tol = 1.0e-13;
+
       int cellID = icells_to_reconstruct[cell_op_ID];
       auto numMats = cell_num_mats_[cellID];
-//      if (numMats == 1)
-//        return td::shared_ptrCellMatPoly<Dim>>(nullptr);
       
       CellMatPoly<Dim>* cellpoly = new CellMatPoly<Dim>(cellID);
       
@@ -127,67 +130,77 @@ namespace Tangram {
       
       auto iStart = cell_mat_offsets_[cellID];
       
-      std::vector<Point<Dim>> nodeCoords;
-      mesh_.cell_get_coordinates(cellID, &nodeCoords);
-      
-      // This is ugly, but it works
-      std::vector<double> xs(nodeCoords.size()),
-      ys(nodeCoords.size()),
-      zs(nodeCoords.size());
-      std::transform(nodeCoords.begin(), nodeCoords.end(),
-                     xs.begin(), [](Point<Dim> p){return p[0];});
-      std::transform(nodeCoords.begin(), nodeCoords.end(),
-                     ys.begin(), [](Point<Dim> p){return p[1];});
-      std::transform(nodeCoords.begin(), nodeCoords.end(),
-                     zs.begin(), [](Point<Dim> p){return p[2];});
-      
-      // extents
-      double xmin = *std::min_element(xs.begin(), xs.end());
-      double xmax = *std::max_element(xs.begin(), xs.end());
-      double ymin = *std::min_element(ys.begin(), ys.end());
-      double ymax = *std::max_element(ys.begin(), ys.end());
-      double zmin = *std::min_element(zs.begin(), zs.end());
-      double zmax = *std::max_element(zs.begin(), zs.end());
-      
+      //Sets of MatPoly's on two sides of the cutting plane
+      HalfSpaceSets_t<3> hs_sets;
+
+      // For every chopped off material, we split MatPoly's above the plane
+      hs_sets.upper_halfspace_set.matpolys.resize(1);
+      mesh_.cell_get_matpoly(cellID, &hs_sets.upper_halfspace_set.matpolys[0]);
+
       // Just going along x-direction - again assuming rectangular prisms only
-      auto dx = xmax - xmin;
-      double xloc = xmin;
-      for (int iMat(0); iMat < numMats; ++iMat) {
+      Plane_t cutting_plane;
+      cutting_plane.normal = Vector3(1.0, 0.0, 0.0);
+
+      //Create Splitter instance
+      MatPoly_Splitter split_matpolys(hs_sets.upper_halfspace_set.matpolys, 
+                                      cutting_plane, true);
+
+      //Cutting from left to right: find the x range
+      double xmin = DBL_MAX, xmax = DBL_MIN;
+      for (int immp = 0; immp < hs_sets.upper_halfspace_set.matpolys.size(); immp++) {
+        const MatPoly<3>& cur_matpoly = hs_sets.upper_halfspace_set.matpolys[immp];
+        for (int ivrt = 0; ivrt < cur_matpoly.num_vertices(); ivrt++) {
+          double pt_x = cur_matpoly.vertex_point(ivrt)[0];
+          if (pt_x < xmin) xmin = pt_x;
+          if (pt_x > xmax) xmax = pt_x;
+        }
+      }
+
+      double cell_volume = mesh_.cell_volume(cellID);
+      double x_cut = xmin;
+      for (int iMat(0); iMat < numMats; iMat++) {
+        auto vfrac = cell_mat_volfracs_[iStart + iMat];
         // If the mass fraction is too small, skip it
-        auto vfrac = cell_mat_volfracs_[iStart+iMat];
-        //      if (vfrac <= 1e-14) continue;
-        // Find the x-direction thickness
-        auto thisDx = vfrac*dx;
-        // Build the node coords - do this manually for now
-        std::vector<Point<Dim>> polyNodes;
-        polyNodes.emplace_back(xloc, ymin, zmin);
-        polyNodes.emplace_back(xloc+thisDx, ymin, zmin);
-        polyNodes.emplace_back(xloc+thisDx, ymax, zmin);
-        polyNodes.emplace_back(xloc, ymax, zmin);
-        polyNodes.emplace_back(xloc, ymin, zmax);
-        polyNodes.emplace_back(xloc+thisDx, ymin, zmax);
-        polyNodes.emplace_back(xloc+thisDx, ymax, zmax);
-        polyNodes.emplace_back(xloc, ymax, zmax);
-        
-        // face information - again assumes rectangular prisms only
-        std::vector<int> vertsPerFace(6, 4);
-        // this ordering might not be consistent...
-        std::vector<int> faceNodeIDs = {0, 1, 3, 2,
-          4, 5, 7, 6,
-          0, 1, 5, 4,
-          2, 3, 7, 6,
-          2, 0, 4, 6,
-          3, 1, 5, 7};
-        
-        // add this matpoly
-        (*cellpoly).add_matpoly(iMat, polyNodes.size(), &polyNodes[0],
-                                nullptr, nullptr,
-                                vertsPerFace.size(), &vertsPerFace[0],
-                                &faceNodeIDs[0],
-                                nullptr, nullptr);
-        
-        // thisDx is relative to xloc
-        xloc += thisDx;
+        if (vfrac < vfrac_tol) continue;
+          
+        const MatPolySet_t<3>* single_mat_set_ptr;
+        //On the last iteration the remaining part is single-material,
+        //so we don't need to split it
+        if (iMat == numMats - 1)
+          single_mat_set_ptr = &hs_sets.upper_halfspace_set;
+        else {
+          // Find distance to origin for the cutting plane
+          x_cut += vfrac*(xmax - xmin);
+          cutting_plane.dist2origin = -x_cut;
+
+          hs_sets = split_matpolys();
+
+          // Confirm that the volume fraction matches the reference value
+          assert(std::fabs(hs_sets.lower_halfspace_set.moments[0]/cell_volume - vfrac) < vfrac_tol);
+
+          //Chopped off single-material MatPoly's are below the plane
+          single_mat_set_ptr = &hs_sets.lower_halfspace_set;
+        }
+        //Add single-material MatPoly's to CellMatPoly
+        for (int ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
+          const MatPoly<3>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
+          // Flatten the face vertices for the single-material MatPoly
+          int nfaces = cur_matpoly.num_faces();
+          std::vector<int> nface_vrts(nfaces);
+          std::vector<int> faces_vrts;
+          for (int iface = 0; iface < nfaces; iface++) {
+            const std::vector<int> face_ivrts = cur_matpoly.face_vertices(iface);
+            nface_vrts[iface] = face_ivrts.size();
+            faces_vrts.insert(faces_vrts.end(), face_ivrts.begin(), face_ivrts.end());
+          }
+          //Add the MatPoly below the cutting plane to CellMatPoly
+          (*cellpoly).add_matpoly(cell_mat_ids_[iStart + iMat], 
+                                  cur_matpoly.num_vertices(), 
+                                  &cur_matpoly.points()[0],
+                                  nullptr, nullptr,
+                                  nfaces, &nface_vrts[0], &faces_vrts[0],
+                                  nullptr, nullptr);
+        }
       }
       
       return std::shared_ptr<CellMatPoly<Dim>>(cellpoly);

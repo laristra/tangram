@@ -85,9 +85,10 @@ namespace Tangram {
   implementation that provides certain functionality.
 */
 
-template <template <class, int> class CellInterfaceReconstructor,
+template <template <class, int, class> class CellInterfaceReconstructor,
     int Dim,
-    class Mesh_Wrapper>
+    class Mesh_Wrapper,
+    class MatPoly_Splitter=void>
 class Driver {
  public:
   /*!
@@ -159,7 +160,7 @@ class Driver {
       // Instantiate the interface reconstructor class that will
       // compute the interfaces and compute the pure material submesh
       // in each cell
-      CellInterfaceReconstructor<Mesh_Wrapper, Dim>
+      CellInterfaceReconstructor<Mesh_Wrapper, Dim, MatPoly_Splitter>
         reconstructor(mesh_);
 
       // Tell the reconstructor what materials are in each cell and
