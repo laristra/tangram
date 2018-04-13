@@ -1,8 +1,8 @@
 #[[
-Copyright (c) 2017, Los Alamos National Security, LLC
+Copyright (c) 2016, Los Alamos National Security, LLC
 All rights reserved.
 
-Copyright 2017. Los Alamos National Security, LLC. This software was produced
+Copyright 2016. Los Alamos National Security, LLC. This software was produced
 under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National
 Laboratory (LANL), which is operated by Los Alamos National Security, LLC for
 the U.S. Department of Energy. The U.S. Government has rights to use,
@@ -39,22 +39,32 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-#-------------------------------------------------------------------------------
-# demoapp - uses Simple_Mesh from portage
-#-------------------------------------------------------------------------------
-add_executable(demoapp demoapp.cc)
-target_link_libraries(demoapp tangram ${EXTRA_LIBS})
+#-----------------------------------------------------------------------------~#
 
 
-#-------------------------------------------------------------------------------
-# Other libraries
-#-------------------------------------------------------------------------------
-# taget_link_libraries(tangramapp ${WONTON_LIBS})
-# include_directories(${WONTON_INCLUDE_DIRS})
+#-----------------------------------------------------------------------------~#
 
-#-------------------------------------------------------------------------------
-# Testing
-#-------------------------------------------------------------------------------
-# if (ENABLE_APP_TESTS)
-#   add_subdirectory(test)
-# endif (ENABLE_APP_TESTS)
+# Add header files
+set(intersect_HEADERS
+    r3d.h
+    split_r3d.h
+    PARENT_SCOPE
+)
+
+# Add source files
+set(intersect_SOURCES
+    r3d.c
+    PARENT_SCOPE
+)
+
+# Unit tests
+
+if (ENABLE_UNIT_TESTS) 
+
+  cinch_add_unit(split_r3d
+    SOURCES test/test_split_r3d.cc r3d.c
+    LIBRARIES tangram
+    POLICY SERIAL
+    )
+endif(ENABLE_UNIT_TESTS)
+

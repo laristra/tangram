@@ -279,6 +279,104 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
   fout << "endgmv" << std::endl;
 }
 
+//Simplified version: outputs CellMatPoly's list. If CellMatPoly's list
+//was obtained from a reconstructor, it corresponds to writing out only
+//multi-material cells. Does not require the base mesh and is therefore
+//convenient for debugging and/or when a single CellMatPoly needs to be 
+//written out.
+//Note that unlike in the full version, nodes and faces of CellMatPoly's 
+//are written as is and will be duplicated if shared by different CellMatPoly's.
+template<int D>
+void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpoly_list,
+                  const std::string& filename) {  
+  std::ofstream fout(filename);
+  fout << std::scientific;
+  fout.precision(17);
+
+  fout << "gmvinput ascii" << std::endl;
+  fout << "codename Tangram" << std::endl;
+  fout << "simdate 01/01/01" << std::endl;
+
+  int npoly = 0;
+  int nmats = 0;
+  std::vector<Point<D>> points;
+  for (int imp = 0; imp < cellmatpoly_list.size(); imp++) {
+    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[imp].get();
+
+    if (cellmatpoly) {  // Mixed cell
+      int ncp = cellmatpoly->num_matvertices();
+      for (int i = 0; i < ncp; i++)
+        points.push_back(cellmatpoly->matvertex_point(i));
+      npoly += cellmatpoly->num_matpolys();
+      const std::vector<int>& matpoly_matids = cellmatpoly->matpoly_matids();
+      int max_matid = *std::max_element(matpoly_matids.begin(), matpoly_matids.end());
+      if (max_matid >= nmats) nmats = max_matid + 1;
+    }
+  }
+
+  int nmatpnts = (int) points.size();
+  fout << "nodev " << nmatpnts << std::endl;
+  for (int ip = 0; ip < nmatpnts; ip++) {
+    fout << points[ip];
+    if (D == 2)  // GMV requires us to output 3 coordinates 
+      fout << " " << 0.000000;
+    fout << std::endl;
+  }
+
+  fout << "cells " << npoly << std::endl;
+  int pts_offset = 0;
+  for (int imp = 0; imp < cellmatpoly_list.size(); imp++) {
+    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[imp].get();
+    if (!cellmatpoly)
+      continue;
+
+    // Write out the material polyhedra
+    int nmp = cellmatpoly->num_matpolys();
+    for (int i = 0; i < nmp; i++) {      
+      if (D == 1 || D == 2) {
+        std::vector<int> mverts = cellmatpoly->matpoly_vertices(i);
+        fout << "general 1 " << mverts.size() << " ";
+        for (auto n : mverts)
+          fout << pts_offset + n + 1 << " ";       
+        fout << std::endl;
+      } 
+      else if (D == 3) {
+        std::vector<int> const& mfaces = cellmatpoly->matpoly_faces(i);
+        fout << "general " << mfaces.size() << std::endl;
+        for (auto f : mfaces) {
+          std::vector<int> const& mfverts = cellmatpoly->matface_vertices(f);
+          fout << mfverts.size() << " ";
+        }
+        fout << std::endl;
+        for (auto f : mfaces) {
+          std::vector<int> const& mfverts = cellmatpoly->matface_vertices(f);
+          for (auto n : mfverts)
+            fout << pts_offset + n + 1 << " ";
+          fout << std::endl;
+        }
+      }  // else if (D == 3)
+    }  // for (i = 0; i < nmp; i++)
+    pts_offset += cellmatpoly->num_matvertices();
+  }  // for (int imp = 0; imp < cellmatpoly_list.size(); imp++)
+
+  // Write out material ID of polygons
+
+  fout << "material " << std::endl;
+  fout << nmats << " 0" << std::endl;
+  for (int i = 0; i < nmats; i++)
+    fout << "mat" << i + 1 << std::endl;
+
+  for (int imp = 0; imp < cellmatpoly_list.size(); imp++) {
+    CellMatPoly<D> *cellmatpoly = cellmatpoly_list[imp].get();
+    if (cellmatpoly) {
+      for (int i = 0; i < cellmatpoly->num_matpolys(); i++)
+        fout << cellmatpoly->matpoly_matid(i) + 1 << " ";
+    }
+  }
+  fout << std::endl;
+
+  fout << "endgmv" << std::endl;
+}
 
 }  // namespace Tangram
 

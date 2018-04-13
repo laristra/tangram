@@ -60,6 +60,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #endif
 
+#include "tangram/support/Vector.h"
+
 /*
   @file tangram.h
   @brief Several utility types and functions within the Tangram namespace.
@@ -217,6 +219,29 @@ inline void for_each(InputIterator first, InputIterator last,
 struct Weights_t {
   int entityID;
   std::vector<double> weights;
+};
+
+struct Plane_t {
+  Vector3 normal;
+  double  dist2origin; // Distance from the plane to the origin.
+                       // If P is a point of a plane and PO is the vector
+                       // from P to the origin, then dist2origin = dot(PO, normal)
+};
+
+template <int D>
+class MatPoly;
+
+template <int D>
+struct MatPolySet_t {
+  std::vector< MatPoly<D> > matpolys;  // MatPoly's in the set
+  std::vector<double> moments;         // Aggregated moments of all MatPoly's
+                                       // in the set.
+};
+
+template <int D>
+struct HalfSpaceSets_t {
+  MatPolySet_t<D> lower_halfspace_set;  // Set of MatPoly's below the line/plane
+  MatPolySet_t<D> upper_halfspace_set;  // Set of MatPoly's above the line/plane
 };
 
 }  // namespace Tangram

@@ -53,8 +53,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "tangram/support/tangram.h"
 #include "tangram/simple_mesh/simple_mesh.h"
 #include "tangram/wrappers/mesh/simple_mesh/simple_mesh_wrapper.h"
+#include "tangram/intersect/split_r3d.h"
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/SLIC.h"
+#include "tangram/driver/write_to_gmv.h"
 
 using Tangram::Simple_Mesh;
 using Tangram::Simple_Mesh_Wrapper;
@@ -108,7 +110,8 @@ int main(int argc, char** argv) {
 #endif
   // Read the input data
   // TODO - error checking on argv
-  auto vfracs = inputData(atoi(argv[1]));
+  const int probNum = atoi(argv[1]);
+  auto vfracs = inputData(probNum);
 
   auto numMats = vfracs.size();
   auto ncells = vfracs[0].size();
@@ -124,7 +127,7 @@ int main(int argc, char** argv) {
   Simple_Mesh_Wrapper mymeshWrapper(*mymesh);
 
   // Build the driver
-  Driver<SLIC, 3, Simple_Mesh_Wrapper> d(mymeshWrapper);
+  Driver<SLIC, 3, Simple_Mesh_Wrapper, Tangram::SplitR3D> d(mymeshWrapper);
 
   // Load the volume fractions
   // I'm going to be dumb here - all cells will have all materials, even
@@ -140,18 +143,10 @@ int main(int argc, char** argv) {
   d.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs);
   d.reconstruct();
 
-  // Do some dumb dumping of data for python plotting
-  for (int c(0); c < ncells; ++c) {
-    auto matpoly = d.cell_matpoly_data(c);
-    auto numPolys = matpoly.num_matpolys();
-    for (int ipoly(0); ipoly < numPolys; ++ipoly) {
-      auto matID = matpoly.matpoly_matid(ipoly);
-      auto nodeCoords = matpoly.matpoly_points(ipoly);
-      std::cout << matID << " ";
-      for (auto p : nodeCoords) std::cout << p << " ";
-      std::cout << std::endl;
-    }
-  }
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list = d.cell_matpoly_ptrs();
+  auto out_fname = (probNum == 0) ? "diamond_20x20.gmv" : "eye_20x20.gmv";  
+  write_to_gmv(cellmatpoly_list, out_fname);
+
 #ifdef ENABLE_MPI
   MPI_Finalize();
 #endif
