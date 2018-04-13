@@ -180,30 +180,25 @@ class MatPoly {
   int num_faces() const { return nfaces_; }
 
   /*!
-   @brief Moments of material poly, will be computed the first time
+   @brief Moments of material poly, when the method is called for the first time,
+   moments will be computed and stored for future use
    @return  Vector of moments; moments[0] is the size, moments[i+1]/moments[0] is i-th
    coordinate of the centroid
   */  
-  const std::vector<double>& moments() {
+  const std::vector<double>& moments() const {
     if (moments_.empty())
       compute_moments(moments_);
     return moments_;
   }
   
   /*!
-   @brief Stored moments of material poly
-   @return  Currently stored vector of moments, can be empty
-  */   
-  const std::vector<double>& stored_moments() const { return moments_; }
-
-/*!
-  @brief Decomposes this MatPoly into MatPoly's using its centroid.
-  If faces of MatPoly are planar, MatPoly's in the decomposition will be convex.
-  @param[in] mat_poly MatPoly to decompose
-  @param[out] convex_matpolys Vector of MatPoly's: 
-  as many MatPoly's as mat_poly has faces will be appended to it.
-*/
-void decompose(std::vector< MatPoly<D> >& sub_polys) const;
+    @brief Decomposes this MatPoly into MatPoly's using its centroid.
+    If faces of MatPoly are planar, MatPoly's in the decomposition will be convex.
+    @param[in] mat_poly MatPoly to decompose
+    @param[out] convex_matpolys Vector of MatPoly's: 
+    as many MatPoly's as mat_poly has faces will be appended to it.
+  */
+  void decompose(std::vector< MatPoly<D> >& sub_polys) const;
 
 
  protected:
@@ -221,7 +216,7 @@ void decompose(std::vector< MatPoly<D> >& sub_polys) const;
   
   int nvertices_ = 0;  // number of vertices
   int nfaces_ = 0;  //number of faces
-  std::vector<double> moments_; //moments of this matpoly
+  mutable std::vector<double> moments_; //moments of this matpoly
 };  // class MatPoly
 
 /*!
@@ -430,14 +425,12 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
 template <>
 void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys) const {
   std::vector<double> moments;
-  if (!moments_.empty()) 
-    moments = moments_;
-  else
-    compute_moments(moments);
+  if (moments_.empty()) 
+    compute_moments(moments_);
 
   Point2 matpoly_cen;
   for (int ixy = 0; ixy < 2; ixy++)
-    matpoly_cen[ixy] = moments[ixy + 1]/moments[0];
+    matpoly_cen[ixy] = moments_[ixy + 1]/moments_[0];
 
   int offset = (int) sub_polys.size();
   sub_polys.resize(offset + nfaces_);
@@ -458,15 +451,12 @@ void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys) const {
 */
 template <>
 void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys) const {
-  std::vector<double> moments;
-  if (!moments_.empty()) 
-    moments = moments_;
-  else
-    compute_moments(moments);
+  if (moments_.empty()) 
+    compute_moments(moments_);
 
   Point3 matpoly_cen;
   for (int ixyz = 0; ixyz < 3; ixyz++)
-    matpoly_cen[ixyz] = moments[ixyz + 1]/moments[0];
+    matpoly_cen[ixyz] = moments_[ixyz + 1]/moments_[0];
 
   int offset = (int) sub_polys.size();
   sub_polys.resize(offset + nfaces_);
