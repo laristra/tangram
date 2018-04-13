@@ -367,6 +367,8 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
   }
   
   faceted_poly->initialize(facetedpoly_vertices, facetedpoly_faces_);
+  if (!moments_.empty())
+    faceted_poly->assign_moments(moments_);
 }
 
 /*!
