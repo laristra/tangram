@@ -122,7 +122,7 @@ TEST(MatPoly, Mesh3D) {
   //Initialization
   ncv_prism_matpoly.initialize(ncv_prism_points, ncv_prism_faces);
   
-  //Verify centroids
+  //Verify face centroids
   for (int iface = 0; iface < ncv_prism_faces.size(); iface++)
     ASSERT_TRUE(approxEq(ncv_prism_face_centroids[iface],
                          ncv_prism_matpoly.face_centroid(iface), 1.0e-15));
@@ -130,5 +130,12 @@ TEST(MatPoly, Mesh3D) {
   //Verify moments
   std::vector<double> matpoly_moments = ncv_prism_matpoly.moments();
   for (int im = 0; im < 4; im++)
-    ASSERT_NEAR(ncv_prism_moments[im], matpoly_moments[im], 1.0e-15);                     
+    ASSERT_NEAR(ncv_prism_moments[im], matpoly_moments[im], 1.0e-15);    
+
+  //Moments of the faceted poly should be the same
+  Tangram::MatPoly<3> faceted_ncv_prism;
+  ncv_prism_matpoly.faceted_matpoly(&faceted_ncv_prism);
+  std::vector<double> faceted_matpoly_moments = faceted_ncv_prism.moments();
+  for (int im = 0; im < 4; im++)
+    ASSERT_NEAR(ncv_prism_moments[im], faceted_matpoly_moments[im], 1.0e-15); 
 }

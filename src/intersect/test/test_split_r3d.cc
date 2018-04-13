@@ -200,6 +200,17 @@ TEST(split_r3d, Mesh3D) {
       ASSERT_NEAR(cur_moments[im], above_plane_components_moments[ipoly][im], 1.0e-15);
   }
 
+  //Assign moments to non-convex poly
+  Tangram::MatPoly<3> original_poly_copy = ncv_matpoly;
+  const Tangram::MatPoly<3>& original_poly = ncv_matpoly;
+  std::vector<double> combined_moments(4, 0.0);
+  for (int ihs = 0; ihs < 2; ihs++)
+    for(int im = 0; im < 4; im++)
+      combined_moments[im] += (*hs_moments_ptrs[ihs])[im];
+  original_poly.assign_moments(combined_moments);
+  for(int im = 0; im < 4; im++)
+    ASSERT_NEAR(combined_moments[im], original_poly_copy.moments()[im], 1.0e-15);
+
   //Decompose manually
   std::vector< Tangram::MatPoly<3> > cv_matpolys;
   ncv_matpoly.decompose(cv_matpolys);

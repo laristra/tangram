@@ -9,7 +9,6 @@
 
 #include <vector>
 #include <algorithm>
-#include <numeric>
 #include <memory>
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"

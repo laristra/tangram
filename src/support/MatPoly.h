@@ -192,6 +192,20 @@ class MatPoly {
   }
   
   /*!
+   @brief Assigns externally computed moments to this material poly.
+   Can also be used to copy moments from the faceted poly to the original one
+   (for example, post-decomposition)
+   @param moments Externally computed moments, moments[0] is the size, 
+   moments[i+1]/moments[0] is i-th coordinate of the centroid
+  */  
+  void assign_moments(const std::vector<double>& moments) const {
+#ifdef DEBUG
+    assert(moments.size() == D + 1);
+#endif    
+    moments_ = moments;
+  }
+
+  /*!
     @brief Decomposes this MatPoly into MatPoly's using its centroid.
     If faces of MatPoly are planar, MatPoly's in the decomposition will be convex.
     @param[in] mat_poly MatPoly to decompose
@@ -483,7 +497,9 @@ template <class Mesh_Wrapper>
 void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       int const cellid,
                       MatPoly<2>* mat_poly) {
+#ifdef DEBUG                        
   assert(Mesh.space_dimension() == 2);
+#endif
 
   mat_poly->reset_mat_id();
   std::vector<Point2> poly_points;
@@ -496,7 +512,9 @@ template <class Mesh_Wrapper>
 void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       int const cellid,
                       MatPoly<3>* mat_poly) {
+#ifdef DEBUG                        
   assert(Mesh.space_dimension() == 3);
+#endif
 
   mat_poly->reset_mat_id();
   std::vector<Point3> poly_points;
