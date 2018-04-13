@@ -131,11 +131,11 @@ namespace Tangram {
       auto iStart = cell_mat_offsets_[cellID];
       
       //Sets of MatPoly's on two sides of the cutting plane
-      HalfSpaceSets_t<3> hs_sets;
+      HalfSpaceSets_t<Dim> hs_sets;
 
       // For every chopped off material, we split MatPoly's above the plane
       hs_sets.upper_halfspace_set.matpolys.resize(1);
-      mesh_.cell_get_matpoly(cellID, &hs_sets.upper_halfspace_set.matpolys[0]);
+      Tangram::cell_get_matpoly(mesh_, cellID, &hs_sets.upper_halfspace_set.matpolys[0]);
 
       // Just going along x-direction - again assuming rectangular prisms only
       Plane_t cutting_plane;
@@ -148,7 +148,7 @@ namespace Tangram {
       //Cutting from left to right: find the x range
       double xmin = DBL_MAX, xmax = DBL_MIN;
       for (int immp = 0; immp < hs_sets.upper_halfspace_set.matpolys.size(); immp++) {
-        const MatPoly<3>& cur_matpoly = hs_sets.upper_halfspace_set.matpolys[immp];
+        const MatPoly<Dim>& cur_matpoly = hs_sets.upper_halfspace_set.matpolys[immp];
         for (int ivrt = 0; ivrt < cur_matpoly.num_vertices(); ivrt++) {
           double pt_x = cur_matpoly.vertex_point(ivrt)[0];
           if (pt_x < xmin) xmin = pt_x;
@@ -163,7 +163,7 @@ namespace Tangram {
         // If the mass fraction is too small, skip it
         if (vfrac < vfrac_tol) continue;
           
-        const MatPolySet_t<3>* single_mat_set_ptr;
+        const MatPolySet_t<Dim>* single_mat_set_ptr;
         //On the last iteration the remaining part is single-material,
         //so we don't need to split it
         if (iMat == numMats - 1)
@@ -183,7 +183,7 @@ namespace Tangram {
         }
         //Add single-material MatPoly's to CellMatPoly
         for (int ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
-          const MatPoly<3>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
+          const MatPoly<Dim>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
           // Flatten the face vertices for the single-material MatPoly
           int nfaces = cur_matpoly.num_faces();
           std::vector<int> nface_vrts(nfaces);

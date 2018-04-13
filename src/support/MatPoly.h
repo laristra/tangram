@@ -489,6 +489,62 @@ void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys) const {
   }
 }
 
+template <class Mesh_Wrapper>
+void cell_get_matpoly(const Mesh_Wrapper& Mesh,
+                      int const cellid,
+                      MatPoly<2>* mat_poly) {
+  assert(Mesh.space_dimension() == 2);
+
+  mat_poly->reset_mat_id();
+  std::vector<Point2> poly_points;
+  Mesh.cell_get_coordinates(cellid, &poly_points);
+
+  mat_poly->initialize(poly_points);
+}
+
+template <class Mesh_Wrapper>
+void cell_get_matpoly(const Mesh_Wrapper& Mesh,
+                      int const cellid,
+                      MatPoly<3>* mat_poly) {
+  assert(Mesh.space_dimension() == 3);
+
+  mat_poly->reset_mat_id();
+  std::vector<Point3> poly_points;
+  std::vector< std::vector<int> > poly_faces;
+
+  std::vector<int> cnodes;
+  Mesh.cell_get_nodes(cellid, &cnodes);
+  int ncnodes = cnodes.size();
+  poly_points.resize(ncnodes);
+  for (int n = 0; n < ncnodes; ++n)
+    Mesh.node_get_coordinates(cnodes[n], &poly_points[n]);
+
+  std::vector<int> cfaces, cfdirs;
+  Mesh.cell_get_faces_and_dirs(cellid, &cfaces, &cfdirs);
+  int ncfaces = cfaces.size();
+  for (int f = 0; f < ncfaces; f++) {
+    std::vector<int> fnodes;
+    Mesh.face_get_nodes(cfaces[f], &fnodes);
+    int nfnodes = fnodes.size();
+    
+    //Check that the order of nodes is ccw
+    if (cfdirs[f] != 1)
+      std::reverse(fnodes.begin(), fnodes.end());
+
+    // Get the local indices (in the cell node list) of the face nodes
+    std::vector<int> fnodes_local(nfnodes);
+    for (int n = 0; n < nfnodes; n++) {
+      fnodes_local[n] = (int) (std::find(cnodes.begin(), cnodes.end(), fnodes[n]) -
+                                         cnodes.begin());
+      assert(fnodes_local[n] != ncnodes);
+    }
+    poly_faces.emplace_back(fnodes_local);
+  }
+
+  mat_poly->initialize(poly_points, poly_faces);
+}
+
+
 }  // namespace Tangram
 
 #endif  // TANGRAM_MATPOLY_H_
