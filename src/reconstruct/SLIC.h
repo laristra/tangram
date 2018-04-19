@@ -53,6 +53,7 @@
 #include "tangram/driver/CellMatPoly.h"
 #include "tangram/support/MatPoly.h"
 #include "tangram/intersect/split_r3d.h"
+#include "tangram/reconstruct/cutting_distance_solver.h"
 
 /*!
  @file SLIC.h
@@ -125,9 +126,6 @@ namespace Tangram {
       
       CellMatPoly<Dim>* cellpoly = new CellMatPoly<Dim>(cellID);
       
-      // We are assuming here - for now - that cells are rectangular prisms for
-      // simplicity
-      
       auto iStart = cell_mat_offsets_[cellID];
       
       //Sets of MatPoly's on two sides of the cutting plane
@@ -137,27 +135,22 @@ namespace Tangram {
       hs_sets.upper_halfspace_set.matpolys.resize(1);
       Tangram::cell_get_matpoly(mesh_, cellID, &hs_sets.upper_halfspace_set.matpolys[0]);
 
-      // Just going along x-direction - again assuming rectangular prisms only
-      Plane_t cutting_plane;
+      // Just going along x-direction
+      Plane_t<Dim> cutting_plane;
       cutting_plane.normal = Vector3(1.0, 0.0, 0.0);
 
       //Create Splitter instance
       MatPoly_Splitter split_matpolys(hs_sets.upper_halfspace_set.matpolys, 
                                       cutting_plane, true);
 
-      //Cutting from left to right: find the x range
-      double xmin = DBL_MAX, xmax = DBL_MIN;
-      for (int immp = 0; immp < hs_sets.upper_halfspace_set.matpolys.size(); immp++) {
-        const MatPoly<Dim>& cur_matpoly = hs_sets.upper_halfspace_set.matpolys[immp];
-        for (int ivrt = 0; ivrt < cur_matpoly.num_vertices(); ivrt++) {
-          double pt_x = cur_matpoly.vertex_point(ivrt)[0];
-          if (pt_x < xmin) xmin = pt_x;
-          if (pt_x > xmax) xmax = pt_x;
-        }
-      }
+      //Create cutting distance solver
+      IterativeMethodTolerances_t tols = {
+        .max_num_iter = 1000, .arg_eps = vfrac_tol, .fun_eps = vfrac_tol};
+      CuttingDistanceSolver<Dim, Tangram::ClipR3D> 
+        solve_cut_dst(hs_sets.upper_halfspace_set.matpolys, cutting_plane.normal, tols, true);
 
+      //Cutting from left to right
       double cell_volume = mesh_.cell_volume(cellID);
-      double x_cut = xmin;
       for (int iMat(0); iMat < numMats; iMat++) {
         auto vfrac = cell_mat_volfracs_[iStart + iMat];
         // If the mass fraction is too small, skip it
@@ -170,13 +163,19 @@ namespace Tangram {
           single_mat_set_ptr = &hs_sets.upper_halfspace_set;
         else {
           // Find distance to origin for the cutting plane
-          x_cut += vfrac*(xmax - xmin);
-          cutting_plane.dist2origin = -x_cut;
+          solve_cut_dst.set_volume_fraction(vfrac);
+          std::vector<double> clip_res = solve_cut_dst();
+          cutting_plane.dist2origin = clip_res[0];
+
+          // Check if the volume fraction matches the reference value
+          double cur_vfrac_err = std::fabs(clip_res[1]/cell_volume - vfrac);
+          if (cur_vfrac_err > vfrac_tol) 
+            std::cerr << "SLIC for cell " << cellID << ": after " << tols.max_num_iter <<
+              "iteration(s) achieved error in volume fraction for material " << 
+              cell_mat_ids_[iStart + iMat] << " is " << cur_vfrac_err << 
+              ", volume fraction tolerance is " << vfrac_tol << std::endl;
 
           hs_sets = split_matpolys();
-
-          // Confirm that the volume fraction matches the reference value
-          assert(std::fabs(hs_sets.lower_halfspace_set.moments[0]/cell_volume - vfrac) < vfrac_tol);
 
           //Chopped off single-material MatPoly's are below the plane
           single_mat_set_ptr = &hs_sets.lower_halfspace_set;
