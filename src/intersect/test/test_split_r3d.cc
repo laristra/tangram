@@ -29,7 +29,7 @@ TEST(split_r3d, Mesh3D) {
   std::vector< std::vector<int> > prism_faces = {
     {0, 2, 1}, {0, 1, 4, 3}, {1, 2, 5, 4}, {2, 0, 3, 5}, {3, 4, 5} };
 
-  Tangram::Plane_t cutting_plane;
+  Tangram::Plane_t<3> cutting_plane;
   cutting_plane.normal = Tangram::Vector3(0.0, -1.0/sqrt(2.0), 1.0/sqrt(2.0));
   cutting_plane.dist2origin = -0.35355339059327373;    
   
