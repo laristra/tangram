@@ -69,10 +69,9 @@ public:
     double dst_bnd[2] = { DBL_MAX, 0.0 };
     Point<D> nearest_pt;
     for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
-      for (int im = 0; im < D + 1; im++) {
-        const std::vector<double>& poly_moments = matpolys_[ipoly].moments();
+      const std::vector<double>& poly_moments = matpolys_[ipoly].moments();
+      for (int im = 0; im < D + 1; im++)
         full_moments[im] += poly_moments[im];
-      }
 
       const std::vector< Point<D> >& poly_pts = matpolys_[ipoly].points();
       for (int ivrt = 0; ivrt < matpolys_[ipoly].num_vertices(); ivrt++) {
