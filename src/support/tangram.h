@@ -245,6 +245,19 @@ struct HalfSpaceSets_t {
   MatPolySet_t<D> upper_halfspace_set;  // Set of MatPoly's above the line/plane
 };
 
+/* In the context of interface reconstruction methods based on the nested 
+   dissections algorithm, the iterative methods are used to find the 
+   position of the cutting plane. 
+   VOF uses an iterative method to find the cutting distance for a given normal, 
+   in which case the objective function is volume and fun_eps is volume tolerance,
+   while arg_eps is unused.
+   MOF, in addition to that, iteratively solves for the normal. In this case,
+   the tolerances are used not for the objective function, but the argument,
+   and arg_eps will be imposed on the change in polar angles between consecutive
+   steps. Hence, MOF can use one instance of IterativeMethodTolerances_t with
+   fun_eps used for finding the cutting distance, and arg_eps used for finding
+   the direction of the normal.
+*/   
 struct IterativeMethodTolerances_t {
   int max_num_iter;   // Max number of iterations
   double arg_eps;     // Tolerance on the arguments of the function

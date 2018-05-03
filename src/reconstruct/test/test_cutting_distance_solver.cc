@@ -61,13 +61,13 @@ TEST(cutting_distance_solver, Mesh3D) {
     solve_cut_dst_cv(cv_subpolys, ref_cutting_plane.normal, tols, true);
 
   // Find distance to origin for the cutting plane, non-convex poly
-  solve_cut_dst_ncv.set_volume_fraction(target_volume/ncv_poly_volume);
+  solve_cut_dst_ncv.set_target_volume(target_volume);
   std::vector<double> clip_res = solve_cut_dst_ncv();
 
   ASSERT_NEAR(ref_cutting_plane.dist2origin, clip_res[0], 1.0e-15);
 
   // Find distance to origin for the cutting plane, convex decomposition
-  solve_cut_dst_cv.set_volume_fraction(target_volume/ncv_poly_volume);
+  solve_cut_dst_cv.set_target_volume(target_volume);
   clip_res = solve_cut_dst_cv();
 
   ASSERT_NEAR(ref_cutting_plane.dist2origin, clip_res[0], 1.0e-15);
@@ -76,12 +76,12 @@ TEST(cutting_distance_solver, Mesh3D) {
   ref_cutting_plane.normal = Tangram::Vector3(-1.0, 0.0, 0.0);
   ref_cutting_plane.dist2origin = 0.5;
 
-  solve_cut_dst_ncv.set_volume_fraction(0.5);
+  solve_cut_dst_ncv.set_target_volume(0.5*ncv_poly_volume);
   clip_res = solve_cut_dst_ncv();
 
   ASSERT_NEAR(ref_cutting_plane.dist2origin, clip_res[0], 1.0e-15);
 
-  solve_cut_dst_cv.set_volume_fraction(0.5);
+  solve_cut_dst_cv.set_target_volume(0.5*ncv_poly_volume);
   clip_res = solve_cut_dst_cv();
 
   ASSERT_NEAR(ref_cutting_plane.dist2origin, clip_res[0], 1.0e-15);
@@ -91,12 +91,12 @@ TEST(cutting_distance_solver, Mesh3D) {
   ref_cutting_plane.normal.normalize();
   ref_cutting_plane.dist2origin = -0.5*sqrt(2);
 
-  solve_cut_dst_ncv.set_volume_fraction(0.5);
+  solve_cut_dst_ncv.set_target_volume(0.5*ncv_poly_volume);
   clip_res = solve_cut_dst_ncv();
 
   ASSERT_NEAR(ref_cutting_plane.dist2origin, clip_res[0], 1.0e-15);
 
-  solve_cut_dst_cv.set_volume_fraction(0.5);
+  solve_cut_dst_cv.set_target_volume(0.5*ncv_poly_volume);
   clip_res = solve_cut_dst_cv();
 
   ASSERT_NEAR(ref_cutting_plane.dist2origin, clip_res[0], 1.0e-15);

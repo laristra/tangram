@@ -42,6 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
 add_subdirectory(tangramapp)
 add_subdirectory(demoapp)
 add_subdirectory(demoapp3d)
+add_subdirectory(demo-vof-app3d)
 if(XMOF2D_FOUND)
   add_subdirectory(xmof-linetest-simplemesh-app)
   if (ENABLE_MPI AND Jali_DIR)

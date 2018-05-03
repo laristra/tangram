@@ -56,6 +56,14 @@ namespace Tangram {
 // When this is in relatively good shape, we can write 1, 2 and 3
 // dimensional specializations
 
+/*
+  Note that CellMatPoly expects the coordinates of coincident vertices of
+  different material poly's to match exactly. If the coordinates are not 
+  exactly equal, the respective vertices will be treated as separate nodes
+  of CellMatPoly, which will also affect the topology: faces will not be 
+  recognized as coincident and cell will not be recognized as adjacent.
+*/
+
 template <int D>
 class CellMatPoly {
  public:
@@ -379,6 +387,12 @@ class CellMatPoly {
                    int const * const faces_parentid);
   
   /*!
+   @brief Add a MatPoly to a cell
+   @param mat_poly  MatPoly to add
+  */
+  void add_matpoly(const MatPoly<D>& mat_poly);
+
+  /*!
    @brief Extracts material poly as a MatPoly object
    @param matpoly_id  ID of the material poly
    @return  Corresponding MatPoly object
@@ -400,7 +414,55 @@ class CellMatPoly {
     }
     return mat_polys;
   }
-  
+
+  /*!
+   @brief Assigns externally computed aggregated moments for a distinct material
+   @param mat_id  ID of the material
+   @param moments Externally computed moments, moments[0] is the size, 
+   moments[i+1]/moments[0] is i-th coordinate of the centroid
+  */  
+  void assign_material_moments(const int mat_id,
+                               const std::vector<double>& moments) const {
+    assert(moments.size() == D + 1);                        
+    if (mat_id >= material_moments_.size())
+      material_moments_.resize(mat_id + 1);
+
+    material_moments_[mat_id] = moments;
+  }
+
+  /*!
+   @brief Aggregated moments of a distinct material, when the method is called 
+   for the first time, moments will be computed and stored for future use
+   @param mat_id  ID of the material
+   @return  Vector of moments for the respective material
+  */  
+  const std::vector<double>& material_moments(const int mat_id) const {
+    if (material_moments_.empty())
+      compute_material_moments(material_moments_);
+    return material_moments_[mat_id];
+  }
+
+ protected:
+  /*!
+   @brief Computes aggregated moments for distinct materials
+   @param mat_moments Computed moments, mat_moments[mat_id][0] is the size, 
+   mat_moments[mat_id][i+1]/mat_moments[mat_id][0] is i-th coordinate of the centroid
+  */  
+  void compute_material_moments(std::vector< std::vector<double> >& mat_moments) const {
+    for (int ipoly = 0; ipoly < num_matpolys_; ipoly++) {
+      int matid = materialids_[ipoly];
+      if (matid >= material_moments_.size()) {
+        material_moments_.resize(matid + 1);
+        material_moments_[matid].assign(D + 1, 0.0);
+      }
+
+      material_moments_[matid][0] += matpoly_volumes_[ipoly];
+      for (int idim = 0; idim < D; idim++)
+        material_moments_[matid][idim + 1] += 
+          matpoly_volumes_[ipoly]*matpoly_centroids_[ipoly][idim];
+    }
+  }
+
  private:
   int cellid_ = -1;  // ID of the cell which we are describing
 
@@ -409,6 +471,7 @@ class CellMatPoly {
   //                      // Redundant but convenient!
   std::vector<int> materialids_;  // Material IDs of matpolys (can be repeated)
   int num_materials_ = 0; // Number of distinct materials
+  mutable std::vector< std::vector<double> > material_moments_;  // Aggregated moments for distinct material
   std::vector<std::vector<int>> matpoly_faces_;  // IDs of faces of matpolys
   std::vector<std::vector<int>> matpoly_facedirs_;  // Dirs of faces of matpolys
   //                          // 1 means face normal points out of matpoly
@@ -585,7 +648,11 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     bool found = false;
     for (int i = 0; i < nv_ini; i++) {  // Note, nv remains number of original pnts
       Point<D>& p = matvertex_points_[i];
-      if (approxEq(p, pmat, 1.0e-16)) {
+      // We use exact equality criterium to identify coincident nodes.
+      // The use of distance tolerances can result in material poly's with 
+      // degeneracies depending on the intersector employed (e.g. r2d) and is
+      // therefore not recommended.
+      if (p == pmat) {
         found = true;  // This point is already in CellMatPoly
         matverts[j] = i;
         break;
@@ -723,9 +790,14 @@ void CellMatPoly<D>::add_matpoly(int matid,
     Point<D> const & pmat = matpoly_points[j];
 
     bool found = false;
+    
     for (int i = 0; i < nv_ini; i++) {
       Point<D>& p = matvertex_points_[i];
-      if (approxEq(p, pmat, 1.0e-16)) {
+      // We use exact equality criterium to identify coincident nodes.
+      // The use of distance tolerances can result in material poly's with 
+      // degeneracies depending on the intersector employed (e.g. r3d) and is
+      // therefore not recommended.
+      if (p == pmat) {
         found = true;  // This point is already in CellMatPoly
         matverts[j] = i;
         break;
@@ -879,60 +951,93 @@ void CellMatPoly<D>::add_matpoly(int matid,
   num_matpolys_++;
 }  // add_matpoly for 3D
 
-  /*!
-   @brief Extracts 2D material polygon as a MatPoly object
-   @param matpoly_id  ID of the material poly
-   @return  Corresponding MatPoly object
-  */
-  template<>
-  MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
-#ifdef DEBUG
-    assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
-#endif
-    std::vector<Point<2>> mp_pts = matpoly_points(matpoly_id);
-    MatPoly<2> matpoly(matpoly_matid(matpoly_id));
-    matpoly.initialize(mp_pts);
-    
-    return matpoly;
+/*!
+  @brief Add a MatPoly to a 2D cell
+  @param mat_poly  2D MatPoly to add
+*/
+template <>
+void CellMatPoly<2>::add_matpoly(const MatPoly<2>& mat_poly) {
+  add_matpoly(mat_poly.mat_id(), mat_poly.num_vertices(), 
+              &mat_poly.points()[0], nullptr, nullptr,
+              nullptr, nullptr);
+}
+
+/*!
+  @brief Add a MatPoly to a 3D cell
+  @param mat_poly  3D MatPoly to add
+*/
+template <>
+void CellMatPoly<3>::add_matpoly(const MatPoly<3>& mat_poly) {
+  // Flatten the face vertices
+  int nfaces = mat_poly.num_faces();
+  std::vector<int> nface_vrts(nfaces);
+  std::vector<int> faces_vrts;
+  for (int iface = 0; iface < nfaces; iface++) {
+    const std::vector<int>& face_ivrts = mat_poly.face_vertices(iface);
+    nface_vrts[iface] = face_ivrts.size();
+    faces_vrts.insert(faces_vrts.end(), face_ivrts.begin(), face_ivrts.end());
   }
 
-  /*!
-   @brief Extracts 3D material polyhedron as a MatPoly object
-   @param matpoly_id  ID of the material poly
-   @return  Corresponding MatPoly object
-  */
-  template<>
-  MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
+  add_matpoly(mat_poly.mat_id(), mat_poly.num_vertices(), 
+              &mat_poly.points()[0], nullptr, nullptr,
+              nfaces, &nface_vrts[0], &faces_vrts[0],
+              nullptr, nullptr);
+}
+
+/*!
+  @brief Extracts 2D material polygon as a MatPoly object
+  @param matpoly_id  ID of the material poly
+  @return  Corresponding MatPoly object
+*/
+template<>
+MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
 #ifdef DEBUG
-    assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
+  assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
 #endif
-    const std::vector<int>& mp_vrt_ids = matpoly_vertices(matpoly_id);
-    int nvrts = (int) mp_vrt_ids.size();
-    std::vector<Point<3>> mp_pts;
-    mp_pts.reserve(nvrts);
-    for (int ivrt = 0; ivrt < nvrts; ivrt++)
-      mp_pts.push_back(matvertex_points_[mp_vrt_ids[ivrt]]);
-    
-    const std::vector<int>& mp_faces = matpoly_faces(matpoly_id);
-    int nfaces = (int) mp_faces.size();
-    std::vector<std::vector<int>> mf_vrts(nfaces);
-    for (int iface = 0; iface < nfaces; iface++) {
-      mf_vrts[iface] = matface_vertices(mp_faces[iface]);
-      if (matpoly_facedirs_[matpoly_id][iface] == 0)
-        std::reverse(mf_vrts[iface].begin(), mf_vrts[iface].end());
-      for (int ivrt = 0; ivrt < mf_vrts[iface].size(); ivrt++) {
-        int local_vrt_id = (int) (std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(),
-                                            mf_vrts[iface][ivrt]) -
-                                  mp_vrt_ids.begin());
-        mf_vrts[iface][ivrt] = local_vrt_id;
-      }
-    }
+  std::vector<Point<2>> mp_pts = matpoly_points(matpoly_id);
+  MatPoly<2> matpoly(matpoly_matid(matpoly_id));
+  matpoly.initialize(mp_pts);
   
-    MatPoly<3> matpoly(matpoly_matid(matpoly_id));
-    matpoly.initialize(mp_pts, mf_vrts);
-    
-    return matpoly;
+  return matpoly;
+}
+
+/*!
+  @brief Extracts 3D material polyhedron as a MatPoly object
+  @param matpoly_id  ID of the material poly
+  @return  Corresponding MatPoly object
+*/
+template<>
+MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
+#ifdef DEBUG
+  assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
+#endif
+  const std::vector<int>& mp_vrt_ids = matpoly_vertices(matpoly_id);
+  int nvrts = (int) mp_vrt_ids.size();
+  std::vector<Point<3>> mp_pts;
+  mp_pts.reserve(nvrts);
+  for (int ivrt = 0; ivrt < nvrts; ivrt++)
+    mp_pts.push_back(matvertex_points_[mp_vrt_ids[ivrt]]);
+  
+  const std::vector<int>& mp_faces = matpoly_faces(matpoly_id);
+  int nfaces = (int) mp_faces.size();
+  std::vector<std::vector<int>> mf_vrts(nfaces);
+  for (int iface = 0; iface < nfaces; iface++) {
+    mf_vrts[iface] = matface_vertices(mp_faces[iface]);
+    if (matpoly_facedirs_[matpoly_id][iface] == 0)
+      std::reverse(mf_vrts[iface].begin(), mf_vrts[iface].end());
+    for (int ivrt = 0; ivrt < mf_vrts[iface].size(); ivrt++) {
+      int local_vrt_id = (int) (std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(),
+                                          mf_vrts[iface][ivrt]) -
+                                mp_vrt_ids.begin());
+      mf_vrts[iface][ivrt] = local_vrt_id;
+    }
   }
+
+  MatPoly<3> matpoly(matpoly_matid(matpoly_id));
+  matpoly.initialize(mp_pts, mf_vrts);
+  
+  return matpoly;
+}
   
 }  // namespace Tangram
 

@@ -322,7 +322,8 @@ Point3 MatPoly<3>::face_centroid(int const face_id) const {
     Point3 tri_centroid = (vertex_points_[ifv] + vertex_points_[isv] + gcenter)/3.0;
     centroid += tri_size*tri_centroid;
   }
-  centroid /= size;
+  if (size > std::numeric_limits<double>::epsilon()) centroid /= size;
+  else centroid = gcenter;
 
   return centroid;
 }
@@ -423,7 +424,7 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
       for (int idim = 0; idim < 3; idim++)
         for (int ivrt = 0; ivrt < 3; ivrt++)
           moments[idim + 1] += vcp[idim]*pow(face_pts[itri_pts[itri][ivrt]][idim] + 
-                                              face_pts[itri_pts[itri][(ivrt + 1)%3]][idim], 2);
+                                             face_pts[itri_pts[itri][(ivrt + 1)%3]][idim], 2);
     }
   }
 

@@ -258,6 +258,14 @@ operator/(const Point<D>& p, double s) {
 }
 
 template <long D> inline bool
+operator==(const Point<D>& p1, const Point<D>& p2) {
+  for (int i = 0; i < D; i++)
+    if (p1[i] != p2[i])
+      return false;
+  return true;
+}
+
+template <long D> inline bool
 approxEq(const Point<D>& p1, const Point<D>& p2, double tol = 1.0e-8) {
   // This uses the L_infty norm to avoid nearby subtractions
   for (int i = 0; i < D; i++)

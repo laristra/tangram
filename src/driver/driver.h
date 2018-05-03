@@ -53,6 +53,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <iostream>
 #include <type_traits>
+#include <limits>
 
 #ifdef ENABLE_MPI
 #include "mpi.h"
@@ -85,18 +86,21 @@ namespace Tangram {
   implementation that provides certain functionality.
 */
 
-template <template <class, int, class> class CellInterfaceReconstructor,
+template <template <class, int, class, class> class CellInterfaceReconstructor,
     int Dim,
     class Mesh_Wrapper,
-    class MatPoly_Splitter=void>
+    class MatPoly_Splitter=void,
+    class MatPoly_Clipper=void>
 class Driver {
  public:
   /*!
     @brief Constructor for running the interface reconstruction driver.
     @param[in] Mesh @c Wrapper to the source mesh.
   */
-  explicit Driver(Mesh_Wrapper const& Mesh)
-      : mesh_(Mesh) { }
+  explicit Driver(Mesh_Wrapper const& Mesh,
+                  const IterativeMethodTolerances_t& im_tols,
+                  const bool all_convex = false)
+      : mesh_(Mesh), im_tols_(im_tols), all_convex_(all_convex) { }
 
   /// Copy constructor (disabled)
   Driver(const Driver &) = delete;
@@ -132,12 +136,30 @@ class Driver {
                             std::vector<Point<Dim>>
                             const& cell_mat_centroids = {}) {
     int nc = mesh_.num_entities(Tangram::Entity_kind::CELL);
-    assert(cell_num_mats.size() >= nc);
+    assert(cell_num_mats.size() == nc);
     
     cell_num_mats_ = cell_num_mats;
-    cell_mat_ids_ = cell_mat_ids;
-    cell_mat_volfracs_ = cell_mat_volfracs;
-    cell_mat_centroids_ = cell_mat_centroids;
+    cell_mat_ids_.clear();
+    cell_mat_volfracs_.clear();
+    cell_mat_centroids_.clear();
+
+    // We only add materials with non-zero volume fractions
+    int offset = 0;
+    for (int icell = 0; icell < nc; icell++) {
+      int ncmats = cell_num_mats_[icell];
+      for (int icmat = 0; icmat < ncmats; icmat++)
+        if (cell_mat_volfracs[offset + icmat] > 
+            std::numeric_limits<double>::epsilon()) {
+          cell_mat_ids_.push_back(cell_mat_ids[offset + icmat]);
+          cell_mat_volfracs_.push_back(cell_mat_volfracs[offset + icmat]);
+          if (!cell_mat_centroids.empty())
+            cell_mat_centroids_.push_back(cell_mat_centroids[offset + icmat]);
+        }
+        else
+           cell_num_mats_[icell]--;
+
+      offset += ncmats;
+    }
   }
 
 
@@ -160,8 +182,8 @@ class Driver {
       // Instantiate the interface reconstructor class that will
       // compute the interfaces and compute the pure material submesh
       // in each cell
-      CellInterfaceReconstructor<Mesh_Wrapper, Dim, MatPoly_Splitter>
-        reconstructor(mesh_);
+      CellInterfaceReconstructor<Mesh_Wrapper, Dim, MatPoly_Splitter, MatPoly_Clipper>
+        reconstructor(mesh_, im_tols_, all_convex_);
 
       // Tell the reconstructor what materials are in each cell and
       // what their volume fractions are
@@ -380,6 +402,8 @@ class Driver {
 
  private:
   Mesh_Wrapper const& mesh_;
+  const IterativeMethodTolerances_t im_tols_;
+  const bool all_convex_;
   std::vector<int> cell_num_mats_;
   std::vector<int> cell_mat_ids_;
   std::vector<double> cell_mat_volfracs_;

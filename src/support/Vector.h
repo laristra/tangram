@@ -125,6 +125,13 @@ template <long D> class Vector {
     return m_comp[i];
   }
 
+  /// Negative of this vector.
+  Vector operator-() const {
+    Vector v;
+    for (int i = 0; i < D; i++) v.m_comp[i] = -m_comp[i];
+    return v;
+  }
+
   /// Add the Vector @c rhs to this Vector.
   Vector& operator+=(const Vector<D>& rhs) {
     for (int i = 0; i < D; i++) m_comp[i] += rhs.m_comp[i];

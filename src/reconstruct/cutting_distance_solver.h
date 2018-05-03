@@ -48,33 +48,32 @@ public:
                         matpolys_(matpolys), plane_normal_(plane_normal),
                         tolerances_(tolerances), planar_faces_(planar_faces) {}
   /*! 
-    @brief Sets the reference volume fraction of the components below the plane
-    @param target_vfraction Value of the volume fraction to match
+    @brief Sets the reference volume of the components below the plane
+    @param target_vol Volume to match
   */
-  void set_volume_fraction(double const target_vfraction) {
+  void set_target_volume(double const target_vol) {
 #ifdef DEBUG
-    assert(target_vfraction >= 0.0);
+    assert(target_vol >= 0.0);
 #endif    
-    target_vfrac_ = target_vfraction;
+    target_vol_ = target_vol;
   }
 
   /*! 
     @brief Computes the cutting distance for the plane of the given orientation
-    that matches the reference volume fraction
+    that matches the reference volume
     @return Vector containing the cutting distance followed by aggregated moments 
     of the MatPoly's components below the plane
    */
   std::vector<double> operator() () const {
-    std::vector<double> full_moments(D + 1, 0.0);
     double dst_bnd[2] = { DBL_MAX, 0.0 };
     Point<D> nearest_pt;
+    // Find the cutting distance corresponding to the planes passing through
+    // the nearest and the farthest vertices
     for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
-      const std::vector<double>& poly_moments = matpolys_[ipoly].moments();
-      for (int im = 0; im < D + 1; im++)
-        full_moments[im] += poly_moments[im];
-
       const std::vector< Point<D> >& poly_pts = matpolys_[ipoly].points();
       for (int ivrt = 0; ivrt < matpolys_[ipoly].num_vertices(); ivrt++) {
+        // dist2origin for Plane_t is defined as dot(PO, normal), where PO
+        // is the vector from the point to the origin and is the negative of P.asV()
         double dst_vrt = -dot(plane_normal_, poly_pts[ivrt].asV());
         if (dst_vrt < dst_bnd[0]) {
           dst_bnd[0] = dst_vrt; nearest_pt = poly_pts[ivrt];
@@ -82,26 +81,40 @@ public:
         if (dst_vrt > dst_bnd[1]) dst_bnd[1] = dst_vrt;
       }
     }
+    // dst_bnd[0] should correspond to volume fraction of 0, 
+    // dst_bnd[1] to volume fraction of 1
     if (dot(plane_normal_, nearest_pt.asV()) + dst_bnd[1] > 0.0)
       std::reverse(std::begin(dst_bnd), std::end(dst_bnd));
 
-    if (target_vfrac_ < tolerances_.fun_eps) {
+    if (target_vol_ < tolerances_.fun_eps) {
       // Size of the clipped polys is zero: we return the distance corresponding 
       // to the nearest vertex and zero moments
       std::vector<double> empty(D + 2, 0.0);
       empty[0] = dst_bnd[0];
       return empty;
     }
-    else if (target_vfrac_ > 1.0 - tolerances_.fun_eps) {
+
+    // Aggregate moments of the cut MatPoly's
+    std::vector<double> full_moments(D + 1, 0.0);
+    for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
+      const std::vector<double>& poly_moments = matpolys_[ipoly].moments();
+      for (int im = 0; im < D + 1; im++)
+        full_moments[im] += poly_moments[im];
+    }
+
+    if (target_vol_ > full_moments[0] - tolerances_.fun_eps) {
       // All the poly's are below the plane: we return the distance corresponding
       // to the farthest vertex and aggregate moments
       full_moments.insert(full_moments.begin(), dst_bnd[1]);
       return full_moments;
     }
+
+    // The iterative method uses the objective function with range (0, 1)
+    double target_vfrac_ = target_vol_/full_moments[0];
  
     double d2orgn = 0.5*(dst_bnd[0] + dst_bnd[1]);
     double vfrac_bnd[2] = { 0.0, 1.0 };
-    double dvfrac = 1.0;
+    double dvol = full_moments[0];  // Current volume mismatch
     double cur_dst_bnd[2] = { dst_bnd[0], dst_bnd[1] };
     double cur_vfrac;
     std::vector<double> cur_moments;
@@ -112,7 +125,11 @@ public:
     Plane_t<D> cutting_plane = {.normal = plane_normal_, .dist2origin = d2orgn};
     MatPoly_Clipper clip_matpolys(matpolys_, cutting_plane, planar_faces_);
 
-    while (dvfrac > tolerances_.fun_eps) {
+    // We iterative solve for the cutting distance that corresponds to the target volume
+    // below the cutting plane. By default, the secant method is used.
+    // If the secant method fails, we discard its results, fall back to the initial guess 
+    // and bounds, then use the bisection algorithm instead.
+    while (dvol > tolerances_.fun_eps) {
       double sec_coef;
       if (use_secant) {
         use_secant = (std::fabs(vfrac_bnd[1] - vfrac_bnd[0]) > tolerances_.fun_eps);
@@ -151,7 +168,7 @@ public:
         vfrac_bnd[1] = cur_vfrac;
       }
 
-      dvfrac = std::fabs(cur_vfrac - target_vfrac_);
+      dvol = std::fabs(cur_moments[0] - target_vol_);
       iter_count++;
       if (iter_count > tolerances_.max_num_iter) {
         // Max number of iterations reached: we return the current distance.
@@ -177,7 +194,7 @@ public:
   const std::vector< MatPoly<D> >& matpolys_;
   const Vector<D>& plane_normal_;
   const IterativeMethodTolerances_t& tolerances_;
-  double target_vfrac_ = 0.0;
+  double target_vol_ = 0.0;
   bool planar_faces_;
 };
 

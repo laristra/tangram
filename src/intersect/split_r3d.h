@@ -10,6 +10,7 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <limits>
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 
@@ -97,20 +98,45 @@ r3dpoly_to_matpolys(r3d_poly& r3dpoly,
     int nvrts = poly_brep[ipoly].numvertices;
     std::vector<Point3> curpoly_vrts;
     curpoly_vrts.reserve(nvrts);
+    // We only store unique vertices, so we need a map from r3d node indices
+    // to MatPoly node indices for when we process faces
+    std::vector<int> r3d2matpoly_vrt_ids(nvrts, -1);
     for (int ivrt = 0; ivrt < nvrts; ivrt++) {
       Point3 cur_vrt;
       for (int ixyz = 0; ixyz < 3; ixyz++)
         cur_vrt[ixyz] = poly_brep[ipoly].vertices[ivrt].xyz[ixyz];
-      curpoly_vrts.push_back(cur_vrt);
+      // Check if this point is already stored
+      for (int i = 0; i < curpoly_vrts.size(); i++)
+        if (cur_vrt == curpoly_vrts[i]) {
+          r3d2matpoly_vrt_ids[ivrt] = i;
+          break;
+        }
+      // If the point is unique, we store it
+      if (r3d2matpoly_vrt_ids[ivrt] == -1) {
+        r3d2matpoly_vrt_ids[ivrt] = curpoly_vrts.size();
+        curpoly_vrts.push_back(cur_vrt);
+      }
     }
+    curpoly_vrts.shrink_to_fit();
 
     int nfaces = poly_brep[ipoly].numfaces;
     std::vector< std::vector<int> > curpoly_face(nfaces);
     for (int iface = 0; iface < nfaces; iface++) {
       int face_nverts = poly_brep[ipoly].numvertsperface[iface];
-      curpoly_face[iface].assign(poly_brep[ipoly].faceinds[iface],
-                                 poly_brep[ipoly].faceinds[iface] + face_nverts);
+      for (int ifv = 0; ifv < face_nverts; ifv++) {
+        int cur_vrt_id = r3d2matpoly_vrt_ids[poly_brep[ipoly].faceinds[iface][ifv]];
+        // We only add unique node indices to the list of face's nodes
+        if (std::find(curpoly_face[iface].begin(), curpoly_face[iface].end(), 
+                      cur_vrt_id) == curpoly_face[iface].end())
+          curpoly_face[iface].push_back(cur_vrt_id);
+      }
     }
+
+    // Filter out degenerate faces
+    int ind_face = 0;
+    while (ind_face < curpoly_face.size())
+      if (curpoly_face[ind_face].size() > 2) ind_face++;
+      else curpoly_face.erase(curpoly_face.begin() + ind_face);  
 
     mat_polys[ipoly].initialize(curpoly_vrts, curpoly_face);
   }
@@ -162,6 +188,13 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
 
     //Find the moments for a subpoly
     r3d_reduce(&r3d_subpolys[isp], r3d_moments, POLY_ORDER);
+//*
+    if (r3d_moments[0] <= std::numeric_limits<double>::epsilon()) {
+      subpoly_ptrs[isp]->clear();
+      subpoly_moments_ptrs[isp]->clear();
+      continue;
+    }    
+//*/
     subpoly_moments_ptrs[isp]->assign(r3d_moments, r3d_moments + 4);
 
     //Get a MatPoly for a subpoly
