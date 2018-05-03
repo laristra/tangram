@@ -221,10 +221,11 @@ struct Weights_t {
   std::vector<double> weights;
 };
 
+template <int D>
 struct Plane_t {
-  Vector3 normal;
-  double  dist2origin; // Distance from the plane to the origin.
-                       // If P is a point of a plane and PO is the vector
+  Vector<D> normal;
+  double  dist2origin; // Distance from the plane (line) to the origin.
+                       // If P is a point of a plane (line) and PO is the vector
                        // from P to the origin, then dist2origin = dot(PO, normal)
 };
 
@@ -242,6 +243,12 @@ template <int D>
 struct HalfSpaceSets_t {
   MatPolySet_t<D> lower_halfspace_set;  // Set of MatPoly's below the line/plane
   MatPolySet_t<D> upper_halfspace_set;  // Set of MatPoly's above the line/plane
+};
+
+struct IterativeMethodTolerances_t {
+  int max_num_iter;   // Max number of iterations
+  double arg_eps;     // Tolerance on the arguments of the function
+  double fun_eps;     // Tolerance on the value of the function
 };
 
 }  // namespace Tangram

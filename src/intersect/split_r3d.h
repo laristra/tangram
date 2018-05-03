@@ -130,7 +130,7 @@ r3dpoly_to_matpolys(r3d_poly& r3dpoly,
 */
 void
 split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
-                         const Plane_t& cutting_plane,
+                         const Plane_t<3>& cutting_plane,
                          MatPoly<3>& lower_halfspace_poly,
                          MatPoly<3>& upper_halfspace_poly,
                          std::vector<double>& lower_halfspace_moments,
@@ -192,7 +192,7 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
 class SplitR3D {
  public:
   SplitR3D(const std::vector< MatPoly<3> >& matpolys,
-           const Plane_t& cutting_plane, 
+           const Plane_t<3>& cutting_plane, 
            const bool all_convex = false) : 
            matpolys_(matpolys), 
            cutting_plane_(cutting_plane),
@@ -260,7 +260,7 @@ class SplitR3D {
 
  private:
   const std::vector< MatPoly<3> >& matpolys_;
-  const Plane_t& cutting_plane_;
+  const Plane_t<3>& cutting_plane_;
   bool all_convex_;
 };
 
@@ -274,7 +274,7 @@ class SplitR3D {
 */
 void
 lower_halfspace_moments_r3d(const MatPoly<3>& mat_poly,
-                            const Plane_t& cutting_plane,
+                            const Plane_t<3>& cutting_plane,
                             std::vector<double>& lower_halfspace_moments) {
   //Translate the cutting plane to R3D format
   r3d_plane r3d_cut_plane;
@@ -318,7 +318,7 @@ lower_halfspace_moments_r3d(const MatPoly<3>& mat_poly,
 class ClipR3D {
  public:
   ClipR3D(const std::vector< MatPoly<3> >& matpolys,
-          const Plane_t& cutting_plane, 
+          const Plane_t<3>& cutting_plane, 
           const bool planar_faces = false) : 
           matpolys_(matpolys), 
           cutting_plane_(cutting_plane),
@@ -375,7 +375,7 @@ class ClipR3D {
 
  private:
   const std::vector< MatPoly<3> >& matpolys_;
-  const Plane_t& cutting_plane_;
+  const Plane_t<3>& cutting_plane_;
   bool planar_faces_;
 };
 

@@ -54,6 +54,7 @@ endif (XMOF2D_DIR)
 set(reconstruct_HEADERS
     SLIC.h
     xmof2D_wrapper.h
+    cutting_distance_solver.h
     PARENT_SCOPE
 )
 
@@ -64,5 +65,10 @@ set(reconstruct_SOURCES
 
 # Unit tests
 
-# if (ENABLE_UNIT_TESTS)
-# endif (ENABLE_UNIT_TESTS)
+if (ENABLE_UNIT_TESTS)
+  cinch_add_unit(cutting_distance_solver
+    SOURCES test/test_cutting_distance_solver.cc
+    LIBRARIES tangram
+    POLICY SERIAL
+    )
+endif (ENABLE_UNIT_TESTS)
