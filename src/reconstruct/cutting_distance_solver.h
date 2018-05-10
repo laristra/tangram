@@ -65,8 +65,9 @@ public:
     of the MatPoly's components below the plane
    */
   std::vector<double> operator() () const {
-    double dst_bnd[2] = { DBL_MAX, 0.0 };
-    Point<D> nearest_pt;
+    double vol_eps = tolerances_.fun_eps;
+
+    double dst_bnd[2] = { -DBL_MAX, DBL_MAX };
     // Find the cutting distance corresponding to the planes passing through
     // the nearest and the farthest vertices
     for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
@@ -75,18 +76,14 @@ public:
         // dist2origin for Plane_t is defined as dot(PO, normal), where PO
         // is the vector from the point to the origin and is the negative of P.asV()
         double dst_vrt = -dot(plane_normal_, poly_pts[ivrt].asV());
-        if (dst_vrt < dst_bnd[0]) {
-          dst_bnd[0] = dst_vrt; nearest_pt = poly_pts[ivrt];
-        }
-        if (dst_vrt > dst_bnd[1]) dst_bnd[1] = dst_vrt;
+        // dst_bnd is associated with the volume below the plane with dst_bnd[0] 
+        // corresponding to the zero volume, so the sign is reversed
+        if (dst_vrt > dst_bnd[0]) dst_bnd[0] = dst_vrt;
+        if (dst_vrt < dst_bnd[1]) dst_bnd[1] = dst_vrt;
       }
     }
-    // dst_bnd[0] should correspond to volume fraction of 0, 
-    // dst_bnd[1] to volume fraction of 1
-    if (dot(plane_normal_, nearest_pt.asV()) + dst_bnd[1] > 0.0)
-      std::reverse(std::begin(dst_bnd), std::end(dst_bnd));
 
-    if (target_vol_ < tolerances_.fun_eps) {
+    if (target_vol_ < vol_eps) {
       // Size of the clipped polys is zero: we return the distance corresponding 
       // to the nearest vertex and zero moments
       std::vector<double> empty(D + 2, 0.0);
@@ -102,21 +99,20 @@ public:
         full_moments[im] += poly_moments[im];
     }
 
-    if (target_vol_ > full_moments[0] - tolerances_.fun_eps) {
+    if (target_vol_ > full_moments[0] - vol_eps) {
       // All the poly's are below the plane: we return the distance corresponding
       // to the farthest vertex and aggregate moments
       full_moments.insert(full_moments.begin(), dst_bnd[1]);
       return full_moments;
     }
 
-    // The iterative method uses the objective function with range (0, 1)
-    double target_vfrac_ = target_vol_/full_moments[0];
- 
     double d2orgn = 0.5*(dst_bnd[0] + dst_bnd[1]);
-    double vfrac_bnd[2] = { 0.0, 1.0 };
-    double dvol = full_moments[0];  // Current volume mismatch
+    // As distance changes from dst_bnd[0] to dst_bnd[1], the volume changes
+    // from 0 to the aggregated volume of matpolys
+    double vol_bnd[2] = { 0.0, full_moments[0] };
+    double vol_err = full_moments[0];  // Current volume mismatch
+    double dvol = full_moments[0]; // Change in volume over secant method's iteration
     double cur_dst_bnd[2] = { dst_bnd[0], dst_bnd[1] };
-    double cur_vfrac;
     std::vector<double> cur_moments;
 
     bool use_secant = true;
@@ -129,23 +125,36 @@ public:
     // below the cutting plane. By default, the secant method is used.
     // If the secant method fails, we discard its results, fall back to the initial guess 
     // and bounds, then use the bisection algorithm instead.
-    while (dvol > tolerances_.fun_eps) {
+    while (vol_err > vol_eps) {
       double sec_coef;
       if (use_secant) {
-        use_secant = (std::fabs(vfrac_bnd[1] - vfrac_bnd[0]) > tolerances_.fun_eps);
+        // Both the change in volume on the previous step and the max possible change
+        // in volume on this step should be above volume tolerance to keep using 
+        // the secant method
+        use_secant = (std::fabs(dvol) > vol_eps) &&
+                     (std::fabs(vol_bnd[1] - vol_bnd[0]) > vol_eps);
         if (use_secant) {
-          sec_coef = (cur_dst_bnd[1] - cur_dst_bnd[0])/(vfrac_bnd[1] - vfrac_bnd[0]);
-          use_secant = (std::fabs(sec_coef) > tolerances_.fun_eps);
+          sec_coef = (cur_dst_bnd[1] - cur_dst_bnd[0])/(vol_bnd[1] - vol_bnd[0]);
           if (use_secant) {
-            d2orgn = cur_dst_bnd[1] + sec_coef*(target_vfrac_ - vfrac_bnd[1]);
+            d2orgn = cur_dst_bnd[1] + sec_coef*(target_vol_ - vol_bnd[1]);
             use_secant = ((d2orgn > dst_bnd[0]) == (d2orgn < dst_bnd[1]));          
           }
         }
 
         if(!use_secant) {
-          // Secant method failed: reset variables and fall back to the bisection algorithm
-          cur_dst_bnd[0] = dst_bnd[0]; cur_dst_bnd[1] = dst_bnd[1];
-          d2orgn = 0.5*(dst_bnd[0] + dst_bnd[1]);
+          // Secant method failed: fall back to the bisection algorithm
+          bool valid_lower_bnd = (vol_bnd[0] < target_vol_);
+          if ( valid_lower_bnd != (vol_bnd[1] > target_vol_) ) {
+            // Target volume fraction is no longer within the current bounds: 
+            // reset current bounds
+            cur_dst_bnd[0] = dst_bnd[0]; cur_dst_bnd[1] = dst_bnd[1];
+          }
+          else if (!valid_lower_bnd) {
+            // vfrac_bnd[0] is the upper bound: swap the current bounds
+            std::reverse(std::begin(cur_dst_bnd), std::end(cur_dst_bnd));
+          }
+
+          d2orgn = 0.5*(cur_dst_bnd[0] + cur_dst_bnd[1]);
         }
       }
       else
@@ -153,22 +162,8 @@ public:
       
       cutting_plane.dist2origin = d2orgn;
       cur_moments = clip_matpolys();  
-      cur_vfrac = cur_moments[0]/full_moments[0];
       
-      if (!use_secant) {
-        if (cur_vfrac > target_vfrac_)
-          cur_dst_bnd[1] = d2orgn;
-        else
-          cur_dst_bnd[0] = d2orgn;
-      }
-      else {
-        cur_dst_bnd[0] = cur_dst_bnd[1];
-        cur_dst_bnd[1] = d2orgn;
-        vfrac_bnd[0] = vfrac_bnd[1];
-        vfrac_bnd[1] = cur_vfrac;
-      }
-
-      dvol = std::fabs(cur_moments[0] - target_vol_);
+      vol_err = std::fabs(cur_moments[0] - target_vol_);
       iter_count++;
       if (iter_count > tolerances_.max_num_iter) {
         // Max number of iterations reached: we return the current distance.
@@ -176,6 +171,22 @@ public:
         // discrepancy in volumes and take appropriate action
         cur_moments.insert(cur_moments.begin(), d2orgn);
         return cur_moments;
+      }
+
+      if (!use_secant) {
+        if (cur_moments[0] > target_vol_)
+          cur_dst_bnd[1] = d2orgn;
+        else
+          cur_dst_bnd[0] = d2orgn;
+      }
+      else {
+        // Compute the change in volume over this step
+        dvol = cur_moments[0] - vol_bnd[1];
+
+        cur_dst_bnd[0] = cur_dst_bnd[1];
+        cur_dst_bnd[1] = d2orgn;
+        vol_bnd[0] = vol_bnd[1];
+        vol_bnd[1] = cur_moments[0];
       }
     }
     

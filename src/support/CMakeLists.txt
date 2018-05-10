@@ -51,6 +51,7 @@ set(support_HEADERS
     Point.h
     Matrix.h
     MatPoly.h
+    lsfits.h
     PARENT_SCOPE
 )
 

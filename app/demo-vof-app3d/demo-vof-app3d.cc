@@ -106,9 +106,20 @@ int main(int argc, char** argv) {
   // TODO - error checking on argv
   std::string fname = std::string("3d_diamond_6x6x6_vfracs.txt");
   std::string out_fname = std::string("3d_diamond_6x6x6.gmv");
+  int nx(6), ny(6), nz(6);
+
   if (argc > 1) {
-    fname = argv[1];
-    if (argc > 2) out_fname = argv[2];
+    if (argc < 6) {
+      std::ostringstream os;
+      os << std::endl <<
+      "Correct usage: demo-vof-app <nx> <ny> <nz> " << 
+      "<vol_fractions_filename> <out_gmv_filename>" << std::endl;
+      throw std::runtime_error(os.str());
+    }
+    nx = atoi(argv[1]); ny = atoi(argv[2]); nz = atoi(argv[3]);
+    
+    fname = argv[4];
+    if (argc > 5) out_fname = argv[5];
     else out_fname = fname + ".gmv";
   }
 
@@ -116,8 +127,7 @@ int main(int argc, char** argv) {
 
   auto numMats = vfracs.size();
   auto ncells = vfracs[0].size();
-  // Both demo problems have grids of this size.
-  int nx(6), ny(6), nz(6);
+
   assert(ncells == nx*ny*nz);
 
   // Simple_Mesh is only 3d, so we fake it
@@ -132,7 +142,7 @@ int main(int argc, char** argv) {
     .max_num_iter = 1000, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
   // Build the driver
   Driver<VOF, 3, Simple_Mesh_Wrapper, Tangram::SplitR3D, Tangram::ClipR3D> 
-    d(mymeshWrapper, im_tols, false);
+    d(mymeshWrapper, im_tols, true);
 
   // Load the volume fractions
   // I'm going to be dumb here - all cells will have all materials, even
