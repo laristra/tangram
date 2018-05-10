@@ -108,7 +108,7 @@ namespace Tangram {
       ir_tol.dist_eps = im_tols.fun_eps;
       ir_tol.div_eps = 1.0e-6;
       ir_tol.ddot_eps = im_tols.fun_eps;
-      ir_tol.vfrac_eps = im_tols.fun_eps;
+      ir_tol.area_eps = im_tols.fun_eps;
       ir_tol.ang_eps = im_tols.arg_eps;
       ir_tol.mof_max_iter = im_tols.max_num_iter;
 
@@ -158,7 +158,7 @@ namespace Tangram {
     /*!
       @brief Used iterative methods tolerances
       @return  Tolerances for iterative methods, 
-      note that XMOF2D uses volume fraction tolerance instead of volume tolerance
+      here im_tols_.fun_eps is the area tolerance
     */
     const IterativeMethodTolerances_t& iterative_method_tolerances() const {
       return im_tols_;
