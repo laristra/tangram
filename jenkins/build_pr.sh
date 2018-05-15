@@ -81,7 +81,7 @@ make install
 
 # Build XMOF2D
 
-git clone ssh://git@xcp-stash.lanl.gov:7999/laristra/xmof2d.git xmof2d-repo
+git clone https://github.com/laristra/XMOF2D.git xmof2d-repo
 cd xmof2d-repo
 XMOF2D_INSTALL_PREFIX=`pwd`/xmof2d-inst
 mkdir build
