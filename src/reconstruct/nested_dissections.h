@@ -16,7 +16,12 @@
 
 /*!
  @file nested_dissections.h
-  @brief Implements the nested dissections algorithm.
+  @brief Implements the nested dissections algorithm. 
+  Each instance of this class is associated with a specific CellID. 
+  If is possible to sequentially use the same instance of this class 
+  for different mesh cells because cellID is a reference to the
+  variable that can be modified externally. Materials order should
+  generally be updated if cellID is modified.
   
   @tparam Reconstructor A reconstructor that implements an algorithm 
   for finding the position of a plane between a given material and the rest
@@ -82,10 +87,12 @@ public:
   std::shared_ptr< CellMatPoly<Dim> > operator()(const int permutation_ID = 0) const {
     assert(permutation_ID < cell_materials_order_.size());
 
+    // Get material indices for the cell from the reconstructor
     const std::vector<int>& mat_ids = reconstructor_.cell_materials(cell_id_);    
     int nmats = (int) mat_ids.size();
 
-    std::shared_ptr< CellMatPoly<Dim> > cmp_ptr(new CellMatPoly<Dim>(cell_id_));
+    std::shared_ptr< CellMatPoly<Dim> > cmp_ptr = 
+      std::make_shared< CellMatPoly<Dim> >(cell_id_);
 
     //MatPoly corresponding to a non-convex cell can have non-planar faces
     MatPoly<Dim> cell_matpoly;
@@ -97,7 +104,8 @@ public:
     double vol_tol = reconstructor_.iterative_method_tolerances().fun_eps;
 
     Plane_t<Dim> cutting_plane;
-    HalfSpaceSets_t<Dim> hs_sets;
+    HalfSpaceSets_t<Dim> hs_sets; // Structure containing vectors of MatPoly's and their
+                                  // aggregated moments for the respective half-spaces
 
     //Original vector of mixed MatPoly's consists of the cell's MatPoly
     hs_sets.upper_halfspace_set.matpolys = {cell_matpoly};
@@ -115,14 +123,21 @@ public:
       if (imat == nmats - 1)
         single_mat_set_ptr = &hs_sets.upper_halfspace_set;
       else {
-        //Find cutting plane position: assumes all faces are planar
+        // Find cutting plane position: assumes all faces are planar
+        // Note that this method generally does NOT require MatPoly_Splitter,
+        // but uses MatPoly_Clipper instead. Nested dissections itself
+        // has neither MatPoly_Clipper, nor MeshWrapper, those are
+        // handled by the reconstructor that created this nested dissections
+        // instance.
         reconstructor_.get_plane_position(cell_id_, matid, 
                                           hs_sets.upper_halfspace_set.matpolys, 
                                           cutting_plane, true);
 
         // On the first cut we have to decompose a non-convex MatPoly
-        // This is done inside the loop to make solving for the cutting
-        // distance cheaper on the first step
+        // This is done inside the loop to make the first step cheaper: 
+        // finding the position of the cutting plane normally requires 
+        // only computation of moments, which we assume to be possible 
+        // without decomposing into tetrahedrons (e.g. if r3d is used). 
         if (!convex_cell_ && (imat == 0)) {
           hs_sets.upper_halfspace_set.matpolys.clear();
           cell_matpoly.decompose(hs_sets.upper_halfspace_set.matpolys);

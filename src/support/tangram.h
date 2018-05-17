@@ -57,6 +57,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <limits>
 
 #endif
 
@@ -263,6 +264,11 @@ struct IterativeMethodTolerances_t {
   double arg_eps;     // Tolerance on the arguments of the function
   double fun_eps;     // Tolerance on the value of the function
 };
+
+// Check if two floating point values are equal up to the machine precision
+inline bool is_equal(const double fp1, const double fp2) {
+  return ( std::fabs(fp1 - fp2) < std::numeric_limits<double>::epsilon() );
+}
 
 }  // namespace Tangram
 

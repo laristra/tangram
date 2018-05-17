@@ -96,7 +96,10 @@ public:
   }
   
   /*!
-    @brief Calculate a position of a plane that clips off a particular material
+    @brief Calculate the position of a plane that clips off a particular material.
+    This method is used on every step of the nested dissections algorithm.
+    Note that if MatPoly_Clipper can handle non-convex cells, this method
+    does not require decomposion into tetrahedrons.
     @param[in] cellID Index of the multi-material cell to operate on
     @param[in] matID Index of the material to clip
     @param[in] mixed_polys Vector of material poly's that contain the material
@@ -135,12 +138,18 @@ public:
 
     // Use least squares to compute the gradient
     cutting_plane.normal = -ls_gradient(stencil_centroids, stencil_vfracs);
-    cutting_plane.normal.normalize();
+    double grad_norm = cutting_plane.normal.norm();
+    if (is_equal(grad_norm, 0.0)) {
+      // Zero gradient: we choose SLIC-like plane orientation
+      // Normal is set in the direction of the x-axis
+      cutting_plane.normal.axis(0);
+    }
+    else
+      cutting_plane.normal /= grad_norm;
 
-    //Create cutting distance solver: if not all cells are convex, we assume 
-    //faces to be non-planar
+    //Create cutting distance solver
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
-      solve_cut_dst(mixed_polys, cutting_plane.normal, im_tols_, all_convex_);
+      solve_cut_dst(mixed_polys, cutting_plane.normal, im_tols_, planar_faces);
 
     solve_cut_dst.set_target_volume(target_vol); 
     std::vector<double> clip_res = solve_cut_dst();
@@ -158,7 +167,8 @@ public:
 
   /*!
     @brief Given a cell index, calculate the CellMatPoly using the VOF 
-    interface reconstruction method
+    interface reconstruction method.
+    Uses nested dissections algorithm.
   */
   std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
     int cellID = icells_to_reconstruct[cell_op_ID];
@@ -174,7 +184,11 @@ public:
       return cmp_ptr;
     }
 
-    // Use the nested dissections algorithm for multi-material cells
+    // Use the nested dissections algorithm for multi-material cells.
+    // Note that nested dissections uses this instance of reconstructor
+    // to invoke get_plane_position position method. Nested dissections
+    // itself does not have its own MeshWrapper, MatPoly_Clipper, etc.,
+    // they all are reconstructor specific
     NestedDissections<VOF, Dim, MatPoly_Splitter> 
       nested_dissections(*this, cellID, all_convex_);
 
@@ -182,6 +196,9 @@ public:
     int nmats = (int) cell_mat_ids_[cellID].size();
     std::vector<int> direct_order(nmats);
     std::iota(direct_order.begin(), direct_order.end(), 0);
+    // Note that this is the order of local materials, not material 
+    // indices. Nested dissections uses cell_materials method to get
+    // actual material indices.
     nested_dissections.set_cell_materials_order(direct_order);
 
     return nested_dissections();

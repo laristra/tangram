@@ -10,7 +10,6 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
-#include <limits>
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 

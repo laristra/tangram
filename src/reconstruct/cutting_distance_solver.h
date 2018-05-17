@@ -135,10 +135,8 @@ public:
                      (std::fabs(vol_bnd[1] - vol_bnd[0]) > vol_eps);
         if (use_secant) {
           sec_coef = (cur_dst_bnd[1] - cur_dst_bnd[0])/(vol_bnd[1] - vol_bnd[0]);
-          if (use_secant) {
-            d2orgn = cur_dst_bnd[1] + sec_coef*(target_vol_ - vol_bnd[1]);
-            use_secant = ((d2orgn > dst_bnd[0]) == (d2orgn < dst_bnd[1]));          
-          }
+          d2orgn = cur_dst_bnd[1] + sec_coef*(target_vol_ - vol_bnd[1]);
+          use_secant = ((d2orgn > dst_bnd[0]) == (d2orgn < dst_bnd[1]));          
         }
 
         if(!use_secant) {

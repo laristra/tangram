@@ -53,7 +53,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <iostream>
 #include <type_traits>
-#include <limits>
 
 #ifdef ENABLE_MPI
 #include "mpi.h"
