@@ -58,107 +58,133 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "tangram/reconstruct/VOF.h"
 #include "tangram/driver/write_to_gmv.h"
 
-using Tangram::Simple_Mesh;
-using Tangram::Simple_Mesh_Wrapper;
-using Tangram::Driver;
-using Tangram::VOF;
+/* Demo app for a rectangular grid
+   and a given material data.
+   Uses 3D SimpleMesh.
+   Generates an nx x ny x nz mesh, loads material data from file,
+   performs interface reconstruction, and outputs material 
+   polygons to a gmv file */
 
 #include <set>
-std::vector<std::vector<double>> inputData(std::string fname) {
-  // Output is a vector of vectors of volume fractions for each material
-  std::vector<std::vector<double>> ret;
-  std::ifstream infile(fname);
 
-  // Stupid parsing - there is certainly a better way
-  if (infile.is_open()) {
-    std::string line;
-    getline(infile, line);
-    int numMats = std::stoi(line);
-
-    ret.resize(numMats);
-
-    while (getline(infile, line)) {
-      std::istringstream iss(line);
-
-      std::vector<double> vfracsCell;
-      std::copy(std::istream_iterator<double>(iss),
-                std::istream_iterator<double>(),
-                std::back_inserter(vfracsCell));
-
-      assert(vfracsCell.size() == numMats);
-      for (int iMat(0); iMat < numMats; ++iMat)
-        ret[iMat].push_back(vfracsCell[iMat]);
-    }
-  } else {
-    std::cout << "Failed to open file " << fname << std::endl;
-    abort();
+void read_mat_data(const std::string& mesh_data_fname,
+                   int nx, int ny, int nz,
+                   std::vector<int>& cell_num_mats,
+                   std::vector<int>& cell_mat_ids,
+                   std::vector<double>& cell_mat_volfracs) {
+  std::ifstream os(mesh_data_fname.c_str(), std::ifstream::binary);
+  if (!os.good()) {
+    std::ostringstream os;
+    os << std::endl << "Cannot open " << mesh_data_fname <<
+      " for binary input" << std::endl;
+    throw std::runtime_error(os.str());
   }
-  infile.close();
 
-  return ret;
+  int data_dim;
+  os.read(reinterpret_cast<char *>(&data_dim), sizeof(int));
+  assert(data_dim == 3);
+  int ncells;
+  os.read(reinterpret_cast<char *>(&ncells), sizeof(int));
+  cell_num_mats.resize(ncells);
+  
+  if (nx*ny*nz != ncells) {
+    std::ostringstream os;
+    os << std::endl << "Material data is provided for a mesh with " << ncells <<
+      " instead of " << nx*ny*nz << " cells!" << std::endl;
+    throw std::runtime_error(os.str());
+  }
+  
+  std::vector<std::vector<int>> icell_mats(ncells);
+  int nmatpoly = 0;
+  for (int iz = 0; iz < nz; iz++)
+    for (int iy = 0; iy < ny; iy++)
+      for (int ix = 0; ix < nx; ix++) {
+        int icell = iz*nx*ny + iy*nx + ix;
+        os.read(reinterpret_cast<char *>(&cell_num_mats[icell]), sizeof(int));
+
+        nmatpoly += cell_num_mats[icell];
+        icell_mats[icell].resize(cell_num_mats[icell]);
+        for (int im = 0; im < cell_num_mats[icell]; im++)
+          os.read(reinterpret_cast<char *>(&icell_mats[icell][im]), sizeof(int));
+      }
+
+  std::vector<int> offset(ncells, 0);
+  for (int icell = 0; icell < ncells - 1; icell++)
+    offset[icell + 1] = offset[icell] + cell_num_mats[icell];
+  cell_mat_ids.resize(nmatpoly);
+  for (int icell = 0; icell < ncells; icell++)
+    std::copy(icell_mats[icell].begin(), icell_mats[icell].end(),
+              cell_mat_ids.begin() + offset[icell]);
+
+  cell_mat_volfracs.resize(nmatpoly);
+  for (int iz = 0; iz < nz; iz++)
+    for (int iy = 0; iy < ny; iy++)
+      for (int ix = 0; ix < nx; ix++) {
+        int icell = iz*nx*ny + iy*nx + ix;
+        if (cell_num_mats[icell] == 1) {
+          cell_mat_volfracs[offset[icell]] = 1.0;
+          continue;
+        }
+        for (int im = 0; im < cell_num_mats[icell]; im++)
+          os.read(reinterpret_cast<char *>(&cell_mat_volfracs[offset[icell] + im]), sizeof(double));
+      }
+  
+  os.close();
 }
 
 int main(int argc, char** argv) {
 #ifdef ENABLE_MPI
   MPI_Init(&argc, &argv);
 #endif
-  // Read the input data
-  // TODO - error checking on argv
-  std::string fname = std::string("3d_diamond_6x6x6_vfracs.txt");
-  std::string out_fname = std::string("3d_diamond_6x6x6.gmv");
-  int nx(6), ny(6), nz(6);
 
-  if (argc > 1) {
-    if (argc < 6) {
+  if ((argc < 5) || (argc > 6)) {
       std::ostringstream os;
       os << std::endl <<
       "Correct usage: demo-vof-app <nx> <ny> <nz> " << 
-      "<vol_fractions_filename> <out_gmv_filename>" << std::endl;
+      "<mat_data_filename> <out_gmv_filename>" << std::endl;
       throw std::runtime_error(os.str());
-    }
-    nx = atoi(argv[1]); ny = atoi(argv[2]); nz = atoi(argv[3]);
-    
-    fname = argv[4];
-    if (argc > 5) out_fname = argv[5];
-    else out_fname = fname + ".gmv";
   }
 
-  auto vfracs = inputData(fname);
+  int nx = atoi(argv[1]);
+  int ny = atoi(argv[2]);
+  int nz = atoi(argv[3]);
 
-  auto numMats = vfracs.size();
-  auto ncells = vfracs[0].size();
+  std::string in_data_fname = argv[4];
+  std::string out_gmv_fname;
+  if (argc > 5) out_gmv_fname = argv[5];
+  else out_gmv_fname = in_data_fname + ".gmv";
 
-  assert(ncells == nx*ny*nz);
+  std::vector<double> xbnds = {0.0, 1.0};
+  std::vector<double> ybnds = {0.0, 1.0};
+  std::vector<double> zbnds = {0.0, 1.0};
 
-  // Simple_Mesh is only 3d, so we fake it
-  auto mymesh = std::make_shared<Simple_Mesh>(0.0, 0.0, 0.0,
-                                              1.0, 1.0, 1.0,
-                                              nx, ny, nz);
+  Tangram::Simple_Mesh mesh(xbnds[0], ybnds[0], zbnds[0],
+                            xbnds[1], ybnds[1], zbnds[1],
+                            nx, ny, nz);
+  Tangram::Simple_Mesh_Wrapper mesh_wrapper(mesh);
 
-  Simple_Mesh_Wrapper mymeshWrapper(*mymesh);
+  int ncells = mesh_wrapper.num_owned_cells();
+
+  std::vector<int> cell_num_mats;
+  std::vector<int> cell_mat_ids;
+  std::vector<double> cell_mat_volfracs;
+  read_mat_data(in_data_fname, nx, ny, nz, cell_num_mats, cell_mat_ids,
+                cell_mat_volfracs);
 
   // Volume fraction tolerance
   Tangram::IterativeMethodTolerances_t im_tols = {
     .max_num_iter = 1000, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
+
   // Build the driver
-  Driver<VOF, 3, Simple_Mesh_Wrapper, Tangram::SplitR3D, Tangram::ClipR3D> 
-    d(mymeshWrapper, im_tols, true);
+  Tangram::Driver<Tangram::VOF, 3, Tangram::Simple_Mesh_Wrapper, 
+                  Tangram::SplitR3D, Tangram::ClipR3D> 
+    vof_driver(mesh_wrapper, im_tols, true);
 
-  // Load the volume fractions
-  // I'm going to be dumb here - all cells will have all materials, even
-  // if their volume fractions are zeros
-  std::vector<int> cell_num_mats(ncells, numMats);
-  std::vector<int> cell_mat_ids(ncells*numMats);
-  std::vector<double> cell_mat_volfracs(ncells*numMats);
-  for (int icell(0); icell < ncells; ++icell)
-    for (int iMat(0); iMat < numMats; ++iMat) {
-      cell_mat_ids[icell*numMats + iMat] = iMat;
-      cell_mat_volfracs[icell*numMats + iMat] = vfracs[iMat][icell];
-    }
-  d.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs);
-  d.reconstruct();
+  vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs);
+  vof_driver.reconstruct();    
 
-  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list = d.cell_matpoly_ptrs();
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list = 
+    vof_driver.cell_matpoly_ptrs();
 
   // Confirm there are no degenerate faces
   for (int icell = 0; icell < ncells; icell++)
@@ -197,7 +223,7 @@ int main(int argc, char** argv) {
       std::shared_ptr< Tangram::CellMatPoly<3> > 
         cmp_ptr(new Tangram::CellMatPoly<3>(icell));
       Tangram::MatPoly<3> cell_matpoly;
-      cell_get_matpoly(mymeshWrapper, icell, &cell_matpoly);
+      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
       cell_matpoly.set_mat_id(nzvf_cell_mat_ids[nzvf_offset]);
       cmp_ptr->add_matpoly(cell_matpoly);
       cellmatpoly_list[icell] = cmp_ptr;
@@ -207,7 +233,7 @@ int main(int argc, char** argv) {
     nzvf_offset += nzvf_cell_num_mats[icell];
   }
 
-  write_to_gmv(cellmatpoly_list, out_fname);
+  write_to_gmv(cellmatpoly_list, out_gmv_fname);
 
 #ifdef ENABLE_MPI
   MPI_Finalize();
