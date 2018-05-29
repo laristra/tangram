@@ -1,8 +1,8 @@
 #[[
-Copyright (c) 2016, Los Alamos National Security, LLC
+Copyright (c) 2017, Los Alamos National Security, LLC
 All rights reserved.
 
-Copyright 2016. Los Alamos National Security, LLC. This software was produced
+Copyright 2017. Los Alamos National Security, LLC. This software was produced
 under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National
 Laboratory (LANL), which is operated by Los Alamos National Security, LLC for
 the U.S. Department of Energy. The U.S. Government has rights to use,
@@ -39,43 +39,19 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-#-----------------------------------------------------------------------------~#
+#-------------------------------------------------------------------------------
+# demo-vof-app3d - uses Simple_Mesh from portage
+#-------------------------------------------------------------------------------
+add_executable(demo-vof-app3d demo-vof-app3d.cc)
+target_link_libraries(demo-vof-app3d tangram ${EXTRA_LIBS})
 
+#-------------------------------------------------------------------------------
+# Other libraries
+#-------------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------~#
-
-# Add header files
-set(support_HEADERS
-    tangram.h
-    Vector.h
-    Point.h
-    Matrix.h
-    MatPoly.h
-    lsfits.h
-    PARENT_SCOPE
-)
-
-# Add source files
-set(support_SOURCES
-    PARENT_SCOPE
-)
-
-# Unit tests
-
-if (ENABLE_UNIT_TESTS) 
-
-  cinch_add_unit(test_matfuncs
-    SOURCES test/test_matfuncs.cc
-    POLICY MPI
-    THREADS 1)
-
-  cinch_add_unit(test_MatPoly_2D
-    SOURCES test/test_MatPoly_2D.cc
-    POLICY SERIAL
-    )
-
-  cinch_add_unit(test_MatPoly_3D
-    SOURCES test/test_MatPoly_3D.cc
-    POLICY SERIAL
-    )
-endif(ENABLE_UNIT_TESTS)
+#-------------------------------------------------------------------------------
+# Testing
+#-------------------------------------------------------------------------------
+# if (ENABLE_APP_TESTS)
+#   add_subdirectory(test)
+# endif (ENABLE_APP_TESTS)

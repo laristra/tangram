@@ -10,6 +10,14 @@ set -e
 # Echo each command
 set -x
 
+#Setup proxies
+export http_proxy="http://proxyout.lanl.gov:8080"
+export https_proxy="http://proxyout.lanl.gov:8080"
+export ftp_proxy="http://proxyout.lanl.gov:8080"
+export HTTP_PROXY="http://proxyout.lanl.gov:8080"
+export HTTPS_PROXY="http://proxyout.lanl.gov:8080"
+export FTP_PROXY="http://proxyout.lanl.gov:8080"
+
 # Put a couple of settings in place to generate test output even if
 # the README doesn't ask for it.
 export CTEST_OUTPUT_ON_FAILURE=1
@@ -81,7 +89,7 @@ make install
 
 # Build XMOF2D
 
-git clone ssh://git@xcp-stash.lanl.gov:7999/laristra/xmof2d.git xmof2d-repo
+git clone https://github.com/laristra/XMOF2D.git xmof2d-repo
 cd xmof2d-repo
 XMOF2D_INSTALL_PREFIX=`pwd`/xmof2d-inst
 mkdir build

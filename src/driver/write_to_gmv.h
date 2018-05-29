@@ -154,7 +154,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
               Point<D> const& pnt = cellmatpoly->matvertex_point(n);
               int np = mesh.num_entities(Entity_kind::NODE);
               for (int j = np; j < nmatpnts; j++) {
-                if (approxEq(points[j], pnt, 1.0e-16)) {
+                if (points[j] == pnt) {
                   fout << j+1 << " ";
                   break;
                 }
@@ -184,7 +184,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
                   Point<D> const& pnt = cellmatpoly->matvertex_point(n);
                   int np = mesh.num_entities(Entity_kind::NODE);
                   for (int j = np; j < nmatpnts; j++) {
-                    if (approxEq(points[j], pnt, 1.0e-16)) {
+                    if (points[j] == pnt) {
                       fout << j+1 << " ";
                       break;
                     }
@@ -201,7 +201,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
                   Point<D> const& pnt = cellmatpoly->matvertex_point(n);
                   int np = mesh.num_entities(Entity_kind::NODE);
                   for (int j = np; j < nmatpnts; j++) {
-                    if (approxEq(points[j], pnt, 1.0e-16)) {
+                    if (points[j] == pnt) {
                       fout << j+1 << " ";
                       break;
                     }

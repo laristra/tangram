@@ -75,13 +75,16 @@ namespace Tangram {
    @tparam Dim The spatial dimension of the problem.
    */
 
-  template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter>
+  template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter, class MatPoly_Clipper=void>
   class SLIC {
   public:
     /*!
      @brief Constructor performing a SLIC algorithm for interface reconstruction.
      */
-    explicit SLIC(const Mesh_Wrapper & Mesh) : mesh_(Mesh) {
+    explicit SLIC(const Mesh_Wrapper & Mesh, 
+                  const IterativeMethodTolerances_t& im_tols,
+                  const bool all_convex = false) : 
+                  mesh_(Mesh), im_tols_(im_tols), all_convex_(all_convex) {
       // For now
       assert(Dim == 3);
     }
@@ -111,6 +114,15 @@ namespace Tangram {
         cell_mat_offsets_[c] = cell_mat_offsets_[c-1] + cell_num_mats_[c-1];
     }
     
+    /*!
+      @brief Used iterative methods tolerances
+      @return  Tolerances for iterative methods,
+      here im_tols_.fun_eps is volume tolerance
+    */
+    const IterativeMethodTolerances_t& iterative_method_tolerances() const {
+      return im_tols_;
+    }
+
     void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
       icells_to_reconstruct = cellIDs_to_op_on;
     }
@@ -119,7 +131,7 @@ namespace Tangram {
      @brief Given a cell index, calculate the CellMatPoly for this reconstruction
      */
     std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
-      double vfrac_tol = 1.0e-13;
+      double vol_tol = im_tols_.fun_eps;  // Volume tolerance
 
       int cellID = icells_to_reconstruct[cell_op_ID];
       auto numMats = cell_num_mats_[cellID];
@@ -141,20 +153,20 @@ namespace Tangram {
 
       //Create Splitter instance
       MatPoly_Splitter split_matpolys(hs_sets.upper_halfspace_set.matpolys, 
-                                      cutting_plane, true);
+                                      cutting_plane, all_convex_);
 
-      //Create cutting distance solver
-      IterativeMethodTolerances_t tols = {
-        .max_num_iter = 1000, .arg_eps = vfrac_tol, .fun_eps = vfrac_tol};
+      //Create cutting distance solver: if not all cells are convex, we assume that
+      //faces are non-planar
       CuttingDistanceSolver<Dim, Tangram::ClipR3D> 
-        solve_cut_dst(hs_sets.upper_halfspace_set.matpolys, cutting_plane.normal, tols, true);
+        solve_cut_dst(hs_sets.upper_halfspace_set.matpolys, 
+                      cutting_plane.normal, im_tols_, all_convex_);
 
       //Cutting from left to right
       double cell_volume = mesh_.cell_volume(cellID);
       for (int iMat(0); iMat < numMats; iMat++) {
-        auto vfrac = cell_mat_volfracs_[iStart + iMat];
-        // If the mass fraction is too small, skip it
-        if (vfrac < vfrac_tol) continue;
+        double target_vol = cell_mat_volfracs_[iStart + iMat]*cell_volume;
+        // If the target volume is too small, skip it
+        if (target_vol < vol_tol) continue;
           
         const MatPolySet_t<Dim>* single_mat_set_ptr;
         //On the last iteration the remaining part is single-material,
@@ -163,18 +175,19 @@ namespace Tangram {
           single_mat_set_ptr = &hs_sets.upper_halfspace_set;
         else {
           // Find distance to origin for the cutting plane
-          solve_cut_dst.set_volume_fraction(vfrac);
+          solve_cut_dst.set_target_volume(target_vol);
           std::vector<double> clip_res = solve_cut_dst();
           cutting_plane.dist2origin = clip_res[0];
 
-          // Check if the volume fraction matches the reference value
-          double cur_vfrac_err = std::fabs(clip_res[1]/cell_volume - vfrac);
-          if (cur_vfrac_err > vfrac_tol) 
-            std::cerr << "SLIC for cell " << cellID << ": after " << tols.max_num_iter <<
-              "iteration(s) achieved error in volume fraction for material " << 
-              cell_mat_ids_[iStart + iMat] << " is " << cur_vfrac_err << 
-              ", volume fraction tolerance is " << vfrac_tol << std::endl;
-
+#ifdef DEBUG
+          // Check if the resulting volume matches the reference value
+          double cur_vol_err = std::fabs(clip_res[1] - target_vol);
+          if (cur_vol_err > vol_tol) 
+            std::cerr << "SLIC for cell " << cellID << ": after " << im_tols_.max_num_iter <<
+              " iteration(s) achieved error in volume for material " << 
+              cell_mat_ids_[iStart + iMat] << " is " << cur_vol_err << 
+              ", volume tolerance is " << vol_tol << std::endl;
+#endif
           hs_sets = split_matpolys();
 
           //Chopped off single-material MatPoly's are below the plane
@@ -206,6 +219,8 @@ namespace Tangram {
     }
   private:
     const Mesh_Wrapper & mesh_;
+    const IterativeMethodTolerances_t im_tols_;
+    const bool all_convex_;
     std::vector<int> cell_num_mats_;
     std::vector<int> cell_mat_ids_;
     std::vector<double> cell_mat_volfracs_;

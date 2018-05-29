@@ -65,17 +65,23 @@ namespace Tangram {
    implementation that provides required functionality
    @tparam Dim The spatial dimension of the problem: has to be 2.
    */
-  template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter=void>
+  template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter=void, class MatPoly_Clipper=void>
   class XMOF2D_Wrapper {
   public:
     /*!
      @brief Constructor initializing the X-MOF 2D reconstructor.
-     @param[in] ir_tolerances User-specified tolerances for interface reconstruction in
-     XMOF2D format
+     @param[in] Mesh A lightweight wrapper to a specific input mesh
+     implementation that provides certain functionality
+     @param[in] im_tols Tolerances for iterative methods
+     @param[in] all_convex Flag indicating whether all mesh cells are convex
      */
     XMOF2D_Wrapper(const Mesh_Wrapper& Mesh,
-                   const XMOF2D::IRTolerances* ir_tolerances = NULL) : mesh_(Mesh) {
+                   const IterativeMethodTolerances_t& im_tols,
+                   bool all_convex = true) : 
+                   mesh_(Mesh), im_tols_(im_tols) {
       assert(Dim == 2);
+      assert(all_convex);
+
       XMOF2D::MeshConfig mesh_cfg;
       int nnodes = mesh_.num_owned_nodes() + mesh_.num_ghost_nodes();
       mesh_cfg.nodes_coords.resize(nnodes);
@@ -99,17 +105,13 @@ namespace Tangram {
       mesh_cfg.cells_material.resize(ncells, -1);
       
       XMOF2D::IRTolerances ir_tol;
-      if (ir_tolerances)
-        ir_tol = *ir_tolerances;
-      else {
-        ir_tol.dist_eps = 1.0e-15;
-        ir_tol.div_eps = 1.0e-6;
-        ir_tol.ddot_eps = 1.0e-14;
-        ir_tol.vfrac_eps = 1.0e-14;
-        ir_tol.ang_eps = 1.0e-13;
-        ir_tol.mof_max_iter = 10000;
-      }
-     
+      ir_tol.dist_eps = im_tols.fun_eps;
+      ir_tol.div_eps = 1.0e-6;
+      ir_tol.ddot_eps = im_tols.fun_eps;
+      ir_tol.area_eps = im_tols.fun_eps;
+      ir_tol.ang_eps = im_tols.arg_eps;
+      ir_tol.mof_max_iter = im_tols.max_num_iter;
+
       xmof_ir = std::make_shared<XMOF2D::XMOF_Reconstructor>(mesh_cfg, ir_tol);
     }
     /*!
@@ -153,6 +155,15 @@ namespace Tangram {
       xmof_ir->set_materials_data(mat_data);
     }
     
+    /*!
+      @brief Used iterative methods tolerances
+      @return  Tolerances for iterative methods, 
+      here im_tols_.fun_eps is the area tolerance
+    */
+    const IterativeMethodTolerances_t& iterative_method_tolerances() const {
+      return im_tols_;
+    }
+
     /*!
      @brief Pass in the local partition indices of cells for which CellMatPoly objects 
      are to be constructed. If the index is in the list, a CellMatPoly object will be
@@ -221,6 +232,7 @@ namespace Tangram {
 
   private:
     const Mesh_Wrapper& mesh_; // Provided base mesh wrapper
+    const IterativeMethodTolerances_t im_tols_; // Tolerances for iterative methods
     std::shared_ptr<XMOF2D::XMOF_Reconstructor> xmof_ir; // XMOF2D reconstructor object
     std::vector<int> icells_to_reconstruct; // List of cells to create CellMatPoly objects for
   }; // class XMOF2D_Wrapper

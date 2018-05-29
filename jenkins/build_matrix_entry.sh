@@ -24,7 +24,7 @@ fi
 # set modules and install paths
 
 jali_version=0.9.8
-xmof2d_version=6023dea445c
+xmof2d_version=529f2dcdbe4
 
 export NGC=/usr/local/codes/ngc
 ngc_include_dir=$NGC/private/include

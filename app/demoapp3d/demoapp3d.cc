@@ -127,8 +127,12 @@ int main(int argc, char** argv) {
 
   Simple_Mesh_Wrapper mymeshWrapper(*mymesh);
 
+  // Volume fraction tolerance
+  Tangram::IterativeMethodTolerances_t im_tols = {
+    .max_num_iter = 1000, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
+
   // Build the driver
-  Driver<SLIC, 3, Simple_Mesh_Wrapper, Tangram::SplitR3D> d(mymeshWrapper);
+  Driver<SLIC, 3, Simple_Mesh_Wrapper, Tangram::SplitR3D> d(mymeshWrapper, im_tols, true);
 
   // Load the volume fractions
   // I'm going to be dumb here - all cells will have all materials, even

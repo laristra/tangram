@@ -55,6 +55,8 @@ set(reconstruct_HEADERS
     SLIC.h
     xmof2D_wrapper.h
     cutting_distance_solver.h
+    nested_dissections.h
+    VOF.h
     PARENT_SCOPE
 )
 
