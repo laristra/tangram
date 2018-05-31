@@ -81,15 +81,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 # Gather all the third party libraries needed for Tangram
 #-----------------------------------------------------------------------------
 
-#------------------------------------------------------------------------------#
-# Set up MPI builds
-# (eventually most of this should be pushed down into cinch)
-#------------------------------------------------------------------------------#
-if (ENABLE_MPI)
-  find_package(MPI REQUIRED)
-endif ()
-
-
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
 #------------------------------------------------------------------------------#
