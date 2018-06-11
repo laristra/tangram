@@ -84,16 +84,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
 #------------------------------------------------------------------------------#
-# If we are building with FleCSI, then we need a modern C++ compiler
-#------------------------------------------------------------------------------#
-if(ENABLE_FleCSI)
-  # we already checked for CXX14 in project.cmake
-  if(NOT CXX14_COMPILER)
-    message(STATUS "C++14 compatible compiler not found")
-  endif()
-endif()
-
-#------------------------------------------------------------------------------#
 # Set up MPI builds
 # (eventually most of this should be pushed down into cinch)
 #------------------------------------------------------------------------------#
@@ -102,68 +92,10 @@ if (ENABLE_MPI)
   find_package(MPI REQUIRED)
 
   add_definitions(-DENABLE_MPI)
-
-# TODO:  Modify the below to use wrapper compilers instead of flags
-#        (there isn't an obvious good way to do this)
-#  add_definitions(${MPI_CXX_COMPILE_FLAGS})
-#  include_directories(${MPI_CXX_INCLUDE_PATH})
-#  link_directories(${MPI_CXX_LIBRARY_DIRS})
 endif ()
 
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
-
-#-----------------------------------------------------------------------------
-# FleCSI and FleCSI-SP location
-#-----------------------------------------------------------------------------
-
-set(ENABLE_FleCSI FALSE CACHE BOOL "Use FleCSI")
-if (ENABLE_FleCSI)
- 
- find_package(FleCSI REQUIRED)
- message(STATUS "FleCSI_LIBRARIES=${FleCSI_LIBRARIES}" )
- include_directories(${FleCSI_INCLUDE_DIR})
- message(STATUS "FleCSI_INCLUDE_DIRS=${FleCSI_INCLUDE_DIR}")
-
- find_package(FleCSISP REQUIRED)
- message(STATUS "FleCSISP_LIBRARIES=${FleCSISP_LIBRARIES}" )
- include_directories(${FleCSISP_INCLUDE_DIR})
- message(STATUS "FleCSISP_INCLUDE_DIRS=${FleCSISP_INCLUDE_DIR}")
-
-  ######################################################################
-  # This is a placeholder for how we would do IO with FleCSI
-  # There are still some issues with dumping the targetMesh data
-  #
-  # WARNING!!! THIS IS POTENTIALLY FRAGILE
-  # it appears to work, but could cause conflicts with EXODUS and
-  # other libraries used by Jali
-  #
-  # FOR NOW THIS IS DISABLED UNTIL WE CAN GET A PROPER WORKAROUND
-  ######################################################################
-  # STRING(REPLACE "flecsi" "flecsi-tpl" FLECSI_TPL_DIR ${FLECSI_INSTALL_DIR})
-  # message(STATUS "FLECSI_TPL_DIR=${FLECSI_TPL_DIR}")
-  # if(IS_DIRECTORY ${FLECSI_TPL_DIR})
-  #   find_library(EXODUS_LIBRARY
-  #     NAMES exodus
-  #     PATHS ${FLECSI_TPL_DIR}
-  #     PATH_SUFFIXES lib
-  #     NO_DEFAULT_PATH)
-  #   find_path(EXODUS_INCLUDE_DIR
-  #     NAMES exodusII.h
-  #     PATHS ${FLECSI_TPL_DIR}
-  #     PATH_SUFFIXES include
-  #     NO_DEFAULT_PATH)
-
-  #   if(EXODUS_LIBRARY AND EXODUS_INCLUDE_DIR)
-  #     set(FLECSI_LIBRARIES ${EXODUS_LIBRARY} ${FLECSI_LIBRARIES})
-  #     include_directories(${EXODUS_INCLUDE_DIR})
-  #     add_definitions(-DHAVE_EXODUS)
-  #   endif(EXODUS_LIBRARY AND EXODUS_INCLUDE_DIR)
-
-  # endif(IS_DIRECTORY ${FLECSI_TPL_DIR})
-endif()
-
-
 
 #------------------------------------------------------------------------------#
 # Configure Jali
