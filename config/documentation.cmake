@@ -46,7 +46,7 @@ POSSIBILITY OF SUCH DAMAGE.
 # Create user guide header with version information
 #------------------------------------------------------------------------------#
 
-configure_file(${CMAKE_SOURCE_DIR}/doc/ugheader.tex.in
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/ugheader.tex.in
   ${CMAKE_BINARY_DIR}/doc/ugheader.tex)
 
 #------------------------------------------------------------------------------#
@@ -57,7 +57,7 @@ set(ug_pandoc_options
   "--toc"
   "--include-in-header=${CMAKE_SOURCE_DIR}/cinch/tex/addtolength.tex"
   "--include-in-header=${CMAKE_BINARY_DIR}/doc/ugheader.tex"
-  "--include-in-header=${CMAKE_SOURCE_DIR}/doc/ugtitle.tex"
+  "--include-in-header=${CMAKE_CURRENT_SOURCE_DIR}/doc/ugtitle.tex"
   "--include-before-body=${CMAKE_SOURCE_DIR}/cinch/tex/maketitle.tex"
   "--include-before-body=${CMAKE_SOURCE_DIR}/cinch/tex/firstpageempty.tex"
   "--include-before-body=${CMAKE_SOURCE_DIR}/cinch/tex/titlebreak.tex"
