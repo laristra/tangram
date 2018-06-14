@@ -193,13 +193,10 @@ public:
       nested_dissections(*this, cellID, all_convex_);
 
     // We clip material in the same order they are given for the cell
-    int nmats = (int) cell_mat_ids_[cellID].size();
-    std::vector<int> direct_order(nmats);
-    std::iota(direct_order.begin(), direct_order.end(), 0);
     // Note that this is the order of local materials, not material 
     // indices. Nested dissections uses cell_materials method to get
     // actual material indices.
-    nested_dissections.set_cell_materials_order(direct_order);
+    nested_dissections.set_cell_materials_order(false);
 
     return nested_dissections();
   }
