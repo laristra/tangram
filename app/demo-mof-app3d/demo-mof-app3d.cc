@@ -58,7 +58,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "tangram/intersect/split_r3d.h"
 #include "tangram/driver/driver.h"
-#include "tangram/reconstruct/VOF.h"
+#include "tangram/reconstruct/MOF.h"
 #include "tangram/driver/write_to_gmv.h"
 
 /* Demo app for an unstructured 3D mesh
@@ -68,12 +68,14 @@ POSSIBILITY OF SUCH DAMAGE.
    performs interface reconstruction, and outputs material 
    polygons to a gmv file */
 
+
 #include <set>
 
 void read_mat_data(const std::string& mesh_data_fname,
                    std::vector<int>& cell_num_mats,
                    std::vector<int>& cell_mat_ids,
-                   std::vector<double>& cell_mat_volfracs) {
+                   std::vector<double>& cell_mat_volfracs,
+                   std::vector<Tangram::Point3>& cell_mat_centroids) {
   std::ifstream os(mesh_data_fname.c_str(), std::ifstream::binary);
   if (!os.good()) {
     std::ostringstream os;
@@ -118,6 +120,21 @@ void read_mat_data(const std::string& mesh_data_fname,
       os.read(reinterpret_cast<char *>(&cell_mat_volfracs[offset[icell] + im]), sizeof(double));
   }
 
+  cell_mat_centroids.resize(nmatpoly);
+    for (int icell = 0; icell < ncells; icell++) {
+      if (cell_num_mats[icell] == 1) {
+        cell_mat_centroids[offset[icell]] = Tangram::Point3(DBL_MAX, DBL_MAX, DBL_MAX);
+        continue;
+      }
+      for (int im = 0; im < cell_num_mats[icell]; im++) {
+        double cen_x, cen_y, cen_z;
+        os.read(reinterpret_cast<char *>(&cen_x), sizeof(double));
+        os.read(reinterpret_cast<char *>(&cen_y), sizeof(double));
+        os.read(reinterpret_cast<char *>(&cen_z), sizeof(double));
+        cell_mat_centroids[offset[icell] + im] = Tangram::Point3(cen_x, cen_y, cen_z);
+      }
+    }
+
   os.close();
 }
 
@@ -133,7 +150,7 @@ int main(int argc, char** argv) {
   if ((argc < 3) || (argc > 4)) {
       std::ostringstream os;
       os << std::endl <<
-      "Correct usage: demo-vof-app <mat_data_filename> " << 
+      "Correct usage: demo-mof-app <mat_data_filename> " << 
       "<base_mesh_file> <out_gmv_filename>" << std::endl;
       throw std::runtime_error(os.str());
   }
@@ -156,23 +173,25 @@ int main(int argc, char** argv) {
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
   std::vector<double> cell_mat_volfracs;
+  std::vector<Tangram::Point3> cell_mat_centroids;
   read_mat_data(in_data_fname, cell_num_mats, cell_mat_ids,
-                cell_mat_volfracs);
+                cell_mat_volfracs, cell_mat_centroids);
 
   // Volume fraction tolerance
   Tangram::IterativeMethodTolerances_t im_tols = {
     .max_num_iter = 1000, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
 
   // Build the driver
-  Tangram::Driver<Tangram::VOF, 3, Tangram::Jali_Mesh_Wrapper, 
+  Tangram::Driver<Tangram::MOF, 3, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR3D, Tangram::ClipR3D> 
-    vof_driver(mesh_wrapper, im_tols, false);
+    mof_driver(mesh_wrapper, im_tols, true);
 
-  vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs);
-  vof_driver.reconstruct();    
+  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
+                                  cell_mat_volfracs, cell_mat_centroids);
+  mof_driver.reconstruct();    
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list = 
-    vof_driver.cell_matpoly_ptrs();
+    mof_driver.cell_matpoly_ptrs();
 
   // Confirm there are no degenerate faces
   for (int icell = 0; icell < ncells; icell++)
@@ -223,8 +242,7 @@ int main(int argc, char** argv) {
 
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
 
-#ifdef ENABLE_MPI
   MPI_Finalize();
-#endif
+
   return 0;
 }
