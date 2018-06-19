@@ -86,6 +86,11 @@ This project is licensed under a modified 3-clause BSD license - see
 the [LICENSE](https://github.com/laristra/tangram/blob/master/LICENSE)
 file for details.
 
+# Release
+
+This software has been approved for open source release and has been
+assigned **LA-CC-17-133**.
+
 # Example of the configure script:
 
 ```c++
