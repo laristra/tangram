@@ -8,6 +8,7 @@ services:
 python:
   - "3.6"
 
+env:
   matrix:
     - MPI=OFF DOCS=true
     - MPI=ON DOCKERHUB=true
