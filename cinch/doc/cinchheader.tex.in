@@ -1,0 +1,10 @@
+%------------------------------------------------------------------------------%
+% Cinch Header
+%------------------------------------------------------------------------------%
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\lhead{Version: ${${PROJECT_NAME}_VERSION}}
+\chead{Cinch User Guide}
+\rhead{\today}
