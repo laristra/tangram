@@ -5,7 +5,7 @@
 ]]
 
 #-------------------------------------------------------------------------------
-# xmof-linetest-simplemesh-app - uses 2D mesh SimpleMesh
+# xmof-linetest-simplemesh-app - uses 2D SimpleMesh
 #-------------------------------------------------------------------------------
 add_executable(xmof-linetest-simplemesh-app xmof-linetest-simplemesh-app.cc)
 target_link_libraries(xmof-linetest-simplemesh-app 

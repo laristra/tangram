@@ -5,7 +5,7 @@
 ]]
 
 #-------------------------------------------------------------------------------
-# demoapp - uses Simple_Mesh from portage
+# demoapp - uses 3D Simple_Mesh
 #-------------------------------------------------------------------------------
 add_executable(demoapp demoapp.cc)
 target_link_libraries(demoapp tangram ${EXTRA_LIBS})

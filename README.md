@@ -35,7 +35,7 @@ with Travis CI.
 
 Tangram uses standard C++11 features, so a fairly modern compiler is
 needed.  We regularly test with Intel 18+ or GCC 6.4+.  Utilizing the
-full capabilities of portage will require an MPI implementation; we
+full capabilities of tangram will require an MPI implementation; we
 regularly test with OpenMPI 2.1.2+ The build system _requires_ CMake
 version 3.0+.
 
