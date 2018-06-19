@@ -1,0 +1,43 @@
+language: cpp
+
+sudo: required
+
+services:
+- docker
+
+python:
+  - "3.6"
+
+  matrix:
+    - MPI=OFF DOCS=true
+    - MPI=ON DOCKERHUB=true
+    - MPI=ON COVERAGE=ON SONARQUBE=ON
+
+script:
+  - set -e
+  - cp -vr docker ${HOME}/docker
+  - cd ../../
+  - mv -v ${TRAVIS_REPO_SLUG} $HOME/docker
+  - docker build --build-arg MPI=${MPI}
+                 --build-arg SONARQUBE=${SONARQUBE} --build-arg SONARQUBE_TOKEN=${SONARQUBE_TOKEN}
+                 --build-arg SONARQUBE_GITHUB_TOKEN=${SONARQUBE_GITHUB_TOKEN}
+                 --build-arg CI=${CI} --build-arg TRAVIS=${TRAVIS} --build-arg TRAVIS_OS_NAME=${TRAVIS_OS_NAME}
+                 --build-arg TRAVIS_BRANCH=${TRAVIS_BRANCH} --build-arg TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER}
+                 --build-arg TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} --build-arg TRAVIS_JOB_ID=${TRAVIS_JOB_ID}
+                 --build-arg TRAVIS_TAG=${TRAVIS_TAG} --build-arg TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}
+                 --build-arg TRAVIS_COMMIT=${TRAVIS_COMMIT} --build-arg COVERAGE=${COVERAGE}
+                 --build-arg DOCS=${DOCS}
+                 -t ${TRAVIS_REPO_SLUG}:latest ${HOME}/docker/
+
+after_success:
+  - if [[ ${DOCKERHUB} = true && ${DOCKER_USERNAME} && ${DOCKER_PASSWORD} && ${TRAVIS_PULL_REQUEST} == false && ${TRAVIS_BRANCH} == master ]]; then
+      docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+      docker push "${TRAVIS_REPO_SLUG}:latest";
+    fi
+  - if [[ ${DOCS} || -n ${TRAVIS_TAG} ]]; then
+      cd ${HOME}/docker/tangram;
+      CON=$(docker run -d ${TRAVIS_REPO_SLUG}:latest) && docker cp ${CON}:/home/tangram/tangram/build/doc . ;
+      pyenv local 3.6;
+      pip install doctr;
+      doctr deploy . --built-docs doc/doxygen/html;
+    fi
