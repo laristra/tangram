@@ -86,14 +86,6 @@ This project is licensed under a modified 3-clause BSD license - see
 the [LICENSE](https://github.com/laristra/tangram/blob/master/LICENSE)
 file for details.
 
-* Welcome to tangram!
-
-To obtain the code, simply clone it recursively from our BitBucket Server:
-
-```
-git clone --recursive ssh://git@xcp-stash.lanl.gov:7999/laristra/tangram.git
-```
-
 # Example of the configure script:
 
 ```c++
