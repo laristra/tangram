@@ -136,7 +136,8 @@ bool P_InPoly<2>(Tangram::Point<2> ptest, int npnts, Tangram::Point<2> *points) 
 
 template<>
 bool P_InPoly<3>(Tangram::Point<3> ptest, int npnts, Tangram::Point<3> *points) {
-    return P_InTriPoly3D(ptest, npnts, points);
+  int ntris = npnts/3;
+  return P_InTriPoly3D(ptest, ntris, points);
 }
 
 
