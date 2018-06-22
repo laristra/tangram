@@ -463,7 +463,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 
     vfcen_t<3> vfcen = {};  // Initialize to zero
     int npmat[MAXMATS] = {};
-    for (int p = 0; p < NPARTICLES; p++) {
+    for (int p = 0; p < np; p++) {
       bool found = false;
       int im = 0;
       for (im = 0; im < vfcen.nmats; im++)
@@ -479,8 +479,8 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
       vfcen.cen[im] += ptxyz[p];
     }
     for (int im = 0; im < vfcen.nmats; im++) {
-      vfcen.vf[im] = ((double) npmat[im])/NPARTICLES;
-      vfcen.cen[im] /= NPARTICLES;
+      vfcen.vf[im] = ((double) npmat[im])/np;
+      vfcen.cen[im] /= npmat[im];
     }
 
     return vfcen;
