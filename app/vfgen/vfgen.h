@@ -679,4 +679,201 @@ void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) 
 }
 
 
+
+// Reading the feature file (feature files ends with keyword 'end')
+// Feature file example (adjust coordinates for 2D as necessary)
+// Example assumes mesh on a domain that goes from (0,0,0) to (1,1,1)
+//-------------------------------------
+// nmats N
+// fill 0
+//
+// # SPHERE (in 2D use 'circle' and a 2D center)
+// # 'in' means consider inside of sphere
+// # Instead of 'in' one can use 'out'
+// # The last number is material ID
+// #
+// sphere in 1
+// 0.5 0.5 0.5
+// 0.3
+// #
+// # PLANE
+// # 'front' means consider the front of the plane
+// # i.e. in direction of normal
+// # Alternative to 'front' is of course 'back'
+// # to mean behind the plane
+// # Plane is specified by point and normal
+// #
+// plane front 2
+// 0.5 0.5 0.5
+// 1.0 1.0 2.0
+//
+// # BOX
+// # Box is specified by lower left (bottom) corner
+// # and upper right (top) corner
+// #
+// box in 3
+// 0.1 0.1 0.1
+// 0.2 0.2 0.3
+//
+// # POLYHEDRON
+// # Specified by number of points
+// # point coordinates,
+// # number of faces
+// # number of points and indices of points of each face
+// # (use 0 based indexing)
+// # FOR POLYGON, only number of points, coordinates is needed
+// #
+// poly in 4
+// 5
+// 0.7 0.7 0.2
+// 0.8 0.7 0.2
+// 0.8 0.8 0.2
+// 0.7 0.8 0.2
+// 0.75 0.75 0.5
+// 5
+// 4  0 3 2 1
+// 3  0 1 4
+// 3  1 2 4
+// 3  2 3 4
+// 3  3 0 4
+// #
+// end
+
+template <int dim>
+void read_features(std::string featfilename,
+                   std::vector<FEATURE<dim>> *features) {
+
+  features->clear();
+
+  std::ifstream featfile;
+  featfile.open(featfilename.c_str());
+  if (!featfile.is_open()) {
+    std::cerr << "Could not open file " << featfilename << "\n";
+    exit(-98);
+  }
+
+  std::string temp_str;
+  featfile >> temp_str;
+  if (temp_str == "nmats")
+    featfile >> global_nmats;
+  else
+    std::cerr << featfilename << ": first line must be 'nmats n' " <<
+        "where n is number of materials\n";
+
+
+  std::string inout_str, feat_str;
+  int nfeat = 0;
+  while (!featfile.eof()) {
+    featfile >> feat_str;
+
+    if (feat_str == "fill") {
+
+      FEATURE<dim> this_feature;
+      this_feature.type = FEATURETYPE::FILL;
+      featfile >> this_feature.matid;
+      features->push_back(this_feature);
+
+    } else if (feat_str == "halfspace") {
+
+      FEATURE<dim> this_feature;
+      this_feature.type = FEATURETYPE::HALFSPACE;
+      featfile >> this_feature.matid;
+      for (int i = 0; i < dim; i++)
+        featfile >> this_feature.plane_xyz[i];
+      for (int i = 0; i < dim; i++)
+        featfile >> this_feature.plane_normal[i];
+      features->push_back(this_feature);
+
+    }  else if (feat_str == "box") {
+
+      FEATURE<dim> this_feature;
+      this_feature.type = FEATURETYPE::BOX;
+      featfile >> inout_str;
+      if (inout_str == "in")
+        this_feature.inout = (inout_str == "in") ? 1 : 0;
+      featfile >> this_feature.matid;
+      for (int i = 0; i < dim; i++)
+        featfile >> this_feature.minxyz[i];
+      for (int i = 0; i < dim; i++)
+        featfile >> this_feature.maxxyz[i];
+      features->push_back(this_feature);
+
+    } else if (feat_str == "polytope" || feat_str == "polygon") {
+
+      FEATURE<dim> this_feature;
+      this_feature.type = FEATURETYPE::POLY;
+      featfile >> inout_str;
+      this_feature.inout = (inout_str == "in") ? 1 : 0;
+      featfile >> this_feature.matid;
+
+      // Read points of the polygon or polyhedron
+      featfile >> this_feature.nppoly;
+      for (int j = 0; j < this_feature.nppoly; j++) {
+        double polyx, polyy;
+        featfile >> this_feature.polyxyz[j][0];
+        featfile >> this_feature.polyxyz[j][1];
+      }
+
+      if (dim == 3) {
+        // In 3D, we have to read the faces and the face points too
+        featfile >> this_feature.nfpoly;
+        for (int f = 0; f < this_feature.nfpoly; f++) {
+          featfile >> this_feature.nfpnts[f];
+          for (int p = 0; p < this_feature.nfpnts[f]; p++)
+            featfile >> this_feature.fpnts[f][p];
+        }
+
+        // Now make a triangular faceted version of the polyhedron
+        // Triangular facets assumed to point out of polyhedron
+        this_feature.ntris = 0;
+        int ntripnts = 0;
+        for (int f = 0; f < this_feature.nfpoly; f++) {
+          Tangram::Point<dim> fcen;   // will only come here when dim == 3
+          int nfp = this_feature.nfpnts[f];
+          for (int p = 0; p < nfp; p++)
+            fcen += this_feature.fpnts[f][p];
+          fcen /= this_feature.nfpnts[f];
+
+          for (int p = 0; p < nfp; p++) {
+            int pid0 = this_feature.fpnts[f][p];
+            this_feature.polytrixyz[ntripnts] = this_feature.polyxyz[pid0];
+            int pid1 = this_feature.fpnts[f][(p+1)%nfp];
+            this_feature.polytrixyz[ntripnts+1] = this_feature.polyxyz[pid1];
+            this_feature.polytrixyz[ntripnts+2] = fcen;
+          }
+          ntripnts += 3;
+        }
+      }
+
+      features->push_back(this_feature);
+
+    } else if (feat_str == "sphere" || feat_str == "circle") {
+
+      FEATURE<dim> this_feature;
+      this_feature.type = FEATURETYPE::SPHERE;
+      featfile >> inout_str;
+      this_feature.inout = (inout_str == "in") ? 1 : 0;
+      featfile >> this_feature.matid;
+      for (int i = 0; i < dim; i++)
+        featfile >> this_feature.cen[i];
+      featfile >> this_feature.radius;
+      features->push_back(this_feature);
+
+    } else if (feat_str[0] == '#') {
+      /* comment - do nothing */
+      continue;
+    } else if (feat_str == "end") {
+      break;
+    } else {
+      std::cerr << "Unrecognized keyword: " << feat_str << "\n";
+      continue;
+    }
+  }
+  nfeat = features->size();
+
+  featfile.close();
+}  // read_features
+
+
+
 #endif

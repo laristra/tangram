@@ -34,119 +34,6 @@ int global_nmats;
 #include "vfgen.h"
 
 
-// Reads the feature file
-template <int dim>
-void read_features(std::string featfilename,
-                   std::vector<FEATURE<dim>> *features) {
-
-  features->clear();
-
-  std::ifstream featfile;
-  featfile.open(featfilename.c_str());
-  if (!featfile.is_open()) {
-    std::cerr << "Could not open file " << featfilename << "\n";
-    exit(-98);
-  }
-
-  std::string temp_str;
-  featfile >> temp_str;
-  if (temp_str == "nmats")
-    featfile >> global_nmats;
-  else
-    std::cerr << featfilename << ": first line must be 'nmats n' " <<
-        "where n is number of materials\n";
-
-
-  std::string inout_str, feat_str;
-  int nfeat = 0;
-  while (!featfile.eof()) {
-    featfile >> feat_str;
-
-    if (feat_str == "fill") {
-
-      FEATURE<dim> this_feature;
-      this_feature.type = FEATURETYPE::FILL;
-      featfile >> this_feature.matid;
-      features->push_back(this_feature);
-
-    } else if (feat_str == "halfspace") {
-
-      FEATURE<dim> this_feature;
-      this_feature.type = FEATURETYPE::HALFSPACE;
-      featfile >> this_feature.matid;
-      for (int i = 0; i < dim; i++)
-        featfile >> this_feature.plane_xyz[i];
-      for (int i = 0; i < dim; i++)
-        featfile >> this_feature.plane_normal[i];
-      features->push_back(this_feature);
-
-    }  else if (feat_str == "box") {
-
-      FEATURE<dim> this_feature;
-      this_feature.type = FEATURETYPE::BOX;
-      featfile >> inout_str;
-      if (inout_str == "in")
-        this_feature.inout = (inout_str == "in") ? 1 : 0;
-      featfile >> this_feature.matid;
-      for (int i = 0; i < dim; i++)
-        featfile >> this_feature.minxyz[i];
-      for (int i = 0; i < dim; i++)
-        featfile >> this_feature.maxxyz[i];
-      features->push_back(this_feature);
-
-    } else if (feat_str == "polytope" || feat_str == "polygon") {
-
-      FEATURE<dim> this_feature;
-      this_feature.type = FEATURETYPE::POLY;
-      featfile >> inout_str;
-      this_feature.inout = (inout_str == "in") ? 1 : 0;
-      featfile >> this_feature.matid;
-
-      if (dim == 3) {
-        std::cerr << "Cannot handle 3D polytopes yet\n";
-        // WHEN WE DO, WE HAVE TO CONVERT THE 3D POLYTOPES INTO POLYHEDRA
-        // WITH A TRIANGULATED BOUNDARY
-        exit(-1);
-      } else {
-
-        featfile >> this_feature.nppoly;
-        for (int j = 0; j < this_feature.nppoly; j++) {
-          double polyx, polyy;
-          featfile >> this_feature.polyxyz[j][0];
-          featfile >> this_feature.polyxyz[j][1];
-        }
-      }
-      features->push_back(this_feature);
-
-    } else if (feat_str == "sphere" || feat_str == "circle") {
-
-      FEATURE<dim> this_feature;
-      this_feature.type = FEATURETYPE::SPHERE;
-      featfile >> inout_str;
-      this_feature.inout = (inout_str == "in") ? 1 : 0;
-      featfile >> this_feature.matid;
-      for (int i = 0; i < dim; i++)
-        featfile >> this_feature.cen[i];
-      featfile >> this_feature.radius;
-      features->push_back(this_feature);
-
-    } else if (feat_str[0] == '#') {
-      /* comment - do nothing */
-      continue;
-    } else if (feat_str == "end") {
-      break;
-    } else {
-      std::cerr << "Unrecognized keyword: " << feat_str << "\n";
-      continue;
-    }
-  }
-  nfeat = features->size();
-
-  featfile.close();
-}  // read_features
-
-
-
 int main(int argc, char *argv[]) {
   char mstk_fname[256], mname[256], feat_fname[256], out_fname[256];
   int i, j, t, ok, status, idx, idx2, nrv, len, flag, done, ir;
@@ -196,7 +83,7 @@ int main(int argc, char *argv[]) {
 
   int meshdim = mesh->space_dimension();
   assert(meshdim == probdim);
-  
+
   int ncells = mesh->num_cells();
 
   Tangram::Jali_Mesh_Wrapper mesh_wrapper(*mesh);
