@@ -164,10 +164,11 @@ struct FEATURE {
   int nppoly;
   Tangram::Point<dim> polyxyz[MAXPV2];
 
-  /* Additional info for 3D Polyhedron description - Not filled in for 2D*/
+  /* Additional info for 3D Polyhedron description - Not filled in for 2D */
   int nfpoly;           /* Number of polyhedron faces */
   int nfpnts[MAXPF3];    /* Number of points for each face */
-  int fpnts[MAXPF3*MAXPV2]; /* coordinates of face vertices */
+  int fpnts[MAXPF3][MAXPV2]; /* coordinates of face vertices listed so that
+                                face normal points out of polyhedron */
 
   /* Info about computed triangulation of polyhedron - polytrixyz is a
    * flat array containing coordinates of the three vertices of each
@@ -332,13 +333,13 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
     // Compute a material ID for each point based on their inclusion
     // in a feature
 
-    Tangram::transform(ptxyz, ptxyz + NPARTICLES, pmatid, feature_evaluator_);
+    Tangram::transform(ptxyz, ptxyz + np, pmatid, feature_evaluator_);
 
     // Tally up the particles to compute volume fractions
 
     vfcen_t<2> vfcen = {};  // Initialize to zero
     int npmat[MAXMATS] = {};
-    for (int p = 0; p < NPARTICLES; p++) {
+    for (int p = 0; p < np; p++) {
       bool found = false;
       int im = 0;
       for (im = 0; im < vfcen.nmats; im++)
@@ -354,8 +355,8 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
       vfcen.cen[im] += ptxyz[p];
     }
     for (int im = 0; im < vfcen.nmats; im++) {
-      vfcen.vf[im] = ((double) npmat[im])/NPARTICLES;
-      vfcen.cen[im] /= NPARTICLES;
+      vfcen.vf[im] = ((double) npmat[im])/np;
+      vfcen.cen[im] /= npmat[im];
     }
 
     return vfcen;
