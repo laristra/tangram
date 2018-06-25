@@ -49,6 +49,6 @@ target_link_libraries(vfgen-sampling tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRAR
 #-------------------------------------------------------------------------------
 # Testing
 #-------------------------------------------------------------------------------
-if (ENABLE_APP_TESTS)
-  add_subdirectory(test)
-endif (ENABLE_APP_TESTS)
+# if (ENABLE_APP_TESTS)
+#   add_subdirectory(test)
+# endif (ENABLE_APP_TESTS)
