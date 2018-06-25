@@ -624,18 +624,18 @@ void writeAsciiFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) {
 //   <int, number of material in the cell>
 //   for every cell's material:
 //     <int, index of material>
-//   for every cell:
-//     if cell is multi-material:
-//       for every cell's material:
-//         <double, material's volume fraction>
-//   for every cell:
-//     if cell is multi-material:
+// for every cell:
+//   if cell is multi-material:
 //     for every cell's material:
-//       <double, material centroids x-coordinate>
-//       if 2D or 3D:
-//         <double, material centroids y-coordinate>
-//       if 3D:
-//         <double, material centroids z-coordinate>
+//       <double, material's volume fraction>
+// for every cell:
+//   if cell is multi-material:
+//   for every cell's material:
+//     <double, material centroids x-coordinate>
+//     if 2D or 3D:
+//       <double, material centroids y-coordinate>
+//     if 3D:
+//       <double, material centroids z-coordinate>
 
 template<int dim>
 void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) {
@@ -658,11 +658,7 @@ void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) 
     vfcen_t<dim> const& vfcen_i = vfcen[i];
     int nmats_cell = vfcen_i.nmats;
     outfile.write((char *) &nmats_cell, sizeof(int));
-  }
-  for (int i = 0; i < ncells; i++) {
-    vfcen_t<dim> const& vfcen_i = vfcen[i];
-    if (vfcen_i.nmats > 1)
-      outfile.write((char *) &(vfcen_i.matids[0]), vfcen_i.nmats*sizeof(int));
+    outfile.write((char *) &(vfcen_i.matids[0]), vfcen_i.nmats*sizeof(int));
   }
   for (int i = 0; i < ncells; i++) {
     vfcen_t<dim> const& vfcen_i = vfcen[i];
