@@ -104,8 +104,8 @@ public:
     @brief Used iterative methods tolerances
     @return  Tolerances for iterative methods, 
     here im_tols_.fun_eps is the volume tolerance and
-    im_tols_.arg_eps is the tolerance on the norm of plane normal 
-    in polar coordinates
+    im_tols_.arg_eps is the tolerance on the norm of change in the vector of polar
+    coordinates which defines the direction of the normal to the cutting plane
   */
   const IterativeMethodTolerances_t& iterative_method_tolerances() const {
     return im_tols_;
