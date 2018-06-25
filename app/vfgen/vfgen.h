@@ -203,7 +203,6 @@ struct FEATURE {
 template <int dim>
 struct InFeatureEvaluator {
   int nfeat_;
-  int nmats_;
 
   std::vector<FEATURE<dim>> features_;
 
@@ -263,8 +262,9 @@ class VolfracEvaluator {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<dim> feature_evaluator,
-                   double ptol) :
-      mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol)
+                   double ptol,
+		   int *nmats) :
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(*nmats)
   {}
 
   vfcen_t<dim> operator()(int entity_ID) {
@@ -276,6 +276,7 @@ class VolfracEvaluator {
   Mesh_Wrapper const& mesh_;
   InFeatureEvaluator<dim> feature_evaluator_;
   double ptol_;
+  double nmats_;
 };
 
 // Specialization for dim = 2
@@ -285,8 +286,9 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<2> feature_evaluator,
-                   double ptol) :
-      mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol)
+                   double ptol,
+		   int *nmats) :
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(*nmats)
   {}
 
   // Operator to calculate volume fractions and centroids of materials
@@ -349,7 +351,8 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
           found = true;
           break;
         }
-      if (!found) {
+      // check if number of materials haven't exceed the global count
+      if ((!found) && (vfcen.nmats < nmats_)) {
         im = vfcen.nmats++;
         vfcen.matids[im] = pmatid[p];
       }
@@ -368,6 +371,7 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
   Mesh_Wrapper const& mesh_;
   InFeatureEvaluator<2> feature_evaluator_;
   double ptol_;
+  int nmats_;
 };
 
 template <class Mesh_Wrapper>
@@ -376,8 +380,10 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<3> feature_evaluator,
-                   double ptol) :
-      mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol) {}
+                   double ptol,
+		   int *nmats) :
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(*nmats)
+    {}
 
   // Operator to compute volume fractions and centroids of materials
   // for this entity ID
@@ -473,7 +479,8 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
           found = true;
           break;
         }
-      if (!found) {
+      // check if number of materials haven't exceed the global count
+      if ((!found) && (vfcen.nmats < nmats_)) {
         im = vfcen.nmats++;
         vfcen.matids[im] = pmatid[p];
       }
@@ -492,6 +499,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
   Mesh_Wrapper const& mesh_;
   InFeatureEvaluator<3> feature_evaluator_;
   double ptol_;
+  int nmats_;
 
 
   // Temporary copy of routine from AuxMeshTopology.h. Can be eliminated
