@@ -216,12 +216,13 @@ public:
     int iopt_permutation = -1;
     double min_centroids_error = DBL_MAX;
     for (int iperm = 0; iperm < npermutations; iperm++) {
-      const CellMatPoly<Dim>& cur_cmp = *permutations_cellmatpoly[iperm];
+      std::shared_ptr<CellMatPoly<Dim>> cur_cmp_ptr = 
+        permutations_cellmatpoly[iperm];
 
       double cur_error = 0.0;      
       for (int imat = 0; imat < nmats; imat++) {
         const std::vector<double>& cur_moments = 
-          cur_cmp.material_moments(cell_mat_ids_[cellID][imat]);
+          cur_cmp_ptr->material_moments(cell_mat_ids_[cellID][imat]);
 
         Point<Dim> mat_centroid;
         for (int idim = 0; idim < Dim; idim++)
