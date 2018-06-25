@@ -39,17 +39,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-add_subdirectory(tangramapp)
-add_subdirectory(demoapp)
-add_subdirectory(demoapp3d)
-if (ENABLE_MPI AND Jali_DIR)
-  add_subdirectory(demo-vof-app3d)
-  add_subdirectory(demo-mof-app3d)
-endif (ENABLE_MPI AND Jali_DIR)
-if(XMOF2D_FOUND)
-  add_subdirectory(xmof-linetest-simplemesh-app)
-  if (ENABLE_MPI AND Jali_DIR)
-    add_subdirectory(demo-xmof-app)
-    add_subdirectory(vfgen)
-  endif (ENABLE_MPI AND Jali_DIR)
-endif(XMOF2D_FOUND)
+#-------------------------------------------------------------------------------
+# genvf - generate volume fractions and centroids
+#-------------------------------------------------------------------------------
+add_executable(vfgen-sampling vfgen-sampling.cc)
+target_link_libraries(vfgen-sampling ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+  ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+
+
