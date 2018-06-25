@@ -42,8 +42,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #-------------------------------------------------------------------------------
 # genvf - generate volume fractions and centroids
 #-------------------------------------------------------------------------------
-add_executable(vfgen-sampling vfgen-sampling.cc)
-target_link_libraries(vfgen-sampling ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
-  ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+file(GLOB vfgen_srcfiles ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+add_executable(vfgen-sampling ${vfgen_srcfiles})
+target_link_libraries(vfgen-sampling tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
-
+#-------------------------------------------------------------------------------
+# Testing
+#-------------------------------------------------------------------------------
+if (ENABLE_APP_TESTS)
+  add_subdirectory(test)
+endif (ENABLE_APP_TESTS)
