@@ -167,7 +167,7 @@ struct FEATURE {
   /* Additional info for 3D Polyhedron description - Not filled in for 2D */
   int nfpoly;           /* Number of polyhedron faces */
   int nfpnts[MAXPF3];    /* Number of points for each face */
-  int fpnts[MAXPF3][MAXPV2]; /* coordinates of face vertices listed so that
+  int fpnts[MAXPF3][MAXPV2]; /* face vertex indices listed so that
                                 face normal points out of polyhedron */
 
   /* Info about computed triangulation of polyhedron - polytrixyz is a
@@ -831,7 +831,7 @@ void read_features(std::string featfilename,
           Tangram::Point<dim> fcen;   // will only come here when dim == 3
           int nfp = this_feature.nfpnts[f];
           for (int p = 0; p < nfp; p++)
-            fcen += this_feature.fpnts[f][p];
+            fcen += this_feature.polyxyz[this_feature.fpnts[f][p]];
           fcen /= this_feature.nfpnts[f];
 
           for (int p = 0; p < nfp; p++) {
