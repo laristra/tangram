@@ -262,9 +262,9 @@ class VolfracEvaluator {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<dim> feature_evaluator,
-                   double ptol,
+                   double *ptol,
 		   int *nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(*nmats)
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
   {}
 
   vfcen_t<dim> operator()(int entity_ID) {
@@ -286,9 +286,9 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<2> feature_evaluator,
-                   double ptol,
+                   double *ptol,
 		   int *nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(*nmats)
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
   {}
 
   // Operator to calculate volume fractions and centroids of materials
@@ -380,9 +380,9 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<3> feature_evaluator,
-                   double ptol,
+                   double *ptol,
 		   int *nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(*nmats)
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
     {}
 
   // Operator to compute volume fractions and centroids of materials
