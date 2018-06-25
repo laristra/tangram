@@ -213,14 +213,26 @@ struct InFeatureEvaluator {
     int pmatid = -1;
     int imat = 1;
     bool test_in = true;
+    bool test_front = true;
     for (int j = nfeat_-1; j >= 0; j--) {
       FEATURE<dim> curfeat = features_[j];
       imat = curfeat.matid;
       test_in = (curfeat.inout == 1);
+      test_front = (curfeat.front == 1);
 
       bool ptin = true;
       if (curfeat.type == FEATURETYPE::FILL) {  /* Fill */
         test_in = true;  // Nothing to do really
+      } else if (curfeat.type == FEATURETYPE::HALFSPACE) { /* Halfspace */
+	// variable to store the dot product
+	double dot_prod = 0.0;
+	for (int i = 0; i < dim; i++)
+	  // Calcualte the dot product between vector
+	  // created by point on plane and normal vector
+	  dot_prod += (ptxyz[i] - curfeat.plane_xyz[i])*curfeat.plane_normal[i];
+
+	// If dot product is positive, point is in the front of the plane
+	ptin = (dot_prod >= 0.0);
       } else if (curfeat.type == FEATURETYPE::BOX) { /* Box */
         for (int i = 0; i < dim; i++)
           ptin &= (curfeat.minxyz[i] < ptxyz[i] &&
@@ -239,7 +251,8 @@ struct InFeatureEvaluator {
         std::cerr << "Unknown feature type\n";
         continue;
       }
-      if (test_in == ptin) {
+    // If either point is inside or in front, then save the material idea
+    if ((test_in == ptin) || (test_front == ptin)) {
         pmatid = imat;
         break;
       }
