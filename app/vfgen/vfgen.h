@@ -203,6 +203,8 @@ struct FEATURE {
 template <int dim>
 struct InFeatureEvaluator {
   int nfeat_;
+  int nmats_;
+
   std::vector<FEATURE<dim>> features_;
 
   explicit InFeatureEvaluator(std::vector<FEATURE<dim>> const& features) :
@@ -574,7 +576,9 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 // It also puts entries for all materials for all cells
 
 template<int dim>
-void writeAsciiFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) {
+void writeAsciiFile(std::string filename, 
+		    Tangram::vector<vfcen_t<dim>> vfcen,
+		    int *global_nmats_) {
   std::ofstream outfile;
   outfile.open(filename.c_str());
   if (!outfile.is_open()) {
@@ -585,8 +589,8 @@ void writeAsciiFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) {
   int ncells = vfcen.size();
 
   outfile << dim << "\n";
-  outfile << global_nmats << "\n";
-  for (int i = 0; i < global_nmats; i++)
+  outfile << *global_nmats_ << "\n";
+  for (int i = 0; i < *global_nmats_; i++)
     outfile << "mat" << i << "\n";
 
   /* Write out volume fractions and centroids to file */
@@ -741,8 +745,8 @@ void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) 
 
 template <int dim>
 void read_features(std::string featfilename,
-                   std::vector<FEATURE<dim>> *features) {
-
+                   std::vector<FEATURE<dim>> *features,
+		   int *global_nmats_) {
   features->clear();
 
   std::ifstream featfile;
@@ -755,7 +759,7 @@ void read_features(std::string featfilename,
   std::string temp_str;
   featfile >> temp_str;
   if (temp_str == "nmats")
-    featfile >> global_nmats;
+    featfile >> *global_nmats_;
   else
     std::cerr << featfilename << ": first line must be 'nmats n' " <<
         "where n is number of materials\n";
