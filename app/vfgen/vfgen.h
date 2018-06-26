@@ -599,7 +599,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 template<int dim>
 void writeAsciiFile(std::string filename, 
 		    Tangram::vector<vfcen_t<dim>> vfcen,
-		    int *global_nmats_) {
+		    int *nmats_) {
   std::ofstream outfile;
   outfile.open(filename.c_str());
   if (!outfile.is_open()) {
@@ -610,8 +610,8 @@ void writeAsciiFile(std::string filename,
   int ncells = vfcen.size();
 
   outfile << dim << "\n";
-  outfile << *global_nmats_ << "\n";
-  for (int i = 0; i < *global_nmats_; i++)
+  outfile << *nmats_ << "\n";
+  for (int i = 0; i < *nmats_; i++)
     outfile << "mat" << i << "\n";
 
   /* Write out volume fractions and centroids to file */
@@ -763,7 +763,7 @@ void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) 
 template <int dim>
 void read_features(std::string featfilename,
                    std::vector<FEATURE<dim>> *features,
-		   int *global_nmats_) {
+		   int *nmats_) {
   features->clear();
 
   std::ifstream featfile;
@@ -776,7 +776,7 @@ void read_features(std::string featfilename,
   std::string temp_str;
   featfile >> temp_str;
   if (temp_str == "nmats")
-    featfile >> *global_nmats_;
+    featfile >> *nmats_;
   else
     std::cerr << featfilename << ": first line must be 'nmats n' " <<
         "where n is number of materials\n";
