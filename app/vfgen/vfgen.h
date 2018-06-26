@@ -157,7 +157,7 @@ struct FEATURE {
   FEATURETYPE type;
   int matid;            /* ID of material */
   int inout;            /* Do we consider the outside or inside */
-  int front;            /* Do we consider the front of the plane or the back */
+                        /* For halfplane, points inside are in the front */
 
   /* points of polygons and polyhedra - for polygons, these are
    * expected to be in ccw manner */
@@ -213,12 +213,10 @@ struct InFeatureEvaluator {
     int pmatid = -1;
     int imat = 1;
     bool test_in = true;
-    bool test_front = true;
     for (int j = nfeat_-1; j >= 0; j--) {
       FEATURE<dim> curfeat = features_[j];
       imat = curfeat.matid;
       test_in = (curfeat.inout == 1);
-      test_front = (curfeat.front == 1);
 
       bool ptin = true;
       if (curfeat.type == FEATURETYPE::FILL) {  /* Fill */
@@ -252,7 +250,7 @@ struct InFeatureEvaluator {
         continue;
       }
       // If either point is inside or in front, then save the material idea
-      if ( (test_in == ptin) || ((test_front == ptin) && (curfeat.type==FEATURETYPE::HALFSPACE))) {
+      if (test_in == ptin) {
         pmatid = imat;
         break;
       }
