@@ -222,15 +222,15 @@ struct InFeatureEvaluator {
       if (curfeat.type == FEATURETYPE::FILL) {  /* Fill */
         test_in = true;  // Nothing to do really
       } else if (curfeat.type == FEATURETYPE::HALFSPACE) { /* Halfspace */
-	// variable to store the dot product
-	double dot_prod = 0.0;
-	for (int i = 0; i < dim; i++)
-	  // Calcualte the dot product between vector
-	  // created by point on plane and normal vector
-	  dot_prod += (ptxyz[i] - curfeat.plane_xyz[i])*curfeat.plane_normal[i];
+        // variable to store the dot product
+        double dot_prod = 0.0;
+        for (int i = 0; i < dim; i++)
+          // Calcualte the dot product between vector
+          // created by point on plane and normal vector
+          dot_prod += (ptxyz[i] - curfeat.plane_xyz[i])*curfeat.plane_normal[i];
 
-	// If dot product is positive, point is in the front of the plane
-	ptin = (dot_prod >= 0.0);
+        // If dot product is negative, point is inside the halspace
+        ptin = (dot_prod <= 0.0);
       } else if (curfeat.type == FEATURETYPE::BOX) { /* Box */
         for (int i = 0; i < dim; i++)
           ptin &= (curfeat.minxyz[i] < ptxyz[i] &&
