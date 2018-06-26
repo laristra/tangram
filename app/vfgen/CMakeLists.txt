@@ -45,5 +45,3 @@ POSSIBILITY OF SUCH DAMAGE.
 add_executable(vfgen-sampling vfgen-sampling.cc)
 target_link_libraries(vfgen-sampling ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
   ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
-
-

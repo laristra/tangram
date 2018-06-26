@@ -8,8 +8,6 @@
 // Copyright Los Alamos National Laboratory, 2016
 
 
-int global_nmats;
-
 #include <sys/time.h>
 
 #include <mpi.h>
@@ -35,6 +33,7 @@ int global_nmats;
 
 
 int main(int argc, char *argv[]) {
+  int global_nmats;
   char mstk_fname[256], mname[256], feat_fname[256], out_fname[256];
   int i, j, t, ok, status, idx, idx2, nrv, len, flag, done, ir;
   int imat, ptin, inout, nppoly, mkid, rid, refmk, ptnum, nblock;
@@ -96,12 +95,12 @@ int main(int argc, char *argv[]) {
   if (meshdim == 2) {
 
     std::vector<FEATURE<2>> features;
-    read_features<2>(featfilename, &features);
+    read_features<2>(featfilename, &features, &global_nmats);
 
     Tangram::vector<vfcen_t<2>> vfcen(ncells);
     InFeatureEvaluator<2> feature_functor(features);
     VolfracEvaluator<2, Tangram::Jali_Mesh_Wrapper>
-        volfrac_calculator(mesh_wrapper, feature_functor, ptol);
+      volfrac_calculator(mesh_wrapper, feature_functor, ptol, global_nmats);
 
     gettimeofday(&begin_core, 0);
 
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
 
     gettimeofday(&end_core, 0);
 
-    writeAsciiFile<2>(outfilename, vfcen);
+    writeAsciiFile<2>(outfilename, vfcen, global_nmats);
     writeBinaryFile<2>(boutfilename, vfcen);
 
 
@@ -133,12 +132,12 @@ int main(int argc, char *argv[]) {
   }  else if (meshdim == 3) {
 
     std::vector<FEATURE<3>> features;
-    read_features<3>(featfilename, &features);
+    read_features<3>(featfilename, &features, &global_nmats);
 
     Tangram::vector<vfcen_t<3>> vfcen(ncells);
     InFeatureEvaluator<3> feature_functor(features);
     VolfracEvaluator<3, Tangram::Jali_Mesh_Wrapper>
-        volfrac_calculator(mesh_wrapper, feature_functor, ptol);
+      volfrac_calculator(mesh_wrapper, feature_functor, ptol, global_nmats);
 
     gettimeofday(&begin_core, 0);
 
@@ -150,7 +149,7 @@ int main(int argc, char *argv[]) {
 
     gettimeofday(&end_core, 0);
 
-    writeAsciiFile<3>(outfilename, vfcen);
+    writeAsciiFile<3>(outfilename, vfcen, global_nmats);
     writeBinaryFile<3>(boutfilename, vfcen);
 
     // Count the cells the with 1, 2 , 3 ... materials

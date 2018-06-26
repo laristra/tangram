@@ -157,7 +157,7 @@ struct FEATURE {
   FEATURETYPE type;
   int matid;            /* ID of material */
   int inout;            /* Do we consider the outside or inside */
-  int front;            /* Do we consider the front of the plane or the back */
+                        /* For halfplane, points inside are in the back */
 
   /* points of polygons and polyhedra - for polygons, these are
    * expected to be in ccw manner */
@@ -203,6 +203,7 @@ struct FEATURE {
 template <int dim>
 struct InFeatureEvaluator {
   int nfeat_;
+
   std::vector<FEATURE<dim>> features_;
 
   explicit InFeatureEvaluator(std::vector<FEATURE<dim>> const& features) :
@@ -220,6 +221,16 @@ struct InFeatureEvaluator {
       bool ptin = true;
       if (curfeat.type == FEATURETYPE::FILL) {  /* Fill */
         test_in = true;  // Nothing to do really
+      } else if (curfeat.type == FEATURETYPE::HALFSPACE) { /* Halfspace */
+        // variable to store the dot product
+        double dot_prod = 0.0;
+        for (int i = 0; i < dim; i++)
+          // Calcualte the dot product between vector
+          // created by point on plane and normal vector
+          dot_prod += (ptxyz[i] - curfeat.plane_xyz[i])*curfeat.plane_normal[i];
+
+        // If dot product is negative, point is inside the halspace
+        ptin = (dot_prod <= 0.0);
       } else if (curfeat.type == FEATURETYPE::BOX) { /* Box */
         for (int i = 0; i < dim; i++)
           ptin &= (curfeat.minxyz[i] < ptxyz[i] &&
@@ -238,6 +249,7 @@ struct InFeatureEvaluator {
         std::cerr << "Unknown feature type\n";
         continue;
       }
+      // If point is inside material, save the id
       if (test_in == ptin) {
         pmatid = imat;
         break;
@@ -261,8 +273,8 @@ class VolfracEvaluator {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<dim> feature_evaluator,
-                   double ptol) :
-      mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol)
+                   double ptol, int nmats) :
+    mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
   {}
 
   vfcen_t<dim> operator()(int entity_ID) {
@@ -274,6 +286,7 @@ class VolfracEvaluator {
   Mesh_Wrapper const& mesh_;
   InFeatureEvaluator<dim> feature_evaluator_;
   double ptol_;
+  double nmats_;
 };
 
 // Specialization for dim = 2
@@ -283,8 +296,8 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<2> feature_evaluator,
-                   double ptol) :
-      mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol)
+                   double ptol, int nmats) :
+    mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
   {}
 
   // Operator to calculate volume fractions and centroids of materials
@@ -347,7 +360,8 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
           found = true;
           break;
         }
-      if (!found) {
+      // check if number of materials haven't exceed the global count
+      if ((!found) && (vfcen.nmats < nmats_)) {
         im = vfcen.nmats++;
         vfcen.matids[im] = pmatid[p];
       }
@@ -366,6 +380,7 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
   Mesh_Wrapper const& mesh_;
   InFeatureEvaluator<2> feature_evaluator_;
   double ptol_;
+  int nmats_;
 };
 
 template <class Mesh_Wrapper>
@@ -374,8 +389,9 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<3> feature_evaluator,
-                   double ptol) :
-      mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol) {}
+                   double ptol, int nmats) :
+    mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
+  {}
 
   // Operator to compute volume fractions and centroids of materials
   // for this entity ID
@@ -471,7 +487,8 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
           found = true;
           break;
         }
-      if (!found) {
+      // check if number of materials haven't exceed the global count
+      if ((!found) && (vfcen.nmats < nmats_)) {
         im = vfcen.nmats++;
         vfcen.matids[im] = pmatid[p];
       }
@@ -490,6 +507,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
   Mesh_Wrapper const& mesh_;
   InFeatureEvaluator<3> feature_evaluator_;
   double ptol_;
+  int nmats_;
 
 
   // Temporary copy of routine from AuxMeshTopology.h. Can be eliminated
@@ -574,7 +592,9 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 // It also puts entries for all materials for all cells
 
 template<int dim>
-void writeAsciiFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) {
+void writeAsciiFile(std::string filename,
+                    Tangram::vector<vfcen_t<dim>> vfcen,
+                    int nmats_) {
   std::ofstream outfile;
   outfile.open(filename.c_str());
   if (!outfile.is_open()) {
@@ -585,8 +605,8 @@ void writeAsciiFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) {
   int ncells = vfcen.size();
 
   outfile << dim << "\n";
-  outfile << global_nmats << "\n";
-  for (int i = 0; i < global_nmats; i++)
+  outfile << nmats_ << "\n";
+  for (int i = 0; i < nmats_; i++)
     outfile << "mat" << i << "\n";
 
   /* Write out volume fractions and centroids to file */
@@ -737,8 +757,8 @@ void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) 
 
 template <int dim>
 void read_features(std::string featfilename,
-                   std::vector<FEATURE<dim>> *features) {
-
+                   std::vector<FEATURE<dim>> *features,
+                   int *nmats_) {
   features->clear();
 
   std::ifstream featfile;
@@ -751,7 +771,7 @@ void read_features(std::string featfilename,
   std::string temp_str;
   featfile >> temp_str;
   if (temp_str == "nmats")
-    featfile >> global_nmats;
+    featfile >> *nmats_;
   else
     std::cerr << featfilename << ": first line must be 'nmats n' " <<
         "where n is number of materials\n";
