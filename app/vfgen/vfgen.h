@@ -276,7 +276,7 @@ class VolfracEvaluator {
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<dim> feature_evaluator,
                    double *ptol,
-		   int *nmats) :
+                   int *nmats) :
   mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
   {}
 
@@ -300,7 +300,7 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<2> feature_evaluator,
                    double *ptol,
-		   int *nmats) :
+                   int *nmats) :
   mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
   {}
 
