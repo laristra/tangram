@@ -394,7 +394,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<3> feature_evaluator,
                    double *ptol,
-		   int *nmats) :
+                   int *nmats) :
   mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
     {}
 
@@ -598,8 +598,8 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 
 template<int dim>
 void writeAsciiFile(std::string filename, 
-		    Tangram::vector<vfcen_t<dim>> vfcen,
-		    int *nmats_) {
+                    Tangram::vector<vfcen_t<dim>> vfcen,
+                    int *nmats_) {
   std::ofstream outfile;
   outfile.open(filename.c_str());
   if (!outfile.is_open()) {
@@ -763,7 +763,7 @@ void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) 
 template <int dim>
 void read_features(std::string featfilename,
                    std::vector<FEATURE<dim>> *features,
-		   int *nmats_) {
+                   int *nmats_) {
   features->clear();
 
   std::ifstream featfile;
