@@ -273,9 +273,8 @@ class VolfracEvaluator {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<dim> feature_evaluator,
-                   double *ptol,
-                   int *nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
+                   double ptol, int nmats) :
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
   {}
 
   vfcen_t<dim> operator()(int entity_ID) {
@@ -297,9 +296,8 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<2> feature_evaluator,
-                   double *ptol,
-                   int *nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
+                   double ptol, int nmats) :
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
   {}
 
   // Operator to calculate volume fractions and centroids of materials
@@ -391,9 +389,8 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
   // Constructor
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<3> feature_evaluator,
-                   double *ptol,
-                   int *nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(*ptol), nmats_(*nmats)
+                   double ptol, int nmats) :
+  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
     {}
 
   // Operator to compute volume fractions and centroids of materials
@@ -597,7 +594,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 template<int dim>
 void writeAsciiFile(std::string filename, 
                     Tangram::vector<vfcen_t<dim>> vfcen,
-                    int *nmats_) {
+                    int nmats_) {
   std::ofstream outfile;
   outfile.open(filename.c_str());
   if (!outfile.is_open()) {
@@ -608,8 +605,8 @@ void writeAsciiFile(std::string filename,
   int ncells = vfcen.size();
 
   outfile << dim << "\n";
-  outfile << *nmats_ << "\n";
-  for (int i = 0; i < *nmats_; i++)
+  outfile << nmats_ << "\n";
+  for (int i = 0; i < nmats_; i++)
     outfile << "mat" << i << "\n";
 
   /* Write out volume fractions and centroids to file */

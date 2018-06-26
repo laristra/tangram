@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     Tangram::vector<vfcen_t<2>> vfcen(ncells);
     InFeatureEvaluator<2> feature_functor(features);
     VolfracEvaluator<2, Tangram::Jali_Mesh_Wrapper>
-      volfrac_calculator(mesh_wrapper, feature_functor, &ptol, &global_nmats);
+      volfrac_calculator(mesh_wrapper, feature_functor, ptol, global_nmats);
 
     gettimeofday(&begin_core, 0);
 
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 
     gettimeofday(&end_core, 0);
 
-    writeAsciiFile<2>(outfilename, vfcen, &global_nmats);
+    writeAsciiFile<2>(outfilename, vfcen, global_nmats);
     writeBinaryFile<2>(boutfilename, vfcen);
 
 
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
     Tangram::vector<vfcen_t<3>> vfcen(ncells);
     InFeatureEvaluator<3> feature_functor(features);
     VolfracEvaluator<3, Tangram::Jali_Mesh_Wrapper>
-      volfrac_calculator(mesh_wrapper, feature_functor, &ptol, &global_nmats);
+      volfrac_calculator(mesh_wrapper, feature_functor, ptol, global_nmats);
 
     gettimeofday(&begin_core, 0);
 
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
 
     gettimeofday(&end_core, 0);
 
-    writeAsciiFile<3>(outfilename, vfcen, &global_nmats);
+    writeAsciiFile<3>(outfilename, vfcen, global_nmats);
     writeBinaryFile<3>(boutfilename, vfcen);
 
     // Count the cells the with 1, 2 , 3 ... materials
