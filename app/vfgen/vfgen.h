@@ -157,7 +157,7 @@ struct FEATURE {
   FEATURETYPE type;
   int matid;            /* ID of material */
   int inout;            /* Do we consider the outside or inside */
-                        /* For halfplane, points inside are in the front */
+                        /* For halfplane, points inside are in the back */
 
   /* points of polygons and polyhedra - for polygons, these are
    * expected to be in ccw manner */
