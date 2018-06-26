@@ -249,7 +249,7 @@ struct InFeatureEvaluator {
         std::cerr << "Unknown feature type\n";
         continue;
       }
-      // If either point is inside or in front, then save the material idea
+      // If point is inside material, save the id
       if (test_in == ptin) {
         pmatid = imat;
         break;
@@ -274,7 +274,7 @@ class VolfracEvaluator {
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<dim> feature_evaluator,
                    double ptol, int nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
+    mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
   {}
 
   vfcen_t<dim> operator()(int entity_ID) {
@@ -297,7 +297,7 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<2> feature_evaluator,
                    double ptol, int nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
+    mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
   {}
 
   // Operator to calculate volume fractions and centroids of materials
@@ -390,8 +390,8 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
   VolfracEvaluator(Mesh_Wrapper const& mesh,
                    InFeatureEvaluator<3> feature_evaluator,
                    double ptol, int nmats) :
-  mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
-    {}
+    mesh_(mesh), feature_evaluator_(feature_evaluator), ptol_(ptol), nmats_(nmats)
+  {}
 
   // Operator to compute volume fractions and centroids of materials
   // for this entity ID
@@ -592,7 +592,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 // It also puts entries for all materials for all cells
 
 template<int dim>
-void writeAsciiFile(std::string filename, 
+void writeAsciiFile(std::string filename,
                     Tangram::vector<vfcen_t<dim>> vfcen,
                     int nmats_) {
   std::ofstream outfile;
