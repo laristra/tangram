@@ -251,8 +251,8 @@ struct InFeatureEvaluator {
         std::cerr << "Unknown feature type\n";
         continue;
       }
-    // If either point is inside or in front, then save the material idea
-    if ((test_in == ptin) || (test_front == ptin)) {
+      // If either point is inside or in front, then save the material idea
+      if ( (test_in == ptin) || ((test_front == ptin) && (curfeat.type==FEATURETYPE::HALFSPACE))) {
         pmatid = imat;
         break;
       }
