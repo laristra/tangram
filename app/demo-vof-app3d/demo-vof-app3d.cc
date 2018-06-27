@@ -60,6 +60,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/VOF.h"
 #include "tangram/driver/write_to_gmv.h"
+#include "app/include/read_material_data.h"
 
 /* Demo app for an unstructured 3D mesh
    and a given material data.
@@ -69,57 +70,6 @@ POSSIBILITY OF SUCH DAMAGE.
    polygons to a gmv file */
 
 #include <set>
-
-void read_mat_data(const std::string& mesh_data_fname,
-                   std::vector<int>& cell_num_mats,
-                   std::vector<int>& cell_mat_ids,
-                   std::vector<double>& cell_mat_volfracs) {
-  std::ifstream os(mesh_data_fname.c_str(), std::ifstream::binary);
-  if (!os.good()) {
-    std::ostringstream os;
-    os << std::endl << "Cannot open " << mesh_data_fname <<
-      " for binary input" << std::endl;
-    throw std::runtime_error(os.str());
-  }
-
-  int data_dim;
-  os.read(reinterpret_cast<char *>(&data_dim), sizeof(int));
-  assert(data_dim == 3);
-  int ncells;
-  os.read(reinterpret_cast<char *>(&ncells), sizeof(int));
-  cell_num_mats.resize(ncells);
-  
-  std::vector<std::vector<int>> icell_mats(ncells);
-  int nmatpoly = 0;
-  for (int icell = 0; icell < ncells; icell++) {
-    os.read(reinterpret_cast<char *>(&cell_num_mats[icell]), sizeof(int));
-
-    nmatpoly += cell_num_mats[icell];
-    icell_mats[icell].resize(cell_num_mats[icell]);
-    for (int im = 0; im < cell_num_mats[icell]; im++)
-      os.read(reinterpret_cast<char *>(&icell_mats[icell][im]), sizeof(int));
-  }
-
-  std::vector<int> offset(ncells, 0);
-  for (int icell = 0; icell < ncells - 1; icell++)
-    offset[icell + 1] = offset[icell] + cell_num_mats[icell];
-  cell_mat_ids.resize(nmatpoly);
-  for (int icell = 0; icell < ncells; icell++)
-    std::copy(icell_mats[icell].begin(), icell_mats[icell].end(),
-              cell_mat_ids.begin() + offset[icell]);
-
-  cell_mat_volfracs.resize(nmatpoly);
-  for (int icell = 0; icell < ncells; icell++) {
-    if (cell_num_mats[icell] == 1) {
-      cell_mat_volfracs[offset[icell]] = 1.0;
-      continue;
-    }
-    for (int im = 0; im < cell_num_mats[icell]; im++)
-      os.read(reinterpret_cast<char *>(&cell_mat_volfracs[offset[icell] + im]), sizeof(double));
-  }
-
-  os.close();
-}
 
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
@@ -156,8 +106,9 @@ int main(int argc, char** argv) {
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
   std::vector<double> cell_mat_volfracs;
-  read_mat_data(in_data_fname, cell_num_mats, cell_mat_ids,
-                cell_mat_volfracs);
+  std::vector<Tangram::Point3> cell_mat_centroids;
+  read_material_data<Tangram::Jali_Mesh_Wrapper, 3>(mesh_wrapper, in_data_fname, 
+    cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
   // Volume fraction tolerance
   Tangram::IterativeMethodTolerances_t im_tols = {
