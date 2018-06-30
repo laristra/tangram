@@ -126,7 +126,7 @@ bool P_InTriPoly3D(Tangram::Point<3> ptest,
 // @param points       Points of polygon in 2D or points of triangles of
 //                     of faceted polyhedron in 3D
 
-template<long int dim>
+template<int dim>
 bool P_InPoly(Tangram::Point<dim> ptest, int npnts, Tangram::Point<dim> *points) {}
 
 template<>
@@ -236,10 +236,13 @@ struct InFeatureEvaluator {
           ptin &= (curfeat.minxyz[i] < ptxyz[i] &&
                    curfeat.maxxyz[i] > ptxyz[i]);
       } else if (curfeat.type == FEATURETYPE::POLY) { /* Polyhedron */
+        // Need to explicitly specify <dim> because if dim is interpreted as
+        // a long int in the calling routine the template deduction fails
+        // See https://stackoverflow.com/questions/32891471/template-argument-deduction-which-compiler-is-right-here
         if (dim == 2) {
-          ptin = P_InPoly(ptxyz, curfeat.nppoly, &(curfeat.polyxyz[0]));
+          ptin = P_InPoly<dim>(ptxyz, curfeat.nppoly, &(curfeat.polyxyz[0]));
         } else {
-          ptin = P_InPoly(ptxyz, curfeat.nppoly, &(curfeat.polytrixyz[0]));
+          ptin = P_InPoly<dim>(ptxyz, curfeat.nppoly, &(curfeat.polytrixyz[0]));
         }
       } else if (curfeat.type == FEATURETYPE::SPHERE) { /* Circle */
         Tangram::Vector<dim> v = ptxyz-curfeat.cen;
