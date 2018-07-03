@@ -83,6 +83,15 @@ template <long D> class Vector {
   }
 
   /*!
+    @brief Specialized constructor for 1d Vectors.
+    @param[in] xm_comp The x coordinate.
+  */
+  inline Vector(const double& xm_comp) {
+    assert(D == 1);
+    m_comp[0] = xm_comp;
+  }
+  
+  /*!
     @brief Specialized constructor for 2d Vectors.
     @param[in] xm_comp,ym_comp The (x,y) coordinate pair.
   */

@@ -221,13 +221,21 @@ class Driver {
         if (nMMCs == 0)
           continue;
         reconstructor.set_cell_indices_to_operate_on(iMMCs[inm]);
-        Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
 
-        Tangram::transform(make_counting_iterator(0),
-                           make_counting_iterator(nMMCs),
-                           MMCs_cellmatpolys.begin(), reconstructor);
-        for (int immc = 0; immc < nMMCs; immc++)
-          cellmatpolys_[iMMCs[inm][immc]] = MMCs_cellmatpolys[immc];
+        //If reconstruction is performed for a single cell, we do not use transform:
+        //this allows to use transform inside the reconstructor (e.g. to run
+        //multiple threads for material order permutations in MOF)
+        if (nMMCs == 1)
+          cellmatpolys_[iMMCs[inm][0]] = reconstructor(0);
+        else {
+          Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
+
+          Tangram::transform(make_counting_iterator(0),
+                             make_counting_iterator(nMMCs),
+                             MMCs_cellmatpolys.begin(), reconstructor);
+          for (int immc = 0; immc < nMMCs; immc++)
+            cellmatpolys_[iMMCs[inm][immc]] = MMCs_cellmatpolys[immc];
+        }
       }
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
