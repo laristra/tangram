@@ -4,8 +4,8 @@ Please see the license file at the root of this repository, or at:
     https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef SRC_BFGS_H_
-#define SRC_BFGS_H_
+#ifndef TANGRAM_BFGS_H_
+#define TANGRAM_BFGS_H_
 
 #include <functional>
 #include "tangram/support/tangram.h"
