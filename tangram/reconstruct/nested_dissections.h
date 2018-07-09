@@ -53,20 +53,29 @@ public:
     @brief Specifies the order in which materials are clipped
     @param[in] cell_materials_order Vector of local material indices, if a cell 
     has three materials, it will have three entries (0, 1, 2) in certain order
+  */
+  void set_cell_materials_order(const std::vector<int>& cell_materials_order) {
+    cell_materials_order_.clear();                              
+    cell_materials_order_.push_back(cell_materials_order);
+  }
+
+  /*!
+    @brief Sets materials clipping order: either all ordering permutations are
+    enabled, or materials are clipped in the order they are listed for the cell
     @param[in] enable_permutations Flag indicating whether the order permutations
     are to be used. If enabled, ID of the permutation can be used as the parameter
     of the operator
   */
-  void set_cell_materials_order(const std::vector<int>& cell_materials_order,
-                                const bool enable_permutations = false) {
-    cell_materials_order_.clear();                              
-    if (!enable_permutations)                              
-      cell_materials_order_.push_back(cell_materials_order);
-    else {
-      std::vector<int> cur_mat_order = cell_materials_order;
-      do {
+  void set_cell_materials_order(const bool enable_permutations = false) {
+    int nmats = (int) reconstructor_.cell_materials(cell_id_).size();
+    cell_materials_order_.resize(1);
+    cell_materials_order_[0].resize(nmats);
+    std::iota(cell_materials_order_[0].begin(), cell_materials_order_[0].end(), 0);                              
+
+    if (enable_permutations) {
+      std::vector<int> cur_mat_order = cell_materials_order_[0];
+      while (std::next_permutation(cur_mat_order.begin(), cur_mat_order.end()))
         cell_materials_order_.push_back(cur_mat_order);
-      } while (std::next_permutation(cur_mat_order.begin(), cur_mat_order.end()));
     }
   }
 

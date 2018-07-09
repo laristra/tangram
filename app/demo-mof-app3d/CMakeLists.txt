@@ -39,39 +39,20 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-#-----------------------------------------------------------------------------~#
+#-------------------------------------------------------------------------------
+# demo-mof-app3d - uses 3D mesh from Jali
+#-------------------------------------------------------------------------------
+add_executable(demo-mof-app3d demo-mof-app3d.cc)
+target_link_libraries(demo-mof-app3d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+                                     ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
+#-------------------------------------------------------------------------------
+# Other libraries
+#-------------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------~#
-
-if (XMOF2D_DIR)
-    set(xmof2D_wrapper_headers
-        reconstruct/xmof2D_wrapper.h
-        )
-endif (XMOF2D_DIR)
-
-# Add header files
-set(reconstruct_HEADERS
-    SLIC.h
-    xmof2D_wrapper.h
-    cutting_distance_solver.h
-    nested_dissections.h
-    VOF.h
-    MOF.h
-    PARENT_SCOPE
-)
-
-# Add source files
-set(reconstruct_SOURCES
-    PARENT_SCOPE
-)
-
-# Unit tests
-
-if (ENABLE_UNIT_TESTS)
-  cinch_add_unit(cutting_distance_solver
-    SOURCES test/test_cutting_distance_solver.cc
-    LIBRARIES tangram
-    POLICY SERIAL
-    )
-endif (ENABLE_UNIT_TESTS)
+#-------------------------------------------------------------------------------
+# Testing
+#-------------------------------------------------------------------------------
+# if (ENABLE_APP_TESTS)
+#   add_subdirectory(test)
+# endif (ENABLE_APP_TESTS)

@@ -109,6 +109,36 @@ class Matrix {
     return *this;
   }
 
+  /// Add the Matrix @c rhs to this Matrix.
+  Matrix& operator+=(const Matrix& rhs) {
+    assert((Rows_ == rhs.rows()) && (Columns_ == rhs.columns()));
+
+    for (int i = 0; i < Rows_; ++i)
+      for (int j = 0; j < Columns_; ++j)
+        A_[i*Columns_+j] += rhs[i][j];
+  
+    return *this;
+  }
+
+  /// Subtract the Matrix @c rhs from this Matrix.
+  Matrix& operator-=(const Matrix& rhs) {
+    assert((Rows_ == rhs.rows()) && (Columns_ == rhs.columns()));
+
+    for (int i = 0; i < Rows_; ++i)
+      for (int j = 0; j < Columns_; ++j)
+        A_[i*Columns_+j] -= rhs[i][j];
+  
+    return *this;
+  }  
+
+  /// Multiply this Matrix by a scalar
+  Matrix& operator*=(const double rhs) {
+    for (int i = 0; i < A_.size(); ++i)
+      A_[i] *= rhs;
+  
+    return *this;
+  }
+
   // Destructor
   ~Matrix() {}
 
@@ -259,6 +289,73 @@ class Matrix {
 
   friend class MatrixRow;
 };
+
+// Add two matrices.
+inline
+const Matrix operator+(const Matrix& A, const Matrix& B) {
+  assert((A.rows() == B.rows()) && (A.columns() == B.columns()));
+
+  Matrix Sum(A);
+  for (int i = 0; i < A.rows(); ++i)
+    for (int j = 0; j < A.columns(); ++j)
+      Sum[i][j] += B[i][j];
+  
+  return Sum;
+}
+
+/// Subtract two materices.
+inline
+const Matrix operator-(const Matrix& A, const Matrix& B) {
+  assert((A.rows() == B.rows()) && (A.columns() == B.columns()));
+
+  Matrix Diff(A);
+  for (int i = 0; i < A.rows(); ++i)
+    for (int j = 0; j < A.columns(); ++j)
+      Diff[i][j] -= B[i][j];
+  
+  return Diff;
+}
+
+/*!
+  @brief  Multiply a Matrix by a scalar
+  @param[in] x The scaling factor 
+*/
+inline  
+const Matrix operator*(const Matrix& A, const double& s) {
+  Matrix As(A);
+  
+  for (int i = 0; i < A.rows(); ++i)
+    for (int j = 0; j < A.columns(); ++j)
+      As[i][j] *= s;
+  
+  return As;
+}
+
+/*!
+  @brief  Multiply a Matrix by a scalar
+  @param[in] x The scaling factor
+*/
+inline  
+const Matrix operator*(const double& s, const Matrix& A) {
+  Matrix sA(A);
+  
+  for (int i = 0; i < A.rows(); ++i)
+    for (int j = 0; j < A.columns(); ++j)
+      sA[i][j] *= s;
+  
+  return sA;
+}
+
+// Multiply the first vector by the transpose of the second vector
+template<long D>
+inline
+Matrix operator*(const Vector<D>& a, const Vector<D>& b) {
+  Matrix prod(D, D);
+  for (int i = 0; i < D; i++) 
+    for (int j = 0; j < D; j++)
+      prod[i][j] = a[i]*b[j];
+  return prod;
+}
 
 }  // namespace Tangram
 
