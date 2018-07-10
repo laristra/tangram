@@ -1,4 +1,4 @@
-FROM laristra/tangram-buildenv:latest
+FROM laristra/portage-buildenv:latest
 
 ARG MPI
 ARG COVERAGE
@@ -21,12 +21,12 @@ ARG TRAVIS_OS_NAME
 # for docs
 ARG DOCS
 
-COPY tangram /home/tangram/tangram
+COPY tangram /home/portage/tangram
 
 USER root
-RUN chown -R tangram:tangram /home/tangram/tangram
-USER tangram
-WORKDIR /home/tangram/tangram
+RUN chown -R portage:portage /home/portage/tangram
+USER portage
+WORKDIR /home/portage/tangram
 RUN mkdir build
 WORKDIR build
 RUN cmake -D CMAKE_BUILD_TYPE=Debug -D ENABLE_UNIT_TESTS=True \

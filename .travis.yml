@@ -8,6 +8,7 @@ services:
 python:
   - "3.6"
 
+env:
   matrix:
     - MPI=OFF DOCS=true
     - MPI=ON DOCKERHUB=true
@@ -35,8 +36,8 @@ after_success:
       docker push "${TRAVIS_REPO_SLUG}:latest";
     fi
   - if [[ ${DOCS} || -n ${TRAVIS_TAG} ]]; then
-      cd ${HOME}/docker/tangram;
-      CON=$(docker run -d ${TRAVIS_REPO_SLUG}:latest) && docker cp ${CON}:/home/tangram/tangram/build/doc . ;
+      cd ${HOME}/docker/portage;
+      CON=$(docker run -d ${TRAVIS_REPO_SLUG}:latest) && docker cp ${CON}:/home/portage/tangram/build/doc . ;
       pyenv local 3.6;
       pip install doctr;
       doctr deploy . --built-docs doc/doxygen/html;
