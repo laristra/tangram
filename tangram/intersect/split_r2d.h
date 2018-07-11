@@ -18,9 +18,9 @@ extern "C" {
 }
 
 /*!
- @file split_r3d.h
+ @file split_r2d.h
  @brief Routines for splitting convex or non-convex MatPoly's
- by a cutting plane. Uses R3D.
+ by a cutting plane. Uses R2D.
  A convex MatPoly will be split into two MatPoly's.
  A non-convex MatPoly will be decomposed into convex polyhedra using
  its centroid, several MatPoly's could be returned for each half-plane.
@@ -48,7 +48,7 @@ matpoly_to_r2dpoly(const MatPoly<2>& mat_poly,
   r2d_rvec2* r2dized_poly_vrts = new r2d_rvec2[nvrts];
 
   for (int ivrt = 0; ivrt < nvrts; ivrt++)
-    for (int ixy = 0; ixy < 3; ixy++)
+    for (int ixy = 0; ixy < 2; ixy++)
       r2dized_poly_vrts[ivrt].xy[ixy] = matpoly_vrts[ivrt][ixy];
 
   //Initialize the r2dpoly 
@@ -56,20 +56,6 @@ matpoly_to_r2dpoly(const MatPoly<2>& mat_poly,
 
   delete [] r2dized_poly_vrts;
 }//matpoly_to_r2dpoly
-
-/*!
-  @brief Converts a polygon in R2D format to MatPoly's.
-  @param[in] r2dpoly R2D polygon to convert
-  @param[out] mat_polys Corresponding vector of MatPoly's: 
-  will contain as many MatPoly's as there are components 
-  in the R2D polygon
-*/
-void
-r2dpoly_to_matpolys(r2d_poly& r2dpoly,
-                    std::vector< MatPoly<2> >& mat_polys) {
-
-
-}//r2dpoly_to_matpolys
 
 /*!
   @brief Splits a convex MatPoly into two (convex) MatPoly's
@@ -109,8 +95,10 @@ split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
   const int POLY_ORDER = 1;
   r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
   for (int isp = 0; isp < 2; isp++) {
+     int nverts = r2d_subpolys[isp].nverts;
+
     //Check if the subpoly is empty
-    if (r2d_subpolys[isp].nverts == 0) {
+    if (nverts == 0) {
       subpoly_ptrs[isp]->clear();
       subpoly_moments_ptrs[isp]->clear();
       continue;
@@ -127,14 +115,17 @@ split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
 
     subpoly_moments_ptrs[isp]->assign(r2d_moments, r2d_moments + 3);
 
-    //Get a MatPoly for a subpoly
-    std::vector< MatPoly<2> > sub_matpoly;
-    r2dpoly_to_matpolys(r2d_subpolys[isp], sub_matpoly);
-    int ncomponents = (int) sub_matpoly.size();
-    if (ncomponents > 1)
-      throw std::runtime_error("Non-convex MatPoly is split using the method for convex MatPoly's!");
-    if (ncomponents == 1)
-      *subpoly_ptrs[isp] = sub_matpoly[0];
+    //Get a MatPoly for a r2d subpoly
+    const std::vector<Point2> matpoly_verts;
+    matpoly_verts.resize(nverts);
+    
+    for (int v = 0; v < nverts; v++)
+     for (int ixy = 0; ixy < 2; ixy++)
+      matpoly_vrts[v][ixy] = r2d_subpolys[isp].verts[v].pos.xy[ixy];
+
+    Matpoly<2> sub_matpoly;
+    sub_matpoly.initialize(matpoly_verts);
+    *subpoly_ptrs[isp] = sub_matpoly; 
   }
 } //split_convex_matpoly_r2d
 
