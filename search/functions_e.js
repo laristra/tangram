@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['r3d_5faffine',['r3d_affine',['../r3d_8h.html#a5b7a92ff54463d9c79f9c0c7a8e333b7',1,'r3d.h']]],
+  ['r3d_5fbox_5ffaces_5ffrom_5fverts',['r3d_box_faces_from_verts',['../r3d_8h.html#a7873662a1fd49e1d68ae3db7ed3b1740',1,'r3d.h']]],
+  ['r3d_5fclip',['r3d_clip',['../r3d_8h.html#a9430fedc50ab62c50330ca9b9bb6f382',1,'r3d.h']]],
+  ['r3d_5ffree_5fbrep',['r3d_free_brep',['../r3d_8h.html#a1185134e293f53b23a45bae8543edbd1',1,'r3d.h']]],
+  ['r3d_5finit_5fbox',['r3d_init_box',['../r3d_8h.html#aad4400cfb10978ba94f3436e63b62917',1,'r3d.h']]],
+  ['r3d_5finit_5fbrep',['r3d_init_brep',['../r3d_8h.html#a499a75fbb03156a10e97838d9b37ef6e',1,'r3d.h']]],
+  ['r3d_5finit_5fpoly',['r3d_init_poly',['../r3d_8h.html#afcba1d5250f023c0ad724b26f75f7252',1,'r3d.h']]],
+  ['r3d_5finit_5ftet',['r3d_init_tet',['../r3d_8h.html#abe70528480e2906a1e0acb137e60673b',1,'r3d.h']]],
+  ['r3d_5fis_5fgood',['r3d_is_good',['../r3d_8h.html#acf2fab4d04dc8b9a7f8c4e9455773aaa',1,'r3d.h']]],
+  ['r3d_5forient',['r3d_orient',['../r3d_8h.html#aa57d26e344325886cc61307b93b00b23',1,'r3d.h']]],
+  ['r3d_5fpoly_5ffaces_5ffrom_5fverts',['r3d_poly_faces_from_verts',['../r3d_8h.html#a91ef5379f6f306d4f5d58aa1fa7b387f',1,'r3d.h']]],
+  ['r3d_5fprint',['r3d_print',['../r3d_8h.html#a7e43346bc8b443385f66ff9537304096',1,'r3d.h']]],
+  ['r3d_5fprint_5fbrep',['r3d_print_brep',['../r3d_8h.html#a4bd13a19519552d66e0e63b0b548685c',1,'r3d.h']]],
+  ['r3d_5freduce',['r3d_reduce',['../r3d_8h.html#ae591f11a646bffc0b497ba6d440f326a',1,'r3d.h']]],
+  ['r3d_5frotate',['r3d_rotate',['../r3d_8h.html#a09a8477c518993fce4ccfce1ee13ff00',1,'r3d.h']]],
+  ['r3d_5fscale',['r3d_scale',['../r3d_8h.html#a7fc411106f288b10540668f93a42021c',1,'r3d.h']]],
+  ['r3d_5fshear',['r3d_shear',['../r3d_8h.html#a6b15c7bdebf8eae4c525ae96280ac90a',1,'r3d.h']]],
+  ['r3d_5fsplit',['r3d_split',['../r3d_8h.html#aad337c9fbabbd571b25490c27f3709d9',1,'r3d.h']]],
+  ['r3d_5ftet_5ffaces_5ffrom_5fverts',['r3d_tet_faces_from_verts',['../r3d_8h.html#ad49a73eecd6bd3b443aabba51305cd0a',1,'r3d.h']]],
+  ['r3d_5ftranslate',['r3d_translate',['../r3d_8h.html#aa3faa920d359201ed6a26adaf7278ede',1,'r3d.h']]],
+  ['r3dpoly_5fto_5fmatpolys',['r3dpoly_to_matpolys',['../namespaceTangram.html#a9cc5b5a8b5d621481b1d275a749c99b5',1,'Tangram']]],
+  ['readfromstream',['readFromStream',['../classTangram_1_1Point.html#ad499e04df8d9131ed7f077e9023792a5',1,'Tangram::Point::readFromStream()'],['../classTangram_1_1Vector.html#a9dcdf905c03d883b9a754c53dac03529',1,'Tangram::Vector::readFromStream()']]],
+  ['reconstruct',['reconstruct',['../classTangram_1_1Driver.html#a2338657aea597c61d5ae95439ea152fd',1,'Tangram::Driver']]],
+  ['reset_5fmat_5fid',['reset_mat_id',['../classTangram_1_1MatPoly.html#a4ffd8855a46fd704ce7749d43f8ded4e',1,'Tangram::MatPoly']]],
+  ['rows',['rows',['../classTangram_1_1Matrix.html#ac2fcf37d4d251283c5ad638f7acd2894',1,'Tangram::Matrix']]]
+];
