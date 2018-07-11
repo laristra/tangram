@@ -1,42 +1,7 @@
 #[[
-Copyright (c) 2017, Los Alamos National Security, LLC
-All rights reserved.
-
-Copyright 2017. Los Alamos National Security, LLC. This software was produced
-under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National
-Laboratory (LANL), which is operated by Los Alamos National Security, LLC for
-the U.S. Department of Energy. The U.S. Government has rights to use,
-reproduce, and distribute this software.  NEITHER THE GOVERNMENT NOR LOS ALAMOS
-NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY
-LIABILITY FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
-derivative works, such modified software should be clearly marked, so as not to
-confuse it with the version available from LANL.
-
-Additionally, redistribution and use in source and binary forms, with or
-without modification, are permitted provided that the following conditions are
-met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. Neither the name of Los Alamos National Security, LLC, Los Alamos
-   National Laboratory, LANL, the U.S. Government, nor the names of its
-   contributors may be used to endorse or promote products derived from this
-   software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY LOS ALAMOS NATIONAL SECURITY, LLC AND
-CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL LOS ALAMOS NATIONAL
-SECURITY, LLC OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+This file is part of the Ristra tangram project.
+Please see the license file at the root of this repository, or at:
+https://github.com/laristra/tangram/blob/master/LICENSE
 ]]
 
 
@@ -170,7 +135,7 @@ endif()
 # (this includes the TPLs that Jali will need)
 #------------------------------------------------------------------------------#
 
-#if (Jali_DIR)    # NOT OPTIONAL IN THIS VERSION
+if (Jali_DIR)
 
    # Look for the Jali package
 
@@ -187,16 +152,85 @@ endif()
    endforeach()
    set(Jali_LIBRARIES ${_LIBS})
 
-   # message(STATUS "Jali_INCLUDE_DIRS=${Jali_INCLUDE_DIRS}")
-   # message(STATUS "Jali_LIBRARY_DIRS=${Jali_LIBRARY_DIRS}")
-   # message(STATUS "Jali_LIBRARIES=${Jali_LIBRARIES}")
-   # message(STATUS "Jali_TPL_INCLUDE_DIRS=${Jali_TPL_INCLUDE_DIRS}")
-   # message(STATUS "Jali_TPL_LIBRARY_DIRS=${Jali_TPL_LIBRARY_DIRS}")
-   # message(STATUS "Jali_TPL_LIBRARIES=${Jali_TPL_LIBRARIES}")
-
    include_directories(${Jali_INCLUDE_DIRS} ${Jali_TPL_INCLUDE_DIRS})
 
-#endif (Jali_DIR)
+endif (Jali_DIR)
+
+#------------------------------------------------------------------------------#
+# Configure LAPACKE
+#------------------------------------------------------------------------------#
+
+if (LAPACKE_DIR)
+
+  # Directly look for cmake config file in LAPACKE_DIR and below
+  file(GLOB_RECURSE LAPACKE_CONFIG_FILE ${LAPACKE_DIR}/lapacke-config.cmake)
+
+  if (NOT LAPACKE_CONFIG_FILE)
+    message(FATAL_ERROR " LAPACKE CMAKE config file not found under LAPACKE_DIR (${LAPACKE_DIR})")
+  endif (NOT LAPACKE_CONFIG_FILE)
+
+  message(STATUS "LAPACKE_CONFIG_FILE ${LAPACKE_CONFIG_FILE}")
+
+  get_filename_component(LAPACKE_CONFIG_PATH ${LAPACKE_CONFIG_FILE} DIRECTORY)
+  message(status " LAPACKE_CONFIG_PATH ${LAPACKE_CONFIG_PATH}")
+
+  # If successful, the config file will set LAPACKE_LIBRARIES,
+  # LAPACKE_lapack_LIBRARIES and LAPACKE_blas_LIBRARIES
+
+  find_package(LAPACKE NO_MODULE NO_DEFAULT_PATH HINTS ${LAPACKE_CONFIG_PATH})
+
+  if (LAPACKE_LIBRARIES STREQUAL "lapacke")
+
+    # LAPACKE config file does not set the library path but it does set the
+    # LAPACKE_INCLUDE_DIRS path. Try to back out the library path using this
+    # and the top level directory as starting points for a find_library command
+
+    find_library(LAPACKE_LIBRARY NAMES lapacke
+                 NO_CMAKE_SYSTEM_PATH NO_DEFAULT_PATH
+                 HINTS ${LAPACKE_DIR} ${LAPACKE_INCLUDE_DIRS}/..
+                 PATH_SUFFIXES lib lib64)
+           
+
+    # Extract path of directory in which library files live to pass as a lib
+    # search directory for the linker to find lapacke, lapack and blas libs
+
+    get_filename_component(LAPACKE_LIBRARY_DIR ${LAPACKE_LIBRARY} DIRECTORY)
+
+    set(LAPACKE_LIBRARIES "-Wl,-rpath,${LAPACKE_LIBRARY_DIR} -L${LAPACKE_LIBRARY_DIR} -l${LAPACKE_LIBRARIES} -l${LAPACK_lapack_LIBRARIES} -l${LAPACK_blas_LIBRARIES}")
+
+    # If we don't want to link with Fortran then we have to tell it to link
+    # with the Fortran libraries because LAPACK is written/compiled in Fortran
+    #
+    # NEEDED FOR STATIC LAPACK LIBS
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+      set(LAPACKE_LIBRARIES "${LAPACKE_LIBRARIES} -lgfortran")    
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+      set(LAPACKE_LIBRARIES "${LAPACKE_LIBRARIES} -lifcore")    
+    endif()
+
+  endif(LAPACKE_LIBRARIES STREQUAL "lapacke")
+
+else (LAPACKE_DIR)
+
+  # Use FindLAPACKE.cmake provided by cinch or cmake to find it
+  # FindLAPACKE.cmake provided by cinch requires PC_LAPACKE_INCLUDE_DIRS and
+  # PC_LAPACKE_LIBRARY to be able to find LAPACKE
+
+  find_package(LAPACKE)
+
+endif (LAPACKE_DIR)
+
+if (LAPACKE_FOUND) 
+  include_directories(${LAPACKE_INCLUDE_DIRS})
+  add_definitions("-DHAVE_LAPACKE")
+
+  message(STATUS "LAPACKE_FOUND ${LAPACKE_FOUND}")
+  message(STATUS "LAPACKE_LIBRARIES  ${LAPACKE_LIBRARIES}")
+else (LAPACKE_FOUND)
+   unset(LAPACKE_LIBRARIES)  # otherwise it will be LAPACKE-NOTFOUND or something
+endif (LAPACKE_FOUND)
 
 #------------------------------------------------------------------------------#
 # Configure XMOF2D
