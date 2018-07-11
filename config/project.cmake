@@ -133,7 +133,7 @@ endif()
 # (this includes the TPLs that Jali will need)
 #------------------------------------------------------------------------------#
 
-#if (Jali_DIR)    # NOT OPTIONAL IN THIS VERSION
+if (Jali_DIR)
 
    # Look for the Jali package
 
@@ -149,13 +149,6 @@ endif()
       set(_LIBS ${_LIBS};${Jali_LIBRARY_DIRS}/lib${_lib}.a)
    endforeach()
    set(Jali_LIBRARIES ${_LIBS})
-
-   # message(STATUS "Jali_INCLUDE_DIRS=${Jali_INCLUDE_DIRS}")
-   # message(STATUS "Jali_LIBRARY_DIRS=${Jali_LIBRARY_DIRS}")
-   # message(STATUS "Jali_LIBRARIES=${Jali_LIBRARIES}")
-   # message(STATUS "Jali_TPL_INCLUDE_DIRS=${Jali_TPL_INCLUDE_DIRS}")
-   # message(STATUS "Jali_TPL_LIBRARY_DIRS=${Jali_TPL_LIBRARY_DIRS}")
-   # message(STATUS "Jali_TPL_LIBRARIES=${Jali_TPL_LIBRARIES}")
 
    include_directories(${Jali_INCLUDE_DIRS} ${Jali_TPL_INCLUDE_DIRS})
 
