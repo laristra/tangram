@@ -152,7 +152,7 @@ if (Jali_DIR)
 
    include_directories(${Jali_INCLUDE_DIRS} ${Jali_TPL_INCLUDE_DIRS})
 
-#endif (Jali_DIR)
+endif (Jali_DIR)
 
 #------------------------------------------------------------------------------#
 # Configure XMOF2D
