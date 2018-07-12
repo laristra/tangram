@@ -68,9 +68,9 @@ if (ENABLE_MPI)
 
 # TODO:  Modify the below to use wrapper compilers instead of flags
 #        (there isn't an obvious good way to do this)
-#  add_definitions(${MPI_CXX_COMPILE_FLAGS})
-#  include_directories(${MPI_CXX_INCLUDE_PATH})
-#  link_directories(${MPI_CXX_LIBRARY_DIRS})
+  add_definitions(${MPI_CXX_COMPILE_FLAGS})
+  include_directories(${MPI_CXX_INCLUDE_PATH})
+  link_directories(${MPI_CXX_LIBRARY_DIRS})
 endif ()
 
 
