@@ -1,9 +1,55 @@
-*.swp
-*.pyc
-CMakeCache.txt
-CMakeFiles
-Makefile
-cmake_install.cmake
-*~
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Images
+*.png
+
+# Meshes
+*.gmv
+*.exo
+
+# vfgen input
+*.inp
+
+# Binary data
+*.bvf
+*.dat
+
 .DS_Store
 build
+build-Debug
+build-Release
+install
+install-Debug
+install-Release
+.vscode

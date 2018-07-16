@@ -1,3 +1,9 @@
+/*
+ This file is part of the Ristra tangram project.
+ Please see the license file at the root of this repository, or at:
+ https://github.com/laristra/tangram/blob/master/LICENSE
+*/
+
 // Generate volume fractions and centroids for materials in mesh cells
 // given a configuration file with different geometric features.
 //
@@ -5,8 +11,6 @@
 // Assumption: 2D meshes are in X-Y plane only
 //
 // Author: Rao Garimella, rao@lanl.gov
-// Copyright Los Alamos National Laboratory, 2016
-
 
 #include <sys/time.h>
 

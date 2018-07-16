@@ -1,3 +1,9 @@
+/*
+ This file is part of the Ristra tangram project.
+ Please see the license file at the root of this repository, or at:
+ https://github.com/laristra/tangram/blob/master/LICENSE
+*/
+
 // Generate volume fractions for mesh cells given a configuration file
 // with different geometric features.
 //
@@ -5,7 +11,6 @@
 // Assumption: 2D meshes are in X-Y plane only
 //
 // Author: Rao Garimella, rao@lanl.gov
-// Copyright Los Alamos National Laboratory, 2016
 
 #ifndef TGENVOLFRAC_H_
 #define TGENVOLFRAC_H_
@@ -49,7 +54,7 @@ struct vfcen_t {
 };
 
 
-#define NPARTICLES 1000
+#define NPARTICLES 1000000
 
 
 // Use Jordan curve algorithm to determine the number of crossings of
