@@ -6,7 +6,7 @@
 
 
 #-------------------------------------------------------------------------------
-# demo-vof-app3d - uses 3D Simple_Mesh
+# demo-vof-app3d - uses 3D mesh from Jali
 #-------------------------------------------------------------------------------
 add_executable(demo-vof-app3d demo-vof-app3d.cc)
 target_link_libraries(demo-vof-app3d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
