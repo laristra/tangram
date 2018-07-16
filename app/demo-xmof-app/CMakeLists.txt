@@ -11,6 +11,18 @@ add_executable(demo-xmof-app demo-xmof-app.cc)
 target_link_libraries(demo-xmof-app ${XMOF2D_LIBRARIES} ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
                                     ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
+if(ENABLE_MPI)
+  if(MPI_CXX_COMPILE_FLAGS)
+    set_target_properties(demo-xmof-app PROPERTIES
+      COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
+  endif(MPI_CXX_COMPILE_FLAGS)
+
+  if(MPI_CXX_LINK_FLAGS)
+    set_target_properties(demo-xmof-app PROPERTIES
+      LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
+  endif(MPI_CXX_LINK_FLAGS)
+endif(ENABLE_MPI)
+
 #TCMalloc option
 set(ENABLE_TCMALLOC TRUE CACHE BOOL "Use TCMalloc")
 if(ENABLE_TCMALLOC)
