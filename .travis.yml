@@ -15,7 +15,7 @@ env:
   matrix:
     - MPI=OFF DOCS=true
     - MPI=ON DOCKERHUB=true
-    - MPI=ON COVERAGE=ON SONARQUBE=OFF
+#    - MPI=ON COVERAGE=ON SONARQUBE=ON
 
 script:
   - set -e
