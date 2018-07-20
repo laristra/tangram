@@ -49,7 +49,7 @@ struct vfcen_t {
 };
 
 
-#define NPARTICLES 1000
+#define NPARTICLES 50000
 
 
 // Use Jordan curve algorithm to determine the number of crossings of
@@ -325,13 +325,13 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
     double XLEN = XMAX-XMIN;
     double YLEN = YMAX-YMIN;
 
-    int pmatid[NPARTICLES];
+    int *pmatid = new int[NPARTICLES];
     for (int i = 0; i < NPARTICLES; i++)
       pmatid[i] = -1;
 
     srand(cellID);
 
-    Tangram::Point<2> ptxyz[NPARTICLES];
+    Tangram::Point<2> *ptxyz = new Tangram::Point<2>[NPARTICLES];
     int np = 0;
     double xmult = XLEN/RAND_MAX;
     double ymult = YLEN/RAND_MAX;
@@ -349,7 +349,9 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
     // Compute a material ID for each point based on their inclusion
     // in a feature
 
-    Tangram::transform(ptxyz, ptxyz + np, pmatid, feature_evaluator_);
+    Tangram::pointer<Tangram::Point<2>> ptxyz_dptr(ptxyz);
+    Tangram::pointer<int> pmatid_dptr(pmatid);
+    Tangram::transform(ptxyz_dptr, ptxyz_dptr + np, pmatid_dptr, feature_evaluator_);
 
     // Tally up the particles to compute volume fractions
 
@@ -375,6 +377,9 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
       vfcen.vf[im] = ((double) npmat[im])/np;
       vfcen.cen[im] /= npmat[im];
     }
+
+    delete [] ptxyz;
+    delete [] pmatid;
 
     return vfcen;
   }
@@ -446,7 +451,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
       tripnts_flat[3*t+2] = points[tripnts[t][2]];
     }
 
-    int pmatid[NPARTICLES];
+    int *pmatid = new int[NPARTICLES];
     for (int i = 0; i < NPARTICLES; i++)
       pmatid[i] = -1;
 
@@ -454,7 +459,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 
     /* Throw particles into cell and see which feature they lie in */
 
-    Tangram::Point<3> ptxyz[NPARTICLES];
+    Tangram::Point<3> *ptxyz = new Tangram::Point<3>[NPARTICLES];
     int np = 0;
     double xmult = XLEN/RAND_MAX;
     double ymult = YLEN/RAND_MAX;
@@ -476,7 +481,10 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
     // Compute a material ID for each point based on their inclusion
     // in a feature
 
-    Tangram::transform(ptxyz, ptxyz + NPARTICLES, pmatid, feature_evaluator_);
+    Tangram::pointer<Tangram::Point<3>> ptxyz_dptr(&(ptxyz[0]));
+    Tangram::pointer<int> pmatid_dptr(&(pmatid[0]));
+    Tangram::transform(ptxyz_dptr, ptxyz_dptr + np, pmatid_dptr,
+		       feature_evaluator_);
 
     // Tally up the particles to compute volume fractions
 
@@ -502,6 +510,9 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
       vfcen.vf[im] = ((double) npmat[im])/np;
       vfcen.cen[im] /= npmat[im];
     }
+
+    delete [] ptxyz;
+    delete [] pmatid;
 
     return vfcen;
   }
