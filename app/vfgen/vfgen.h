@@ -1,9 +1,3 @@
-/*
- This file is part of the Ristra tangram project.
- Please see the license file at the root of this repository, or at:
- https://github.com/laristra/tangram/blob/master/LICENSE
-*/
-
 // Generate volume fractions for mesh cells given a configuration file
 // with different geometric features.
 //
@@ -11,6 +5,7 @@
 // Assumption: 2D meshes are in X-Y plane only
 //
 // Author: Rao Garimella, rao@lanl.gov
+// Copyright Los Alamos National Laboratory, 2016
 
 #ifndef TGENVOLFRAC_H_
 #define TGENVOLFRAC_H_
@@ -54,7 +49,7 @@ struct vfcen_t {
 };
 
 
-#define NPARTICLES 1000000
+#define NPARTICLES 50000
 
 
 // Use Jordan curve algorithm to determine the number of crossings of
@@ -131,7 +126,7 @@ bool P_InTriPoly3D(Tangram::Point<3> ptest,
 // @param points       Points of polygon in 2D or points of triangles of
 //                     of faceted polyhedron in 3D
 
-template<long int dim>
+template<int dim>
 bool P_InPoly(Tangram::Point<dim> ptest, int npnts, Tangram::Point<dim> *points) {}
 
 template<>
@@ -241,10 +236,13 @@ struct InFeatureEvaluator {
           ptin &= (curfeat.minxyz[i] < ptxyz[i] &&
                    curfeat.maxxyz[i] > ptxyz[i]);
       } else if (curfeat.type == FEATURETYPE::POLY) { /* Polyhedron */
+        // Need to explicitly specify <dim> because if dim is interpreted as
+        // a long int in the calling routine the template deduction fails
+        // See https://stackoverflow.com/questions/32891471/template-argument-deduction-which-compiler-is-right-here
         if (dim == 2) {
-          ptin = P_InPoly(ptxyz, curfeat.nppoly, &(curfeat.polyxyz[0]));
+          ptin = P_InPoly<dim>(ptxyz, curfeat.nppoly, &(curfeat.polyxyz[0]));
         } else {
-          ptin = P_InPoly(ptxyz, curfeat.nppoly, &(curfeat.polytrixyz[0]));
+          ptin = P_InPoly<dim>(ptxyz, curfeat.nppoly, &(curfeat.polytrixyz[0]));
         }
       } else if (curfeat.type == FEATURETYPE::SPHERE) { /* Circle */
         Tangram::Vector<dim> v = ptxyz-curfeat.cen;
@@ -327,31 +325,33 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
     double XLEN = XMAX-XMIN;
     double YLEN = YMAX-YMIN;
 
-    int pmatid[NPARTICLES];
-    for (int i = 0; i < NPARTICLES; i++)
-      pmatid[i] = -1;
+    Tangram::vector<int> pmatid(NPARTICLES, -1);
 
     srand(cellID);
 
-    Tangram::Point<2> ptxyz[NPARTICLES];
-    int np = 0;
+    Tangram::vector<Tangram::Point<2>> ptxyz;
+    ptxyz.reserve(NPARTICLES);
     double xmult = XLEN/RAND_MAX;
     double ymult = YLEN/RAND_MAX;
-    while (np < NPARTICLES) {
-      ptxyz[np][0] = XMIN + rand_r(&seed)*xmult;
-      ptxyz[np][1] = YMIN + rand_r(&seed)*ymult;
+    for (int i = 0; i < NPARTICLES; i++) {
+      Tangram::Point<2> xyz;
+      xyz[0] = XMIN + rand_r(&seed)*xmult;
+      xyz[1] = YMIN + rand_r(&seed)*ymult;
 
       // check if point is in cell. if its outside, don't increment np
       // - pnt will be overwritten
 
-      if (P_InPoly2D(ptxyz[np], nfv, &(fxyz[0])))
-        np++;
+      if (P_InPoly2D(xyz, nfv, &(fxyz[0])))
+        ptxyz.push_back(xyz);
     }
+    int np = ptxyz.size();
+    pmatid.resize(np);
 
     // Compute a material ID for each point based on their inclusion
     // in a feature
 
-    Tangram::transform(ptxyz, ptxyz + np, pmatid, feature_evaluator_);
+    Tangram::transform(ptxyz.begin(), ptxyz.end(), pmatid.begin(),
+                       feature_evaluator_);
 
     // Tally up the particles to compute volume fractions
 
@@ -448,37 +448,39 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
       tripnts_flat[3*t+2] = points[tripnts[t][2]];
     }
 
-    int pmatid[NPARTICLES];
-    for (int i = 0; i < NPARTICLES; i++)
-      pmatid[i] = -1;
+    Tangram::vector<int> pmatid(NPARTICLES, -1);
 
     srand(cellID);
 
     /* Throw particles into cell and see which feature they lie in */
 
-    Tangram::Point<3> ptxyz[NPARTICLES];
-    int np = 0;
+    Tangram::vector<Tangram::Point<3>> ptxyz;
+    ptxyz.reserve(NPARTICLES);
     double xmult = XLEN/RAND_MAX;
     double ymult = YLEN/RAND_MAX;
     double zmult = ZLEN/RAND_MAX;
 
-    while (np < NPARTICLES) {
-      ptxyz[np][0] = XMIN + rand_r(&seed)*xmult;
-      ptxyz[np][1] = YMIN + rand_r(&seed)*ymult;
-      ptxyz[np][2] = ZMIN + rand_r(&seed)*zmult;
+    for (int i = 0; i < NPARTICLES; i++) {
+      Tangram::Point<3> xyz;
+      xyz[0] = XMIN + rand_r(&seed)*xmult;
+      xyz[1] = YMIN + rand_r(&seed)*ymult;
+      xyz[2] = ZMIN + rand_r(&seed)*zmult;
 
       // Check if point is in cell - point can be outside of cell if
       // cell is not a coordinate aligned box if its outside, don't
       // increment np - pnt will be overwritten
 
-      if (P_InTriPoly3D(ptxyz[np], ntris, &(tripnts_flat[0])))
-        np++;
+      if (P_InTriPoly3D(xyz, ntris, &(tripnts_flat[0])))
+        ptxyz.push_back(xyz);
     }
+    int np = ptxyz.size();
+    pmatid.resize(np);
 
     // Compute a material ID for each point based on their inclusion
     // in a feature
 
-    Tangram::transform(ptxyz, ptxyz + NPARTICLES, pmatid, feature_evaluator_);
+    Tangram::transform(ptxyz.begin(), ptxyz.end(), pmatid.begin(),
+		       feature_evaluator_);
 
     // Tally up the particles to compute volume fractions
 
