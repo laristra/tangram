@@ -801,6 +801,8 @@ void read_features(std::string featfilename,
       FEATURE<dim> this_feature;
       this_feature.type = FEATURETYPE::HALFSPACE;
       featfile >> this_feature.matid;
+      featfile >> inout_str;
+      this_feature.inout = (inout_str == "in") ? 1 : 0;
       for (int i = 0; i < dim; i++)
         featfile >> this_feature.plane_xyz[i];
       for (int i = 0; i < dim; i++)
@@ -812,8 +814,7 @@ void read_features(std::string featfilename,
       FEATURE<dim> this_feature;
       this_feature.type = FEATURETYPE::BOX;
       featfile >> inout_str;
-      if (inout_str == "in")
-        this_feature.inout = (inout_str == "in") ? 1 : 0;
+      this_feature.inout = (inout_str == "in") ? 1 : 0;
       featfile >> this_feature.matid;
       for (int i = 0; i < dim; i++)
         featfile >> this_feature.minxyz[i];
