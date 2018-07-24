@@ -24,7 +24,7 @@ hooking tangram up to a mesh and interface reconstructor.
 
 # Details and Requirements
 
-At a minimum, portage requires:
+At a minimum, tangram requires:
 - A C++-11 compatible compiler; regular testing is performed with GCC
   5.3+ and Intel 17+.
 - CMake 3.0+
@@ -107,7 +107,7 @@ tangram.
 | `ENABLE_TCMALLOC:BOOL` | Build with support for TCMalloc | `False` |
 | `ENABLE_THRUST:BOOL` | Turn on Thrust support for on-node parallelism | `False` |
 | `ENABLE_UNIT_TESTS:BOOL` | Turn on compilation and test harness of unit tests | `False` |
-| `Jali_DIR:PATH` | Hint location for CMake to find Jali.  This version of portage works with version 0.9.8 of Jali | "" |
+| `Jali_DIR:PATH` | Hint location for CMake to find Jali.  This version of tangram works with version 0.9.8 of Jali | "" |
 | `XMOF2D_DIR:PATH` | Hint location for CMake to find XMOF2D | "" |
 | `TCMALLOC_LIB:PATH` | The TCMalloc library to use | `${HOME}` |
 | `THRUST_DIR:PATH` | Directory of the Thrust install | "" |

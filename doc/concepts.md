@@ -8,10 +8,10 @@ moments are given only once.
 
 The results of reconstruction in tangram are stored in `CellMatPoly`
 objects, where a single `CellMatPoly` contains material polytopes for
-the corresponding cell.  Standard driver performs interface reconstruction
-for all multi-material cell, but it can be customized to only operate
-on specific sets of cells or to create `CellMatPoly` objects even for
-single-material cells.  While `CellMatPoly` stores all the material
+the corresponding cell.  The standard driver performs interface reconstruction
+for all multi-material cells but custom drivers may be written to only operate
+on specific sets of cells or to create `CellMatPoly` objects even for single 
+material cells. While `CellMatPoly` stores all the material
 polytopes in a cell, a specific material polytope can be added or 
 extracted as a `MatPoly` object.
 
@@ -53,9 +53,9 @@ for which `CellMatPoly` objects are to be generated, and the operator to
 perform interface reconstruction and create the corresponding `CellMatPoly` objects.
 Tangram provides several built-in reconstructors, such as SLIC and VOF, which are
 templated on the intersection routine.  The standard intersection algorithm for
-tangram is r3d, but custom intersectors can also be used.
-Standalone reconstructors can also be used by writing a wrapper, which is 
-demonstrated with the wrapper for the XMOF2D library.
+tangram is [r3d](https://github.com/devonmpowell/r3d), but custom intersectors 
+can also be used. Standalone reconstructors can also be used by writing a wrapper, 
+which is demonstrated with the wrapper for the XMOF2D library.
 
 ----
 
