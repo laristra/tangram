@@ -2,7 +2,7 @@
 
 Tangram provides very crude built-in mesh framework aptly
 called `Simple_Mesh`.  The goal of this framework
-is to show how one can wrap their favorite mesh ingrastructure for
+is to show how one can wrap their favorite mesh infrastructure for
 use with tangram - _they should not be used in any production sense._
 Tangram also provides implementations of a 3D SLIC and VOF (Youngs') 
 interface reconstruction algorithms, as well as a wrapper for XMOF2D,
@@ -29,8 +29,8 @@ of some connected mesh entities given another mesh entity's index.
 
 # The Intersector
 
-Built-in interface reconstruction method allow to pick different
-intersector routines.  The default option is 
+The built-in interface reconstruction method allows one to pick different 
+intersection routines.  The default option is 
 [r3d](https://github.com/devonmpowell/r3d), for which two functors,
 ClipR3D and SplitR3D, are implemented.  The former calculates the moments
 of a collection of material polyhedra clipped by a plane, and the latter

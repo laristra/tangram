@@ -24,8 +24,6 @@ ARG DOCS
 COPY tangram /home/portage/tangram
 
 USER root
-RUN chown -R portage:portage /home/portage/tangram
-USER portage
 WORKDIR /home/portage/tangram
 RUN mkdir build
 WORKDIR build
