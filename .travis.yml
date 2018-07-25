@@ -45,5 +45,3 @@ after_success:
       pip install doctr;
       doctr deploy . --built-docs doc/doxygen/html;
     fi
-after_failure:
-  - cat /home/portage/tangram/build/Testing/Temporary/LastTest.log
