@@ -420,6 +420,8 @@ class CellMatPoly {
         material_moments_.resize(matid + 1);
         material_moments_[matid].assign(D + 1, 0.0);
       }
+      else if (material_moments_[matid].empty())
+        material_moments_[matid].assign(D + 1, 0.0);
 
       material_moments_[matid][0] += matpoly_volumes_[ipoly];
       for (int idim = 0; idim < D; idim++)

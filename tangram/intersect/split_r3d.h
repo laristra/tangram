@@ -187,13 +187,13 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
 
     //Find the moments for a subpoly
     r3d_reduce(&r3d_subpolys[isp], r3d_moments, POLY_ORDER);
-//*
+
     if (r3d_moments[0] <= std::numeric_limits<double>::epsilon()) {
       subpoly_ptrs[isp]->clear();
       subpoly_moments_ptrs[isp]->clear();
       continue;
     }    
-//*/
+
     subpoly_moments_ptrs[isp]->assign(r3d_moments, r3d_moments + 4);
 
     //Get a MatPoly for a subpoly
@@ -410,6 +410,87 @@ class ClipR3D {
   const Plane_t<3>& cutting_plane_;
   bool planar_faces_;
 };
+
+/*!
+  @brief Computes moments of the intersection of a MatPoly and an r3d_poly. 
+  If MatPoly is convex, r3d_poly will be clipped with planes containing the
+  faces of MatPoly. Otherwise, MatPoly will be decomposed into tetrahedral
+  MatPolys, each of which will be intersected with r3d_poly. 
+  Note that r3d_poly does not need to be convex.
+  @param[in] mat_poly MatPoly object to intersect with
+  @param[in] r3dpoly r3d_poly that is intersected with MatPoly
+  @param[out] intersection_moments Moments of the intersection
+  @param[in] convex_matpoly flag indicating if MatPoly is convex: if not
+  it will be decomposed into tetrahedra
+*//*!
+  @brief Computes moments of the intersection of a MatPoly and an r3d_poly. 
+  If MatPoly is convex, r3d_poly will be clipped with planes containing the
+  faces of MatPoly. Otherwise, MatPoly will be decomposed into tetrahedral
+  MatPolys, each of which will be intersected with r3d_poly. 
+  Note that r3d_poly does not need to be convex.
+  @param[in] mat_poly MatPoly object to intersect with
+  @param[in] r3dpoly r3d_poly that is intersected with MatPoly
+  @param[out] intersection_moments Moments of the intersection
+  @param[in] convex_matpoly flag indicating if MatPoly is convex: if not
+  it will be decomposed into tetrahedra
+*/
+void get_intersection_moments(const MatPoly<3>& mat_poly,
+                              const r3d_poly& r3dpoly,
+                              std::vector<double>& intersection_moments,
+                              bool convex_matpoly = false) {   
+  const int POLY_ORDER = 1;
+  int nmoments = R3D_NUM_MOMENTS(POLY_ORDER);
+  r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
+
+  if (convex_matpoly) {                                
+    std::vector< Plane_t<3> > face_planes;
+    mat_poly.face_planes(face_planes);
+    r3d_poly intersection = r3dpoly;
+
+    int nplanes = (int) face_planes.size();
+    r3d_plane* r3d_face_planes = new r3d_plane [nplanes];
+    for (int iplane = 0; iplane < nplanes; iplane++) {
+      for (int ixyz = 0; ixyz < 3; ixyz++)
+        r3d_face_planes[iplane].n.xyz[ixyz] = -face_planes[iplane].normal[ixyz];
+      r3d_face_planes[iplane].d = -face_planes[iplane].dist2origin;
+    }
+
+    r3d_clip(&intersection, r3d_face_planes, (r3d_int) nplanes);
+    
+    delete [] r3d_face_planes;
+
+    r3d_reduce(&intersection, r3d_moments, POLY_ORDER);
+    intersection_moments.resize(nmoments);
+    for (int im = 0; im < nmoments; im++)
+      intersection_moments[im] = r3d_moments[im];
+  }
+  else {
+    std::vector< MatPoly<3> > mat_poly_tets;
+    mat_poly.facetize_decompose(mat_poly_tets);
+
+    int ntets = (int) mat_poly_tets.size();
+    intersection_moments.assign(nmoments, 0.0);
+    for (int itet = 0; itet < ntets; itet++) {
+      std::vector< Plane_t<3> > face_planes;
+      mat_poly_tets[itet].face_planes(face_planes);
+      assert(face_planes.size() == 4);
+
+      r3d_poly intersection = r3dpoly; 
+      r3d_plane r3d_face_planes[4];
+      for (int iplane = 0; iplane < 4; iplane++) {
+        for (int ixyz = 0; ixyz < 3; ixyz++)
+          r3d_face_planes[iplane].n.xyz[ixyz] = -face_planes[iplane].normal[ixyz];
+        r3d_face_planes[iplane].d = -face_planes[iplane].dist2origin;
+      }
+
+      r3d_clip(&intersection, r3d_face_planes, 4);
+
+      r3d_reduce(&intersection, r3d_moments, POLY_ORDER);
+      for (int im = 0; im < nmoments; im++)
+        intersection_moments[im] += r3d_moments[im];
+    }
+  }
+}
 
 } // namespace Tangram
 

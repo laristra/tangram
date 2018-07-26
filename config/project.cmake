@@ -131,6 +131,7 @@ endif()
 # (this includes the TPLs that Jali will need)
 #------------------------------------------------------------------------------#
 
+set(ENABLE_JALI OFF CACHE BOOL "")
 if (Jali_DIR)
 
    # Look for the Jali package
@@ -149,6 +150,8 @@ if (Jali_DIR)
    set(Jali_LIBRARIES ${_LIBS})
 
    include_directories(${Jali_INCLUDE_DIRS} ${Jali_TPL_INCLUDE_DIRS})
+
+   add_definitions(-DENABLE_JALI)
 
 endif (Jali_DIR)
 

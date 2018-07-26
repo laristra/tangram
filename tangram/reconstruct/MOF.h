@@ -89,13 +89,17 @@ public:
     cell_mat_centroids_.resize(ncells);
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
+      double cell_volume = mesh_.cell_volume(icell);  
       int nmats = cell_num_mats[icell];
-      cell_mat_ids_[icell].assign(cell_mat_ids.begin() + offset, 
-                                  cell_mat_ids.begin() + offset + nmats);
-      cell_mat_vfracs_[icell].assign(cell_mat_volfracs.begin() + offset, 
-                                     cell_mat_volfracs.begin() + offset + nmats);
-      cell_mat_centroids_[icell].assign(cell_mat_centroids.begin() + offset, 
-                                        cell_mat_centroids.begin() + offset + nmats);
+
+      for (int icmat = 0; icmat < nmats; icmat++) {
+        double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
+        if (mat_volume > im_tols_.fun_eps) {
+          cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
+          cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
+          cell_mat_centroids_[icell].push_back(cell_mat_centroids[offset + icmat]);
+        }
+      }
       offset += nmats;
     }
   }

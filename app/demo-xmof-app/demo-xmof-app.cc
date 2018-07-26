@@ -129,6 +129,12 @@ int main(int argc, char** argv) {
   MPI_Comm_rank(comm, &comm_rank);
   MPI_Comm_size(comm, &world_size);
 
+  if ((world_size > 1) && (comm_rank == 0)) {
+    std::string err_msg = "Distributed runs are currently DISABLED "; 
+    err_msg += "as they require pre-partitioned material data files!";
+    throw XMOF2D::Exception(err_msg);
+  }
+
   std::string in_data_fname = argv[1];
   std::string out_gmv_fname = in_data_fname;
   out_gmv_fname.resize(out_gmv_fname.size() - 4);

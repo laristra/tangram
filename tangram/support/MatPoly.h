@@ -17,6 +17,86 @@
 
 namespace Tangram {
 
+double polygon3d_area(const std::vector<Point3>& points,
+                      const std::vector<int>& poly_vertices) {
+  double poly_area = 0.0;
+
+  int nvrts = (int) poly_vertices.size();
+  if (nvrts == 3) {
+    poly_area = 0.5*cross(points[poly_vertices[1]] - points[poly_vertices[0]], 
+      points[poly_vertices[2]] - points[poly_vertices[0]]).norm();
+
+    if (std::fabs(poly_area) <= std::numeric_limits<double>::epsilon())
+      return 0.0;
+  }
+
+  Point3 gcenter;
+  for (int ivrt = 0; ivrt < nvrts; ivrt++)
+    gcenter += points[poly_vertices[ivrt]];
+  gcenter /= nvrts;
+  
+  for (int ivrt = 0; ivrt < nvrts; ivrt++) {
+    int ifv = poly_vertices[ivrt];
+    int isv = poly_vertices[(ivrt + 1)%nvrts];
+    double tri_size = 
+      0.5*cross(points[isv] - points[ifv], gcenter - points[ifv]).norm();
+
+    if (std::fabs(tri_size) > std::numeric_limits<double>::epsilon())
+      poly_area += tri_size;
+  }
+
+  if (std::fabs(poly_area) <= std::numeric_limits<double>::epsilon())
+    return 0.0;
+
+  return poly_area;
+}
+
+void polygon3d_moments(const std::vector<Point3>& points,
+                       const std::vector<int>& poly_vertices,
+                       std::vector<double>& poly_moments) {
+  poly_moments.assign(4, 0.0);
+
+  int nvrts = (int) poly_vertices.size();
+  if (nvrts == 3) {
+    poly_moments[0] = 0.5*cross(points[poly_vertices[1]] - points[poly_vertices[0]], 
+      points[poly_vertices[2]] - points[poly_vertices[0]]).norm();
+
+    if (std::fabs(poly_moments[0]) <= std::numeric_limits<double>::epsilon())
+      poly_moments[0] = 0.0;
+    else {
+      for (int ivrt = 0; ivrt < 3; ivrt++)
+        for (int idim = 0; idim < 3; idim++)
+          poly_moments[idim + 1] += points[poly_vertices[ivrt]][idim];
+      for (int idim = 0; idim < 3; idim++)    
+        poly_moments[idim + 1] *= poly_moments[0]/3.0;
+    }
+
+    return;
+  }
+
+  Point3 gcenter;
+  for (int ivrt = 0; ivrt < nvrts; ivrt++)
+    gcenter += points[poly_vertices[ivrt]];
+  gcenter /= nvrts;
+  
+  for (int ivrt = 0; ivrt < nvrts; ivrt++) {
+    int ifv = poly_vertices[ivrt];
+    int isv = poly_vertices[(ivrt + 1)%nvrts];
+    double tri_size = 
+      0.5*cross(points[isv] - points[ifv], gcenter - points[ifv]).norm();
+
+    if (std::fabs(tri_size) > std::numeric_limits<double>::epsilon()) {
+      poly_moments[0] += tri_size;
+      for (int idim = 0; idim < 3; idim++)
+        poly_moments[idim + 1] += 
+          tri_size*(points[ifv][idim] + points[isv][idim] + gcenter[idim])/3.0;
+    }
+  }
+
+  if (std::fabs(poly_moments[0]) <= std::numeric_limits<double>::epsilon())
+    poly_moments.assign(4, 0.0);
+}
+
 template <int D>
 class MatPoly {
  public:
@@ -214,6 +294,24 @@ class MatPoly {
   */
   void decompose(std::vector< MatPoly<D> >& sub_polys) const;
 
+  /*!
+    @brief Facetizes and decomposes this MatPoly into simplex MatPoly's 
+    using its centroid.
+    @param[in] mat_poly MatPoly to decompose
+    @param[out] convex_matpolys Vector of MatPoly's: 
+    as many MatPoly's as mat_poly has facets will be appended to it.
+  */
+  void facetize_decompose(std::vector< MatPoly<D> >& sub_polys) const;
+
+  /*!
+    @brief For every face, returns a plane containing that face.
+    Important: faces should be planar, so you might need to facetize
+    the MatPoly first. Faces with area below machine epsilon will be
+    omitted. If the number of valid planes is less than four, empty
+    vector will be returned.
+    @param fplanes  Vector of planes for all the faces of this MatPoly
+  */
+  void face_planes(std::vector< Plane_t<D> >& fplanes) const;
 
  protected:
   /*!
@@ -295,37 +393,21 @@ Point3 MatPoly<3>::face_centroid(int const face_id) const {
 #ifdef DEBUG
   assert((face_id >= 0) && (face_id < nfaces_));
 #endif
-  Point3 centroid;
+  std::vector<double> face_moments;
+  polygon3d_moments(vertex_points_, face_vertices_[face_id], face_moments);
 
-  int nvrts = (int) face_vertices_[face_id].size();
-  if (nvrts == 3) {
-    for (int ivrt = 0; ivrt < 3; ivrt++)
-      centroid += vertex_points_[face_vertices_[face_id][ivrt]];
-    centroid /= 3.0;
-    
-    return centroid;
+  if (std::fabs(face_moments[0]) > std::numeric_limits<double>::epsilon())
+    return Point3(face_moments[1]/face_moments[0], face_moments[2]/face_moments[0],
+                  face_moments[3]/face_moments[0]);
+  else {
+    int nvrts = (int) face_vertices_[face_id].size();
+    Point3 gcenter;
+    for (int ivrt = 0; ivrt < nvrts; ivrt++)
+      gcenter += vertex_points_[face_vertices_[face_id][ivrt]];
+    gcenter /= nvrts;
+
+    return gcenter;
   }
-
-  Point3 gcenter;
-  for (int ivrt = 0; ivrt < nvrts; ivrt++)
-    gcenter += vertex_points_[face_vertices_[face_id][ivrt]];
-  gcenter /= nvrts;
-  
-  double size = 0.0;
-  for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-    int ifv = face_vertices_[face_id][ivrt];
-    int isv = face_vertices_[face_id][(ivrt + 1)%nvrts];
-    Vector3 vec0 = vertex_points_[isv] - vertex_points_[ifv];
-    Vector3 vec1 = gcenter - vertex_points_[ifv];
-    double tri_size = 0.5*cross(vec0, vec1).norm();
-    size += tri_size;
-    Point3 tri_centroid = (vertex_points_[ifv] + vertex_points_[isv] + gcenter)/3.0;
-    centroid += tri_size*tri_centroid;
-  }
-  if (size > std::numeric_limits<double>::epsilon()) centroid /= size;
-  else centroid = gcenter;
-
-  return centroid;
 }
 
 /*!
@@ -361,7 +443,7 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
       continue;
     }
     int icenvrt = (int) facetedpoly_vertices.size();
-    facetedpoly_vertices.emplace_back(face_centroid(iface));
+    facetedpoly_vertices.push_back(face_centroid(iface));
     for (int ivrt = 0; ivrt < nvrts; ivrt++)
       facetedpoly_faces_.push_back({ icenvrt, face_vertices_[iface][ivrt],
                                      face_vertices_[iface][(ivrt + 1)%nvrts] });
@@ -404,6 +486,12 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
   moments.assign(4, 0.0); 
 
   for (int iface = 0; iface < nfaces_; iface++) {
+    std::vector<double> face_moments;
+    polygon3d_moments(vertex_points_, face_vertices_[iface], face_moments);
+
+    if (std::fabs(face_moments[0]) <= std::numeric_limits<double>::epsilon())
+      continue;
+
     std::vector<Point3> face_pts = face_points(iface);
     std::vector< std::vector<int> > itri_pts;
     
@@ -412,7 +500,8 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
       itri_pts.push_back({0, 1, 2});
     else {
       itri_pts.reserve(nvrts);
-      face_pts.emplace_back(face_centroid(iface));
+      face_pts.push_back(Point3(face_moments[1]/face_moments[0],
+        face_moments[2]/face_moments[0], face_moments[3]/face_moments[0]));
       for (int ivrt = 0; ivrt < nvrts; ivrt++)
         itri_pts.push_back({nvrts, ivrt, (ivrt + 1)%nvrts});
     }
@@ -420,6 +509,9 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
     for (int itri = 0; itri < itri_pts.size(); itri++) {
       Vector3 vcp = cross(face_pts[itri_pts[itri][1]] - face_pts[itri_pts[itri][0]], 
                           face_pts[itri_pts[itri][2]] - face_pts[itri_pts[itri][0]]);
+      if (vcp.norm() <= std::numeric_limits<double>::epsilon())
+        continue;
+
       moments[0] += dot(vcp, face_pts[itri_pts[itri][0]].asV());
       for (int idim = 0; idim < 3; idim++)
         for (int ivrt = 0; ivrt < 3; ivrt++)
@@ -496,6 +588,62 @@ void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys) const {
   }
 }
 
+/*!
+  @brief Decomposes a 2D MatPoly into triangular MatPoly's using its centroid.
+  This method is identical to decompose.
+  @param[in] mat_poly MatPoly to decompose
+  @param[out] convex_matpolys Vector of MatPoly's: 
+  as many MatPoly's as mat_poly has faces will be appended to it.
+*/
+template <>
+void MatPoly<2>::facetize_decompose(std::vector< MatPoly<2> >& sub_polys) const {
+  decompose(sub_polys);
+}
+
+/*!
+  @brief Facetizes and decomposes a 3D MatPoly into tetrahedral MatPoly's 
+  using its centroid.
+  @param[in] mat_poly MatPoly to decompose
+  @param[out] convex_matpolys Vector of MatPoly's: 
+  as many MatPoly's as mat_poly has facets will be appended to it.
+*/
+template <>
+void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys) const {
+  std::vector< std::vector<int> > tet_faces(4);
+  for (int ivrt = 0; ivrt < 3; ivrt++)
+    tet_faces[ivrt] = {3, (ivrt + 1)%3, ivrt};
+  tet_faces[3] = {0, 1, 2};  
+
+  if (moments_.empty()) 
+    compute_moments(moments_);
+
+  std::vector<Point3> tet_vrts(4);
+  for (int ixyz = 0; ixyz < 3; ixyz++)
+    tet_vrts[3][ixyz] = moments_[ixyz + 1]/moments_[0];
+
+  for (int iface = 0; iface < nfaces_; iface++) {
+    int face_nvrts = (int) face_vertices_[iface].size();
+    if (face_nvrts == 3) {
+      for (int ivrt = 0; ivrt < 3; ivrt++)
+        tet_vrts[ivrt] = vertex_points_[face_vertices_[iface][ivrt]];
+      int icur_poly = (int) sub_polys.size();
+      sub_polys.push_back(MatPoly<3>(material_id_));
+      sub_polys[icur_poly].initialize(tet_vrts, tet_faces);
+    }
+    else {
+      tet_vrts[0] = face_centroid(iface);
+      for (int ivrt = 0; ivrt < face_nvrts; ivrt++) {
+        tet_vrts[1] = vertex_points_[face_vertices_[iface][ivrt]];
+        tet_vrts[2] = vertex_points_[face_vertices_[iface][(ivrt + 1)%face_nvrts]];
+
+        int icur_poly = (int) sub_polys.size();
+        sub_polys.push_back(MatPoly<3>(material_id_));
+        sub_polys[icur_poly].initialize(tet_vrts, tet_faces);
+      }
+    }
+  }
+}
+
 template <class Mesh_Wrapper>
 void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       int const cellid,
@@ -555,6 +703,85 @@ void cell_get_matpoly(const Mesh_Wrapper& Mesh,
   mat_poly->initialize(poly_points, poly_faces);
 }
 
+/*!
+  @brief For every face, returns a line containing that face.
+  Important: faces with length below machine epsilon will be
+  omitted. If the number of valid lines is less than three, empty
+  vector will be returned.
+  @param flines  Vector of lines for all the faces of this MatPoly
+*/
+template <>
+void MatPoly<2>::face_planes(std::vector< Plane_t<2> >& flines) const {
+  flines.clear();
+
+  for (int iface = 0; iface < nfaces_; iface++) {
+    Plane_t<2> face_line;
+    face_line.normal[0] = vertex_points_[face_vertices_[iface][1]][1] - 
+                          vertex_points_[face_vertices_[iface][0]][1];
+    face_line.normal[1] = -(vertex_points_[face_vertices_[iface][1]][0] - 
+                            vertex_points_[face_vertices_[iface][0]][0]);
+
+    double normal_len = face_line.normal.norm();
+    if (normal_len > std::numeric_limits<double>::epsilon()) {
+      face_line.normal /= normal_len;
+      face_line.dist2origin = 
+        -dot(vertex_points_[face_vertices_[iface][0]].asV(), face_line.normal);
+
+      flines.push_back(face_line); 
+    }
+  }
+
+  if (flines.size() < 3)
+    flines.clear();
+}
+
+/*!
+  @brief For every face, returns a plane containing that face.
+  Important: faces should be planar, so you might need to facetize
+  the MatPoly first. Faces with area below machine epsilon will be
+  omitted. If the number of valid planes is less than four, empty
+  vector will be returned.
+  @param fplanes  Vector of planes for all the faces of this MatPoly
+*/
+template <>
+void MatPoly<3>::face_planes(std::vector< Plane_t<3> >& fplanes) const {
+  fplanes.clear();
+
+  for (int iface = 0; iface < nfaces_; iface++) {
+    Plane_t<3> face_plane;
+    int nfvrts = (int) face_vertices_[iface].size();
+
+    double normal_len = 0.0;
+    std::vector<int> itri_pts(3);
+    for (int ivrt = 0; ivrt < nfvrts; ivrt++) {
+      itri_pts = { face_vertices_[iface][(ivrt + 1)%nfvrts],
+        face_vertices_[iface][(ivrt + 2)%nfvrts], face_vertices_[iface][ivrt] };
+
+      Vector3 cur_normal = cross(vertex_points_[itri_pts[1]] - vertex_points_[itri_pts[0]], 
+                                 vertex_points_[itri_pts[2]] - vertex_points_[itri_pts[0]]);
+      double cur_normal_len = cur_normal.norm();
+
+      if (cur_normal_len > normal_len) {
+        face_plane.normal = cur_normal;
+        normal_len = cur_normal_len;
+      }                      
+    }
+
+    // 0.5*normal_len is the area of the triangle formed 
+    // by two vectors in the cross product
+    if (normal_len <= 2*std::numeric_limits<double>::epsilon())
+      continue;
+
+    face_plane.normal /= normal_len;
+    face_plane.dist2origin = 
+      -dot(vertex_points_[face_vertices_[iface][0]].asV(), face_plane.normal);
+
+    fplanes.push_back(face_plane);  
+  }
+
+  if (fplanes.size() < 4)
+    fplanes.clear();
+}
 
 }  // namespace Tangram
 
