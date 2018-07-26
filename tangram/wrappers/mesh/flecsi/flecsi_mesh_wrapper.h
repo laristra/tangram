@@ -1,7 +1,9 @@
-/*~--------------------------------------------------------------------------~*
- * Copyright (c) 2016 Los Alamos National Laboratory, LLC
- * All rights reserved
- *~--------------------------------------------------------------------------~*/
+/*
+ This file is part of the Ristra tangram project.
+ Please see the license file at the root of this repository, or at:
+ https://github.com/laristra/tangram/blob/master/LICENSE
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 /// \file
 ////////////////////////////////////////////////////////////////////////////////
