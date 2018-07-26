@@ -17,4 +17,4 @@ set -x
 ${RUN_COMMAND} ${TESTAPPDIR}/test_xmof2d 3 3
 
 # Compare the values for the field
-${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold0.txt cell_sym_diff_simple_mesh_3x3.txt 1e-14
+${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold0.txt cell_sym_diff_simple_mesh_3x3.txt 1e-12

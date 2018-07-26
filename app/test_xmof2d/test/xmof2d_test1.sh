@@ -17,4 +17,4 @@ set -x
 ${RUN_COMMAND} ${TESTAPPDIR}/test_xmof2d voronoi124.exo
 
 # Compare the values for the field
-${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold1.txt cell_sym_diff_voronoi124.txt 1e-14
+${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold1.txt cell_sym_diff_voronoi124.txt 1e-12
