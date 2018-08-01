@@ -1,12 +1,8 @@
 /*
-This file is part of the Ristra tangram project.
-Please see the license file at the root of this repository, or at:
-    https://github.com/laristra/tangram/blob/master/LICENSE
+ This file is part of the Ristra tangram project.
+ Please see the license file at the root of this repository, or at:
+ https://github.com/laristra/tangram/blob/master/LICENSE
 */
-
-
-
-// Copyright 2016, Los Alamos National Laboratory, NM, USA
 
 #ifndef AUX_MESH_TOPOLOGY_H_
 #define AUX_MESH_TOPOLOGY_H_
