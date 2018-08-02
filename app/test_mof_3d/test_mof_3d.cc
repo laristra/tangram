@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
   if (world_size > 1)
     throw std::runtime_error("This app is designed to run in serial!");
 
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   if (argc != 3) {
     std::ostringstream os;
     os << std::endl <<
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
                     material_interfaces[iplane].normal);
   }
 
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   std::string mesh_name = argv[2];
   mesh_name.resize(mesh_name.size() - 4);
 #else
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
   std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
 #endif
 
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   Jali::MeshFactory mesh_factory(comm);
   mesh_factory.framework(Jali::MSTK);
   mesh_factory.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
   std::vector<Tangram::Point3> cell_mat_centroids;
   std::vector< std::vector< std::vector<r3d_poly> > > reference_mat_polys;
 
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   get_material_moments<Tangram::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces, 
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     reference_mat_polys, decompose_cells);
@@ -192,10 +192,10 @@ int main(int argc, char** argv) {
 
   // Volume fraction and angles tolerance
   Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-14, .fun_eps = 1.0e-14};
+    .max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
 
   // Build the driver
-#ifdef ENABLE_JALI  
+#if ENABLE_JALI  
   Tangram::Driver<Tangram::MOF, 3, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR3D, Tangram::ClipR3D> 
     mof_driver(mesh_wrapper, im_tols, !decompose_cells);
@@ -272,7 +272,7 @@ int main(int argc, char** argv) {
   fout.close();        
 
 std::cout << std::endl << "Stats for ";
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   std::cout << "computational mesh " << mesh_name;
 #else
   std::cout << "structured " << nx << "x" << ny << 
