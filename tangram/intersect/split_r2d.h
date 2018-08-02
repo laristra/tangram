@@ -116,14 +116,14 @@ split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
     subpoly_moments_ptrs[isp]->assign(r2d_moments, r2d_moments + 3);
 
     //Get a MatPoly for a r2d subpoly
-    const std::vector<Point2> matpoly_verts;
+    std::vector<Point2> matpoly_verts;
     matpoly_verts.resize(nverts);
     
     for (int v = 0; v < nverts; v++)
      for (int ixy = 0; ixy < 2; ixy++)
-      matpoly_vrts[v][ixy] = r2d_subpolys[isp].verts[v].pos.xy[ixy];
+      matpoly_verts[v][ixy] = r2d_subpolys[isp].verts[v].pos.xy[ixy];
 
-    Matpoly<2> sub_matpoly;
+    MatPoly<2> sub_matpoly;
     sub_matpoly.initialize(matpoly_verts);
     *subpoly_ptrs[isp] = sub_matpoly; 
   }
