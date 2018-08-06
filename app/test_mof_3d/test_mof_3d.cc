@@ -58,15 +58,15 @@ int main(int argc, char** argv) {
 #ifdef ENABLE_MPI  
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
-#endif  
-
-  assert((material_interface_normals.size() == material_interface_points.size()) &&
-         (mesh_materials.size() == material_interface_normals.size() + 1));
 
   int world_size = 1;
   MPI_Comm_size(comm, &world_size);
   if (world_size > 1)
     throw std::runtime_error("This app is designed to run in serial!");
+#endif  
+
+  assert((material_interface_normals.size() == material_interface_points.size()) &&
+         (mesh_materials.size() == material_interface_normals.size() + 1));
 
 #if ENABLE_JALI
   if (argc != 3) {
