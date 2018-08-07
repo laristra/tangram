@@ -7,6 +7,12 @@
 #ifndef TANGRAM_H_
 #define TANGRAM_H_
 
+#include <cfloat>
+#include <vector>
+#include <algorithm>
+#include <memory>
+#include <limits>
+
 #ifdef THRUST
 
 #include "thrust/device_vector.h"
@@ -16,11 +22,6 @@
 #else  // no thrust
 
 #include <boost/iterator/counting_iterator.hpp>
-
-#include <vector>
-#include <algorithm>
-#include <memory>
-#include <limits>
 
 #endif
 
@@ -193,6 +194,15 @@ struct Plane_t {
                        // from P to the origin, then dist2origin = dot(PO, normal)
 };
 
+// Reverse plane normal
+template<int D>
+inline
+const Plane_t<D> operator-(const Plane_t<D>& plane) {
+  Plane_t<D> opp_dir_plane = {.normal = -plane.normal, 
+                              .dist2origin = -plane.dist2origin};
+  return opp_dir_plane;
+}
+
 template <int D>
 class MatPoly;
 
@@ -227,6 +237,30 @@ struct IterativeMethodTolerances_t {
   double arg_eps;     // Tolerance on the arguments of the function
   double fun_eps;     // Tolerance on the value of the function
 };
+
+template <int D>
+struct BoundingBox_t {
+  double min[D];
+  double max[D];
+
+  BoundingBox_t() {
+    for (int idim = 0; idim < D; idim++) {
+      min[idim] = DBL_MAX; max[idim] = -DBL_MAX;
+    }
+  }
+};
+
+template <int D>
+inline bool overlapping_boxes(const BoundingBox_t<D>& bb1, 
+                              const BoundingBox_t<D>& bb2,
+                              double eps = std::numeric_limits<double>::epsilon()) {
+  for (int idim = 0; idim < D; idim++)
+    if ((bb1.min[idim] > bb2.max[idim] - eps) || 
+        (bb1.max[idim] < bb2.min[idim] + eps))
+      return false;
+
+  return true;
+}
 
 // Check if two floating point values are equal up to the machine precision
 inline bool is_equal(const double fp1, const double fp2) {

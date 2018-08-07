@@ -97,6 +97,30 @@ void polygon3d_moments(const std::vector<Point3>& points,
     poly_moments.assign(4, 0.0);
 }
 
+Vector<3> polygon3d_normal(const std::vector<Point3>& points,
+                           const std::vector<int>& poly_vertices) {
+  std::vector<double> poly_moments;
+  polygon3d_moments(points, poly_vertices, poly_moments);
+
+  Vector3 poly_normal(0.0, 0.0, 0.0);
+  if (poly_moments[0] <= std::numeric_limits<double>::epsilon())
+    return poly_normal;
+
+  Point3 poly_centroid;
+  for (int idim = 0; idim < 3; idim++)
+    poly_centroid[idim] = poly_moments[idim + 1]/poly_moments[0];
+
+  int nvrts = static_cast<int>(poly_vertices.size());
+  for (int ivrt = 0; ivrt < nvrts; ivrt++) {
+    Vector3 tri_normal = cross(points[poly_vertices[ivrt]] - poly_centroid,
+                               points[poly_vertices[(ivrt + 1)%nvrts]] - poly_centroid);
+    poly_normal += tri_normal;
+  }
+  poly_normal.normalize();
+
+  return poly_normal;  
+}
+
 template <int D>
 class MatPoly {
  public:
@@ -312,6 +336,19 @@ class MatPoly {
     @param fplanes  Vector of planes for all the faces of this MatPoly
   */
   void face_planes(std::vector< Plane_t<D> >& fplanes) const;
+
+  BoundingBox_t<D> bounding_box() const {
+    BoundingBox_t<D> bbox;
+    for (int ivrt = 0; ivrt < nvertices_; ivrt++)
+      for (int idim = 0; idim < D; idim++) {
+        if (vertex_points_[ivrt][idim] < bbox.min[idim])
+          bbox.min[idim] = vertex_points_[ivrt][idim];
+
+        if (vertex_points_[ivrt][idim] > bbox.max[idim])
+          bbox.max[idim] = vertex_points_[ivrt][idim];        
+      }
+    return bbox;
+  }
 
  protected:
   /*!
@@ -749,30 +786,11 @@ void MatPoly<3>::face_planes(std::vector< Plane_t<3> >& fplanes) const {
 
   for (int iface = 0; iface < nfaces_; iface++) {
     Plane_t<3> face_plane;
-    int nfvrts = (int) face_vertices_[iface].size();
-
-    double normal_len = 0.0;
-    std::vector<int> itri_pts(3);
-    for (int ivrt = 0; ivrt < nfvrts; ivrt++) {
-      itri_pts = { face_vertices_[iface][(ivrt + 1)%nfvrts],
-        face_vertices_[iface][(ivrt + 2)%nfvrts], face_vertices_[iface][ivrt] };
-
-      Vector3 cur_normal = cross(vertex_points_[itri_pts[1]] - vertex_points_[itri_pts[0]], 
-                                 vertex_points_[itri_pts[2]] - vertex_points_[itri_pts[0]]);
-      double cur_normal_len = cur_normal.norm();
-
-      if (cur_normal_len > normal_len) {
-        face_plane.normal = cur_normal;
-        normal_len = cur_normal_len;
-      }                      
-    }
-
-    // 0.5*normal_len is the area of the triangle formed 
-    // by two vectors in the cross product
-    if (normal_len <= 2*std::numeric_limits<double>::epsilon())
+    face_plane.normal = polygon3d_normal(vertex_points_, 
+                                         face_vertices_[iface]);
+    if (face_plane.normal.is_zero())
       continue;
-
-    face_plane.normal /= normal_len;
+    
     face_plane.dist2origin = 
       -dot(vertex_points_[face_vertices_[iface][0]].asV(), face_plane.normal);
 
@@ -782,6 +800,63 @@ void MatPoly<3>::face_planes(std::vector< Plane_t<3> >& fplanes) const {
   if (fplanes.size() < 4)
     fplanes.clear();
 }
+
+/*!
+@brief Checks if a given point is interior wrt to a given polyhedron. 
+Note: boundary points are no considered to be interior.
+@param[in] mat_poly A given polyhedron
+@param[in] pt A given point
+@param[in] convex_poly Flag to indicate if the given MatPoly is convex:
+if set to false, it will be decomposed into tetrahedrons
+@return True if the point is in the interior of MatPoly
+*/
+bool point_inside_matpoly(const MatPoly<3> mat_poly,
+                          const Point<3>& pt, bool convex_poly=false) {
+  std::vector< MatPoly<3> > convex_polys;
+  if (convex_poly)
+    convex_polys.push_back(mat_poly);
+  else 
+    mat_poly.facetize_decompose(convex_polys);
+
+  for (int icp = 0; icp < convex_polys.size(); icp++) {
+    const std::vector< Point<3> >& poly_pts = convex_polys[icp].points();
+
+    bool pt_inside_cur_poly = true;
+    for (int iface = 0; iface < convex_polys[icp].num_faces(); iface++) {
+      const std::vector<int>& iface_vrts = convex_polys[icp].face_vertices(iface);
+      Vector3 pt2vrt_vec;
+      double pt2vrt_dst = 0.0;
+      //Find a face vertex that is the farthest from the given point
+      for (int ifvrt = 0; ifvrt < iface_vrts.size(); ifvrt++) {
+        Vector3 cur_pt2vrt_vec = 
+          convex_polys[icp].vertex_point(iface_vrts[ifvrt]) - pt;
+        double cur_vec_norm = cur_pt2vrt_vec.norm();
+        if (cur_vec_norm > pt2vrt_dst) {
+          pt2vrt_vec = cur_pt2vrt_vec;
+          pt2vrt_dst = cur_vec_norm;
+        }
+      }
+      pt2vrt_vec /= pt2vrt_dst;
+
+      Vector3 face_normal = polygon3d_normal(poly_pts, iface_vrts);
+      if (face_normal.is_zero())
+        continue;
+
+      double fnormal_prj = dot(pt2vrt_vec, face_normal);
+      //Check the sign of the projection onto the normal
+      if (fnormal_prj <= std::numeric_limits<double>::epsilon()) {
+        pt_inside_cur_poly = false;
+        break;
+      }
+    }  
+
+    if (pt_inside_cur_poly)
+      return true;
+  }
+  return false;
+}
+
+
 
 }  // namespace Tangram
 

@@ -100,12 +100,13 @@ std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
   std::vector<Tangram::Point3> cog_pts;
   cog_pts.reserve(4*nteeth);
 
-  //We want arc lengths on the inner and the outer circles to be the same
+  //We want chords on the inner and the outer circles to be of the same length,
   //and the segments between circles to be of the same length
-  double dtooth_ang[4] = { 0.0,
-    (inner_radius/(outer_radius + inner_radius))*PI/nteeth,
-    PI/(2*nteeth),
-    (outer_radius/(outer_radius + inner_radius))*PI/nteeth };
+  double tooth_angle = 2*PI/nteeth;
+  double inner_angle = 2*std::atan(
+    sin(tooth_angle/4.0)/(inner_radius/outer_radius + cos(tooth_angle/4.0)) );
+  double dtooth_ang[4] = { 0.0, tooth_angle/2.0 - inner_angle,
+                           tooth_angle/4.0, inner_angle };
 
   //Get the points by rotation
   for (int itooth = 0; itooth < nteeth; itooth++) {
