@@ -47,6 +47,7 @@ public:
   
   /*!
     @brief Pass in the volume fraction data for use in the reconstruction.
+    Filters out materials with volume fraction below the tolerance.
     @param[in] cell_num_mats A vector of length (num_cells) specifying the
     number of materials in each cell.
     @param[in] cell_mat_ids A vector of length (sum(cell_num_mats)) specifying
@@ -66,11 +67,16 @@ public:
     cell_mat_vfracs_.resize(ncells);  
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
+      double cell_volume = mesh_.cell_volume(icell);  
       int nmats = cell_num_mats[icell];
-      cell_mat_ids_[icell].assign(cell_mat_ids.begin() + offset, 
-                                  cell_mat_ids.begin() + offset + nmats);
-      cell_mat_vfracs_[icell].assign(cell_mat_volfracs.begin() + offset, 
-                                     cell_mat_volfracs.begin() + offset + nmats);
+
+      for (int icmat = 0; icmat < nmats; icmat++) {
+        double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
+        if (mat_volume > im_tols_.fun_eps) {
+          cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
+          cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
+        }
+      }
       offset += nmats;
     }
   }
@@ -118,7 +124,7 @@ public:
     std::vector<int> istencil_cells;
     mesh_.cell_get_node_adj_cells(cellID, Entity_type::ALL, &istencil_cells);
     istencil_cells.insert(istencil_cells.begin(), cellID);
-    int nsc = (int) istencil_cells.size();
+    int nsc = static_cast<int>(istencil_cells.size());
 
     // Create stencil for the volume fractions gradient: the first entry corresponds
     // to the current cell, the rest correspond to all its neighbors through the nodes
@@ -126,8 +132,9 @@ public:
     std::vector< Point<Dim> > stencil_centroids(nsc);
     for (int isc = 0; isc < nsc; isc++) {
       const std::vector<int>& cur_mat_ids = cell_mat_ids_[istencil_cells[isc]];
-      int local_id = (int) (std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID) -
-                            cur_mat_ids.begin());
+      int local_id = std::distance(cur_mat_ids.begin(),
+        std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
+        
       if (local_id != cur_mat_ids.size())
         stencil_vfracs[isc] = cell_mat_vfracs_[istencil_cells[isc]][local_id];
 

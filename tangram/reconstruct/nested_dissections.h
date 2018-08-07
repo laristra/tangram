@@ -67,7 +67,7 @@ public:
     of the operator
   */
   void set_cell_materials_order(const bool enable_permutations = false) {
-    int nmats = (int) reconstructor_.cell_materials(cell_id_).size();
+    int nmats = static_cast<int>(reconstructor_.cell_materials(cell_id_).size());
     cell_materials_order_.resize(1);
     cell_materials_order_[0].resize(nmats);
     std::iota(cell_materials_order_[0].begin(), cell_materials_order_[0].end(), 0);                              
@@ -86,7 +86,7 @@ public:
     @return  Number of materials orders, their index can be used as a parameter
     for this class's operator.
   */
-  int num_materials_orders() { return (int) cell_materials_order_.size(); }
+  int num_materials_orders() { return static_cast<int>(cell_materials_order_.size()); }
 
   /*!
     @brief Calculates the CellMatPoly for the given interface reconstruction method
@@ -98,7 +98,7 @@ public:
 
     // Get material indices for the cell from the reconstructor
     const std::vector<int>& mat_ids = reconstructor_.cell_materials(cell_id_);    
-    int nmats = (int) mat_ids.size();
+    int nmats = static_cast<int>(mat_ids.size());
 
     std::shared_ptr< CellMatPoly<Dim> > cmp_ptr = 
       std::make_shared< CellMatPoly<Dim> >(cell_id_);
