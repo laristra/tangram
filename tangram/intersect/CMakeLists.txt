@@ -11,13 +11,16 @@
 
 # Add header files
 set(intersect_HEADERS
+    r2d.h
     r3d.h
+    split_r2d.h
     split_r3d.h
     PARENT_SCOPE
 )
 
 # Add source files
 set(intersect_SOURCES
+    r2d.c
     r3d.c
     PARENT_SCOPE
 )
