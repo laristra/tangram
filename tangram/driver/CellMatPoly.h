@@ -979,23 +979,24 @@ MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
   assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
 #endif
   const std::vector<int>& mp_vrt_ids = matpoly_vertices(matpoly_id);
-  int nvrts = (int) mp_vrt_ids.size();
+  int nvrts = static_cast<int>(mp_vrt_ids.size());
   std::vector<Point<3>> mp_pts;
   mp_pts.reserve(nvrts);
   for (int ivrt = 0; ivrt < nvrts; ivrt++)
     mp_pts.push_back(matvertex_points_[mp_vrt_ids[ivrt]]);
   
   const std::vector<int>& mp_faces = matpoly_faces(matpoly_id);
-  int nfaces = (int) mp_faces.size();
+  int nfaces = static_cast<int>(mp_faces.size());
   std::vector<std::vector<int>> mf_vrts(nfaces);
   for (int iface = 0; iface < nfaces; iface++) {
     mf_vrts[iface] = matface_vertices(mp_faces[iface]);
     if (matpoly_facedirs_[matpoly_id][iface] == 0)
       std::reverse(mf_vrts[iface].begin(), mf_vrts[iface].end());
     for (int ivrt = 0; ivrt < mf_vrts[iface].size(); ivrt++) {
-      int local_vrt_id = (int) (std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(),
-                                          mf_vrts[iface][ivrt]) -
-                                mp_vrt_ids.begin());
+      int local_vrt_id = std::distance(mp_vrt_ids.begin(), 
+        std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(),
+                  mf_vrts[iface][ivrt]));
+                  
       mf_vrts[iface][ivrt] = local_vrt_id;
     }
   }

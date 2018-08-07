@@ -58,15 +58,15 @@ int main(int argc, char** argv) {
 #ifdef ENABLE_MPI  
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
-#endif  
-
-  assert((material_interface_normals.size() == material_interface_points.size()) &&
-         (mesh_materials.size() == material_interface_normals.size() + 1));
 
   int world_size = 1;
   MPI_Comm_size(comm, &world_size);
   if (world_size > 1)
     throw std::runtime_error("This app is designed to run in serial!");
+#endif  
+
+  assert((material_interface_normals.size() == material_interface_points.size()) &&
+         (mesh_materials.size() == material_interface_normals.size() + 1));
 
 #ifdef ENABLE_JALI
   if (argc != 2) {
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 
   bool decompose_cells = false;
 
-  int nmesh_materials = (int) mesh_materials.size(); 
+  int nmesh_materials = static_cast<int>(mesh_materials.size()); 
   std::vector< Tangram::Plane_t<2> > material_interfaces(nmesh_materials - 1);
   for (int iline = 0; iline < nmesh_materials - 1; iline++) {
     material_interfaces[iline].normal = material_interface_normals[iline];
@@ -156,9 +156,10 @@ int main(int argc, char** argv) {
     double cell_volume = mesh_wrapper.cell_volume(icell);
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
       int cur_mat_id = cell_mat_ids[offsets[icell] + icmat];
-      int mesh_matid = (int) (std::find(mesh_materials.begin(), 
-                                        mesh_materials.end(), cur_mat_id) -
-                              mesh_materials.begin());
+      int mesh_matid = std::distance(mesh_materials.begin(),
+        std::find(mesh_materials.begin(), 
+                  mesh_materials.end(), cur_mat_id));
+
       material_volumes[mesh_matid] += 
         cell_volume*cell_mat_volfracs[offsets[icell] + icmat];
     }
@@ -170,7 +171,7 @@ int main(int argc, char** argv) {
     ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<2> >(icell);
 
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
-      int nmp = (int) reference_mat_polys[icell][icmat].size();
+      int nmp = static_cast<int>(reference_mat_polys[icell][icmat].size());
       for (int imp = 0; imp < nmp; imp++) {
         
         const r2d_poly& cur_r2d_poly = reference_mat_polys[icell][icmat][imp];
@@ -242,9 +243,10 @@ int main(int argc, char** argv) {
 
     for (int icmat = 0; icmat < ncmats; icmat++) {
       int material_id = cell_ref_mat_ids[icmat];
-      int mesh_matid = (int) (std::find(mesh_materials.begin(), 
-                                        mesh_materials.end(), material_id) -
-                              mesh_materials.begin());
+      int mesh_matid = std::distance(mesh_materials.begin(),
+        std::find(mesh_materials.begin(), 
+                  mesh_materials.end(), material_id));
+                  
       total_mat_sym_diff_vol[mesh_matid] += cell_mat_sym_diff_vol[icmat];
       if (cell_mat_sym_diff_vol[icmat] > max_mat_sym_diff_vol[mesh_matid])
         max_mat_sym_diff_vol[mesh_matid] = cell_mat_sym_diff_vol[icmat];

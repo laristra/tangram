@@ -147,9 +147,9 @@ public:
                           const bool planar_faces = true) const {
     assert(Dim > 1);
 
-    int cellMatID = (int) (std::find(cell_mat_ids_[cellID].begin(), 
-                                     cell_mat_ids_[cellID].end(), matID) -
-                           cell_mat_ids_[cellID].begin());
+    int cellMatID = std::distance(cell_mat_ids_[cellID].begin(),
+      std::find(cell_mat_ids_[cellID].begin(), 
+                cell_mat_ids_[cellID].end(), matID));
 
     Point<Dim> cell_cen;
     mesh_.cell_centroid(cellID, &cell_cen);
@@ -216,7 +216,7 @@ public:
                        make_counting_iterator(npermutations),
                        permutations_cellmatpoly.begin(), nested_dissections);
 
-    int nmats = (int) cell_mat_ids_[cellID].size();
+    int nmats = static_cast<int>(cell_mat_ids_[cellID].size());
 
     int iopt_permutation = -1;
     double min_centroids_error = DBL_MAX;

@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
   assert((material_interface_normals.size() == material_interface_points.size()) &&
          (mesh_materials.size() == material_interface_normals.size() + 1));
 
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   if (argc != 3) {
     std::ostringstream os;
     os << std::endl <<
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 
   bool decompose_cells = atoi(argv[1]);
 
-  int nmesh_materials = (int) mesh_materials.size(); 
+  int nmesh_materials = static_cast<int>(mesh_materials.size()); 
   std::vector< Tangram::Plane_t<3> > material_interfaces(nmesh_materials - 1);
   for (int iplane = 0; iplane < nmesh_materials - 1; iplane++) {
     material_interfaces[iplane].normal = material_interface_normals[iplane];
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
                     material_interfaces[iplane].normal);
   }
 
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   std::string mesh_name = argv[2];
   mesh_name.resize(mesh_name.size() - 4);
 #else
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
   std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
 #endif
 
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   Jali::MeshFactory mesh_factory(comm);
   mesh_factory.framework(Jali::MSTK);
   mesh_factory.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
   std::vector<Tangram::Point3> cell_mat_centroids;
   std::vector< std::vector< std::vector<r3d_poly> > > reference_mat_polys;
 
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   get_material_moments<Tangram::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces, 
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     reference_mat_polys, decompose_cells);
@@ -160,9 +160,9 @@ int main(int argc, char** argv) {
       double cell_volume = mesh_wrapper.cell_volume(icell);
       for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
         int cur_mat_id = cell_mat_ids[offsets[icell] + icmat];
-        int mesh_matid = (int) (std::find(mesh_materials.begin(), 
-                                          mesh_materials.end(), cur_mat_id) -
-                                mesh_materials.begin());
+        int mesh_matid = std::distance(mesh_materials.begin(),
+          std::find(mesh_materials.begin(), 
+                   mesh_materials.end(), cur_mat_id));
         mmcells_material_volumes[mesh_matid] += 
           cell_volume*cell_mat_volfracs[offsets[icell] + icmat];
       }
@@ -175,7 +175,7 @@ int main(int argc, char** argv) {
     ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<3> >(icell);
 
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
-      int nmp = (int) reference_mat_polys[icell][icmat].size();
+      int nmp = static_cast<int>(reference_mat_polys[icell][icmat].size());
       for (int imp = 0; imp < nmp; imp++) {
         std::vector< Tangram::MatPoly<3> > cur_matpoly;
         Tangram::r3dpoly_to_matpolys(reference_mat_polys[icell][icmat][imp], cur_matpoly);
@@ -192,10 +192,10 @@ int main(int argc, char** argv) {
 
   // Volume fraction and angles tolerance
   Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-14, .fun_eps = 1.0e-14};
+    .max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
 
   // Build the driver
-#ifdef ENABLE_JALI  
+#if ENABLE_JALI  
   Tangram::Driver<Tangram::MOF, 3, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR3D, Tangram::ClipR3D> 
     mof_driver(mesh_wrapper, im_tols, !decompose_cells);
@@ -242,9 +242,10 @@ int main(int argc, char** argv) {
 
     for (int icmat = 0; icmat < ncmats; icmat++) {
       int material_id = cell_ref_mat_ids[icmat];
-      int mesh_matid = (int) (std::find(mesh_materials.begin(), 
-                                        mesh_materials.end(), material_id) -
-                              mesh_materials.begin());
+      int mesh_matid = std::distance(mesh_materials.begin(),
+        std::find(mesh_materials.begin(), 
+                  mesh_materials.end(), material_id));
+
       total_mat_sym_diff_vol[mesh_matid] += cell_mat_sym_diff_vol[icmat];
       if (cell_mat_sym_diff_vol[icmat] > max_mat_sym_diff_vol[mesh_matid]) {
         max_mat_sym_diff_vol[mesh_matid] = cell_mat_sym_diff_vol[icmat];
@@ -272,7 +273,7 @@ int main(int argc, char** argv) {
   fout.close();        
 
 std::cout << std::endl << "Stats for ";
-#ifdef ENABLE_JALI
+#if ENABLE_JALI
   std::cout << "computational mesh " << mesh_name;
 #else
   std::cout << "structured " << nx << "x" << ny << 
@@ -289,9 +290,11 @@ std::cout << std::endl << "Stats for ";
     double max_sym_diff_mat_vol;
     if (max_mat_sym_diff_icell[imat] != -1) {
       imaxcell = max_mat_sym_diff_icell[imat];
-      int cell_matid = (int) (std::find(cell_mat_ids.begin() + offsets[imaxcell], 
-        cell_mat_ids.begin() + offsets[imaxcell] + cell_num_mats[imaxcell], 
-        mesh_materials[imat]) - (cell_mat_ids.begin() + offsets[imaxcell]));
+      int cell_matid = std::distance(cell_mat_ids.begin() + offsets[imaxcell],
+          std::find(cell_mat_ids.begin() + offsets[imaxcell], 
+                    cell_mat_ids.begin() + offsets[imaxcell] + cell_num_mats[imaxcell], 
+                    mesh_materials[imat]));
+                    
       max_sym_diff_mat_vol = cell_mat_volfracs[offsets[imaxcell] + cell_matid]*
         mesh_wrapper.cell_volume(imaxcell);
     }

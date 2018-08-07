@@ -82,7 +82,7 @@ void get_intersection_moments(const MatPoly<2>& mat_poly,
     mat_poly.face_planes(face_lines);
     r2d_poly intersection = r2dpoly;
 
-    int nlines = (int) face_lines.size();
+    int nlines = static_cast<int>(face_lines.size());
     r2d_plane* r2d_face_lines = new r2d_plane [nlines];
     for (int iline = 0; iline < nlines; iline++) {
       for (int ixy = 0; ixy < 2; ixy++)
@@ -103,7 +103,7 @@ void get_intersection_moments(const MatPoly<2>& mat_poly,
     std::vector< MatPoly<2> > mat_poly_tris;
     mat_poly.decompose(mat_poly_tris);
 
-    int ntris = (int) mat_poly_tris.size();
+    int ntris = static_cast<int>(mat_poly_tris.size());
     intersection_moments.assign(nmoments, 0.0);
     for (int itri = 0; itri < ntris; itri++) {
       std::vector< Plane_t<2> > face_lines;

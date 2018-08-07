@@ -53,9 +53,9 @@ void read_mat_data(const Mesh_Wrapper& Mesh,
   std::vector<int> on_rank_ids(ncells);
   std::vector<int> mesh_cell_num_mats(ncells);
   for (int icell = 0; icell < ncells; icell++) {
-    on_rank_ids[icell] = (int) (std::find(rank_cells_gid.begin(),
-                                          rank_cells_gid.end(), icell) -
-                                rank_cells_gid.begin());
+    on_rank_ids[icell] = std::distance(rank_cells_gid.begin(), 
+      std::find(rank_cells_gid.begin(), rank_cells_gid.end(), icell));
+      
     int on_rank_id = on_rank_ids[icell];
     bool on_rank = (on_rank_id < nrank_cells);
     os.read(reinterpret_cast<char *>(&mesh_cell_num_mats[icell]), sizeof(int));

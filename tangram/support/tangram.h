@@ -25,6 +25,13 @@
 
 #endif
 
+<<<<<<< HEAD
+=======
+#include <vector>
+#include <algorithm>
+#include <memory>
+#include <limits>
+>>>>>>> f67d12b5d67716e8a691b51fc28b0a9b367d7191
 #include "tangram/support/Vector.h"
 
 /*

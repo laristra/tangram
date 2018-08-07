@@ -56,7 +56,7 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
   r3dized_poly_faces = new r3d_int* [nfaces];
   for (int iface = 0; iface < nfaces; iface++) {
     const std::vector<int>& matpoly_faces = mat_poly.face_vertices(iface);
-    int face_nvrts = (int) matpoly_faces.size();
+    int face_nvrts = static_cast<int>(matpoly_faces.size());
     nface_vrts[iface] = face_nvrts;
     r3dized_poly_faces[iface] = new r3d_int [face_nvrts];
     for (int ivrt = 0; ivrt < face_nvrts; ivrt++)
@@ -199,7 +199,7 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
     //Get a MatPoly for a subpoly
     std::vector< MatPoly<3> > sub_matpoly;
     r3dpoly_to_matpolys(r3d_subpolys[isp], sub_matpoly);
-    int ncomponents = (int) sub_matpoly.size();
+    int ncomponents = static_cast<int>(sub_matpoly.size());
     if (ncomponents > 1) 
       throw std::runtime_error("Non-convex MatPoly is split using the method for convex MatPoly's!");
     if (ncomponents == 1) 
@@ -248,7 +248,7 @@ class SplitR3D {
     if (all_convex_)
       convex_polys = &matpolys_;
     else {
-      int nncpolys = (int) matpolys_.size();
+      int nncpolys = static_cast<int>(matpolys_.size());
       for (int incp = 0; incp < nncpolys; incp++)
         matpolys_[incp].decompose(convex_components);
 
@@ -259,7 +259,7 @@ class SplitR3D {
       hs_moments_ptrs[ihs]->assign(4, 0.0);
 
     int hs_poly_count[2] = {0, 0};
-    int npolys = (int) convex_polys->size();
+    int npolys = static_cast<int>(convex_polys->size());
 
     for (int icp = 0; icp < npolys; icp++) {
       MatPoly<3> cur_subpolys[2];
@@ -447,7 +447,7 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
     mat_poly.face_planes(face_planes);
     r3d_poly intersection = r3dpoly;
 
-    int nplanes = (int) face_planes.size();
+    int nplanes = static_cast<int>(face_planes.size());
     r3d_plane* r3d_face_planes = new r3d_plane [nplanes];
     for (int iplane = 0; iplane < nplanes; iplane++) {
       for (int ixyz = 0; ixyz < 3; ixyz++)
@@ -468,7 +468,7 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
     std::vector< MatPoly<3> > mat_poly_tets;
     mat_poly.facetize_decompose(mat_poly_tets);
 
-    int ntets = (int) mat_poly_tets.size();
+    int ntets = static_cast<int>(mat_poly_tets.size());
     intersection_moments.assign(nmoments, 0.0);
     for (int itet = 0; itet < ntets; itet++) {
       std::vector< Plane_t<3> > face_planes;
