@@ -47,7 +47,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector< std::vector< std::vector<r3d_poly> > >&
                             reference_mat_polys,
                           bool decompose_cells = true) {
-  int nplanes = (int) planar_interfaces.size();
+  int nplanes = static_cast<int>(planar_interfaces.size());
   assert(material_IDs.size() == nplanes + 1);
   
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
@@ -70,7 +70,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     }
   }
 
-  int ncur_polys = (int) cur_polys_cellID.size();
+  int ncur_polys = static_cast<int>(cur_polys_cellID.size());
   r3d_poly* cur_r3d_polys = new r3d_poly [ncur_polys];
 
   const int POLY_ORDER = 1;
@@ -120,9 +120,9 @@ void get_material_moments(const Mesh_Wrapper& mesh,
           // Poly below the plane is cut off by the plane, add it to 
           // the cell's list of single-material poly's
           int icell = cur_polys_cellID[ipoly];
-          int cell_mat_id = (int) (std::find(cells_mat_ids[icell].begin(), 
-                                             cells_mat_ids[icell].end(), cur_mat_id) -
-                                   cells_mat_ids[icell].begin());
+          int cell_mat_id = std::distance(cells_mat_ids[icell].begin(), 
+            std::find(cells_mat_ids[icell].begin(), 
+                      cells_mat_ids[icell].end(), cur_mat_id));
 
           if (cell_mat_id == cells_mat_ids[icell].size()) {
             cells_mat_ids[icell].resize(cell_mat_id + 1);
@@ -160,7 +160,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 
     delete [] lower_hs_polys;
 
-    ncur_polys = (int) iremaining_polys.size();
+    ncur_polys = static_cast<int>(iremaining_polys.size());
     r3d_poly* remaining_polys = new r3d_poly [ncur_polys];
     std::vector<int> remaining_polys_cellID(ncur_polys);
     for (int irpoly = 0; irpoly < ncur_polys; irpoly++) {
@@ -178,9 +178,9 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   int cur_mat_id = material_IDs[nplanes];
   for (int ipoly = 0; ipoly < ncur_polys; ipoly++) {
     int icell = cur_polys_cellID[ipoly];
-    int cell_mat_id = (int) (std::find(cells_mat_ids[icell].begin(), 
-                                       cells_mat_ids[icell].end(), cur_mat_id) -
-                             cells_mat_ids[icell].begin());
+    int cell_mat_id = std::distance(cells_mat_ids[icell].begin(),
+      std::find(cells_mat_ids[icell].begin(), 
+                cells_mat_ids[icell].end(), cur_mat_id));
 
     if (cell_mat_id == cells_mat_ids[icell].size()) {
       cells_mat_ids[icell].resize(cell_mat_id + 1);
@@ -255,7 +255,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector< std::vector< std::vector<r2d_poly> > >&
                             reference_mat_polys,
                           bool decompose_cells = true) {
-  int nlines = (int) linear_interfaces.size();
+  int nlines = static_cast<int>(linear_interfaces.size());
   assert(material_IDs.size() == nlines + 1);
   
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
@@ -278,7 +278,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     }
   }
 
-  int ncur_polys = (int) cur_polys_cellID.size();
+  int ncur_polys = static_cast<int>(cur_polys_cellID.size());
   r2d_poly* cur_r2d_polys = new r2d_poly [ncur_polys];
 
   const int POLY_ORDER = 1;
@@ -328,9 +328,9 @@ void get_material_moments(const Mesh_Wrapper& mesh,
           // Poly below the line is cut off by the line, add it to 
           // the cell's list of single-material poly's
           int icell = cur_polys_cellID[ipoly];
-          int cell_mat_id = (int) (std::find(cells_mat_ids[icell].begin(), 
-                                             cells_mat_ids[icell].end(), cur_mat_id) -
-                                   cells_mat_ids[icell].begin());
+          int cell_mat_id = std::distance(cells_mat_ids[icell].begin(),
+            std::find(cells_mat_ids[icell].begin(), 
+                      cells_mat_ids[icell].end(), cur_mat_id));
 
           if (cell_mat_id == cells_mat_ids[icell].size()) {
             cells_mat_ids[icell].resize(cell_mat_id + 1);
@@ -368,7 +368,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 
     delete [] lower_hp_polys;
 
-    ncur_polys = (int) iremaining_polys.size();
+    ncur_polys = static_cast<int>(iremaining_polys.size());
     r2d_poly* remaining_polys = new r2d_poly [ncur_polys];
     std::vector<int> remaining_polys_cellID(ncur_polys);
     for (int irpoly = 0; irpoly < ncur_polys; irpoly++) {
@@ -386,9 +386,9 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   int cur_mat_id = material_IDs[nlines];
   for (int ipoly = 0; ipoly < ncur_polys; ipoly++) {
     int icell = cur_polys_cellID[ipoly];
-    int cell_mat_id = (int) (std::find(cells_mat_ids[icell].begin(), 
-                                       cells_mat_ids[icell].end(), cur_mat_id) -
-                             cells_mat_ids[icell].begin());
+    int cell_mat_id = std::distance(cells_mat_ids[icell].begin(),
+      std::find(cells_mat_ids[icell].begin(), 
+                cells_mat_ids[icell].end(), cur_mat_id));
 
     if (cell_mat_id == cells_mat_ids[icell].size()) {
       cells_mat_ids[icell].resize(cell_mat_id + 1);

@@ -124,7 +124,7 @@ public:
     std::vector<int> istencil_cells;
     mesh_.cell_get_node_adj_cells(cellID, Entity_type::ALL, &istencil_cells);
     istencil_cells.insert(istencil_cells.begin(), cellID);
-    int nsc = (int) istencil_cells.size();
+    int nsc = static_cast<int>(istencil_cells.size());
 
     // Create stencil for the volume fractions gradient: the first entry corresponds
     // to the current cell, the rest correspond to all its neighbors through the nodes
@@ -132,8 +132,9 @@ public:
     std::vector< Point<Dim> > stencil_centroids(nsc);
     for (int isc = 0; isc < nsc; isc++) {
       const std::vector<int>& cur_mat_ids = cell_mat_ids_[istencil_cells[isc]];
-      int local_id = (int) (std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID) -
-                            cur_mat_ids.begin());
+      int local_id = std::distance(cur_mat_ids.begin(),
+        std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
+        
       if (local_id != cur_mat_ids.size())
         stencil_vfracs[isc] = cell_mat_vfracs_[istencil_cells[isc]][local_id];
 

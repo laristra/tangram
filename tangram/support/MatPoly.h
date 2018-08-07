@@ -21,7 +21,7 @@ double polygon3d_area(const std::vector<Point3>& points,
                       const std::vector<int>& poly_vertices) {
   double poly_area = 0.0;
 
-  int nvrts = (int) poly_vertices.size();
+  int nvrts = static_cast<int>(poly_vertices.size());
   if (nvrts == 3) {
     poly_area = 0.5*cross(points[poly_vertices[1]] - points[poly_vertices[0]], 
       points[poly_vertices[2]] - points[poly_vertices[0]]).norm();
@@ -56,7 +56,7 @@ void polygon3d_moments(const std::vector<Point3>& points,
                        std::vector<double>& poly_moments) {
   poly_moments.assign(4, 0.0);
 
-  int nvrts = (int) poly_vertices.size();
+  int nvrts = static_cast<int>(poly_vertices.size());
   if (nvrts == 3) {
     poly_moments[0] = 0.5*cross(points[poly_vertices[1]] - points[poly_vertices[0]], 
       points[poly_vertices[2]] - points[poly_vertices[0]]).norm();
@@ -198,7 +198,7 @@ class MatPoly {
 #ifdef DEBUG
     assert((face_id >= 0) && (face_id < nfaces_));
 #endif
-    int nvrts = (int) face_vertices_[face_id].size();
+    int nvrts = static_cast<int>(face_vertices_[face_id].size());
     std::vector< Point<D> > fpoints;
     fpoints.reserve(nvrts);
     for (int ivrt = 0; ivrt < nvrts; ivrt++)
@@ -338,7 +338,7 @@ class MatPoly {
 */
 template<>
 void MatPoly<2>::initialize(const std::vector<Point2>& poly_points) {
-  nvertices_ = (int) poly_points.size();
+  nvertices_ = static_cast<int>(poly_points.size());
 #ifdef DEBUG
   assert(nvertices_ > 2);
 #endif
@@ -359,8 +359,8 @@ void MatPoly<2>::initialize(const std::vector<Point2>& poly_points) {
 template<>
 void MatPoly<3>::initialize(const std::vector<Point3>& vertex_points,
                             const std::vector< std::vector<int> >& face_vertices) {
-  nvertices_ = (int) vertex_points.size();
-  nfaces_ = (int) face_vertices.size();
+  nvertices_ = static_cast<int>(vertex_points.size());
+  nfaces_ = static_cast<int>(face_vertices.size());
 #ifdef DEBUG
   assert(nvertices_ > 3);
   assert(nfaces_ > 3);
@@ -400,7 +400,7 @@ Point3 MatPoly<3>::face_centroid(int const face_id) const {
     return Point3(face_moments[1]/face_moments[0], face_moments[2]/face_moments[0],
                   face_moments[3]/face_moments[0]);
   else {
-    int nvrts = (int) face_vertices_[face_id].size();
+    int nvrts = static_cast<int>(face_vertices_[face_id].size());
     Point3 gcenter;
     for (int ivrt = 0; ivrt < nvrts; ivrt++)
       gcenter += vertex_points_[face_vertices_[face_id][ivrt]];
@@ -437,12 +437,12 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
   std::vector< std::vector<int> > facetedpoly_faces_;
   facetedpoly_faces_.reserve(nfaces_);
   for (int iface = 0; iface < nfaces_; iface++) {
-    int nvrts = (int) face_vertices_[iface].size();
+    int nvrts = static_cast<int>(face_vertices_[iface].size());
     if (nvrts == 3) {
       facetedpoly_faces_.push_back(face_vertices_[iface]);
       continue;
     }
-    int icenvrt = (int) facetedpoly_vertices.size();
+    int icenvrt = static_cast<int>(facetedpoly_vertices.size());
     facetedpoly_vertices.push_back(face_centroid(iface));
     for (int ivrt = 0; ivrt < nvrts; ivrt++)
       facetedpoly_faces_.push_back({ icenvrt, face_vertices_[iface][ivrt],
@@ -541,7 +541,7 @@ void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys) const {
   for (int ixy = 0; ixy < 2; ixy++)
     matpoly_cen[ixy] = moments_[ixy + 1]/moments_[0];
 
-  int offset = (int) sub_polys.size();
+  int offset = static_cast<int>(sub_polys.size());
   sub_polys.resize(offset + nfaces_);
 
   for (int iface = 0; iface < nfaces_; iface++) {
@@ -567,11 +567,11 @@ void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys) const {
   for (int ixyz = 0; ixyz < 3; ixyz++)
     matpoly_cen[ixyz] = moments_[ixyz + 1]/moments_[0];
 
-  int offset = (int) sub_polys.size();
+  int offset = static_cast<int>(sub_polys.size());
   sub_polys.resize(offset + nfaces_);
 
   for (int iface = 0; iface < nfaces_; iface++) {
-    int face_nvrts = (int) face_vertices_[iface].size();
+    int face_nvrts = static_cast<int>(face_vertices_[iface].size());
 
     std::vector<Point3> subpoly_vrts(face_nvrts + 1);
     std::vector< std::vector<int> > subpoly_faces(face_nvrts + 1);
@@ -622,11 +622,11 @@ void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys) const 
     tet_vrts[3][ixyz] = moments_[ixyz + 1]/moments_[0];
 
   for (int iface = 0; iface < nfaces_; iface++) {
-    int face_nvrts = (int) face_vertices_[iface].size();
+    int face_nvrts = static_cast<int>(face_vertices_[iface].size());
     if (face_nvrts == 3) {
       for (int ivrt = 0; ivrt < 3; ivrt++)
         tet_vrts[ivrt] = vertex_points_[face_vertices_[iface][ivrt]];
-      int icur_poly = (int) sub_polys.size();
+      int icur_poly = static_cast<int>(sub_polys.size());
       sub_polys.push_back(MatPoly<3>(material_id_));
       sub_polys[icur_poly].initialize(tet_vrts, tet_faces);
     }
@@ -636,7 +636,7 @@ void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys) const 
         tet_vrts[1] = vertex_points_[face_vertices_[iface][ivrt]];
         tet_vrts[2] = vertex_points_[face_vertices_[iface][(ivrt + 1)%face_nvrts]];
 
-        int icur_poly = (int) sub_polys.size();
+        int icur_poly = static_cast<int>(sub_polys.size());
         sub_polys.push_back(MatPoly<3>(material_id_));
         sub_polys[icur_poly].initialize(tet_vrts, tet_faces);
       }
@@ -693,8 +693,9 @@ void cell_get_matpoly(const Mesh_Wrapper& Mesh,
     // Get the local indices (in the cell node list) of the face nodes
     std::vector<int> fnodes_local(nfnodes);
     for (int n = 0; n < nfnodes; n++) {
-      fnodes_local[n] = (int) (std::find(cnodes.begin(), cnodes.end(), fnodes[n]) -
-                                         cnodes.begin());
+      fnodes_local[n] = std::distance(cnodes.begin(),
+        std::find(cnodes.begin(), cnodes.end(), fnodes[n]));
+
       assert(fnodes_local[n] != ncnodes);
     }
     poly_faces.emplace_back(fnodes_local);
@@ -749,7 +750,7 @@ void MatPoly<3>::face_planes(std::vector< Plane_t<3> >& fplanes) const {
 
   for (int iface = 0; iface < nfaces_; iface++) {
     Plane_t<3> face_plane;
-    int nfvrts = (int) face_vertices_[iface].size();
+    int nfvrts = static_cast<int>(face_vertices_[iface].size());
 
     double normal_len = 0.0;
     std::vector<int> itri_pts(3);
