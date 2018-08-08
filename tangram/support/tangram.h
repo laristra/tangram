@@ -17,13 +17,12 @@
 
 #include <boost/iterator/counting_iterator.hpp>
 
+#endif
+
 #include <vector>
 #include <algorithm>
 #include <memory>
 #include <limits>
-
-#endif
-
 #include "tangram/support/Vector.h"
 
 /*

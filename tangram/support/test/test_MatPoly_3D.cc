@@ -138,4 +138,28 @@ TEST(MatPoly, Mesh3D) {
   std::vector<double> faceted_matpoly_moments = faceted_ncv_prism.moments();
   for (int im = 0; im < 4; im++)
     ASSERT_NEAR(ncv_prism_moments[im], faceted_matpoly_moments[im], 1.0e-15); 
+
+  std::vector< Tangram::MatPoly<3> > ncv_prism_decomposition;
+  ncv_prism_matpoly.facetize_decompose(ncv_prism_decomposition);
+
+  std::vector< Tangram::MatPoly<3> > faceted_ncv_prism_decomposition;
+  faceted_ncv_prism.decompose(faceted_ncv_prism_decomposition);
+
+  ASSERT_EQ(ncv_prism_decomposition.size(), faceted_ncv_prism_decomposition.size());
+  for (int itet = 0; itet < ncv_prism_decomposition.size(); itet++) {
+    ASSERT_EQ(ncv_prism_decomposition[itet].num_vertices(), 
+              faceted_ncv_prism_decomposition[itet].num_vertices());
+    ASSERT_EQ(ncv_prism_decomposition[itet].num_faces(), 
+              faceted_ncv_prism_decomposition[itet].num_faces());
+    for (int ivrt = 0; ivrt < ncv_prism_decomposition[itet].num_vertices(); ivrt++)
+      ASSERT_TRUE(approxEq(ncv_prism_decomposition[itet].vertex_point(ivrt),
+                           faceted_ncv_prism_decomposition[itet].vertex_point(ivrt), 1.0e-15));
+    for (int iface = 0; iface < ncv_prism_decomposition[itet].num_faces(); iface++) {
+      ASSERT_EQ(ncv_prism_decomposition[itet].face_vertices(iface).size(),
+                faceted_ncv_prism_decomposition[itet].face_vertices(iface).size());
+      for (int ivrt = 0; ivrt < ncv_prism_decomposition[itet].face_vertices(iface).size(); ivrt++)
+        ASSERT_EQ(ncv_prism_decomposition[itet].face_vertices(iface)[ivrt],
+                  faceted_ncv_prism_decomposition[itet].face_vertices(iface)[ivrt]);
+    }                       
+  }  
 }

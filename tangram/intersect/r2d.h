@@ -1,20 +1,20 @@
 /*
  *
- *		r2d.h
- *		
- *		Routines for fast, geometrically robust clipping operations
- *		and analytic area/moment computations over polygons in 2D. 
- *		
- *		Devon Powell
- *		31 August 2015
+ *        r2d.h
+ *        
+ *        Routines for fast, geometrically robust clipping operations
+ *        and analytic area/moment computations over polygons in 2D. 
+ *        
+ *        Devon Powell
+ *        31 August 2015
  *
- *		This program was prepared by Los Alamos National Security, LLC at Los Alamos National
- *		Laboratory (LANL) under contract No. DE-AC52-06NA25396 with the U.S. Department of Energy (DOE). 
- *		All rights in the program are reserved by the DOE and Los Alamos National Security, LLC.  
- *		Permission is granted to the public to copy and use this software without charge, provided that 
- *		this Notice and any statement of authorship are reproduced on all copies.  Neither the U.S. 
- *		Government nor LANS makes any warranty, express or implied, or assumes any liability 
- *		or responsibility for the use of this software.
+ *        This program was prepared by Los Alamos National Security, LLC at Los Alamos National
+ *        Laboratory (LANL) under contract No. DE-AC52-06NA25396 with the U.S. Department of Energy (DOE). 
+ *        All rights in the program are reserved by the DOE and Los Alamos National Security, LLC.  
+ *        Permission is granted to the public to copy and use this software without charge, provided that 
+ *        this Notice and any statement of authorship are reproduced on all copies.  Neither the U.S. 
+ *        Government nor LANS makes any warranty, express or implied, or assumes any liability 
+ *        or responsibility for the use of this software.
  *
  */
 
@@ -56,38 +56,38 @@ typedef int64_t r2d_long;
  *  \brief A 2-vector.
  */
 typedef union {
-	struct {
-		r2d_real x, /*!< \f$x\f$-component. */
-				 y; /*!< \f$y\f$-component. */
-	};
-	r2d_real xy[2]; /*!< Index-based access to components. */
+    struct {
+        r2d_real x, /*!< \f$x\f$-component. */
+                 y; /*!< \f$y\f$-component. */
+    };
+    r2d_real xy[2]; /*!< Index-based access to components. */
 } r2d_rvec2;
 
 /** \struct r2d_dvec2
  *  \brief An integer 2-vector for grid indexing.
  */
 typedef union {
-	struct {
-		r2d_int i, /*!< \f$x\f$-component. */
-				j; /*!< \f$y\f$-component. */
-	};
-	r2d_int ij[2]; /*!< Index-based access to components. */
+    struct {
+        r2d_int i, /*!< \f$x\f$-component. */
+                j; /*!< \f$y\f$-component. */
+    };
+    r2d_int ij[2]; /*!< Index-based access to components. */
 } r2d_dvec2;
 
 /** \struct r2d_plane
  *  \brief A plane.
  */
 typedef struct {
-	r2d_rvec2 n; /*!< Unit-length normal vector. */
-	r2d_real d; /*!< Signed perpendicular distance to the origin. */
+    r2d_rvec2 n; /*!< Unit-length normal vector. */
+    r2d_real d; /*!< Signed perpendicular distance to the origin. */
 } r2d_plane;
 
 /** \struct r2d_vertex
  * \brief A doubly-linked vertex.
  */
 typedef struct {
-	r2d_int pnbrs[2]; /*!< Neighbor indices. */
-	r2d_rvec2 pos; /*!< Vertex position. */
+    r2d_int pnbrs[2]; /*!< Neighbor indices. */
+    r2d_rvec2 pos; /*!< Vertex position. */
 } r2d_vertex;
 
 /** \struct r2d_poly
@@ -95,8 +95,8 @@ typedef struct {
  */
 typedef struct {
 #define R2D_MAX_VERTS 64 
-	r2d_vertex verts[R2D_MAX_VERTS]; /*!< Vertex buffer. */
-	r2d_int nverts; /*!< Number of vertices in the buffer. */
+    r2d_vertex verts[R2D_MAX_VERTS]; /*!< Vertex buffer. */
+    r2d_int nverts; /*!< Number of vertices in the buffer. */
 } r2d_poly;
 
 /**

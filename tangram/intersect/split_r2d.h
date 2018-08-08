@@ -36,8 +36,7 @@ namespace Tangram {
   @param[in] mat_poly MatPoly object to convert
   @param[out] r2dpoly Corresponding R2D polygon
 */
-void
-matpoly_to_r2dpoly(const MatPoly<2>& mat_poly,
+ void matpoly_to_r2dpoly(const MatPoly<2>& mat_poly,
                    r2d_poly& r2dpoly) {
 
   //Translate coordinates of vertices to R2D format
@@ -57,6 +56,77 @@ matpoly_to_r2dpoly(const MatPoly<2>& mat_poly,
   delete [] r2dized_poly_vrts;
 }//matpoly_to_r2dpoly
 
+/*  
+ @brief Computes moments of the intersection of a MatPoly and an r2d_poly. 
+  If MatPoly is convex, r2d_poly will be clipped with lines containing the
+  faces of MatPoly. Otherwise, MatPoly will be decomposed into triangular
+  MatPolys, each of which will be intersected with r2d_poly. 
+  Note that r2d_poly does not need to be convex.
+  @param[in] mat_poly MatPoly object to intersect with
+  @param[in] r2dpoly r2d_poly that is intersected with MatPoly
+  @param[out] intersection_moments Moments of the intersection
+  @param[in] convex_matpoly flag indicating if MatPoly is convex: if not
+  it will be decomposed into triangles
+*/
+
+  void get_intersection_moments(const MatPoly<2>& mat_poly,
+                              const r2d_poly& r2dpoly,
+                              std::vector<double>& intersection_moments,
+                              bool convex_matpoly = false) {   
+  const int POLY_ORDER = 1;
+  int nmoments = R2D_NUM_MOMENTS(POLY_ORDER);
+  r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
+
+  if (convex_matpoly) {                                
+    std::vector< Plane_t<2> > face_lines;
+    mat_poly.face_planes(face_lines);
+    r2d_poly intersection = r2dpoly;
+
+    int nlines = static_cast<int>(face_lines.size());
+    r2d_plane* r2d_face_lines = new r2d_plane [nlines];
+    for (int iline = 0; iline < nlines; iline++) {
+      for (int ixy = 0; ixy < 2; ixy++)
+        r2d_face_lines[iline].n.xy[ixy] = -face_lines[iline].normal[ixy];
+      r2d_face_lines[iline].d = -face_lines[iline].dist2origin;
+    }
+
+    r2d_clip(&intersection, r2d_face_lines, (r2d_int) nlines);
+    
+    delete [] r2d_face_lines;
+
+    r2d_reduce(&intersection, r2d_moments, POLY_ORDER);
+    intersection_moments.resize(nmoments);
+    for (int im = 0; im < nmoments; im++)
+      intersection_moments[im] = r2d_moments[im];
+  }
+  else {
+    std::vector< MatPoly<2> > mat_poly_tris;
+    mat_poly.decompose(mat_poly_tris);
+
+    int ntris = static_cast<int>(mat_poly_tris.size());
+    intersection_moments.assign(nmoments, 0.0);
+    for (int itri = 0; itri < ntris; itri++) {
+      std::vector< Plane_t<2> > face_lines;
+      mat_poly_tris[itri].face_planes(face_lines);
+      assert(face_lines.size() == 3);
+
+      r2d_poly intersection = r2dpoly; 
+      r2d_plane r2d_face_lines[3];
+      for (int iline = 0; iline < 3; iline++) {
+        for (int ixy = 0; ixy < 2; ixy++)
+          r2d_face_lines[iline].n.xy[ixy] = -face_lines[iline].normal[ixy];
+        r2d_face_lines[iline].d = -face_lines[iline].dist2origin;
+      }
+
+      r2d_clip(&intersection, r2d_face_lines, 3);
+
+      r2d_reduce(&intersection, r2d_moments, POLY_ORDER);
+      for (int im = 0; im < nmoments; im++)
+        intersection_moments[im] += r2d_moments[im];
+    }
+  }
+}
+
 /*!
   @brief Splits a convex MatPoly into two (convex) MatPoly's
   with a cutting plane.
@@ -67,8 +137,7 @@ matpoly_to_r2dpoly(const MatPoly<2>& mat_poly,
   @param[out] lower_halfspace_moments Moments of MatPoly below the plane
   @param[out] upper_halfspace_moments Moments of MatPoly above the plane
 */
-void
-split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
+void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
                          const Plane_t<2>& cutting_plane,
                          MatPoly<2>& lower_halfspace_poly,
                          MatPoly<2>& upper_halfspace_poly,
