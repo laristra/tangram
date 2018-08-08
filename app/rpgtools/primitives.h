@@ -14,10 +14,21 @@
 #include "tangram/support/MatPoly.h"
 #include "tangram/support/Matrix.h"
 
+/* Helper functions for generation of basic shapes that can be
+   used to specify material distributions */
+
 constexpr double PI = std::acos(-1.0);
 
 inline double pow2(double x) { return x*x; }
 
+/*!
+ @brief Matrix for rotating a point around axis centered at the origin 
+ by a given angle.
+
+ @param[in] axis Axis of rotation
+ @param[in] rotation_angle Angle of rotation
+ @return Rotation matrix
+*/
 Tangram::Matrix rotation_matrix(const Tangram::Vector3& axis,
                                 double rotation_angle) {
   Tangram::Matrix rot_matrix(3, 3);
@@ -39,6 +50,16 @@ Tangram::Matrix rotation_matrix(const Tangram::Vector3& axis,
   return rot_matrix;
 }
 
+/*!
+ @brief Generates a circle with a given center and of a given radius in
+ a plane defined by the center and the normal.
+
+ @param[in] center Center of the circle
+ @param[in] radius Radius of the circle
+ @param[in] normal Normal to the plane
+ @param[in] nsamples Number of points representing the circle
+ @return Points representing the circle which are ordered ccw
+*/
 std::vector<Tangram::Point3> circle3d(const Tangram::Point3& center,
                                       double radius,
                                       const Tangram::Vector3& normal,
@@ -73,6 +94,17 @@ std::vector<Tangram::Point3> circle3d(const Tangram::Point3& center,
   return circle_pts;
 }
 
+/*!
+ @brief Generates a cog with a given center and of a given radius in
+ a plane defined by the center and the normal.
+
+ @param[in] center Center of the cog
+ @param[in] inner_radius Radius of the solid part of the cog
+ @param[in] outer_radius Radius bounding the extending teeth
+ @param[in] normal Normal to the plane
+ @param[in] nteeth Number of teeth the cog has
+ @return Points representing the cog which are ordered ccw
+*/
 std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
                                    double inner_radius,
                                    double outer_radius,
@@ -125,6 +157,18 @@ std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
   return cog_pts;
 }
 
+/*!
+ @brief Generates a prism given one of its bases. The prism is
+ extruded in the direction opposite to the base's normal.
+
+ @param[in] base_pts Points defining the base of the prism
+ @param[in] height Height of the extruded prism
+ @param[in] base_scaling Scaling factor for the opposite face; 
+ if set to 1 the prism will be a right prism
+ @param[in] base_normal Normal to the given base; if not
+ specified, it will be computed
+ @return MatPoly object corresponding to the resulting prism
+*/
 Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
                           double height,
                           double base_scaling,
@@ -186,6 +230,19 @@ Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
   return mat_poly;  
 }
 
+/*!
+ @brief Generates a prism with non-parallel bases. The prism
+ can become self-intersecting if overly twisted.
+
+ @param[in] base_pts Points defining the base of the prism
+ @param[in] opp_base_normal Normal to the opposite base
+ @param[in] opp_base_centroid Centroid of the opposite base
+ @param[in] base_scaling Scaling factor for the opposite face; 
+ if set to 1 the bases will be the same wrt to their respective planes
+ @param[in] base_normal Normal to the given base; if not
+ specified, it will be computed
+ @return MatPoly object corresponding to the resulting prism
+*/
 Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
                                  const Tangram::Vector3& opp_base_normal,
                                  const Tangram::Point3& opp_base_centroid,
@@ -287,6 +344,16 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
   return mat_poly;  
 }
 
+/*!
+ @brief Generates a faceted sphere.
+
+ @param[in] center Center of the sphere
+ @param[in] radius Radius of the sphere
+ @param[in] nquadrant_samples For each of the polar angles, the 
+ number of values sampled per a circle's quadrant
+ @return MatPoly object corresponding to the resulting sphere;
+ the number of faces is 8*pow2(nquadrant_samples)
+*/
 Tangram::MatPoly<3> sphere(const Tangram::Point3& center,
                            double radius,
                            int nquadrant_samples) {

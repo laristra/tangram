@@ -13,6 +13,14 @@
 
 #define R3D_POLY_ORDER 1
 
+/* Functions for intersection-based generation of reference
+   material polyhedra. Given data on a collection of polyhedra
+   generates sub-collections by splitting the original polyhedra
+   with a plane or cutting out a polyhedral shape.
+   Uses r3d.
+   Collection of single-material polyhedra sets can be 
+   converted to the format used by the Tangram's driver */
+
 namespace R3DPOLY {
   enum Position {
     INSIDE, INTERSECTS, OUTSIDE
@@ -20,13 +28,25 @@ namespace R3DPOLY {
 }
 
 struct RefPolyData_t {
-  r3d_poly r3dpoly;
-  int cellID;
-  r3d_real moments[R3D_NUM_MOMENTS(R3D_POLY_ORDER)];
+  r3d_poly r3dpoly;   // geometry
+  int cellID;         // ID of the containing cell
+  r3d_real moments[R3D_NUM_MOMENTS(R3D_POLY_ORDER)]; // moments
 };
 
+/*!
+ @brief For a given data on a collection of polyhedra find their positions with
+ respect to a convex shape given by a MatPoly object.
+*/
 class r3d_poly_intersect_check {
 public:
+  /*!
+  @brief Constructor.
+
+  @param[in] polys_data Data on polyhedra
+  @param[in] IDs_to_check IDs of polyhedra for which their positions 
+  with respect to MatPoly is to be determined
+  @param[in] convex_matpoly Convex shape with respect to which polyhedra are tested
+  */
   r3d_poly_intersect_check(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                            const std::vector<int>& IDs_to_check,
                            const Tangram::MatPoly<3>& convex_matpoly) :
@@ -45,6 +65,14 @@ public:
     }
   }
 
+  /*!
+  @brief Finds the position of a polyhedron with respect to the shape
+  given by convex_matpoly_.
+
+  @param[in] checkID ID of the polyhedra to test in the list of IDs of polyhedra
+  for which their positions is to be determined
+  @return position with respect to the shape given by convex_matpoly_
+  */
   R3DPOLY::Position operator()(const int checkID) const {
     int polyID = IDs_to_check_[checkID];
     const r3d_poly& r3dpoly = polys_data_[polyID]->r3dpoly;
@@ -87,12 +115,30 @@ struct PolyHalfspaceData_t {
   std::shared_ptr<RefPolyData_t> upper;
 };
 
+/*!
+ @brief For a given data on a collection of polyhedra and a cutting plane,
+ splits polyhedra with the plane and returns the collections for the lower 
+ and the upper half-spaces.
+*/
 class r3d_split_operator {
 public:
+  /*!
+  @brief Constructor.
+
+  @param[in] polys_data Data on polyhedra to split
+  @param[in] cutting_plane Cutting plane with respect to which half-spaces are defined
+  */
   r3d_split_operator(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                      const r3d_plane& cutting_plane) :
                      polys_data_(polys_data), cutting_plane_(cutting_plane) {}
 
+  /*!
+  @brief Splits a polyhedron with the cutting plane and returns data on its parts
+  in the lower and the upper half-spaces.
+
+  @param[in] polyID ID of the polyhedron in the vector of polyhedra to split
+  @return data on respective parts in the lower and the upper half-spaces
+  */
   PolyHalfspaceData_t operator()(const int polyID) const {
     PolyHalfspaceData_t hs_data = {.lower = std::make_shared<RefPolyData_t>(), 
                                    .upper = std::make_shared<RefPolyData_t>() };
@@ -138,6 +184,17 @@ private:
   const r3d_plane& cutting_plane_;
 };
 
+/*!
+ @brief Generates data for polyhedra corresponding to given mesh cells.
+ @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
+                      implementation that provides required functionality
+
+ @param[in] mesh Mesh wrapper
+ @param[out] polys_data Data on polyhedra corresponding to mesh cells
+ @param[in] decompose_cells If set to true, mesh cells will be split into
+ tetrahedra using their centroids, data on each tetrahedron will be added 
+ to the collection
+*/
 template <class Mesh_Wrapper>
 void mesh_to_r3d_polys(const Mesh_Wrapper& mesh,
                        std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
@@ -173,6 +230,15 @@ void mesh_to_r3d_polys(const Mesh_Wrapper& mesh,
   }
 }
 
+/*!
+ @brief Generates data for polyhedra in the lower and the upper half-spaces
+ of a given plane. Can use multiple threads.
+
+ @param[in] polys_data Data for the polyhedra to split
+ @param[in] planar_interface Cutting plane defining the half-spaces
+ @param[out] lower_hs_data Data on polyhedra in the lower half-space
+ @param[out] upper_hs_data Data on polyhedra in the upper half-space
+*/
 void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                  const Tangram::Plane_t<3>& planar_interface,
                  std::vector< std::shared_ptr<RefPolyData_t> >& lower_hs_data,
@@ -205,6 +271,16 @@ void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data
   }
 }
 
+/*!
+ @brief Checks the positions of polyhedra with respect to a given convex shape.
+ Can use multiple threads.
+
+ @param[in] polys_data Data on polyhedra for which their position is to be checked
+ @param[in] convex_matpoly Shape with respect to which polyhedra are tested
+ @param[out] iinterior_polys IDs of polyhedra inside the shape
+ @param[out] iinstersecting_polys IDs of polyhedra intersected by the boundary of the shape
+ @param[out] iexterior_polys IDs of polyhedra outside of the shape
+*/
 void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                           const Tangram::MatPoly<3>& convex_matpoly,
                           std::vector<int>& iinterior_polys,
@@ -255,6 +331,13 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
     }
 }
 
+/*!
+ @brief Given data on polyhedra, generates its subset based on given IDs.
+ 
+ @param[in] polys_data Data on polyhedra
+ @param[in] set_ipolys IDs of polyhedra for which their data is to be extracted
+ @param[out] set_data data subset for polyhedra with given IDs
+*/
 void extract_data(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                   const std::vector<int>& set_ipolys,
                   std::vector< std::shared_ptr<RefPolyData_t> >& set_data ) {
@@ -267,6 +350,17 @@ void extract_data(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_dat
     set_data.push_back(polys_data[set_ipolys[isp]]);
 }
 
+/*!
+ @brief Generates data for polyhedra inside and outside
+ of a given shape. Can use multiple threads.
+
+ @param[in] polys_data Data for the polyhedra to sort and split
+ @param[in] mat_poly Shape which partitions polyhedra
+ @param[out] interior_data Data on polyhedra inside the shape
+ @param[out] exterior_data Data on polyhedra outside of the shape
+ @param[in] convex_matpoly Specifies if the shape is convex: if set
+ to false, the shape will be partitioned into tetrahedra using its centroid
+*/
 void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                 const Tangram::MatPoly<3>& mat_poly,
                 std::vector< std::shared_ptr<RefPolyData_t> >& interior_data,
@@ -383,6 +477,22 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   }
 }
 
+/*!
+ @brief For a given collections of single-material reference polyhedra sets
+ generates data compatible with Tangram's driver. 
+
+ @param[in] ref_sets_data Collection of data for single-material polyhedra sets
+ @param[in] sets_material_IDs Material IDs for every set in the collection
+ @param[out] cell_num_mats Number of material in each mesh cell, vector of length cell_num
+ @param[out] cell_mat_ids Indices of materials in each mesh cell, a flat vector, requires
+                          computations of offsets
+ @param[out] cell_mat_volfracs Volume fractions of materials in each mesh cell, a flat
+                               vector, requires computations of offsets
+ @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
+                                requires computations of offsets
+ @param[out] reference_mat_polys For every mesh cell and every material inside that cell, 
+ the collection of single-material polyhedra containing that material                                
+*/
 void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyData_t> > >& 
                          ref_sets_data,
                        const std::vector<int>& sets_material_IDs,

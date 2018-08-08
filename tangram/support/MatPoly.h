@@ -787,33 +787,9 @@ void MatPoly<3>::face_planes(std::vector< Plane_t<3> >& fplanes) const {
 
   for (int iface = 0; iface < nfaces_; iface++) {
     Plane_t<3> face_plane;
-<<<<<<< HEAD
     face_plane.normal = polygon3d_normal(vertex_points_, 
                                          face_vertices_[iface]);
     if (face_plane.normal.is_zero())
-=======
-    int nfvrts = static_cast<int>(face_vertices_[iface].size());
-
-    double normal_len = 0.0;
-    std::vector<int> itri_pts(3);
-    for (int ivrt = 0; ivrt < nfvrts; ivrt++) {
-      itri_pts = { face_vertices_[iface][(ivrt + 1)%nfvrts],
-        face_vertices_[iface][(ivrt + 2)%nfvrts], face_vertices_[iface][ivrt] };
-
-      Vector3 cur_normal = cross(vertex_points_[itri_pts[1]] - vertex_points_[itri_pts[0]], 
-                                 vertex_points_[itri_pts[2]] - vertex_points_[itri_pts[0]]);
-      double cur_normal_len = cur_normal.norm();
-
-      if (cur_normal_len > normal_len) {
-        face_plane.normal = cur_normal;
-        normal_len = cur_normal_len;
-      }                      
-    }
-
-    // 0.5*normal_len is the area of the triangle formed 
-    // by two vectors in the cross product
-    if (normal_len <= 2*std::numeric_limits<double>::epsilon())
->>>>>>> f67d12b5d67716e8a691b51fc28b0a9b367d7191
       continue;
     
     face_plane.dist2origin = 
