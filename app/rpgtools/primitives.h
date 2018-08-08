@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <cmath>
 #include <math.h>
+#include <vector>
+#include <algorithm>
+#include <memory>
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 #include "tangram/support/Matrix.h"

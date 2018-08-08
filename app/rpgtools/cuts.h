@@ -8,6 +8,14 @@
 #define RPG_TOOLS_CUTS_H_
 
 #include <stdlib.h>
+#include <vector>
+#include <algorithm>
+#include <memory>
+
+extern "C" {
+#include "tangram/intersect/r3d.h"
+}
+
 #include "tangram/support/tangram.h"
 #include "tangram/intersect/split_r3d.h"
 
