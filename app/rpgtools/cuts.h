@@ -55,7 +55,7 @@ public:
     std::vector< Tangram::Plane_t<3> > fplanes;
     convex_matpoly_.face_planes(fplanes);
 
-    int nplanes = (int) fplanes.size();
+    int nplanes = static_cast<int>(fplanes.size());
     face_planes_.resize(nplanes);
     //Face planes, used to find the intersection with convex_matpoly
     for (int iplane = 0; iplane < nplanes; iplane++) {
@@ -213,8 +213,8 @@ void mesh_to_r3d_polys(const Mesh_Wrapper& mesh,
     else
       cell_polys.push_back(mat_poly);
 
-    int num_polys = (int) cell_polys.size();
-    int offset = (int) polys_data.size();
+    int num_polys = static_cast<int>(cell_polys.size());
+    int offset = static_cast<int>(polys_data.size());
     polys_data.resize(offset + num_polys);
 
     for (int icp = 0; icp < num_polys; icp++) {
@@ -246,7 +246,7 @@ void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data
   lower_hs_data.clear();
   upper_hs_data.clear();
   
-  int num_polys = (int) polys_data.size();
+  int num_polys = static_cast<int>(polys_data.size());
   int nmoments = R3D_NUM_MOMENTS(R3D_POLY_ORDER);
 
   r3d_plane r3d_planar_iface;
@@ -290,8 +290,8 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
   convex_matpoly.face_planes(face_planes);
   Tangram::BoundingBox_t<3> poly_bbox = convex_matpoly.bounding_box();
 
-  int nfaces = (int) face_planes.size();
-  int npolys = (int) polys_data.size(); 
+  int nfaces = static_cast<int>(face_planes.size());
+  int npolys = static_cast<int>(polys_data.size()); 
 
   iexterior_polys.clear();
   std::vector<int> iin_box_polys;
@@ -305,7 +305,7 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
   }
 
   //Sort out the polys inside the box
-  int num_in_box = (int) iin_box_polys.size();
+  int num_in_box = static_cast<int>(iin_box_polys.size());
 
   r3d_poly_intersect_check r3d_isect_check(polys_data, iin_box_polys, convex_matpoly);
   Tangram::vector<R3DPOLY::Position> check_result(num_in_box);
@@ -382,7 +382,7 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     std::vector< Tangram::Plane_t<3> > face_planes;
     mat_poly.face_planes(face_planes);
 
-    int nfaces = (int) face_planes.size();
+    int nfaces = static_cast<int>(face_planes.size());
 
     //We cut with face planes slicing off exterior polys on each step
     for (int iface = 0; iface < nfaces; iface++) {
@@ -427,7 +427,7 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     std::vector< Tangram::MatPoly<3> > matpoly_tets;
     mat_poly.facetize_decompose(matpoly_tets);
 
-    int ntets = (int) matpoly_tets.size();
+    int ntets = static_cast<int>(matpoly_tets.size());
 
     std::vector< std::shared_ptr<RefPolyData_t> > remaining_data = polys_data;
     for (int itet = 0; itet < ntets; itet++) {
@@ -502,7 +502,7 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
                        std::vector< Tangram::Point<3> >& cell_mat_centroids,
                        std::vector< std::vector< std::vector<r3d_poly> > >&
                          reference_mat_polys) {                     
-  int ncells = -1, nsets = (int) ref_sets_data.size();
+  int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
   for (int iset = 0; iset < nsets; iset++) {
     int set_max_cellID = -1;
     for (int ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++)
