@@ -18,195 +18,319 @@
 
 #include <iostream>
 
+enum ptype {
+ CONVEX_SINGLEPOLY,
+ NONCONVEX_SINGLEPOLY
+};
+
+
+void matpoly_cases(ptype POLYTYPE, std::vector<Tangram::MatPoly<2>>& matpolys)
+{
+   matpolys.clear(); 
+
+   switch (POLYTYPE) 
+   {
+      case CONVEX_SINGLEPOLY:
+      {
+	std::vector<Tangram::Point2> hexagon_pnts = {
+	Tangram::Point2(1.0, 0.0), Tangram::Point2(2.0, 0.0),
+	Tangram::Point2(3.0, 1.0), Tangram::Point2(2.0, 2.0),
+	Tangram::Point2(1.0, 2.0), Tangram::Point2(0.0, 1.0) };
+  
+        Tangram::MatPoly<2> hexagon_matpoly; 
+        hexagon_matpoly.initialize(hexagon_pnts);
+        matpolys.emplace_back(hexagon_matpoly);
+  
+	break;
+      } 
+      case NONCONVEX_SINGLEPOLY:
+      {
+        std::vector<Tangram::Point2> cat_pnts = {
+	Tangram::Point2(1.0, 0.0), Tangram::Point2(4.0, 0.0),
+	Tangram::Point2(3.0, 2.0), Tangram::Point2(4.0, 4.0),
+	Tangram::Point2(1.0, 4.0)};
+  
+        Tangram::MatPoly<2> cat_matpoly; 
+        cat_matpoly.initialize(cat_pnts);
+        matpolys.emplace_back(cat_matpoly);
+
+	break;
+      }
+      default:
+      {
+        std::cerr<<"Requesting test matpolys for non-supported configuration"<<std::endl;
+      }
+
+   } 
+}
+
+Tangram::Plane_t<2> get_cutting_plane(Tangram::Point<2>& plane_pt, Tangram::Vector<2>& normal) 
+{
+  Tangram::Plane_t<2> cutting_plane; 
+  cutting_plane.normal = normal;
+  cutting_plane.normal.normalize();
+  cutting_plane.dist2origin = - Tangram::dot(plane_pt.asV(), cutting_plane.normal);
+  return cutting_plane; 
+}
+
+void reference_matpolys(ptype POLYTYPE, 
+                        std::vector<std::vector<Tangram::Point2>>& ref_pnts_lower,
+                        std::vector<std::vector<Tangram::Point2>>& ref_pnts_upper)
+{
+  
+   switch (POLYTYPE) 
+   {
+      case CONVEX_SINGLEPOLY:
+      {
+	ref_pnts_lower[0] = {
+	Tangram::Point2(1.0,0.0), Tangram::Point2(1.5,0.0),
+	Tangram::Point2(0.5,1.5), Tangram::Point2(0.0,1.0) };
+
+	ref_pnts_upper[0] = {
+	Tangram::Point2(2.0,0.0), Tangram::Point2(3.0,1.0),
+	Tangram::Point2(2.0,2.0), Tangram::Point2(1.0,2.0),
+	Tangram::Point2(0.5,1.5), Tangram::Point2(1.5,0.0) };
+  
+	break;
+      } 
+      case NONCONVEX_SINGLEPOLY:
+      {
+	ref_pnts_lower[0] = {
+	Tangram::Point2(1.0,0.0), Tangram::Point2(3.5,0.0), 
+	Tangram::Point2(3.5,0.57692307692), Tangram::Point2(2.2666666667,2.0)};
+	
+	ref_pnts_lower[1] = {
+	Tangram::Point2(3.0,2.0), Tangram::Point2(2.2666666667,2.0),
+	Tangram::Point2(3.5,0.57692307692), Tangram::Point2(3.5,1.0) };
+
+	ref_pnts_lower[2] = {
+	Tangram::Point2(3.0,2.0), Tangram::Point2(3.5,3.0),
+	Tangram::Point2(3.5,3.4230769231), Tangram::Point2(2.2666666667,2.0) };
+	
+	ref_pnts_lower[3] = {
+	Tangram::Point2(1.0,4.0), Tangram::Point2(2.2666666667,2.0),
+	Tangram::Point2(3.5,3.4230769231) , Tangram::Point2(3.5,4.0) };
+	
+	ref_pnts_lower[4] = {
+	Tangram::Point2(1.0,4.0), Tangram::Point2(1.0,0.0), Tangram::Point2(2.2666666667,2.0)};
+
+	// Upper polygons
+	ref_pnts_upper[0] = {
+	Tangram::Point2(4.0,0.0), Tangram::Point2(3.5,0.57692307692), Tangram::Point2(3.5,0.0) };
+	
+	ref_pnts_upper[1] = {
+	Tangram::Point2(4.0,0.0), Tangram::Point2(3.5,1.0), Tangram::Point2(3.5,0.57692307692) };
+	
+	ref_pnts_upper[2] = {
+	Tangram::Point2(4.0,4.0), Tangram::Point2(3.5,3.4230769231), Tangram::Point2(3.5,3.0) };
+	
+	ref_pnts_upper[3] = {
+	Tangram::Point2(4.0,4.0), Tangram::Point2(3.5,4.0), Tangram::Point2(3.5,3.4230769231) };
+	
+        break;
+      }
+      default:
+      {
+        std::cerr<<"Requesting test matpolys for non-supported configuration"<<std::endl;
+      }
+   } 
+}
+
 // Test methods in split_r2d.h
 // If OUTPUT_TO_GMV is defined, material poly's resulting from splitting
 // will be written to a gmv file.
 
 TEST(split_r2d, ConvexPoly) {
   //Create a single convex polygon
-  std::vector<Tangram::Point2> hexagon_pnts = {
-  Tangram::Point2(1.0, 0.0), Tangram::Point2(2.0, 0.0),
-  Tangram::Point2(3.0, 1.0), Tangram::Point2(2.0, 2.0),
-  Tangram::Point2(1.0, 2.0), Tangram::Point2(0.0, 1.0) };
-   
+   std::vector<Tangram::MatPoly<2>> convex_singlepoly;
+   matpoly_cases(CONVEX_SINGLEPOLY, convex_singlepoly);  
+
   //Cutting plane
-  Tangram::Plane_t<2> cutting_plane; 
-  cutting_plane.normal = Tangram::Vector2(-1.5,-1.0);
-  cutting_plane.dist2origin = 2.25; 
+  Tangram::Point2 plane_pt(1.5,0.0);
+  Tangram::Vector2 normal(-1.5,-1.0);
+  Tangram::Plane_t<2> cutting_plane = get_cutting_plane(plane_pt, normal);
 
   //Construct reference split polygons
-  std::vector<std::vector<Tangram::Point2>> ref_cp_pnts(2);
-  ref_cp_pnts[0] = {
-  Tangram::Point2(1.0,0.0), Tangram::Point2(1.5,0.0),
-  Tangram::Point2(0.5,1.5), Tangram::Point2(0.0,1.0) };
-
-  ref_cp_pnts[1] = {
-  Tangram::Point2(1.5,0.0), Tangram::Point2(2.0,0.0),
-  Tangram::Point2(3.0,1.0), Tangram::Point2(2.0,2.0),
-  Tangram::Point2(1.0,2.0), Tangram::Point2(0.5,1.5) };
-
-  //Create Matpoly corresponding to the poly
-  Tangram::MatPoly<2> hexagon_matpoly; 
-  hexagon_matpoly.initialize(hexagon_pnts);
-  std::vector<Tangram::MatPoly<2>> cpmatpolys = {hexagon_matpoly};
-
-  //Split using the split routine directly
-  Tangram::MatPoly<2> convex_polys[2];
-  std::vector<double> cp_moments[2];
-  split_convex_matpoly_r2d(hexagon_matpoly, cutting_plane,
-                           convex_polys[0], convex_polys[1],
-                           cp_moments[0], cp_moments[1]);
-
-  //Check that vertices of polygons below and above the plane match
-  for (int ihs = 0; ihs < 2; ihs++) {
-    std::cout<<"CP "<<ihs<<" : NV =  "<<convex_polys[ihs].num_vertices()<<std::endl;    
-    
-    for (int ivrt = 0; ivrt < convex_polys[ihs].num_vertices(); ivrt++)
-    {
-       Tangram::Point2 pt = convex_polys[ihs].vertex_point(ivrt); 
-       std::cout<<"pts = {"<<pt[0]<<", "<<pt[1]<<"}"<<std::endl;
-    }
-
-    //ASSERT_EQ(ref_cp_pnts[ihs].size(), convex_polys[ihs].num_vertices());
-   // for (int ivrt = 0; ivrt < ref_cp_pnts[ihs].size(); ivrt++)
-   //   ASSERT_TRUE(approxEq(ref_cp_pnts[ihs][ivrt],
-   //                        convex_polys[ihs].vertex_point(ivrt), 1.0e-15));
-  }
+  std::vector<std::vector<Tangram::Point2>> ref_cp_pnts_lower(1);
+  std::vector<std::vector<Tangram::Point2>> ref_cp_pnts_upper(1);
+  reference_matpolys(CONVEX_SINGLEPOLY, ref_cp_pnts_lower, ref_cp_pnts_upper);
 
   //Split using SplitR2D class 
-  Tangram::SplitR2D split(cpmatpolys, cutting_plane, true);
+  Tangram::SplitR2D split(convex_singlepoly, cutting_plane, true);
   Tangram::HalfSpaceSets_t<2> hsp_sets = split();
 
   //Check
   ASSERT_EQ(hsp_sets.lower_halfspace_set.matpolys.size(), 1);
   ASSERT_EQ(hsp_sets.upper_halfspace_set.matpolys.size(), 1);
-
-  Tangram::MatPoly<2>* hsp_ptrs[2] = {&hsp_sets.lower_halfspace_set.matpolys[0],
-                                          &hsp_sets.upper_halfspace_set.matpolys[0]};
   
-  //Check that we obtained the same MatPoly's as before                                        
-  for (int ihs = 0; ihs < 2; ihs++) {
-    std::cout<<"SP-CP "<<ihs<<" : NV =  "<<convex_polys[ihs].num_vertices()<<std::endl;    
-
-    for (int ivrt = 0; ivrt < hsp_ptrs[ihs]->num_vertices(); ivrt++)
-    {
-       Tangram::Point2 pt = hsp_ptrs[ihs]->vertex_point(ivrt); 
-       std::cout<<"pts = {"<<pt[0]<<", "<<pt[1]<<"}"<<std::endl;
-    }
-   /*
-    ASSERT_EQ(ref_cp_pnts[ihs].size(), hsp_ptrs[ihs]->num_vertices());
-    for (int ivrt = 0; ivrt < ref_cp_pnts[ihs].size(); ivrt++)
-      ASSERT_TRUE(approxEq(ref_cp_pnts[ihs][ivrt],
-                           hsp_ptrs[ihs]->vertex_point(ivrt), 1.0e-15));
-   */
-   }
-
-#ifdef OUTPUT_TO_GMV
-  std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list;
-  cellmatpoly_list.push_back(std::make_shared< Tangram::CellMatPoly<2> >(0));
-  for (int ihs = 0; ihs < 2; ihs++) {
-    int nverts = convex_polys[ihs].num_vertices();
-    std::vector<Tangram::Point2> vertices = convex_polys[ihs].points(); 
-   
-    cellmatpoly_list[0]->add_matpoly(ihs, convex_polys[ihs].num_vertices(),
-                                     &convex_polys[ihs].points()[0],
-                                     nullptr, nullptr,
-                                     nullptr, nullptr);
-  }
-  Tangram::write_to_gmv(cellmatpoly_list, "hexagon_matpolys.gmv");
-#endif
-
-
-  //Check 
-  //
-}
-
-TEST(split_r2d, NonConvexPoly) {
-
-  //Create a single non-convex polygon
-  std::vector<Tangram::Point2> cat_pnts = {
-  Tangram::Point2(1.0, 0.0), Tangram::Point2(4.0, 0.0),
-  Tangram::Point2(2.0, 2.0), Tangram::Point2(4.0, 4.0),
-  Tangram::Point2(1.0, 4.0)};
-   
-  //Cutting plane
-  Tangram::Plane_t<2> cutting_plane; 
-  cutting_plane.normal = Tangram::Vector2(-1.0,0.0);
-  cutting_plane.dist2origin = 3.0; 
-
-  //Construct reference split polygons
-  //FIX IT: NEED THE CORRECT REFERENCES 
-  /*std::vector<std::vector<Tangram::Point2>> ref_cp_pnts(2);
-  ref_cp_pnts[0] = {
-  Tangram::Point2(1.0,0.0), Tangram::Point2(1.5,0.0),
-  Tangram::Point2(0.5,1.5), Tangram::Point2(0.0,1.0) };
-
-  ref_cp_pnts[1] = {
-  Tangram::Point2(1.5,0.0), Tangram::Point2(2.0,0.0),
-  Tangram::Point2(3.0,1.0), Tangram::Point2(2.0,2.0),
-  Tangram::Point2(1.0,2.0), Tangram::Point2(0.5,1.5) };
-*/
-  //Create Matpoly corresponding to the poly
-  Tangram::MatPoly<2> cat_matpoly; 
-  cat_matpoly.initialize(cat_pnts);
-  std::vector<Tangram::MatPoly<2>> cpmatpolys = {cat_matpoly};
-
-  //Split using SplitR2D class 
-  Tangram::SplitR2D split(cpmatpolys, cutting_plane, false);
-  Tangram::HalfSpaceSets_t<2> hsp_sets = split();
-
-  //Check
-  //ASSERT_EQ(hsp_sets.lower_halfspace_set.matpolys.size(), 1);
-  //ASSERT_EQ(hsp_sets.upper_halfspace_set.matpolys.size(), 1);
-
   std::vector<Tangram::MatPoly<2>> hsp_lower_matpolys = hsp_sets.lower_halfspace_set.matpolys;
   std::vector<Tangram::MatPoly<2>> hsp_upper_matpolys = hsp_sets.upper_halfspace_set.matpolys;
 
   //Check that we obtained the same MatPoly's as before                                        
-  std::cout<<"HSP_LOWER_MATPOLYS"<<std::endl;
-  for (int ihs = 0; ihs < hsp_lower_matpolys.size(); ihs++) {
-    std::cout<<"CP "<<ihs<<" : NV =  "<<hsp_lower_matpolys[ihs].num_vertices()<<std::endl;    
-
-    for (int ivrt = 0; ivrt < hsp_lower_matpolys[ihs].num_vertices(); ivrt++)
-    {
-       Tangram::Point2 pt = hsp_lower_matpolys[ihs].vertex_point(ivrt); 
-       std::cout<<"pts = {"<<pt[0]<<", "<<pt[1]<<"}"<<std::endl;
-    }
-  }
-  std::cout<<"HSP_UPPER_MATPOLYS"<<std::endl;
-  for (int ihs = 0; ihs < hsp_upper_matpolys.size(); ihs++) {
-    std::cout<<"CP "<<ihs<<" : NV =  "<<hsp_upper_matpolys[ihs].num_vertices()<<std::endl;    
-
-    for (int ivrt = 0; ivrt < hsp_upper_matpolys[ihs].num_vertices(); ivrt++)
-    {
-       Tangram::Point2 pt = hsp_upper_matpolys[ihs].vertex_point(ivrt); 
-       std::cout<<"pts = {"<<pt[0]<<", "<<pt[1]<<"}"<<std::endl;
-    }
-   /*
-    ASSERT_EQ(ref_cp_pnts[ihs].size(), hsp_ptrs[ihs]->num_vertices());
-    for (int ivrt = 0; ivrt < ref_cp_pnts[ihs].size(); ivrt++)
-      ASSERT_TRUE(approxEq(ref_cp_pnts[ihs][ivrt],
-                           hsp_ptrs[ihs]->vertex_point(ivrt), 1.0e-15));
-   */
-   }
+  ASSERT_EQ(ref_cp_pnts_lower[0].size(), hsp_lower_matpolys[0].num_vertices());
+  for (int ivrt = 0; ivrt < ref_cp_pnts_lower[0].size(); ivrt++)
+    ASSERT_TRUE(approxEq(ref_cp_pnts_lower[0][ivrt],
+                         hsp_lower_matpolys[0].vertex_point(ivrt), 1.0e-15));
+   
+  ASSERT_EQ(ref_cp_pnts_upper[0].size(), hsp_upper_matpolys[0].num_vertices());
+  for (int ivrt = 0; ivrt < ref_cp_pnts_upper[0].size(); ivrt++)
+    ASSERT_TRUE(approxEq(ref_cp_pnts_upper[0][ivrt],
+                         hsp_upper_matpolys[0].vertex_point(ivrt), 1.0e-15));
 
 #ifdef OUTPUT_TO_GMV
-/*
   std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list;
   cellmatpoly_list.push_back(std::make_shared< Tangram::CellMatPoly<2> >(0));
-  for (int ihs = 0; ihs < 2; ihs++) {
-    int nverts = convex_polys[ihs].num_vertices();
-    std::vector<Tangram::Point2> vertices = convex_polys[ihs].points(); 
+  for (int ihs = 0; ihs < hsp_lower_matpolys.size(); ihs++) {
+    int nverts = hsp_lower_matpolys[ihs].num_vertices();
+    std::vector<Tangram::Point2> vertices = hsp_lower_matpolys[ihs].points(); 
    
-    cellmatpoly_list[0]->add_matpoly(ihs, convex_polys[ihs].num_vertices(),
-                                     &convex_polys[ihs].points()[0],
+    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(),
                                      nullptr, nullptr,
                                      nullptr, nullptr);
   }
-  Tangram::write_to_gmv(cellmatpoly_list, "hexagon_matpolys.gmv");*/
-#endif
+  Tangram::write_to_gmv(cellmatpoly_list, "convex_sp_lower.gmv");
+  
+  cellmatpoly_list.clear();
+  cellmatpoly_list.push_back(std::make_shared< Tangram::CellMatPoly<2> >(0));
+  for (int ihs = 0; ihs < hsp_upper_matpolys.size(); ihs++) {
+    int nverts = hsp_upper_matpolys[ihs].num_vertices();
+    std::vector<Tangram::Point2> vertices = hsp_upper_matpolys[ihs].points(); 
+   
+    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(),
+                                     nullptr, nullptr,
+                                     nullptr, nullptr);
+  }
+  Tangram::write_to_gmv(cellmatpoly_list, "convex_sp_upper.gmv");
 
+#endif
+}
+
+TEST(split_r2d, NonConvexPoly) {
+  //Create a single convex polygon
+   std::vector<Tangram::MatPoly<2>> cpmatpolys;
+   matpoly_cases(NONCONVEX_SINGLEPOLY, cpmatpolys);  
+
+  //Cutting plane
+  Tangram::Point2 plane_pt(3.5,0.0);
+  Tangram::Vector2 normal(-1.0,0.0);
+  Tangram::Plane_t<2> cutting_plane = get_cutting_plane(plane_pt, normal);
+
+  //Construct reference split polygons
+  std::vector<std::vector<Tangram::Point2>> ref_ncp_pnts_lower(5);
+  std::vector<std::vector<Tangram::Point2>> ref_ncp_pnts_upper(4);
+  reference_matpolys(NONCONVEX_SINGLEPOLY, ref_ncp_pnts_lower, ref_ncp_pnts_upper);
+
+  //Split using SplitR2D class 
+  Tangram::SplitR2D split(cpmatpolys, cutting_plane, false);
+  Tangram::HalfSpaceSets_t<2> hsp_sets = split();
+  
+  //Check
+  ASSERT_EQ(hsp_sets.lower_halfspace_set.matpolys.size(), 5);
+  ASSERT_EQ(hsp_sets.upper_halfspace_set.matpolys.size(), 4);
+
+  std::vector<Tangram::MatPoly<2>> hsp_lower_matpolys = hsp_sets.lower_halfspace_set.matpolys;
+  std::vector<Tangram::MatPoly<2>> hsp_upper_matpolys = hsp_sets.upper_halfspace_set.matpolys;
 
   //Check 
-  //
+  for (int ihs = 0; ihs < hsp_lower_matpolys.size(); ihs++) {
+    ASSERT_EQ(ref_ncp_pnts_lower[ihs].size(), hsp_lower_matpolys[ihs].num_vertices());
+    for (int ivrt = 0; ivrt < ref_ncp_pnts_lower[ihs].size(); ivrt++) {
+      ASSERT_TRUE(approxEq(ref_ncp_pnts_lower[ihs][ivrt],
+                           hsp_lower_matpolys[ihs].vertex_point(ivrt), 1.0e-10));
+    } 
+  }
+  for (int ihs = 0; ihs < hsp_upper_matpolys.size(); ihs++) {
+    ASSERT_EQ(ref_ncp_pnts_upper[ihs].size(), hsp_upper_matpolys[ihs].num_vertices());
+    for (int ivrt = 0; ivrt < ref_ncp_pnts_upper[ihs].size(); ivrt++){
+      ASSERT_TRUE(approxEq(ref_ncp_pnts_upper[ihs][ivrt],
+                           hsp_upper_matpolys[ihs].vertex_point(ivrt), 1.0e-10));
+    }
+ } 
+
+#ifdef OUTPUT_TO_GMV
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list;
+  cellmatpoly_list.push_back(std::make_shared< Tangram::CellMatPoly<2> >(0));
+  for (int ihs = 0; ihs < hsp_lower_matpolys.size(); ihs++) {
+    int nverts = hsp_lower_matpolys[ihs].num_vertices();
+    std::vector<Tangram::Point2> vertices = hsp_lower_matpolys[ihs].points(); 
+   
+    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(),
+                                     nullptr, nullptr,
+                                     nullptr, nullptr);
+  }
+  Tangram::write_to_gmv(cellmatpoly_list, "nonconvex_sp_lower.gmv");
+  
+  cellmatpoly_list.clear();
+  cellmatpoly_list.push_back(std::make_shared< Tangram::CellMatPoly<2> >(0));
+  for (int ihs = 0; ihs < hsp_upper_matpolys.size(); ihs++) {
+    int nverts = hsp_upper_matpolys[ihs].num_vertices();
+    std::vector<Tangram::Point2> vertices = hsp_upper_matpolys[ihs].points(); 
+   
+    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(),
+                                     nullptr, nullptr,
+                                     nullptr, nullptr);
+  }
+  Tangram::write_to_gmv(cellmatpoly_list, "nonconvex_sp_upper.gmv");
+#endif
 }
+
+TEST(clip_r2d, ConvexPoly) {
+  //Create a single convex polygon
+   std::vector<Tangram::MatPoly<2>> cpmatpolys;
+   matpoly_cases(CONVEX_SINGLEPOLY, cpmatpolys);  
+
+  //Cutting plane
+  Tangram::Point2 plane_pt(1.5,0.0);
+  Tangram::Vector2 normal(1.5,1.0);
+  Tangram::Plane_t<2> cutting_plane = get_cutting_plane(plane_pt, normal);
+
+  //Reference 
+  std::vector<double> ref_moments = {0.875, 0.625, 0.604166666666666667};
+
+  //Compute moments using the lowest level function
+  std::vector<double> lsmoments; 
+  lower_halfplane_moments_r2d(cpmatpolys[0], cutting_plane, lsmoments); 
+  ASSERT_EQ(lsmoments.size(),3); 
+
+  //Clip using ClipR2D class 
+  Tangram::ClipR2D clip(cpmatpolys, cutting_plane, true);
+  std::vector<double> agmoments = clip();
+
+  //Check 
+  for (int i = 0; i < 3; i++)
+  {
+    ASSERT_NEAR(lsmoments[i], ref_moments[i], 1.0e-15);
+    ASSERT_NEAR(agmoments[i], ref_moments[i], 1.0e-15);
+  }
+}
+
+TEST(clip_r2d, NonConvexPoly) {
+  //Create a single convex polygon
+   std::vector<Tangram::MatPoly<2>> cpmatpolys;
+   matpoly_cases(NONCONVEX_SINGLEPOLY, cpmatpolys);  
+
+  //Cutting plane
+  Tangram::Point2 plane_pt(3.5,0.0);
+  Tangram::Vector2 normal(-1.0,0.0);
+  Tangram::Plane_t<2> cutting_plane = get_cutting_plane(plane_pt, normal);
+
+  //Reference 
+  std::vector<double> ref_moments = {0.5, 1.83333333333333333, 1.0};
+
+  //Compute moments using the lowest level function
+  std::vector<double> lsmoments; 
+  lower_halfplane_moments_r2d(cpmatpolys[0], cutting_plane, lsmoments); 
+  ASSERT_EQ(lsmoments.size(),3); 
+
+  //Clip using ClipR2D class 
+  Tangram::ClipR2D clip(cpmatpolys, cutting_plane, true);
+  std::vector<double> agmoments = clip();
+
+  //Check 
+  for (int i = 0; i < 3; i++)
+  {
+    ASSERT_NEAR(lsmoments[i], ref_moments[i], 1.0e-15);
+    ASSERT_NEAR(agmoments[i], ref_moments[i], 1.0e-15);
+  }
+}
+
