@@ -11,11 +11,11 @@ set -e
 # Echo each command
 set -x
 
-# 3D MOF interface reconstruction on a voronoi mesh
+# 3D VOF interface reconstruction on a regular 3x3x3 grid
 # with two planar material interfaces forming a T-junction.
-# Mesh cells ARE decomposed into tetrahedrons.
-# Uses SimpleMesh.
-${RUN_COMMAND} ${TESTAPPDIR}/test_mof_3d 1 voronoi95.exo
+# Mesh cells are NOT decomposed into tetrahedrons.
+# Uses Jali.
+${RUN_COMMAND} ${TESTAPPDIR}/test_vof_3d 0 cubic27.exo
 
 # Compare the values for the field
-${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold3.txt cell_sym_diff_voronoi95_decomposed.txt 1e-08
+${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold2_3d.txt cell_sym_diff_3d_cubic27.txt 1e-08

@@ -256,7 +256,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  std::string res_out_fname = "cell_sym_diff_" + mesh_name;
+  std::string res_out_fname = "cell_sym_diff_3d_" + mesh_name;
   if (decompose_cells)
     res_out_fname += "_decomposed";
   res_out_fname += ".txt";

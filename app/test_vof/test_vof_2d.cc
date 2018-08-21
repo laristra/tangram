@@ -34,7 +34,7 @@
 #include "app/include/get_material_moments.h"
 #include "app/include/get_mat_sym_diff_vol.h"
 
-/* Test app for a 3D mesh and planar material interfaces.
+/* Test app for a 2D mesh and planar material interfaces.
    Uses SimpleMesh/Jali and VOF.
    Generates (SimpleMesh) or reads mesh from file (Jali), 
    computes material moments for a sequence of planar interfaces,
@@ -45,14 +45,12 @@
 #include <set>
 
 const std::vector<int> mesh_materials = {5, 0, 3}; 
-const std::vector< Tangram::Vector3 > material_interface_normals = {
-  Tangram::Vector3(0.5, 0.5, 0.0), Tangram::Vector3(0.5, 0.025, -0.375)
+const std::vector< Tangram::Vector2 > material_interface_normals = {
+  Tangram::Vector2(0.5, 0.0), Tangram::Vector2(0, 0.5)
 };
-const std::vector< Tangram::Point3 > material_interface_points = {
-  Tangram::Point3(0.5, 0.5, 0.5), Tangram::Point3(0.5, 0.5, 0.5)
+const std::vector< Tangram::Point2 > material_interface_points = {
+  Tangram::Point2(0.5, 0.0), Tangram::Point2(1.0, 0.5)
 };
-
-
 
 int main(int argc, char** argv) {
 #ifdef ENABLE_MPI  
@@ -72,24 +70,24 @@ int main(int argc, char** argv) {
   if (argc != 3) {
     std::ostringstream os;
     os << std::endl <<
-    "Correct usage: test_vof_3d" << " <decompose_cells> [0|1]" <<
+    "Correct usage: test_vof_2d" << " <decompose_cells> [0|1]" <<
       " <base_mesh_file>" << std::endl;
     throw std::runtime_error(os.str());
   }
 #else
-  if (argc != 5) {
+  if (argc != 4) {
     std::ostringstream os;
     os << std::endl <<
-    "Correct usage: test_vof_3d" << " <decompose_cells> [0|1]" <<
-      " <nx> <ny> <nz>" << std::endl;
+    "Correct usage: test_vof_2d" << " <decompose_cells> [0|1]" <<
+      " <nx> <ny> " << std::endl;
     throw std::runtime_error(os.str());
   }
-#endif  
-
+#endif
+  
   bool decompose_cells = atoi(argv[1]);
 
   int nmesh_materials = static_cast<int>(mesh_materials.size()); 
-  std::vector< Tangram::Plane_t<3> > material_interfaces(nmesh_materials - 1);
+  std::vector< Tangram::Plane_t<2> > material_interfaces(nmesh_materials - 1);
   for (int iplane = 0; iplane < nmesh_materials - 1; iplane++) {
     material_interfaces[iplane].normal = material_interface_normals[iplane];
     material_interfaces[iplane].normal.normalize();
@@ -102,11 +100,11 @@ int main(int argc, char** argv) {
   std::string mesh_name = argv[2];
   mesh_name.resize(mesh_name.size() - 4);
 #else
-  int nx = atoi(argv[2]), ny = atoi(argv[3]), nz = atoi(argv[4]);
+  int nx = atoi(argv[2]), ny = atoi(argv[3]);
   std::string mesh_name;
   {
     std::ostringstream os;
-    os << "simple_mesh_" << nx << "x" << ny << "x" << nz;
+    os << "simple_mesh_" << nx << "x" << ny ;
     mesh_name = os.str();
   }
 #endif  
@@ -119,15 +117,15 @@ int main(int argc, char** argv) {
 #if ENABLE_JALI
   Jali::MeshFactory mesh_factory(comm);
   mesh_factory.framework(Jali::MSTK);
-  mesh_factory.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
+  mesh_factory.included_entities({Jali::Entity_kind::EDGE});
   std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[2]);
   
   assert(mesh != nullptr);
   Tangram::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, false, false);
 #else
-  Tangram::Simple_Mesh mesh(0.0, 0.0, 0.0,
-                            1.0, 1.0, 1.0,
-                            nx, ny, nz);
+  Tangram::Simple_Mesh mesh(0.0, 0.0, 
+                            1.0, 1.0,
+                            nx, ny );
   Tangram::Simple_Mesh_Wrapper mesh_wrapper(mesh);
 #endif
 
@@ -136,8 +134,8 @@ int main(int argc, char** argv) {
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
   std::vector<double> cell_mat_volfracs;
-  std::vector<Tangram::Point3> cell_mat_centroids;
-  std::vector< std::vector< std::vector<r3d_poly> > > reference_mat_polys;
+  std::vector<Tangram::Point2> cell_mat_centroids;
+  std::vector< std::vector< std::vector<r2d_poly> > > reference_mat_polys;
 
 #if ENABLE_JALI
   get_material_moments<Tangram::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces, 
@@ -170,19 +168,18 @@ int main(int argc, char** argv) {
     }
 
 #ifdef DEBUG
-  std::vector< std::shared_ptr< Tangram::CellMatPoly<3> > > ref_matpoly_list(ncells);
+  std::vector< std::shared_ptr< Tangram::CellMatPoly<2> > > ref_matpoly_list(ncells);
   for (int icell = 0; icell < ncells; icell++) {
-    ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<3> >(icell);
+    ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<2> >(icell);
 
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
       int nmp = static_cast<int>(reference_mat_polys[icell][icmat].size());
       for (int imp = 0; imp < nmp; imp++) {
-        std::vector< Tangram::MatPoly<3> > cur_matpoly;
-        Tangram::r3dpoly_to_matpolys(reference_mat_polys[icell][icmat][imp], cur_matpoly);
-        assert(cur_matpoly.size() == 1);
+        Tangram::MatPoly<2> cur_matpoly;
+        Tangram::r2dpoly_to_matpoly(reference_mat_polys[icell][icmat][imp], cur_matpoly);
 
-        cur_matpoly[0].set_mat_id(cell_mat_ids[offsets[icell] + icmat]);
-        ref_matpoly_list[icell]->add_matpoly(cur_matpoly[0]);
+        cur_matpoly.set_mat_id(cell_mat_ids[offsets[icell] + icmat]);
+        ref_matpoly_list[icell]->add_matpoly(cur_matpoly);
       }
     }
   }
@@ -196,12 +193,12 @@ int main(int argc, char** argv) {
 
   // Build the driver
 #if ENABLE_JALI  
-  Tangram::Driver<Tangram::VOF, 3, Tangram::Jali_Mesh_Wrapper, 
-                  Tangram::SplitR3D, Tangram::ClipR3D> 
+  Tangram::Driver<Tangram::VOF, 2, Tangram::Jali_Mesh_Wrapper, 
+                  Tangram::SplitR2D, Tangram::ClipR2D> 
     vof_driver(mesh_wrapper, im_tols, !decompose_cells);
 #else
-  Tangram::Driver<Tangram::VOF, 3, Tangram::Simple_Mesh_Wrapper, 
-                  Tangram::SplitR3D, Tangram::ClipR3D> 
+  Tangram::Driver<Tangram::VOF, 2, Tangram::Simple_Mesh_Wrapper, 
+                  Tangram::SplitR2D, Tangram::ClipR2D> 
     vof_driver(mesh_wrapper, im_tols, !decompose_cells);
 #endif    
 
@@ -209,7 +206,7 @@ int main(int argc, char** argv) {
                                   cell_mat_volfracs, cell_mat_centroids);
   vof_driver.reconstruct();    
 
-  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list = 
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list = 
     vof_driver.cell_matpoly_ptrs();
 
   std::vector<double> total_mat_sym_diff_vol(nmesh_materials, 0.0);
@@ -256,7 +253,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  std::string res_out_fname = "cell_sym_diff_" + mesh_name;
+  std::string res_out_fname = "cell_sym_diff_2d_" + mesh_name;
   if (decompose_cells)
     res_out_fname += "_decomposed";
   res_out_fname += ".txt";
@@ -277,7 +274,7 @@ std::cout << std::endl << "Stats for ";
   std::cout << "computational mesh " << mesh_name;
 #else
   std::cout << "structured " << nx << "x" << ny << 
-    "x" << nz << " computational mesh";
+    " computational mesh";
 #endif
   std::cout << ":" << std::endl << "  " << ncells << " cells," << 
     std::endl << "  " << nmesh_materials << " materials," <<
@@ -318,9 +315,9 @@ std::cout << std::endl << "Stats for ";
   for (int icell = 0; icell < ncells; icell++) {
     if (cell_num_mats[icell] == 1) {
       assert(cellmatpoly_list[icell] == nullptr);
-      std::shared_ptr< Tangram::CellMatPoly<3> > 
-        cmp_ptr(new Tangram::CellMatPoly<3>(icell));
-      Tangram::MatPoly<3> cell_matpoly;
+      std::shared_ptr< Tangram::CellMatPoly<2> > 
+        cmp_ptr(new Tangram::CellMatPoly<2>(icell));
+      Tangram::MatPoly<2> cell_matpoly;
       cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
       cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
       cmp_ptr->add_matpoly(cell_matpoly);
