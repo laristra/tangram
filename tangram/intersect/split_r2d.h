@@ -7,9 +7,11 @@
 #ifndef INTERSECT_SPLIT_R2D_H
 #define INTERSECT_SPLIT_R2D_H
 
-#include <vector>
 #include <algorithm>
+#include <cmath>
 #include <memory>
+#include <vector>
+
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 
@@ -40,8 +42,9 @@ namespace Tangram {
 */
 void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
 {
+   //Obtain the vertices from r2d_poly in the correct order. This
+   //may include duplicates. 
    int nverts = r2dpoly.nverts;
-
    std::vector<Point2> matpoly_verts;
    matpoly_verts.resize(nverts);
    
@@ -54,8 +57,24 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
      for (int ixy = 0; ixy < 2; ixy++)
       matpoly_verts[v][ixy] = r2dpoly.verts[nextvert].pos.xy[ixy];
     }
-    
-    mat_poly.initialize(matpoly_verts);
+
+   //Detect duplicates from the ordered vertices list. 
+   std::vector<bool> isdup(nverts, false); 
+   for (int i = 0 ; i < nverts; i++){
+     for (int j = i+1; j < nverts; j++)
+       if ((!isdup[j]) && (std::abs(matpoly_verts[j][0]-matpoly_verts[i][0]) < 1e-16)  &&
+                    (std::abs(matpoly_verts[j][1]-matpoly_verts[i][1]) < 1e-16))
+      	   isdup[j] = true;
+   }
+
+   //Create a new vector without duplicates
+   std::vector<Point2> unimatpoly_verts; 
+   for (int i = 0; i < nverts; i++)
+    if (!isdup[i])
+       unimatpoly_verts.push_back(matpoly_verts[i]);   
+
+   //Initialize the matpoly with the unique list of vertices. 
+   mat_poly.initialize(unimatpoly_verts);
 }
 
 
