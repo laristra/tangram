@@ -492,6 +492,19 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
   }
 }
 
+BoundingBox_t<3> r3d_poly_bounding_box(const r3d_poly& r3dpoly) {
+  BoundingBox_t<3> bbox;
+  for (int ivrt = 0; ivrt < r3dpoly.nverts; ivrt++)
+    for (int idim = 0; idim < 3; idim++) {
+      if (r3dpoly.verts[ivrt].pos.xyz[idim] < bbox.min[idim])
+        bbox.min[idim] = r3dpoly.verts[ivrt].pos.xyz[idim];
+
+      if (r3dpoly.verts[ivrt].pos.xyz[idim] > bbox.max[idim])
+        bbox.max[idim] = r3dpoly.verts[ivrt].pos.xyz[idim];
+    }
+  return bbox;
+}
+
 } // namespace Tangram
 
 #endif

@@ -68,6 +68,7 @@ public:
   
   /*!
     @brief Pass in the volume fraction data for use in the reconstruction.
+    Filters out materials with volume fraction below the tolerance.
     @param[in] cell_num_mats A vector of length (num_cells) specifying the
     number of materials in each cell.
     @param[in] cell_mat_ids A vector of length (sum(cell_num_mats)) specifying
