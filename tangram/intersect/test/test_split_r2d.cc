@@ -82,11 +82,13 @@ void reference_matpolys(ptype POLYTYPE,
    {
       case CONVEX_SINGLEPOLY:
       {
-	ref_pnts_lower[0] = {
+        // Upper polygons
+	ref_pnts_upper[0] = {
 	Tangram::Point2(1.0,0.0), Tangram::Point2(1.5,0.0),
 	Tangram::Point2(0.5,1.5), Tangram::Point2(0.0,1.0) };
 
-	ref_pnts_upper[0] = {
+        // Lower polygons
+	ref_pnts_lower[0] = {
 	Tangram::Point2(2.0,0.0), Tangram::Point2(3.0,1.0),
 	Tangram::Point2(2.0,2.0), Tangram::Point2(1.0,2.0),
 	Tangram::Point2(0.5,1.5), Tangram::Point2(1.5,0.0) };
@@ -95,36 +97,37 @@ void reference_matpolys(ptype POLYTYPE,
       } 
       case NONCONVEX_SINGLEPOLY:
       {
-	ref_pnts_lower[0] = {
+        // Upper polygons
+	ref_pnts_upper[0] = {
 	Tangram::Point2(1.0,0.0), Tangram::Point2(3.5,0.0), 
 	Tangram::Point2(3.5,0.57692307692), Tangram::Point2(2.2666666667,2.0)};
 	
-	ref_pnts_lower[1] = {
+	ref_pnts_upper[1] = {
 	Tangram::Point2(3.0,2.0), Tangram::Point2(2.2666666667,2.0),
 	Tangram::Point2(3.5,0.57692307692), Tangram::Point2(3.5,1.0) };
 
-	ref_pnts_lower[2] = {
+	ref_pnts_upper[2] = {
 	Tangram::Point2(3.0,2.0), Tangram::Point2(3.5,3.0),
 	Tangram::Point2(3.5,3.4230769231), Tangram::Point2(2.2666666667,2.0) };
 	
-	ref_pnts_lower[3] = {
+	ref_pnts_upper[3] = {
 	Tangram::Point2(1.0,4.0), Tangram::Point2(2.2666666667,2.0),
 	Tangram::Point2(3.5,3.4230769231) , Tangram::Point2(3.5,4.0) };
 	
-	ref_pnts_lower[4] = {
+	ref_pnts_upper[4] = {
 	Tangram::Point2(1.0,4.0), Tangram::Point2(1.0,0.0), Tangram::Point2(2.2666666667,2.0)};
 
-	// Upper polygons
-	ref_pnts_upper[0] = {
+	// Lower polygons
+	ref_pnts_lower[0] = {
 	Tangram::Point2(4.0,0.0), Tangram::Point2(3.5,0.57692307692), Tangram::Point2(3.5,0.0) };
 	
-	ref_pnts_upper[1] = {
+	ref_pnts_lower[1] = {
 	Tangram::Point2(4.0,0.0), Tangram::Point2(3.5,1.0), Tangram::Point2(3.5,0.57692307692) };
 	
-	ref_pnts_upper[2] = {
+	ref_pnts_lower[2] = {
 	Tangram::Point2(4.0,4.0), Tangram::Point2(3.5,3.4230769231), Tangram::Point2(3.5,3.0) };
 	
-	ref_pnts_upper[3] = {
+	ref_pnts_lower[3] = {
 	Tangram::Point2(4.0,4.0), Tangram::Point2(3.5,4.0), Tangram::Point2(3.5,3.4230769231) };
 	
         break;
@@ -216,8 +219,8 @@ TEST(split_r2d, NonConvexPoly) {
   Tangram::Plane_t<2> cutting_plane = get_cutting_plane(plane_pt, normal);
 
   //Construct reference split polygons
-  std::vector<std::vector<Tangram::Point2>> ref_ncp_pnts_lower(5);
-  std::vector<std::vector<Tangram::Point2>> ref_ncp_pnts_upper(4);
+  std::vector<std::vector<Tangram::Point2>> ref_ncp_pnts_upper(5);
+  std::vector<std::vector<Tangram::Point2>> ref_ncp_pnts_lower(4);
   reference_matpolys(NONCONVEX_SINGLEPOLY, ref_ncp_pnts_lower, ref_ncp_pnts_upper);
 
   //Split using SplitR2D class 
@@ -225,8 +228,8 @@ TEST(split_r2d, NonConvexPoly) {
   Tangram::HalfSpaceSets_t<2> hsp_sets = split();
   
   //Check
-  ASSERT_EQ(hsp_sets.lower_halfspace_set.matpolys.size(), 5);
-  ASSERT_EQ(hsp_sets.upper_halfspace_set.matpolys.size(), 4);
+  ASSERT_EQ(hsp_sets.lower_halfspace_set.matpolys.size(), 4);
+  ASSERT_EQ(hsp_sets.upper_halfspace_set.matpolys.size(), 5);
 
   std::vector<Tangram::MatPoly<2>> hsp_lower_matpolys = hsp_sets.lower_halfspace_set.matpolys;
   std::vector<Tangram::MatPoly<2>> hsp_upper_matpolys = hsp_sets.upper_halfspace_set.matpolys;
