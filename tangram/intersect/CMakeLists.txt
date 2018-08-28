@@ -39,5 +39,10 @@ if (ENABLE_UNIT_TESTS)
     LIBRARIES tangram
     POLICY SERIAL
     )
+  cinch_add_unit(split_order
+    SOURCES test/test_split_order.cc r2d.c r3d.c
+    LIBRARIES tangram
+    POLICY SERIAL
+    )
 endif(ENABLE_UNIT_TESTS)
 

@@ -194,8 +194,8 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
   //Translate the cutting plane to R2D format
   r2d_plane r2d_cut_plane;
   for (int ixy = 0; ixy < 2; ixy++)
-    r2d_cut_plane.n.xy[ixy] = cutting_plane.normal[ixy];
-  r2d_cut_plane.d = cutting_plane.dist2origin;
+    r2d_cut_plane.n.xy[ixy] = -cutting_plane.normal[ixy];
+  r2d_cut_plane.d = -cutting_plane.dist2origin;
 
   //Convert matpoly to r2d_poly and split 
   r2d_poly r2dized_poly;
