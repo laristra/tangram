@@ -68,8 +68,8 @@ double linesearch(const std::function<double(const double)>& obj_fun,
   double fval0 = obj_fun(0.0);
   double df0 = of_deriv(0.0);
   
-  double arg_max = (std::fabs(df0) > std::numeric_limits<double>::epsilon()) ?
-    -fval0/(c1*df0) : DBL_MAX;
+  //We limit the max allowed step length to never exceed fval0/c1
+  double arg_max = (std::fabs(df0) > 1.0) ? -fval0/(c1*df0) : fval0/c1;
   double arg_bnd[2] = {0.0, init_guess};
   double bnd_fval[2]; bnd_fval[0] = fval0;
   double df_lbnd = df0;
@@ -195,7 +195,7 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
       break;
 
     cur_dir = -(B_inv*cur_grad);
-    
+
     std::function<double(const double)> linesearch_obj_fun = 
       [&obj_fun, &cur_arg, &cur_dir]
       (const double stepsize)->double {

@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <iostream>
 #include <vector>
+#include <limits>
 
 namespace Tangram {
 
@@ -153,6 +154,14 @@ template <long D> class Vector {
     for (int i = 0; i < D; i++) m_comp[i] = 0;
   }
 
+  /// Check if this Vector is a zero Vector.
+  bool is_zero() const {
+    for (int i = 0; i < D; i++) 
+      if (std::fabs(m_comp[i]) > std::numeric_limits<double>::epsilon()) 
+        return false;
+    return true;
+  }
+
   /*!
     @brief Convenience method for constructing a unit Vector along a particular
     axis
@@ -171,7 +180,7 @@ template <long D> class Vector {
   }
 
   /// Pretty printing of a Vector to an output stream.
-  std::ostream& writeToStream(std::ostream& os) {
+  std::ostream& writeToStream(std::ostream& os) const {
     for (int i = 0; i < D; i++) {
       if (i > 0) os << ' ';
       os << m_comp[i];
