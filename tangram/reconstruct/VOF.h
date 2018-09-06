@@ -65,6 +65,8 @@ public:
     int ncells = mesh_.num_owned_cells() + mesh_.num_ghost_cells();
     cell_mat_ids_.resize(ncells);
     cell_mat_vfracs_.resize(ncells);  
+
+    bool insufficient_vol_tol = false;
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
       double cell_volume = mesh_.cell_volume(icell);  
@@ -75,9 +77,21 @@ public:
         if (mat_volume > im_tols_.fun_eps) {
           cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
           cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
+
+          // If specified volume tolerance is not too small, ensure that the volume
+          // of the reconstructed material poly will not drop below the tolerance
+          if ( (im_tols_.fun_eps > 2*std::numeric_limits<double>::epsilon()) &&
+               (mat_volume < 2*im_tols_.fun_eps + std::numeric_limits<double>::epsilon()) )
+            insufficient_vol_tol = true;
         }
       }
       offset += nmats;
+    }
+
+    if (insufficient_vol_tol) {
+      IterativeMethodTolerances_t& im_tols_r = 
+        const_cast <IterativeMethodTolerances_t&> (im_tols_);
+      im_tols_r.fun_eps /= 2;
     }
   }
   
