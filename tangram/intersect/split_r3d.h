@@ -140,6 +140,8 @@ r3dpoly_to_matpolys(r3d_poly& r3dpoly,
       if (curpoly_faces[ind_face].size() > 2) ind_face++;
       else curpoly_faces.erase(curpoly_faces.begin() + ind_face);  
 
+    // We do not store polyhedra with less than four faces, 
+    // as they are clearly degenerate
     if (curpoly_faces.size() > 3) {
       int inew_poly = static_cast<int>(mat_polys.size());
       mat_polys.push_back(MatPoly<3>());
@@ -212,8 +214,8 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
       // Filter out degenerate components
       int ind_subpoly = 0;
       while (ind_subpoly < sub_matpoly.size())
-        if (sub_matpoly[isp].moments()[0] > std::numeric_limits<double>::epsilon()) 
-          ind_subpoly++;
+        if (sub_matpoly[ind_subpoly].moments()[0] > 
+            std::numeric_limits<double>::epsilon()) ind_subpoly++;
         else sub_matpoly.erase(sub_matpoly.begin() + ind_subpoly);  
     }
       
