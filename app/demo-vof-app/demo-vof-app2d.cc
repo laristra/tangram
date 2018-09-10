@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   MPI_Comm_size(comm, &world_size);
   if (world_size > 1)
     throw std::runtime_error("This app is designed to run in serial!");
-
+  
   if ((argc < 3) || (argc > 4)) {
       std::ostringstream os;
       os << std::endl <<
@@ -66,6 +66,8 @@ int main(int argc, char** argv) {
   assert(mesh != nullptr);
   Tangram::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, false, false);
 
+  //Read material data from file, even though VOF doesn't use
+  //the centroid data. 
   int ncells = mesh_wrapper.num_owned_cells();
 
   std::vector<int> cell_num_mats;

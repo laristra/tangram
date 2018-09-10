@@ -103,7 +103,7 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
   delete [] r2dized_poly_vrts;
 }//matpoly_to_r2dpoly
 
-/*  
+/*!  
  @brief Computes moments of the intersection of a MatPoly and an r2d_poly. 
   If MatPoly is convex, r2d_poly will be clipped with lines containing the
   faces of MatPoly. Otherwise, MatPoly will be decomposed into triangular
