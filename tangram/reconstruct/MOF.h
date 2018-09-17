@@ -88,6 +88,8 @@ public:
     cell_mat_ids_.resize(ncells);
     cell_mat_vfracs_.resize(ncells);  
     cell_mat_centroids_.resize(ncells);
+
+    bool insufficient_vol_tol = false;
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
       double cell_volume = mesh_.cell_volume(icell);  
@@ -99,9 +101,21 @@ public:
           cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
           cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
           cell_mat_centroids_[icell].push_back(cell_mat_centroids[offset + icmat]);
+
+          // If specified volume tolerance is not too small, ensure that the volume
+          // of the reconstructed material poly will not drop below the tolerance
+          if ( (im_tols_.fun_eps > 2*std::numeric_limits<double>::epsilon()) &&
+               (mat_volume < 2*im_tols_.fun_eps + std::numeric_limits<double>::epsilon()) )
+            insufficient_vol_tol = true;
         }
       }
       offset += nmats;
+    }
+
+    if (insufficient_vol_tol) {
+      IterativeMethodTolerances_t& im_tols_r = 
+        const_cast <IterativeMethodTolerances_t&> (im_tols_);
+      im_tols_r.fun_eps /= 2;
     }
   }
   
@@ -226,6 +240,10 @@ public:
 
       double cur_error = 0.0;      
       for (int imat = 0; imat < nmats; imat++) {
+        int mat_id = cell_mat_ids_[cellID][imat];
+        if (!cur_cmp_ptr->is_cell_material(mat_id))
+          continue;
+
         const std::vector<double>& cur_moments = 
           cur_cmp_ptr->material_moments(cell_mat_ids_[cellID][imat]);
 
