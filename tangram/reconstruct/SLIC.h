@@ -47,9 +47,9 @@ namespace Tangram {
      @brief Constructor performing a SLIC algorithm for interface reconstruction.
      */
     explicit SLIC(const Mesh_Wrapper & Mesh, 
-                  const IterativeMethodTolerances_t& im_tols,
+                  const std::vector<IterativeMethodTolerances_t>& ims_tols,
                   const bool all_convex = false) : 
-                  mesh_(Mesh), im_tols_(im_tols), all_convex_(all_convex) {
+                  mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
       // For now
       assert(Dim == 3);
     }
@@ -81,11 +81,16 @@ namespace Tangram {
     
     /*!
       @brief Used iterative methods tolerances
-      @return  Tolerances for iterative methods,
-      here im_tols_.fun_eps is volume tolerance
+      @return  Tolerances for iterative methods, 
+      here ims_tols_[0] correspond to methods for volumes 
+      and ims_tols_[1] are NOT used.
+      In particular, ims_tols_[0].arg_eps is a negligible 
+      change in cutting distance, ims_tols_[0].fun_eps is a 
+      negligible discrepancy in volume.
     */
-    const IterativeMethodTolerances_t& iterative_method_tolerances() const {
-      return im_tols_;
+    const std::vector<IterativeMethodTolerances_t>& 
+    iterative_methods_tolerances() const {
+      return ims_tols_;
     }
 
     void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
@@ -96,7 +101,7 @@ namespace Tangram {
      @brief Given a cell index, calculate the CellMatPoly for this reconstruction
      */
     std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
-      double vol_tol = im_tols_.fun_eps;  // Volume tolerance
+      double vol_tol = ims_tols_[0].fun_eps;  // Volume tolerance
 
       int cellID = icells_to_reconstruct[cell_op_ID];
       auto numMats = cell_num_mats_[cellID];
@@ -124,7 +129,7 @@ namespace Tangram {
       //faces are non-planar
       CuttingDistanceSolver<Dim, Tangram::ClipR3D> 
         solve_cut_dst(hs_sets.upper_halfspace_set.matpolys, 
-                      cutting_plane.normal, im_tols_, all_convex_);
+                      cutting_plane.normal, ims_tols_[0], all_convex_);
 
       //Cutting from left to right
       double cell_volume = mesh_.cell_volume(cellID);
@@ -148,7 +153,7 @@ namespace Tangram {
           // Check if the resulting volume matches the reference value
           double cur_vol_err = std::fabs(clip_res[1] - target_vol);
           if (cur_vol_err > vol_tol) 
-            std::cerr << "SLIC for cell " << cellID << ": after " << im_tols_.max_num_iter <<
+            std::cerr << "SLIC for cell " << cellID << ": after " << ims_tols_[0].max_num_iter <<
               " iteration(s) achieved error in volume for material " << 
               cell_mat_ids_[iStart + iMat] << " is " << cur_vol_err << 
               ", volume tolerance is " << vol_tol << std::endl;
@@ -184,7 +189,7 @@ namespace Tangram {
     }
   private:
     const Mesh_Wrapper & mesh_;
-    const IterativeMethodTolerances_t im_tols_;
+    const std::vector<IterativeMethodTolerances_t> ims_tols_;
     const bool all_convex_;
     std::vector<int> cell_num_mats_;
     std::vector<int> cell_mat_ids_;

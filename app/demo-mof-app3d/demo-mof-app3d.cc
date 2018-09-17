@@ -76,14 +76,15 @@ int main(int argc, char** argv) {
   read_material_data<Tangram::Jali_Mesh_Wrapper, 3>(mesh_wrapper, in_data_fname, 
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
-  // Volume fraction tolerance
-  Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
+  // Volume and angles tolerance
+  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  ims_tols[1] = {.max_num_iter = 100, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
 
   // Build the driver
   Tangram::Driver<Tangram::MOF, 3, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR3D, Tangram::ClipR3D> 
-    mof_driver(mesh_wrapper, im_tols, true);
+    mof_driver(mesh_wrapper, ims_tols, true);
 
   mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
                                   cell_mat_volfracs, cell_mat_centroids);
@@ -118,7 +119,7 @@ int main(int argc, char** argv) {
   for (int icell = 0; icell < ncells; icell++) {
     int ncmats = cell_num_mats[icell];
     for (int icmat = 0; icmat < ncmats; icmat++)
-      if (cell_mat_volfracs[offset + icmat] > im_tols.fun_eps)
+      if (cell_mat_volfracs[offset + icmat] > ims_tols[0].fun_eps)
         nzvf_cell_mat_ids.push_back(cell_mat_ids[offset + icmat]);
       else
         nzvf_cell_num_mats[icell]--;

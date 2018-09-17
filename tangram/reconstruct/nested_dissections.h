@@ -110,7 +110,7 @@ public:
     else
       reconstructor_.cell_matpoly(cell_id_).faceted_matpoly(&cell_matpoly);
     
-    double vol_tol = reconstructor_.iterative_method_tolerances().fun_eps;
+    double vol_tol = reconstructor_.iterative_methods_tolerances()[0].fun_eps;
 
     Plane_t<Dim> cutting_plane;
     HalfSpaceSets_t<Dim> hs_sets; // Structure containing vectors of MatPoly's and their

@@ -405,7 +405,7 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
       exterior_data.reserve(exterior_data.size() + new_exterior_data.size());
       exterior_data.insert(exterior_data.end(), 
                            new_exterior_data.begin(), new_exterior_data.end());
-
+/*
       for (int i = 0; i < new_exterior_data.size(); i++) {
         r3d_brep* poly_brep;
         r3d_int ncomponents;
@@ -414,20 +414,22 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
           r3d_print_brep(&poly_brep, ncomponents);
         r3d_free_brep(&poly_brep, ncomponents);
       }
+*/      
     }
 
     interior_data.reserve(interior_data.size() + intersection_data.size());
     interior_data.insert(interior_data.end(), 
                          intersection_data.begin(), intersection_data.end());
-
+/*
       for (int i = 0; i < intersection_data.size(); i++) {
         r3d_brep* poly_brep;
         r3d_int ncomponents;
         r3d_init_brep(&intersection_data[i]->r3dpoly, &poly_brep, &ncomponents);
         if (ncomponents > 1)
-          r3d_print(&intersection_data[i]->r3dpoly);
+          r3d_print_brep(&poly_brep, ncomponents);
         r3d_free_brep(&poly_brep, ncomponents);
       }                         
+*/
   }
   else {
     interior_data.clear();
@@ -485,6 +487,14 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   }
 }
 
+unsigned int factorial(unsigned int n)
+{
+  unsigned int res = 1;
+  for(unsigned int i = 0; i < n; ++i)
+      res *= i + 1;
+  return res;
+}
+
 /*!
  @brief For a given collections of single-material reference polyhedra sets
  generates data compatible with Tangram's driver. 
@@ -509,7 +519,8 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
                        std::vector<double>& cell_mat_volfracs,
                        std::vector< Tangram::Point<3> >& cell_mat_centroids,
                        std::vector< std::vector< std::vector<r3d_poly> > >&
-                         reference_mat_polys) {                     
+                         reference_mat_polys,
+                       bool permute_order=false) {                     
   int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
   for (int iset = 0; iset < nsets; iset++) {
     int set_max_cellID = -1;
@@ -558,8 +569,37 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
   cell_mat_volfracs.clear();
   cell_mat_centroids.clear();
 
+  if (permute_order)
+    srand(20150420);
+
   for (int icell = 0; icell < ncells; icell++) {
-    cell_num_mats[icell] = cells_mat_ids[icell].size();
+    int ncmats = static_cast<int>(cells_mat_ids[icell].size());
+    cell_num_mats[icell] = ncmats;
+
+    if (permute_order) {
+      int max_npermutations = factorial(ncmats);
+      int cur_npermutations = rand()%max_npermutations;
+
+      if (cur_npermutations != 0) {
+        std::vector<int> new_mat_order(ncmats);
+        std::iota(new_mat_order.begin(), new_mat_order.end(), 0);
+        for (int ip = 0; ip < cur_npermutations; ip++)
+          std::next_permutation(new_mat_order.begin(), new_mat_order.end());
+
+        std::vector<int> new_cell_mat_ids(ncmats);
+        std::vector< std::vector<double> > new_cell_mat_moments(ncmats);
+        std::vector< std::vector<r3d_poly> > new_cell_ref_mat_polys(ncmats);
+        for (int icmat = 0; icmat <ncmats; icmat++) {
+          new_cell_mat_ids[icmat] = cells_mat_ids[icell][new_mat_order[icmat]];
+          new_cell_mat_moments[icmat] = cells_mat_moments[icell][new_mat_order[icmat]];
+          new_cell_ref_mat_polys[icmat] = reference_mat_polys[icell][new_mat_order[icmat]];
+        }
+        cells_mat_ids[icell] = new_cell_mat_ids;
+        cells_mat_moments[icell] = new_cell_mat_moments;
+        reference_mat_polys[icell] = new_cell_ref_mat_polys;
+      }
+    }
+
     cell_mat_ids.insert(cell_mat_ids.end(), cells_mat_ids[icell].begin(), 
                         cells_mat_ids[icell].end());
 

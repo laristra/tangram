@@ -222,15 +222,18 @@ struct HalfSpaceSets_t {
 /* In the context of interface reconstruction methods based on the nested 
    dissections algorithm, the iterative methods are used to find the 
    position of the cutting plane. 
-   VOF uses an iterative method to find the cutting distance for a given normal, 
-   in which case the objective function is volume and fun_eps is volume tolerance,
-   while arg_eps is unused.
-   MOF, in addition to that, iteratively solves for the normal. In this case,
-   the tolerances are used not for the objective function, but the argument,
-   and arg_eps will be imposed on the change in polar angles between consecutive
-   steps. Hence, MOF can use one instance of IterativeMethodTolerances_t with
-   fun_eps used for finding the cutting distance, and arg_eps used for finding
-   the direction of the normal.
+   An example of iterative methods dealing with volumes is solving for 
+   the cutting distance: given a plane's orientation, find its position 
+   such that the volume of a part of a polyhedron in a given half-space
+   matches the target volume. arg_eps will correspond to a negligible
+   change in the cutting distance, and fun_eps will correspond to a
+   negligible discrepancy in volume.
+   An example of iterative methods dealing with centroids is finding the 
+   cutting plane's orientation: find such a normal that the distance between
+   the centroid of a part of a polyhedron in a given half-space
+   is the closest to the given reference centroid. arg_eps will correspond
+   to a negligible change in the orientation, and fun_eps will correspond to a
+   negligible distance between centroids.
 */   
 struct IterativeMethodTolerances_t {
   int max_num_iter;   // Max number of iterations
@@ -266,6 +269,8 @@ inline bool overlapping_boxes(const BoundingBox_t<D>& bb1,
 inline bool is_equal(const double fp1, const double fp2) {
   return ( std::fabs(fp1 - fp2) < std::numeric_limits<double>::epsilon() );
 }
+
+inline double pow2(double x) { return x*x; }
 
 }  // namespace Tangram
 

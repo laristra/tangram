@@ -42,7 +42,7 @@
 		v.z /= (tmplen + 1.0e-299);				\
 	}
 
-void r3d_clip(r3d_poly *poly, r3d_plane *planes, r3d_int nplanes) {
+void r3d_clip(r3d_poly *poly, const r3d_plane *planes, r3d_int nplanes) {
 	// direct access to vertex buffer
 	r3d_vertex *vertbuffer = poly->verts;
 	r3d_int *nverts = &poly->nverts;
@@ -125,7 +125,7 @@ void r3d_clip(r3d_poly *poly, r3d_plane *planes, r3d_int nplanes) {
 	}
 }
 
-void r3d_split(r3d_poly *inpolys, r3d_int npolys, r3d_plane plane,
+void r3d_split(const r3d_poly *inpolys, r3d_int npolys, r3d_plane plane,
 							 r3d_poly *out_pos, r3d_poly *out_neg) {
 	// direct access to vertex buffer
 	r3d_int v, np, npnxt, onv, vcur, vnext, vstart, pnext, nright, cside, p;
@@ -1197,7 +1197,7 @@ void r3d_free_brep(r3d_brep **brep, r3d_int numcomponents) {
 		}
 
 		// free the top level facinds array
-		free(brep[c]->faceinds);
+		 free(brep[c]->faceinds);
 
 		// free the numvertsperface array
 		free(brep[c]->numvertsperface);

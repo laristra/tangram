@@ -159,12 +159,13 @@ int main(int argc, char** argv) {
   read_mat_data(mesh_wrapper, in_data_fname, cell_num_mats, cell_mat_ids,
                 cell_mat_volfracs, cell_mat_centroids);
   
-  // Distance(angle) and volume fraction tolerances
-  Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-14, .fun_eps = 1.0e-15};
+  // Distance(angle) and volume tolerances
+  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  ims_tols[1] = {.max_num_iter = 1000, .arg_eps = 1.0e-14, .fun_eps = 1.0e-14};
 
   Tangram::Driver<Tangram::XMOF2D_Wrapper, 2,
-    Tangram::Jali_Mesh_Wrapper> xmof_driver(mesh_wrapper, im_tols, true);
+    Tangram::Jali_Mesh_Wrapper> xmof_driver(mesh_wrapper, ims_tols, true);
   
   xmof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
   xmof_driver.reconstruct();
