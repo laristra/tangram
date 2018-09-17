@@ -75,12 +75,6 @@ public:
       }
       offset += nmats;
     }
-
-    if (insufficient_vol_tol) {
-      IterativeMethodTolerances_t& im_tols_r = 
-        const_cast <IterativeMethodTolerances_t&> (im_tols_);
-      im_tols_r.fun_eps /= 2;
-    }
   }
   
   /*!
