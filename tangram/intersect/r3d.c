@@ -125,7 +125,7 @@ void r3d_clip(r3d_poly *poly, const r3d_plane *planes, r3d_int nplanes) {
 	}
 }
 
-void r3d_split(const r3d_poly *inpolys, r3d_int npolys, r3d_plane plane,
+void r3d_split(r3d_poly *inpolys, r3d_int npolys, r3d_plane plane,
 							 r3d_poly *out_pos, r3d_poly *out_neg) {
 	// direct access to vertex buffer
 	r3d_int v, np, npnxt, onv, vcur, vnext, vstart, pnext, nright, cside, p;

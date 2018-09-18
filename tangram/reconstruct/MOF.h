@@ -261,7 +261,6 @@ public:
                        permutations_cellmatpoly.begin(), nested_dissections);
 
     int nmats = static_cast<int>(cell_mat_ids_[cellID].size());
-    double cell_volume = mesh_.cell_volume(cellID);
 
     int iopt_permutation = -1;
     double min_centroids_error = DBL_MAX;

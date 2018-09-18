@@ -92,7 +92,7 @@ typedef struct
  */
 typedef struct
 {
-#define R3D_MAX_VERTS 256
+#define R3D_MAX_VERTS 512
   r3d_vertex verts[R3D_MAX_VERTS]; /*!< Vertex buffer. */
   r3d_int nverts;                  /*!< Number of vertices in the buffer. */
 } r3d_poly;
@@ -130,7 +130,7 @@ void r3d_clip(r3d_poly *poly, const r3d_plane *planes, r3d_int nplanes);
  * clip plane. Must be at least npolys long.
  *
  */
-void r3d_split(const r3d_poly *inpolys, r3d_int npolys, r3d_plane plane,
+void r3d_split(r3d_poly *inpolys, r3d_int npolys, r3d_plane plane,
                r3d_poly *out_pos, r3d_poly *out_neg);
 
 /**
