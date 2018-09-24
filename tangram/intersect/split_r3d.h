@@ -81,7 +81,7 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
   in the R3D polyhedron
 */
 void
-r3dpoly_to_matpolys(r3d_poly& r3dpoly,
+r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                     std::vector< MatPoly<3> >& mat_polys) {
   r3d_brep* poly_brep;
   r3d_int ncomponents;

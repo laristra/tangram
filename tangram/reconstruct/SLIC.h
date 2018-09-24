@@ -52,6 +52,9 @@ namespace Tangram {
                   mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
       // For now
       assert(Dim == 3);
+      if (ims_tols.empty())
+        throw std::runtime_error(
+          "SLIC uses 0-order moments and needs tolerances for the related iterative method!");      
     }
     
     /*!

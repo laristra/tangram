@@ -43,7 +43,11 @@ public:
   explicit VOF(const Mesh_Wrapper& Mesh, 
                const std::vector<IterativeMethodTolerances_t>& ims_tols,
                const bool all_convex = false) : 
-               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {}
+               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+    if (ims_tols.empty())
+      throw std::runtime_error(
+        "VOF uses 0-order moments and needs tolerances for the related iterative method!");
+  }
   
   /*!
     @brief Pass in the volume fraction data for use in the reconstruction.
