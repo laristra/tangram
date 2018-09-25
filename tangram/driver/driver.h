@@ -60,9 +60,9 @@ class Driver {
     @param[in] Mesh @c Wrapper to the source mesh.
   */
   explicit Driver(Mesh_Wrapper const& Mesh,
-                  const IterativeMethodTolerances_t& im_tols,
+                  const std::vector<IterativeMethodTolerances_t>& ims_tols,
                   const bool all_convex = false)
-      : mesh_(Mesh), im_tols_(im_tols), all_convex_(all_convex) { }
+      : mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) { }
 
   /// Copy constructor (disabled)
   Driver(const Driver &) = delete;
@@ -105,25 +105,43 @@ class Driver {
     cell_mat_volfracs_.clear();
     cell_mat_centroids_.clear();
 
-    // We only add materials with non-zero volume fractions
+    // ims_tols_[0] are tolerances for 0-th moments, 
+    // i.e. ims_tols_[0].fun_eps is the tolerance on absolute value of volume
+    double volume_tol = ims_tols_[0].fun_eps;
+
+    bool insufficient_vol_tol = false;
+    // We only add materials with volumes above the tolerance
     int offset = 0;
     for (int icell = 0; icell < nc; icell++) {
+      double cell_volume = mesh_.cell_volume(icell);  
       int ncmats = cell_num_mats_[icell];
-      for (int icmat = 0; icmat < ncmats; icmat++)
-        if (cell_mat_volfracs[offset + icmat] > 
-            std::numeric_limits<double>::epsilon()) {
+
+      for (int icmat = 0; icmat < ncmats; icmat++) {
+        double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
+        if (mat_volume > volume_tol) {
           cell_mat_ids_.push_back(cell_mat_ids[offset + icmat]);
           cell_mat_volfracs_.push_back(cell_mat_volfracs[offset + icmat]);
           if (!cell_mat_centroids.empty())
             cell_mat_centroids_.push_back(cell_mat_centroids[offset + icmat]);
+
+          // If specified volume tolerance is not too small, ensure that the volume
+          // of the reconstructed material poly will not drop below the tolerance
+          if ( (volume_tol > 2*std::numeric_limits<double>::epsilon()) &&
+               (mat_volume < 2*volume_tol + std::numeric_limits<double>::epsilon()) )
+            insufficient_vol_tol = true;
         }
         else
            cell_num_mats_[icell]--;
-
+      }
       offset += ncmats;
     }
-  }
 
+    if (insufficient_vol_tol) {
+      std::vector<IterativeMethodTolerances_t>& ims_tols_r = 
+        const_cast <std::vector<IterativeMethodTolerances_t>&> (ims_tols_);
+      ims_tols_r[0].fun_eps /= 2;
+    }
+  }
 
   /*!
     @brief Perform the reconstruction
@@ -145,16 +163,16 @@ class Driver {
       // compute the interfaces and compute the pure material submesh
       // in each cell
       CellInterfaceReconstructor<Mesh_Wrapper, Dim, MatPoly_Splitter, MatPoly_Clipper>
-        reconstructor(mesh_, im_tols_, all_convex_);
+        reconstructor(mesh_, ims_tols_, all_convex_);
 
       // Tell the reconstructor what materials are in each cell and
       // what their volume fractions are
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
                                          cell_mat_volfracs_, cell_mat_centroids_);
       
-      float tot_seconds = 0.0, tot_seconds_srch = 0.0,
-            tot_seconds_xsect = 0.0, tot_seconds_interp = 0.0;
-      struct timeval begin_timeval, end_timeval, diff_timeval;
+      float tot_seconds = 0.0, xmat_cells_seconds = 0.0;
+      struct timeval begin_timeval, end_timeval, diff_timeval,
+                     xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
 
       gettimeofday(&begin_timeval, 0);
 
@@ -179,10 +197,14 @@ class Driver {
       //Reconstructor is set to operate on multi-material cells only.
       //To improve load balancing, we operate on the cells with the same
       //number of materials at a time
-      for (int inm = 0; inm < iMMCs.size(); inm++) {      
+      for (int inm = 0; inm < iMMCs.size(); inm++) {    
         int nMMCs = iMMCs[inm].size();
         if (nMMCs == 0)
           continue;
+
+        if (world_size == 1)
+          gettimeofday(&xmat_begin_timeval, 0);
+
         reconstructor.set_cell_indices_to_operate_on(iMMCs[inm]);
 
         //If reconstruction is performed for a single cell, we do not use transform:
@@ -198,6 +220,16 @@ class Driver {
                              MMCs_cellmatpolys.begin(), reconstructor);
           for (int immc = 0; immc < nMMCs; immc++)
             cellmatpolys_[iMMCs[inm][immc]] = MMCs_cellmatpolys[immc];
+        }
+
+        if (world_size == 1) {
+          gettimeofday(&xmat_end_timeval, 0);
+          timersub(&xmat_end_timeval, &xmat_begin_timeval, &xmat_diff_timeval);
+          xmat_cells_seconds = xmat_diff_timeval.tv_sec + 1.0E-6*xmat_diff_timeval.tv_usec; 
+          std::cout << "Transform Time for " << nMMCs << " " << 
+            inm + 2 << "-material cells (s): " <<
+            xmat_cells_seconds << ", mean time per cell (s): " << 
+            xmat_cells_seconds/nMMCs << std::endl;       
         }
       }
       gettimeofday(&end_timeval, 0);
@@ -372,7 +404,9 @@ class Driver {
 
  private:
   Mesh_Wrapper const& mesh_;
-  const IterativeMethodTolerances_t im_tols_;
+  const std::vector<IterativeMethodTolerances_t> ims_tols_; //Tolerances for iterative methods
+                                                            //ims_tols_[0] for methods dealing with volumes
+                                                            //ims_tols_[1] for methods dealing with centroids
   const bool all_convex_;
   std::vector<int> cell_num_mats_;
   std::vector<int> cell_mat_ids_;

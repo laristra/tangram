@@ -5,19 +5,19 @@
 ]]
 
 #-------------------------------------------------------------------------------
-# demoapp - uses 3D Simple_Mesh
+# demo-slic-app3d - uses 3D Simple_Mesh
 #-------------------------------------------------------------------------------
-add_executable(demoapp demoapp.cc)
-target_link_libraries(demoapp tangram ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+add_executable(demo-slic-app3d demo-slic-app3d.cc)
+target_link_libraries(demo-slic-app3d tangram ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)
   if(MPI_CXX_COMPILE_FLAGS)
-    set_target_properties(demoapp PROPERTIES
+    set_target_properties(demo-slic-app3d PROPERTIES
       COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
   endif(MPI_CXX_COMPILE_FLAGS)
 
   if(MPI_CXX_LINK_FLAGS)
-    set_target_properties(demoapp PROPERTIES
+    set_target_properties(demo-slic-app3d PROPERTIES
       LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
   endif(MPI_CXX_LINK_FLAGS)
 endif(ENABLE_MPI)
@@ -26,14 +26,12 @@ endif(ENABLE_MPI)
 set(ENABLE_TCMALLOC TRUE CACHE BOOL "Use TCMalloc")
 if(ENABLE_TCMALLOC)
   set(TCMALLOC_LIB "${HOME}" CACHE STRING "Set the TCMalloc library")
-  target_link_libraries(demoapp ${TCMALLOC_LIB})
+  target_link_libraries(demo-slic-app3d ${TCMALLOC_LIB})
 endif(ENABLE_TCMALLOC)
 
 #-------------------------------------------------------------------------------
 # Other libraries
 #-------------------------------------------------------------------------------
-# taget_link_libraries(tangramapp ${WONTON_LIBS})
-# include_directories(${WONTON_INCLUDE_DIRS})
 
 #-------------------------------------------------------------------------------
 # Testing

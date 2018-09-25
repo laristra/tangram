@@ -20,7 +20,7 @@
 /* Helper functions for generation of basic shapes that can be
    used to specify material distributions */
 
-constexpr double PI = std::acos(-1.0);
+constexpr double PI = 3.14159265358979323846;
 
 inline double pow2(double x) { return x*x; }
 

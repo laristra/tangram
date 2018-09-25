@@ -37,17 +37,20 @@ public:
     @brief Constructor for a VOF interface reconstruction algorithm
     @param[in] Mesh A lightweight wrapper to a specific input mesh
     implementation that provides certain functionality
-    @param[in] im_tols Tolerances for iterative methods
+    @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
   explicit VOF(const Mesh_Wrapper& Mesh, 
-               const IterativeMethodTolerances_t& im_tols,
+               const std::vector<IterativeMethodTolerances_t>& ims_tols,
                const bool all_convex = false) : 
-               mesh_(Mesh), im_tols_(im_tols), all_convex_(all_convex) {}
+               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+    if (ims_tols.empty())
+      throw std::runtime_error(
+        "VOF uses 0-order moments and needs tolerances for the related iterative method!");
+  }
   
   /*!
     @brief Pass in the volume fraction data for use in the reconstruction.
-    Filters out materials with volume fraction below the tolerance.
     @param[in] cell_num_mats A vector of length (num_cells) specifying the
     number of materials in each cell.
     @param[in] cell_mat_ids A vector of length (sum(cell_num_mats)) specifying
@@ -66,42 +69,30 @@ public:
     cell_mat_ids_.resize(ncells);
     cell_mat_vfracs_.resize(ncells);  
 
-    bool insufficient_vol_tol = false;
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
-      double cell_volume = mesh_.cell_volume(icell);  
       int nmats = cell_num_mats[icell];
 
       for (int icmat = 0; icmat < nmats; icmat++) {
-        double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
-        if (mat_volume > im_tols_.fun_eps) {
-          cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
-          cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
-
-          // If specified volume tolerance is not too small, ensure that the volume
-          // of the reconstructed material poly will not drop below the tolerance
-          if ( (im_tols_.fun_eps > 2*std::numeric_limits<double>::epsilon()) &&
-               (mat_volume < 2*im_tols_.fun_eps + std::numeric_limits<double>::epsilon()) )
-            insufficient_vol_tol = true;
-        }
+        cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
+        cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
       }
       offset += nmats;
-    }
-
-    if (insufficient_vol_tol) {
-      IterativeMethodTolerances_t& im_tols_r = 
-        const_cast <IterativeMethodTolerances_t&> (im_tols_);
-      im_tols_r.fun_eps /= 2;
     }
   }
   
   /*!
     @brief Used iterative methods tolerances
     @return  Tolerances for iterative methods, 
-    here im_tols_.fun_eps is the volume tolerance
+    here ims_tols_[0] correspond to methods for volumes 
+    and ims_tols_[1] are NOT used.
+    In particular, ims_tols_[0].arg_eps is a negligible 
+    change in cutting distance, ims_tols_[0].fun_eps is a 
+    negligible discrepancy in volume.
   */
-  const IterativeMethodTolerances_t& iterative_method_tolerances() const {
-    return im_tols_;
+  const std::vector<IterativeMethodTolerances_t>& 
+  iterative_methods_tolerances() const {
+    return ims_tols_;
   }
 
   /*!
@@ -133,7 +124,7 @@ public:
                           const std::vector< MatPoly<Dim> >& mixed_polys,
                           Plane_t<Dim>& cutting_plane,
                           const bool planar_faces = true) const {
-    double vol_tol = im_tols_.fun_eps;
+    double vol_tol = ims_tols_[0].fun_eps;
 
     std::vector<int> istencil_cells;
     mesh_.cell_get_node_adj_cells(cellID, Entity_type::ALL, &istencil_cells);
@@ -170,7 +161,7 @@ public:
 
     //Create cutting distance solver
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
-      solve_cut_dst(mixed_polys, cutting_plane.normal, im_tols_, planar_faces);
+      solve_cut_dst(mixed_polys, cutting_plane.normal, ims_tols_[0], planar_faces);
 
     solve_cut_dst.set_target_volume(target_vol); 
     std::vector<double> clip_res = solve_cut_dst();
@@ -180,7 +171,7 @@ public:
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol) 
-      std::cerr << "VOF for cell " << cellID << ": after " << im_tols_.max_num_iter <<
+      std::cerr << "VOF for cell " << cellID << ": after " << ims_tols_[0].max_num_iter <<
         " iteration(s) achieved error in volume for material " << 
         matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
 #endif
@@ -243,7 +234,7 @@ public:
 
 private:
   const Mesh_Wrapper& mesh_;
-  const IterativeMethodTolerances_t im_tols_;
+  const std::vector<IterativeMethodTolerances_t> ims_tols_;
   const bool all_convex_;
   std::vector< std::vector<int> > cell_mat_ids_;
   std::vector< std::vector<double> > cell_mat_vfracs_;

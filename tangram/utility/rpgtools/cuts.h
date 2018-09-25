@@ -19,6 +19,8 @@ extern "C" {
 #include "tangram/support/tangram.h"
 #include "tangram/intersect/split_r3d.h"
 
+#define BUGS_IN_R3D 1
+
 #define R3D_POLY_ORDER 1
 
 /* Functions for intersection-based generation of reference
@@ -40,6 +42,86 @@ struct RefPolyData_t {
   int cellID;         // ID of the containing cell
   r3d_real moments[R3D_NUM_MOMENTS(R3D_POLY_ORDER)]; // moments
 };
+
+/*!
+ @brief Breaks an r3d_poly into a vector of disjoint r3d_poly's.
+*/
+void r3d_poly_components(const r3d_poly& r3dpoly, std::vector<r3d_poly>& poly_components) {
+  poly_components.clear();
+
+  int total_nvrts = static_cast<int>(r3dpoly.nverts);
+  std::vector<int> vrt_marks(total_nvrts, 0);
+  std::vector< std::vector<bool> > walked_edge(total_nvrts);
+  for (int ivrt = 0; ivrt < total_nvrts; ivrt++)
+    walked_edge[ivrt].assign(3, false);
+
+  std::vector<bool> vrt_in_cmp(total_nvrts, false);
+  std::vector<int> poly_irvt2cmp_ivrt(total_nvrts, -1);
+
+  int icmp_first_vrt = 0;
+  r3d_real cmp_moments[R3D_NUM_MOMENTS(R3D_POLY_ORDER)];
+
+  while(icmp_first_vrt < total_nvrts) {
+    r3d_poly cur_cmp;
+    cur_cmp.nverts = 0;
+
+    //Walk all faces of the current components
+    int iface_first_vrt = icmp_first_vrt;
+    int iedge = 0;
+    while (iface_first_vrt < total_nvrts) {
+      int icur_vrt = iface_first_vrt;
+
+      for (iedge = 0; iedge < 3; iedge++)
+        if (!walked_edge[iface_first_vrt][iedge])
+          break;
+
+      //Walk the current face
+      do {
+        vrt_marks[icur_vrt]++;
+        
+        if (!vrt_in_cmp[icur_vrt]) {
+          poly_irvt2cmp_ivrt[icur_vrt] = cur_cmp.nverts;
+          cur_cmp.nverts++;
+          cur_cmp.verts[poly_irvt2cmp_ivrt[icur_vrt]] = r3dpoly.verts[icur_vrt];
+          vrt_in_cmp[icur_vrt] = true;
+        }
+
+        int inext_vrt = r3dpoly.verts[icur_vrt].pnbrs[iedge];
+        walked_edge[icur_vrt][iedge] = true;
+
+        int ireturn_edge;
+        for (ireturn_edge = 0; ireturn_edge < 3; ireturn_edge++)
+          if (r3dpoly.verts[inext_vrt].pnbrs[ireturn_edge] == icur_vrt)
+            break;
+
+        iedge = (ireturn_edge + 2)%3;
+        icur_vrt = inext_vrt;
+
+      } while (icur_vrt != iface_first_vrt);
+
+      for (iface_first_vrt = 0; iface_first_vrt < total_nvrts; iface_first_vrt++)
+        if( (vrt_marks[iface_first_vrt] > 0) && (vrt_marks[iface_first_vrt] < 3) )
+          break;
+    }
+
+    //Neighbors data still uses r3dpoly indices
+    for (int icmp_vrt = 0; icmp_vrt < cur_cmp.nverts; icmp_vrt++)
+      for (int iedge = 0; iedge < 3; iedge++) {
+        int old_id = cur_cmp.verts[icmp_vrt].pnbrs[iedge];
+        cur_cmp.verts[icmp_vrt].pnbrs[iedge] = poly_irvt2cmp_ivrt[old_id];
+      }
+
+    //Confirm that the component is not empty
+    r3d_reduce(&cur_cmp, cmp_moments, R3D_POLY_ORDER);
+    if (cmp_moments[0] > std::numeric_limits<double>::epsilon())
+      poly_components.push_back(cur_cmp);
+
+    //Find the first vertex of the next component
+    for (icmp_first_vrt = 0; icmp_first_vrt < total_nvrts; icmp_first_vrt++)
+      if (vrt_marks[icmp_first_vrt] == 0)
+        break;
+  }
+}
 
 /*!
  @brief For a given data on a collection of polyhedra find their positions with
@@ -155,8 +237,27 @@ public:
     const r3d_real* poly_moments = polys_data_[polyID]->moments;
     int cellID = polys_data_[polyID]->cellID;
 
-    r3d_split(&r3dpoly, 1, cutting_plane_, &hs_data.upper->r3dpoly, &hs_data.lower->r3dpoly);
+    r3d_poly split_poly = r3dpoly;
+    r3d_split(&split_poly, 1, cutting_plane_, &hs_data.upper->r3dpoly, &hs_data.lower->r3dpoly);
 
+#if BUGS_IN_R3D
+    std::shared_ptr<RefPolyData_t> hs_data_ptrs[2] = {hs_data.lower, hs_data.upper};
+    for (int ihs = 0; ihs < 2; ihs++) {
+      if (hs_data_ptrs[ihs]->r3dpoly.nverts > 0) {
+        std::vector<r3d_poly> poly_components;
+        r3d_poly_components(hs_data_ptrs[ihs]->r3dpoly, poly_components);
+        if (poly_components.empty())
+          hs_data_ptrs[ihs]->r3dpoly.nverts = 0;
+        else {
+          assert(poly_components.size() == 1);
+          if (hs_data_ptrs[ihs]->r3dpoly.nverts != poly_components[0].nverts)
+            hs_data_ptrs[ihs]->r3dpoly = poly_components[0];
+          hs_data_ptrs[ihs]->cellID = cellID;
+          r3d_reduce(&hs_data_ptrs[ihs]->r3dpoly, hs_data_ptrs[ihs]->moments, R3D_POLY_ORDER);
+        }
+      }
+    }
+#else
     bool nnz_cutoff = false;
     if (hs_data.lower->r3dpoly.nverts > 0) {
       r3d_reduce(&hs_data.lower->r3dpoly, hs_data.lower->moments, R3D_POLY_ORDER);
@@ -183,7 +284,7 @@ public:
       else  
         hs_data.upper->r3dpoly.nverts = 0;
     }
-
+#endif
     return hs_data;
   }
 
@@ -405,29 +506,11 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
       exterior_data.reserve(exterior_data.size() + new_exterior_data.size());
       exterior_data.insert(exterior_data.end(), 
                            new_exterior_data.begin(), new_exterior_data.end());
-
-      for (int i = 0; i < new_exterior_data.size(); i++) {
-        r3d_brep* poly_brep;
-        r3d_int ncomponents;
-        r3d_init_brep(&new_exterior_data[i]->r3dpoly, &poly_brep, &ncomponents);
-        if (ncomponents > 1)
-          r3d_print_brep(&poly_brep, ncomponents);
-        r3d_free_brep(&poly_brep, ncomponents);
-      }
     }
 
     interior_data.reserve(interior_data.size() + intersection_data.size());
     interior_data.insert(interior_data.end(), 
                          intersection_data.begin(), intersection_data.end());
-
-      for (int i = 0; i < intersection_data.size(); i++) {
-        r3d_brep* poly_brep;
-        r3d_int ncomponents;
-        r3d_init_brep(&intersection_data[i]->r3dpoly, &poly_brep, &ncomponents);
-        if (ncomponents > 1)
-          r3d_print(&intersection_data[i]->r3dpoly);
-        r3d_free_brep(&poly_brep, ncomponents);
-      }                         
   }
   else {
     interior_data.clear();
@@ -485,6 +568,14 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   }
 }
 
+unsigned int factorial(unsigned int n)
+{
+  unsigned int res = 1;
+  for(unsigned int i = 0; i < n; ++i)
+      res *= i + 1;
+  return res;
+}
+
 /*!
  @brief For a given collections of single-material reference polyhedra sets
  generates data compatible with Tangram's driver. 
@@ -499,7 +590,9 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
  @param[out] reference_mat_polys For every mesh cell and every material inside that cell, 
- the collection of single-material polyhedra containing that material                                
+ the collection of single-material polyhedra containing that material          
+ @param[in] permute_order If true, the order of materials in every cell will be 
+ additionally permuted a random number of times                     
 */
 void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyData_t> > >& 
                          ref_sets_data,
@@ -509,7 +602,8 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
                        std::vector<double>& cell_mat_volfracs,
                        std::vector< Tangram::Point<3> >& cell_mat_centroids,
                        std::vector< std::vector< std::vector<r3d_poly> > >&
-                         reference_mat_polys) {                     
+                         reference_mat_polys,
+                       bool permute_order=false) {                     
   int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
   for (int iset = 0; iset < nsets; iset++) {
     int set_max_cellID = -1;
@@ -558,8 +652,39 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
   cell_mat_volfracs.clear();
   cell_mat_centroids.clear();
 
+  if (permute_order)
+    srand(20150420);
+
   for (int icell = 0; icell < ncells; icell++) {
-    cell_num_mats[icell] = cells_mat_ids[icell].size();
+    int ncmats = static_cast<int>(cells_mat_ids[icell].size());
+    cell_num_mats[icell] = ncmats;
+
+    // If requested, we permuate the order of materials a random number of times
+    // This can be used for testing accuracy of material order dependent methods
+    if (permute_order) {
+      int max_npermutations = factorial(ncmats);
+      int cur_npermutations = rand()%max_npermutations;
+
+      if (cur_npermutations != 0) {
+        std::vector<int> new_mat_order(ncmats);
+        std::iota(new_mat_order.begin(), new_mat_order.end(), 0);
+        for (int ip = 0; ip < cur_npermutations; ip++)
+          std::next_permutation(new_mat_order.begin(), new_mat_order.end());
+
+        std::vector<int> new_cell_mat_ids(ncmats);
+        std::vector< std::vector<double> > new_cell_mat_moments(ncmats);
+        std::vector< std::vector<r3d_poly> > new_cell_ref_mat_polys(ncmats);
+        for (int icmat = 0; icmat <ncmats; icmat++) {
+          new_cell_mat_ids[icmat] = cells_mat_ids[icell][new_mat_order[icmat]];
+          new_cell_mat_moments[icmat] = cells_mat_moments[icell][new_mat_order[icmat]];
+          new_cell_ref_mat_polys[icmat] = reference_mat_polys[icell][new_mat_order[icmat]];
+        }
+        cells_mat_ids[icell] = new_cell_mat_ids;
+        cells_mat_moments[icell] = new_cell_mat_moments;
+        reference_mat_polys[icell] = new_cell_ref_mat_polys;
+      }
+    }
+
     cell_mat_ids.insert(cell_mat_ids.end(), cells_mat_ids[icell].begin(), 
                         cells_mat_ids[icell].end());
 
