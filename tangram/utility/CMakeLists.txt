@@ -20,6 +20,6 @@ set(utility_HEADERS
 )
 
 # Add source files
-set(reconstruct_SOURCES
+set(utility_SOURCES
     PARENT_SCOPE
 )
