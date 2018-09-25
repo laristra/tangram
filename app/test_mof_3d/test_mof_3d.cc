@@ -31,8 +31,8 @@
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/MOF.h"
 #include "tangram/driver/write_to_gmv.h"
-#include "app/include/get_material_moments.h"
-#include "app/include/get_mat_sym_diff_vol.h"
+#include "tangram/utility/get_material_moments.h"
+#include "tangram/utility/get_mat_sym_diff_vol.h"
 
 /* Test app for a 3D mesh and planar material interfaces.
    Uses SimpleMesh/Jali and MOF.

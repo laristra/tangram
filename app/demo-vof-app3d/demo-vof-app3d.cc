@@ -25,7 +25,7 @@
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/VOF.h"
 #include "tangram/driver/write_to_gmv.h"
-#include "app/include/read_material_data.h"
+#include "tangram/utility/read_material_data.h"
 
 /* Demo app for an unstructured 3D mesh
    and a given material data.
