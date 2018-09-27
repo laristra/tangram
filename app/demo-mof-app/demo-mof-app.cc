@@ -59,7 +59,7 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   std::vector<Tangram::Point<dim>> cell_mat_centroids;
   read_material_data<Tangram::Jali_Mesh_Wrapper, dim>(mesh_wrapper, in_data_fname, 
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
-  
+
   // Volume fraction and angles tolerance
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2) ;
   ims_tols[0]= {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
@@ -75,6 +75,24 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
     
   std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>>
   cellmatpoly_list = mof_driver.cell_matpoly_ptrs();
+
+ //Create MatPoly's for single-material cells
+  std::vector<int> offsets(ncells, 0);
+  for (int icell = 0; icell < ncells - 1; icell++)
+    offsets[icell + 1] = offsets[icell] + cell_num_mats[icell];
+  
+  for (int icell = 0; icell < ncells; icell++) {
+    if (cell_num_mats[icell] == 1) {
+      assert(cellmatpoly_list[icell] == nullptr);
+      std::shared_ptr< Tangram::CellMatPoly<dim> >
+        cmp_ptr(new Tangram::CellMatPoly<dim>(icell));
+      Tangram::MatPoly<dim> cell_matpoly;
+      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
+      cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
+      cmp_ptr->add_matpoly(cell_matpoly);
+      cellmatpoly_list[icell] = cmp_ptr;
+    }
+  }
     
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
 }

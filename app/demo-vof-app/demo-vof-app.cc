@@ -77,6 +77,24 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>> 
   cellmatpoly_list = vof_driver.cell_matpoly_ptrs();
 
+ //Create MatPoly's for single-material cells
+  std::vector<int> offsets(ncells, 0);
+  for (int icell = 0; icell < ncells - 1; icell++)
+    offsets[icell + 1] = offsets[icell] + cell_num_mats[icell];
+
+  for (int icell = 0; icell < ncells; icell++) {
+    if (cell_num_mats[icell] == 1) {
+      assert(cellmatpoly_list[icell] == nullptr);
+      std::shared_ptr< Tangram::CellMatPoly<dim> >
+        cmp_ptr(new Tangram::CellMatPoly<dim>(icell));
+      Tangram::MatPoly<dim> cell_matpoly;
+      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
+      cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
+      cmp_ptr->add_matpoly(cell_matpoly);
+      cellmatpoly_list[icell] = cmp_ptr;
+    }
+  }
+
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
 }
 

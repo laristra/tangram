@@ -5,58 +5,6 @@
 ]]
 
 #-------------------------------------------------------------------------------
-# demo-mof-app3d - uses 3D mesh from Jali
-#-------------------------------------------------------------------------------
-add_executable(demo-mof-app3d demo-mof-app3d.cc)
-target_link_libraries(demo-mof-app3d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
-                                     ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
-
-if(ENABLE_MPI)
-  if(MPI_CXX_COMPILE_FLAGS)
-    set_target_properties(demo-mof-app3d PROPERTIES
-      COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
-  endif(MPI_CXX_COMPILE_FLAGS)
-
-  if(MPI_CXX_LINK_FLAGS)
-    set_target_properties(demo-mof-app3d PROPERTIES
-      LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
-  endif(MPI_CXX_LINK_FLAGS)
-endif(ENABLE_MPI)
-
-#TCMalloc option
-set(ENABLE_TCMALLOC TRUE CACHE BOOL "Use TCMalloc")
-if(ENABLE_TCMALLOC)
-  set(TCMALLOC_LIB "${HOME}" CACHE STRING "Set the TCMalloc library")
-  target_link_libraries(demo-mof-app3d ${TCMALLOC_LIB})
-endif(ENABLE_TCMALLOC)
-
-#-------------------------------------------------------------------------------
-# demo-mof-app2d - uses 2D mesh from Jali
-#-------------------------------------------------------------------------------
-add_executable(demo-mof-app2d demo-mof-app2d.cc)
-target_link_libraries(demo-mof-app2d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
-                                     ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
-
-if(ENABLE_MPI)
-  if(MPI_CXX_COMPILE_FLAGS)
-    set_target_properties(demo-mof-app2d PROPERTIES
-      COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
-  endif(MPI_CXX_COMPILE_FLAGS)
-
-  if(MPI_CXX_LINK_FLAGS)
-    set_target_properties(demo-mof-app2d PROPERTIES
-      LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
-  endif(MPI_CXX_LINK_FLAGS)
-endif(ENABLE_MPI)
-
-#TCMalloc option
-set(ENABLE_TCMALLOC TRUE CACHE BOOL "Use TCMalloc")
-if(ENABLE_TCMALLOC)
-  set(TCMALLOC_LIB "${HOME}" CACHE STRING "Set the TCMalloc library")
-  target_link_libraries(demo-mof-app2d ${TCMALLOC_LIB})
-endif(ENABLE_TCMALLOC)
-
-#-------------------------------------------------------------------------------
 # demo-mof-app - uses 2D/3D mesh from Jali
 #-------------------------------------------------------------------------------
 add_executable(demo-mof-app demo-mof-app.cc)
