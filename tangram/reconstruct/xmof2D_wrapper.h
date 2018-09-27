@@ -37,13 +37,13 @@ namespace Tangram {
      @brief Constructor initializing the X-MOF 2D reconstructor.
      @param[in] Mesh A lightweight wrapper to a specific input mesh
      implementation that provides certain functionality
-     @param[in] im_tols Tolerances for iterative methods
+     @param[in] ims_tols Tolerances for iterative methods
      @param[in] all_convex Flag indicating whether all mesh cells are convex
      */
     XMOF2D_Wrapper(const Mesh_Wrapper& Mesh,
-                   const IterativeMethodTolerances_t& im_tols,
+                   const std::vector<IterativeMethodTolerances_t>& ims_tols,
                    bool all_convex = true) : 
-                   mesh_(Mesh), im_tols_(im_tols) {
+                   mesh_(Mesh), ims_tols_(ims_tols) {
       assert(Dim == 2);
       assert(all_convex);
 
@@ -70,12 +70,12 @@ namespace Tangram {
       mesh_cfg.cells_material.resize(ncells, -1);
       
       XMOF2D::IRTolerances ir_tol;
-      ir_tol.dist_eps = im_tols.fun_eps;
+      ir_tol.dist_eps = ims_tols[0].fun_eps;
       ir_tol.div_eps = 1.0e-6;
-      ir_tol.ddot_eps = im_tols.fun_eps;
-      ir_tol.area_eps = im_tols.fun_eps;
-      ir_tol.ang_eps = im_tols.arg_eps;
-      ir_tol.mof_max_iter = im_tols.max_num_iter;
+      ir_tol.ddot_eps = ims_tols[1].fun_eps;
+      ir_tol.area_eps = ims_tols[0].fun_eps;
+      ir_tol.ang_eps = ims_tols[1].arg_eps;
+      ir_tol.mof_max_iter = ims_tols[1].max_num_iter;
 
       xmof_ir = std::make_shared<XMOF2D::XMOF_Reconstructor>(mesh_cfg, ir_tol);
     }
@@ -123,10 +123,20 @@ namespace Tangram {
     /*!
       @brief Used iterative methods tolerances
       @return  Tolerances for iterative methods, 
-      here im_tols_.fun_eps is the area tolerance
+      here ims_tols_[0] correspond to methods for volumes 
+      and ims_tols_[1] correspond to methods for centroids.
+      In particular, ims_tols_[0].arg_eps is a negligible 
+      change in cutting distance, ims_tols_[0].fun_eps is a 
+      negligible discrepancy in volume, ims_tols_[1].arg_eps
+      is a negligible change in the cutting plane orientation,
+      and ims_tols_[1].fun_eps is a negligible distance between
+      actual and reference centroids. The change in cutting plane
+      orientation is defined as the norm of change of the cutting
+      plane's normal, which is expressed in polar coordinates (angles).
     */
-    const IterativeMethodTolerances_t& iterative_method_tolerances() const {
-      return im_tols_;
+    const std::vector<IterativeMethodTolerances_t>& 
+    iterative_methods_tolerances() const {
+      return ims_tols_;
     }
 
     /*!
@@ -197,7 +207,7 @@ namespace Tangram {
 
   private:
     const Mesh_Wrapper& mesh_; // Provided base mesh wrapper
-    const IterativeMethodTolerances_t im_tols_; // Tolerances for iterative methods
+    const std::vector<IterativeMethodTolerances_t> ims_tols_; // Tolerances for iterative methods
     std::shared_ptr<XMOF2D::XMOF_Reconstructor> xmof_ir; // XMOF2D reconstructor object
     std::vector<int> icells_to_reconstruct; // List of cells to create CellMatPoly objects for
   }; // class XMOF2D_Wrapper

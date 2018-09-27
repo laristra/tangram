@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <memory>
 #include "tangram/support/tangram.h"
+#include "tangram/support/Point.h"
 #include "tangram/support/MatPoly.h"
 
 extern "C" {
@@ -80,7 +81,7 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
   in the R3D polyhedron
 */
 void
-r3dpoly_to_matpolys(r3d_poly& r3dpoly,
+r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                     std::vector< MatPoly<3> >& mat_polys) {
   r3d_brep* poly_brep;
   r3d_int ncomponents;
@@ -92,7 +93,7 @@ r3dpoly_to_matpolys(r3d_poly& r3dpoly,
     return;
   }
 
-  mat_polys.resize(ncomponents);
+  mat_polys.reserve(ncomponents);
   for (int ipoly = 0; ipoly < ncomponents; ipoly++) {
     int nvrts = poly_brep[ipoly].numvertices;
     std::vector<Point3> curpoly_vrts;
@@ -118,27 +119,36 @@ r3dpoly_to_matpolys(r3d_poly& r3dpoly,
     }
     curpoly_vrts.shrink_to_fit();
 
+    if (curpoly_vrts.size() < 4) continue;
+
     int nfaces = poly_brep[ipoly].numfaces;
-    std::vector< std::vector<int> > curpoly_face(nfaces);
+    std::vector< std::vector<int> > curpoly_faces(nfaces);
     for (int iface = 0; iface < nfaces; iface++) {
       int face_nverts = poly_brep[ipoly].numvertsperface[iface];
       for (int ifv = 0; ifv < face_nverts; ifv++) {
         int cur_vrt_id = r3d2matpoly_vrt_ids[poly_brep[ipoly].faceinds[iface][ifv]];
         // We only add unique node indices to the list of face's nodes
-        if (std::find(curpoly_face[iface].begin(), curpoly_face[iface].end(), 
-                      cur_vrt_id) == curpoly_face[iface].end())
-          curpoly_face[iface].push_back(cur_vrt_id);
+        if (std::find(curpoly_faces[iface].begin(), curpoly_faces[iface].end(), 
+                      cur_vrt_id) == curpoly_faces[iface].end())
+          curpoly_faces[iface].push_back(cur_vrt_id);
       }
     }
 
     // Filter out degenerate faces
     int ind_face = 0;
-    while (ind_face < curpoly_face.size())
-      if (curpoly_face[ind_face].size() > 2) ind_face++;
-      else curpoly_face.erase(curpoly_face.begin() + ind_face);  
+    while (ind_face < curpoly_faces.size())
+      if (curpoly_faces[ind_face].size() > 2) ind_face++;
+      else curpoly_faces.erase(curpoly_faces.begin() + ind_face);  
 
-    mat_polys[ipoly].initialize(curpoly_vrts, curpoly_face);
+    // We do not store polyhedra with less than four faces, 
+    // as they are clearly degenerate
+    if (curpoly_faces.size() > 3) {
+      int inew_poly = static_cast<int>(mat_polys.size());
+      mat_polys.push_back(MatPoly<3>());
+      mat_polys[inew_poly].initialize(curpoly_vrts, curpoly_faces);
+    }
   }
+  mat_polys.shrink_to_fit();
 
   r3d_free_brep(&poly_brep, ncomponents);
 }
@@ -200,10 +210,19 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
     std::vector< MatPoly<3> > sub_matpoly;
     r3dpoly_to_matpolys(r3d_subpolys[isp], sub_matpoly);
     int ncomponents = static_cast<int>(sub_matpoly.size());
-    if (ncomponents > 1) 
-      throw std::runtime_error("Non-convex MatPoly is split using the method for convex MatPoly's!");
+    if (ncomponents > 1) {
+      // Filter out degenerate components
+      int ind_subpoly = 0;
+      while (ind_subpoly < sub_matpoly.size())
+        if (sub_matpoly[ind_subpoly].moments()[0] > 
+            std::numeric_limits<double>::epsilon()) ind_subpoly++;
+        else sub_matpoly.erase(sub_matpoly.begin() + ind_subpoly);  
+    }
+      
     if (ncomponents == 1) 
       *subpoly_ptrs[isp] = sub_matpoly[0];
+    else
+      throw std::runtime_error("Non-convex MatPoly is split using the method for convex MatPoly's!");
   }  
 }
 

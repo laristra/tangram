@@ -143,6 +143,28 @@ template <long D> class Vector {
     return result;
   }
 
+  /*!
+    @brief Calculate the 1-norm of a Vector.
+  */
+  double one_norm() const {
+    double result = 0.0;
+    for (int i = 0; i < D; i++) result += std::fabs(m_comp[i]);
+    return result;
+  }
+
+  /*!
+    @brief Calculate the max norm of a Vector.
+  */
+  double max_norm() const {
+    double result = std::fabs(m_comp[0]);
+    for (int i = 0; i < D - 1; i++) {
+      double abs_val = std::fabs(m_comp[i + 1]);
+      if (result < abs_val)
+        result = abs_val;
+    }
+    return result;
+  }
+
   /// Convert this Vector into a unit Vector.
   void normalize() {
     double s = norm();

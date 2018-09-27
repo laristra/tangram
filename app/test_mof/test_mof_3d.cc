@@ -31,8 +31,8 @@
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/MOF.h"
 #include "tangram/driver/write_to_gmv.h"
-#include "app/include/get_material_moments.h"
-#include "app/include/get_mat_sym_diff_vol.h"
+#include "tangram/utility/get_material_moments.h"
+#include "tangram/utility/get_mat_sym_diff_vol.h"
 
 /* Test app for a 3D mesh and planar material interfaces.
    Uses SimpleMesh/Jali and MOF.
@@ -190,19 +190,20 @@ int main(int argc, char** argv) {
   write_to_gmv(ref_matpoly_list, ref_gmv_fname);
 #endif
 
-  // Volume fraction and angles tolerance
-  Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  // Volume and angles tolerance
+  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  ims_tols[1] = {.max_num_iter = 100, .arg_eps = 1.0e-14, .fun_eps = 1.0e-15};
 
   // Build the driver
 #if ENABLE_JALI  
   Tangram::Driver<Tangram::MOF, 3, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR3D, Tangram::ClipR3D> 
-    mof_driver(mesh_wrapper, im_tols, !decompose_cells);
+    mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #else
   Tangram::Driver<Tangram::MOF, 3, Tangram::Simple_Mesh_Wrapper, 
                   Tangram::SplitR3D, Tangram::ClipR3D> 
-    mof_driver(mesh_wrapper, im_tols, !decompose_cells);
+    mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #endif    
 
   mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 

@@ -27,7 +27,6 @@
 
 #ifndef TANGRAM_POINT_H_
 #define TANGRAM_POINT_H_
-
 #include <assert.h>
 #include <iostream>
 #include <vector>
@@ -118,6 +117,13 @@ class Point {
   /// Return component @c i of the Point.
   inline double& operator[](const int& i) {
     return m_loc[i];
+  }
+
+  /// Negative of this Point.
+  Point<D> operator-() const {
+    Point<D> p;
+    for (int i = 0; i < D; i++) p.m_loc[i] = -m_loc[i];
+    return p;
   }
 
   /// Translate this Point along the Vector @c v.

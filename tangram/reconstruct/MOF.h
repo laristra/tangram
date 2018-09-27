@@ -31,6 +31,18 @@
 
 namespace Tangram {
 
+enum BFGS_ALG {
+  BFGS,       //Algorithm based on Nocedal&Wright book, 
+              //uses linesearch with strong Wolfe conditions
+  BFGS_MWWP,  //Similar to BFGS, but uses linesearch with 
+              //Modified Weak Wolfe-Powell conditions, 
+              //claims global convergence of BFGS for general functions
+  DBFGS       //Algorithm by M.Al-Baali, uses linesearch with strong Wolfe conditions
+              //and an advanced damping technique
+};
+
+constexpr BFGS_ALG mof_bfgs_alg = BFGS;
+
 Vector<1> cartesian_to_polar(const Vector<2> cartesian_vec) {
   return Vector<1>(atan2(cartesian_vec[1], cartesian_vec[0]));
 }
@@ -58,17 +70,20 @@ public:
     @brief Constructor for a MOF interface reconstruction algorithm
     @param[in] Mesh A lightweight wrapper to a specific input mesh
     implementation that provides certain functionality
-    @param[in] im_tols Tolerances for iterative methods
+    @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
   explicit MOF(const Mesh_Wrapper& Mesh, 
-               const IterativeMethodTolerances_t& im_tols,
+               const std::vector<IterativeMethodTolerances_t>& ims_tols,
                const bool all_convex = false) : 
-               mesh_(Mesh), im_tols_(im_tols), all_convex_(all_convex) {}
+               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+    if (ims_tols.size() < 2)
+      throw std::runtime_error(
+        "MOF uses 0 and 1-order moments and needs tolerances for related iterative methods!");
+  }
   
   /*!
     @brief Pass in the volume fraction data for use in the reconstruction.
-    Filters out materials with volume fraction below the tolerance.
     @param[in] cell_num_mats A vector of length (num_cells) specifying the
     number of materials in each cell.
     @param[in] cell_mat_ids A vector of length (sum(cell_num_mats)) specifying
@@ -88,18 +103,15 @@ public:
     cell_mat_ids_.resize(ncells);
     cell_mat_vfracs_.resize(ncells);  
     cell_mat_centroids_.resize(ncells);
+
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
-      double cell_volume = mesh_.cell_volume(icell);  
       int nmats = cell_num_mats[icell];
 
       for (int icmat = 0; icmat < nmats; icmat++) {
-        double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
-        if (mat_volume > im_tols_.fun_eps) {
-          cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
-          cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
-          cell_mat_centroids_[icell].push_back(cell_mat_centroids[offset + icmat]);
-        }
+        cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
+        cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
+        cell_mat_centroids_[icell].push_back(cell_mat_centroids[offset + icmat]);
       }
       offset += nmats;
     }
@@ -108,12 +120,20 @@ public:
   /*!
     @brief Used iterative methods tolerances
     @return  Tolerances for iterative methods, 
-    here im_tols_.fun_eps is the volume tolerance and
-    im_tols_.arg_eps is the tolerance on norm of the change 
-    in polar angles defining the normal to the cutting plane
+    here ims_tols_[0] correspond to methods for volumes 
+    and ims_tols_[1] correspond to methods for centroids.
+    In particular, ims_tols_[0].arg_eps is a negligible 
+    change in cutting distance, ims_tols_[0].fun_eps is a 
+    negligible discrepancy in volume, ims_tols_[1].arg_eps
+    is a negligible change in the cutting plane orientation,
+    and ims_tols_[1].fun_eps is a negligible distance between
+    actual and reference centroids. The change in cutting plane
+    orientation is defined as the norm of change of the cutting
+    plane's normal, which is expressed in polar coordinates (angles).
   */
-  const IterativeMethodTolerances_t& iterative_method_tolerances() const {
-    return im_tols_;
+  const std::vector<IterativeMethodTolerances_t>& 
+  iterative_methods_tolerances() const {
+    return ims_tols_;
   }
 
   /*!
@@ -163,14 +183,26 @@ public:
                             polar_to_cartesian(cur_arg));
     };    
 
-    Vector<Dim - 1> ang_min = 
-      bfgs<Dim - 1>(bfgs_obj_fun, init_guess, im_tols_.max_num_iter,
-                    im_tols_.arg_eps, im_tols_.fun_eps);
+    double bfgs_obj_fun_lbnd = 0.0;
+
+    Vector<Dim - 1> ang_min;
+    switch(mof_bfgs_alg) {
+      case BFGS: ang_min = bfgs<Dim - 1>(bfgs_obj_fun, bfgs_obj_fun_lbnd, 
+                                         init_guess, ims_tols_[1]);
+        break;
+      case BFGS_MWWP: ang_min = bfgs_mwwp<Dim - 1>(bfgs_obj_fun, bfgs_obj_fun_lbnd, 
+                                                   init_guess, ims_tols_[1]);
+        break;
+      case DBFGS: ang_min = dbfgs<Dim - 1>(bfgs_obj_fun, bfgs_obj_fun_lbnd, 
+                                           init_guess, ims_tols_[1]);
+        break;
+      default: throw std::runtime_error("Unknown BFGS algorithm is selected for MOF!");
+    }
 
     cutting_plane.normal = polar_to_cartesian(ang_min);
 
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
-      solve_cut_dst(mixed_polys, cutting_plane.normal, im_tols_, planar_faces);
+      solve_cut_dst(mixed_polys, cutting_plane.normal, ims_tols_[0], planar_faces);
 
     double target_vol = cell_mat_vfracs_[cellID][cellMatID]*mesh_.cell_volume(cellID);
     solve_cut_dst.set_target_volume(target_vol); 
@@ -205,8 +237,24 @@ public:
     NestedDissections<MOF, Dim, MatPoly_Splitter> 
       nested_dissections(*this, cellID, all_convex_);
 
-    // We test all the permutations of the materials order
-    nested_dissections.set_cell_materials_order(true);
+    // Normally, we test all the permutations of the materials order
+    bool enable_permutations = true;
+
+    // For two-material cells we check if the aggregated reference centroids
+    // match the cell centroid. If they do, we do NOT permute materials order
+    if (cell_mat_ids_[cellID].size() == 2) {
+      Point<Dim> cell_cen;
+      mesh_.cell_centroid(cellID, &cell_cen);
+
+      Vector<Dim> cen_dist = cell_cen.asV();
+      for (int icmat = 0; icmat < 2; icmat++)
+        cen_dist -= cell_mat_vfracs_[cellID][icmat]*cell_mat_centroids_[cellID][icmat].asV();
+
+      if (cen_dist.norm() <= ims_tols_[1].fun_eps)
+        enable_permutations = false;
+    }
+    
+    nested_dissections.set_cell_materials_order(enable_permutations);
 
     int npermutations = nested_dissections.num_materials_orders();
     Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> 
@@ -226,6 +274,10 @@ public:
 
       double cur_error = 0.0;      
       for (int imat = 0; imat < nmats; imat++) {
+        int mat_id = cell_mat_ids_[cellID][imat];
+        if (!cur_cmp_ptr->is_cell_material(mat_id))
+          continue;
+
         const std::vector<double>& cur_moments = 
           cur_cmp_ptr->material_moments(cell_mat_ids_[cellID][imat]);
 
@@ -233,7 +285,10 @@ public:
         for (int idim = 0; idim < Dim; idim++)
           mat_centroid[idim] = cur_moments[idim + 1]/cur_moments[0];
 
-        cur_error += (mat_centroid - cell_mat_centroids_[cellID][imat]).norm(false);
+        // We prioritize materials with larger volumes and essentially
+        // compute a discrete L2 norm scaled by the cell volume
+        cur_error += cell_mat_vfracs_[cellID][imat]*
+          (mat_centroid - cell_mat_centroids_[cellID][imat]).norm(false);
       }
       cur_error = sqrt(cur_error);
 
@@ -282,14 +337,13 @@ private:
                         const int cellMatID,
                         const std::vector< MatPoly<Dim> >& mixed_polys,
                         const Vector<Dim>& plane_normal) const {
-    double vol_tol = im_tols_.fun_eps;
-
     Plane_t<Dim> cutting_plane;
     cutting_plane.normal = plane_normal;
 
     double target_vol = cell_mat_vfracs_[cellID][cellMatID]*mesh_.cell_volume(cellID);
 
 #ifdef DEBUG
+    double vol_tol = ims_tols_[0].fun_eps;
     //Confirm that the clipped volume is smaller than the volume of MatPoly's
     double mixed_polys_vol = 0.0;
     for (int ipoly = 0; ipoly < mixed_polys.size(); ipoly++)
@@ -299,7 +353,7 @@ private:
 
     //Create cutting distance solver
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
-      solve_cut_dst(mixed_polys, cutting_plane.normal, im_tols_, true);
+      solve_cut_dst(mixed_polys, cutting_plane.normal, ims_tols_[0], true);
 
     solve_cut_dst.set_target_volume(target_vol); 
     std::vector<double> clip_res = solve_cut_dst();
@@ -312,14 +366,14 @@ private:
       for (int idim = 0; idim < Dim; idim++)
         std::cerr << plane_normal[idim] << " ";
       std::cerr << "): after " <<
-        im_tols_.max_num_iter <<
+        ims_tols_[0].max_num_iter <<
         " iteration(s) achieved error in volume for material " << 
         cell_mat_ids_[cellID][cellMatID] << " is " << cur_vol_err << 
         ", volume tolerance is " << vol_tol << 
         ", volume of the split MatPoly's is " << mixed_polys_vol << 
         ", target volume is " << target_vol << std::endl;
     }
-#endif    
+#endif   
 
     Point<Dim> mat_centroid;
     for (int idim = 0; idim < Dim; idim++)
@@ -329,7 +383,7 @@ private:
   }
 
   const Mesh_Wrapper& mesh_;
-  const IterativeMethodTolerances_t im_tols_;
+  const std::vector<IterativeMethodTolerances_t> ims_tols_;
   const bool all_convex_;
   std::vector< std::vector<int> > cell_mat_ids_;
   std::vector< std::vector<double> > cell_mat_vfracs_;
