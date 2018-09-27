@@ -25,7 +25,7 @@
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/MOF.h"
 #include "tangram/driver/write_to_gmv.h"
-#include "app/include/read_material_data.h"
+#include "tangram/utility/read_material_data.h"
 
 /* Demo app for an unstructured 2D mesh
    and a given material data.
@@ -76,14 +76,15 @@ int main(int argc, char** argv) {
   read_material_data<Tangram::Jali_Mesh_Wrapper, 2>(mesh_wrapper, in_data_fname, 
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
-  // Volume fraction tolerance
-  Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
+  // Volume fraction and angles tolerance
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2) ;
+  ims_tols[0]= {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  ims_tols[1]= {.max_num_iter = 100, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
 
   // Build the driver
   Tangram::Driver<Tangram::MOF, 2, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR2D, Tangram::ClipR2D> 
-    mof_driver(mesh_wrapper, im_tols, true);
+    mof_driver(mesh_wrapper, ims_tols, true);
 
   mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
                                   cell_mat_volfracs, cell_mat_centroids);
@@ -91,50 +92,6 @@ int main(int argc, char** argv) {
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list = 
     mof_driver.cell_matpoly_ptrs();
-
-  // Confirm there are no degenerate faces
-  for (int icell = 0; icell < ncells; icell++)
-    if (cellmatpoly_list[icell] != nullptr) {
-      const Tangram::CellMatPoly<2>& cellmatpoly = *cellmatpoly_list[icell];
-      int npolys = cellmatpoly.num_matpolys();
-
-      if (npolys == 1)
-        std::cout << "Cell #" << icell << " has only one MatPoly!" << std::endl;
-
-      for (int ipoly = 0; ipoly < npolys; ipoly++) {
-            std::vector<int> poly_verts = cellmatpoly.matpoly_vertices(ipoly);
-            std::set<int> unique_verts(poly_verts.begin(), poly_verts.end());
-            if (unique_verts.size() != poly_verts.size())
-             std::cout<<"Cell #"<<icell<<", MatPoly #"<<ipoly<<": repeated node indices!"<<std::endl;
-       }
-    }
-
-  // Filter out materials with volume fractions below tolerance
-  std::vector<int> nzvf_cell_num_mats = cell_num_mats, nzvf_cell_mat_ids;
-  int offset = 0, nzvf_offset = 0;
-  for (int icell = 0; icell < ncells; icell++) {
-    int ncmats = cell_num_mats[icell];
-    for (int icmat = 0; icmat < ncmats; icmat++)
-      if (cell_mat_volfracs[offset + icmat] > im_tols.fun_eps)
-        nzvf_cell_mat_ids.push_back(cell_mat_ids[offset + icmat]);
-      else
-        nzvf_cell_num_mats[icell]--;
-
-    //Create MatPoly's for single-material cells
-    if (nzvf_cell_num_mats[icell] == 1) {
-      assert(cellmatpoly_list[icell] == nullptr);
-      std::shared_ptr< Tangram::CellMatPoly<2> > 
-        cmp_ptr(new Tangram::CellMatPoly<2>(icell));
-      Tangram::MatPoly<2> cell_matpoly;
-      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
-      cell_matpoly.set_mat_id(nzvf_cell_mat_ids[nzvf_offset]);
-      cmp_ptr->add_matpoly(cell_matpoly);
-      cellmatpoly_list[icell] = cmp_ptr;
-    }
-    
-    offset += ncmats;
-    nzvf_offset += nzvf_cell_num_mats[icell];
-  }
 
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
 

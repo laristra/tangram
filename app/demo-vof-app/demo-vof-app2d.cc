@@ -25,7 +25,7 @@
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/VOF.h"
 #include "tangram/driver/write_to_gmv.h"
-#include "app/include/read_material_data.h"
+#include "tangram/utility/read_material_data.h"
 
 /* Demo app for an unstructured 2D mesh
    and a given material data.
@@ -78,13 +78,13 @@ int main(int argc, char** argv) {
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
   // Volume fraction tolerance
-  Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
+  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(1);
+  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
 
   // Build the driver
   Tangram::Driver<Tangram::VOF, 2, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR2D, Tangram::ClipR2D> 
-    vof_driver(mesh_wrapper, im_tols, false);
+    vof_driver(mesh_wrapper, ims_tols, false);
 
   vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs);
   vof_driver.reconstruct();    
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
   for (int icell = 0; icell < ncells; icell++) {
     int ncmats = cell_num_mats[icell];
     for (int icmat = 0; icmat < ncmats; icmat++)
-      if (cell_mat_volfracs[offset + icmat] > im_tols.fun_eps)
+      if (cell_mat_volfracs[offset + icmat] > ims_tols[0].fun_eps)
         nzvf_cell_mat_ids.push_back(cell_mat_ids[offset + icmat]);
       else
         nzvf_cell_num_mats[icell]--;

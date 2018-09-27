@@ -93,53 +93,6 @@ int main(int argc, char** argv) {
   std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list = 
     mof_driver.cell_matpoly_ptrs();
 
-  // Confirm there are no degenerate faces
-  for (int icell = 0; icell < ncells; icell++)
-    if (cellmatpoly_list[icell] != nullptr) {
-      const Tangram::CellMatPoly<3>& cellmatpoly = *cellmatpoly_list[icell];
-      int npolys = cellmatpoly.num_matpolys();
-      if (npolys == 1)
-        std::cout << "Cell #" << icell << " has only one MatPoly!" << std::endl;
-      for (int ipoly = 0; ipoly < npolys; ipoly++) {
-        const std::vector<int>& mp_faces = cellmatpoly.matpoly_faces(ipoly);
-        for (int iface = 0; iface < mp_faces.size(); iface++) {
-          const std::vector<int>& face_vrts = cellmatpoly.matface_vertices(mp_faces[iface]);
-          std::set<int> unique_face_vrts(face_vrts.begin(), face_vrts.end());
-          if (unique_face_vrts.size() != face_vrts.size()) {
-            std::cout << "Cell #" << icell << ", MatPoly #" << ipoly << ", side #" << iface <<
-              ": repeated node indices!" << std::endl;
-          }
-        }
-      }
-    }
-
-  // Filter out materials with volume fractions below tolerance
-  std::vector<int> nzvf_cell_num_mats = cell_num_mats, nzvf_cell_mat_ids;
-  int offset = 0, nzvf_offset = 0;
-  for (int icell = 0; icell < ncells; icell++) {
-    int ncmats = cell_num_mats[icell];
-    for (int icmat = 0; icmat < ncmats; icmat++)
-      if (cell_mat_volfracs[offset + icmat] > ims_tols[0].fun_eps)
-        nzvf_cell_mat_ids.push_back(cell_mat_ids[offset + icmat]);
-      else
-        nzvf_cell_num_mats[icell]--;
-
-    //Create MatPoly's for single-material cells
-    if (nzvf_cell_num_mats[icell] == 1) {
-      assert(cellmatpoly_list[icell] == nullptr);
-      std::shared_ptr< Tangram::CellMatPoly<3> > 
-        cmp_ptr(new Tangram::CellMatPoly<3>(icell));
-      Tangram::MatPoly<3> cell_matpoly;
-      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
-      cell_matpoly.set_mat_id(nzvf_cell_mat_ids[nzvf_offset]);
-      cmp_ptr->add_matpoly(cell_matpoly);
-      cellmatpoly_list[icell] = cmp_ptr;
-    }
-    
-    offset += ncmats;
-    nzvf_offset += nzvf_cell_num_mats[icell];
-  }
-
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
 
   MPI_Finalize();

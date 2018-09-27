@@ -192,6 +192,10 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
                          std::vector<double>& upper_halfspace_moments) {
 
   //Translate the cutting plane to R2D format
+  //Here the direction of the cutting plane normal
+  //and distance are inverted compared to the same
+  //for 3D split. The notions of what is lower and
+  //upper halfspace in inverted between R2D and R3D. 
   r2d_plane r2d_cut_plane;
   for (int ixy = 0; ixy < 2; ixy++)
     r2d_cut_plane.n.xy[ixy] = -cutting_plane.normal[ixy];

@@ -31,8 +31,8 @@
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/VOF.h"
 #include "tangram/driver/write_to_gmv.h"
-#include "app/include/get_material_moments.h"
-#include "app/include/get_mat_sym_diff_vol.h"
+#include "tangram/utility/get_material_moments.h"
+#include "tangram/utility/get_mat_sym_diff_vol.h"
 
 /* Test app for a 2D mesh and planar material interfaces.
    Uses SimpleMesh/Jali and VOF.
@@ -196,18 +196,18 @@ int main(int argc, char** argv) {
 #endif
 
   // Volume fraction and angles tolerance
-  Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(1);
+  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
 
   // Build the driver
 #if ENABLE_JALI  
   Tangram::Driver<Tangram::VOF, 2, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR2D, Tangram::ClipR2D> 
-    vof_driver(mesh_wrapper, im_tols, !decompose_cells);
+    vof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #else
   Tangram::Driver<Tangram::VOF, 2, Tangram::Simple_Mesh_Wrapper, 
                   Tangram::SplitR2D, Tangram::ClipR2D> 
-    vof_driver(mesh_wrapper, im_tols, !decompose_cells);
+    vof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #endif    
 
   vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
