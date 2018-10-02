@@ -48,6 +48,7 @@ template<size_t dim>
 std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>> 
 run_driver(Tangram::Jali_Mesh_Wrapper &mesh_wrapper,
            std::vector<Tangram::IterativeMethodTolerances_t> &ims_tols,
+           bool &isconvex, 
            std::vector<int> &cell_num_mats,
            std::vector<int> &cell_mat_ids,
            std::vector<double> &cell_mat_volfracs, 
@@ -58,6 +59,7 @@ template<>
 std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> 
 run_driver<2>(Tangram::Jali_Mesh_Wrapper &mesh_wrapper,
               std::vector<Tangram::IterativeMethodTolerances_t> &ims_tols,
+              bool &isconvex,
               std::vector<int> &cell_num_mats,
               std::vector<int> &cell_mat_ids,
               std::vector<double> &cell_mat_volfracs, 
@@ -66,15 +68,15 @@ run_driver<2>(Tangram::Jali_Mesh_Wrapper &mesh_wrapper,
 
   Tangram::Driver<Tangram::VOF, 2, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR2D, Tangram::ClipR2D>
-  mof_driver(mesh_wrapper, ims_tols, true);
+  vof_driver(mesh_wrapper, ims_tols, isconvex);
 
-  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
+  vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
                                   cell_mat_volfracs, cell_mat_centroids);
 
-  mof_driver.reconstruct();    
+  vof_driver.reconstruct();    
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>>
-  cellmatpoly_list = mof_driver.cell_matpoly_ptrs();
+  cellmatpoly_list = vof_driver.cell_matpoly_ptrs();
   
   return cellmatpoly_list; 
 };
@@ -83,6 +85,7 @@ template<>
 std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> 
 run_driver<3>(Tangram::Jali_Mesh_Wrapper &mesh_wrapper,
               std::vector<Tangram::IterativeMethodTolerances_t> &ims_tols,
+              bool &isconvex,
               std::vector<int> &cell_num_mats,
               std::vector<int> &cell_mat_ids,
               std::vector<double> &cell_mat_volfracs, 
@@ -91,21 +94,22 @@ run_driver<3>(Tangram::Jali_Mesh_Wrapper &mesh_wrapper,
 
   Tangram::Driver<Tangram::VOF, 3, Tangram::Jali_Mesh_Wrapper, 
                   Tangram::SplitR3D, Tangram::ClipR3D>
-  mof_driver(mesh_wrapper, ims_tols, true);
+  vof_driver(mesh_wrapper, ims_tols, isconvex);
 
-  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
+  vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
                                   cell_mat_volfracs, cell_mat_centroids);
 
-  mof_driver.reconstruct();    
+  vof_driver.reconstruct();    
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>>
-  cellmatpoly_list = mof_driver.cell_matpoly_ptrs();
+  cellmatpoly_list = vof_driver.cell_matpoly_ptrs();
 
   return cellmatpoly_list; 
 };
 
 template<size_t dim>
 void run (std::shared_ptr<Jali::Mesh> inputMesh,
+          bool isconvex,
           std::string in_data_fname,
           std::string out_gmv_fname)
 {
@@ -126,7 +130,7 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   ims_tols[0]= {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>>
-  cellmatpoly_list = run_driver<dim>(mesh_wrapper, ims_tols, cell_num_mats,
+  cellmatpoly_list = run_driver<dim>(mesh_wrapper, ims_tols, isconvex, cell_num_mats,
                      cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
  //Create MatPoly's for single-material cells
@@ -159,18 +163,19 @@ int main(int argc, char** argv) {
   if (world_size > 1)
     throw std::runtime_error("This app is designed to run in serial!");
 
-  if ((argc < 4) || (argc > 5)) {
+  if ((argc < 5) || (argc > 6)) {
       std::ostringstream os;
       os << std::endl <<
-      "Correct usage: demo-vof-app <dim=2|3> <mat_data_filename> " << 
+      "Correct usage: demo-vof-app <dim=2|3> <isconvex=1|0> <mat_data_filename> " << 
       "<base_mesh_file> <out_gmv_filename>" << std::endl;
       throw std::runtime_error(os.str());
   }
   
   int dim = atoi(argv[1]);
-  std::string in_data_fname = argv[2];
+  bool isconvex = atoi(argv[2]);
+  std::string in_data_fname = argv[3];
   std::string out_gmv_fname;
-  if (argc > 4) out_gmv_fname = argv[4];
+  if (argc > 5) out_gmv_fname = argv[5];
   else out_gmv_fname = in_data_fname + ".gmv";
 
   Jali::MeshFactory mesh_factory(comm);
@@ -179,16 +184,16 @@ int main(int argc, char** argv) {
   if (dim == 2)
   {
     mesh_factory.included_entities({Jali::Entity_kind::EDGE});
-    std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[3]);
+    std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[4]);
 
-    run<2>(mesh, in_data_fname, out_gmv_fname);
+    run<2>(mesh, isconvex, in_data_fname, out_gmv_fname);
   }
   else if (dim == 3)
   {
     mesh_factory.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE}); 
-    std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[3]);
+    std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[4]);
     
-    run<3>(mesh, in_data_fname, out_gmv_fname);
+    run<3>(mesh, isconvex, in_data_fname, out_gmv_fname);
   }
 
   MPI_Finalize();
