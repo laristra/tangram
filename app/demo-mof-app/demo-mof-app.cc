@@ -36,12 +36,73 @@
    Reads mesh and material data from file,
    performs interface reconstruction, and outputs material 
    polygons to a gmv file */
-
+/*
 template<size_t dim>
 using SplitRnD = std::conditional_t<dim==2, Tangram::SplitR2D, Tangram::SplitR3D>;
 
 template<size_t dim>
 using ClipRnD = std::conditional_t<dim==2, Tangram::ClipR2D, Tangram::ClipR3D>;
+*/
+
+template<size_t dim>
+std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>> 
+run_driver(Tangram::Jali_Mesh_Wrapper &mesh_wrapper,
+           std::vector<Tangram::IterativeMethodTolerances_t> &ims_tols,
+           std::vector<int> &cell_num_mats,
+           std::vector<int> &cell_mat_ids,
+           std::vector<double> &cell_mat_volfracs, 
+           std::vector<Tangram::Point<dim>>& cell_mat_centroids)
+{};
+
+template<>
+std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> 
+run_driver<2>(Tangram::Jali_Mesh_Wrapper &mesh_wrapper,
+              std::vector<Tangram::IterativeMethodTolerances_t> &ims_tols,
+              std::vector<int> &cell_num_mats,
+              std::vector<int> &cell_mat_ids,
+              std::vector<double> &cell_mat_volfracs, 
+              std::vector<Tangram::Point<2>> &cell_mat_centroids)
+{
+
+  Tangram::Driver<Tangram::MOF, 2, Tangram::Jali_Mesh_Wrapper, 
+                  Tangram::SplitR2D, Tangram::ClipR2D>
+  mof_driver(mesh_wrapper, ims_tols, true);
+
+  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
+                                  cell_mat_volfracs, cell_mat_centroids);
+
+  mof_driver.reconstruct();    
+
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>>
+  cellmatpoly_list = mof_driver.cell_matpoly_ptrs();
+  
+  return cellmatpoly_list; 
+};
+
+template<>
+std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> 
+run_driver<3>(Tangram::Jali_Mesh_Wrapper &mesh_wrapper,
+              std::vector<Tangram::IterativeMethodTolerances_t> &ims_tols,
+              std::vector<int> &cell_num_mats,
+              std::vector<int> &cell_mat_ids,
+              std::vector<double> &cell_mat_volfracs, 
+              std::vector<Tangram::Point<3>> &cell_mat_centroids)
+{
+
+  Tangram::Driver<Tangram::MOF, 3, Tangram::Jali_Mesh_Wrapper, 
+                  Tangram::SplitR3D, Tangram::ClipR3D>
+  mof_driver(mesh_wrapper, ims_tols, true);
+
+  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
+                                  cell_mat_volfracs, cell_mat_centroids);
+
+  mof_driver.reconstruct();    
+
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>>
+  cellmatpoly_list = mof_driver.cell_matpoly_ptrs();
+
+  return cellmatpoly_list; 
+};
 
 template<size_t dim>
 void run (std::shared_ptr<Jali::Mesh> inputMesh,
@@ -65,16 +126,9 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   ims_tols[0]= {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
   ims_tols[1]= {.max_num_iter = 100, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
 
-  Tangram::Driver<Tangram::MOF, dim, Tangram::Jali_Mesh_Wrapper, 
-                  SplitRnD<dim>, ClipRnD<dim>>
-  mof_driver(mesh_wrapper, ims_tols, true);
-
-  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
-                                  cell_mat_volfracs, cell_mat_centroids);
-  mof_driver.reconstruct();    
-    
   std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>>
-  cellmatpoly_list = mof_driver.cell_matpoly_ptrs();
+  cellmatpoly_list = run_driver<dim>(mesh_wrapper, ims_tols, cell_num_mats,
+                     cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
  //Create MatPoly's for single-material cells
   std::vector<int> offsets(ncells, 0);
