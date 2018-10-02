@@ -122,7 +122,7 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
   // Volume fraction and angles tolerance
-  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2) ;
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(1) ;
   ims_tols[0]= {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>>
