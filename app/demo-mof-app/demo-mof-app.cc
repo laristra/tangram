@@ -127,8 +127,12 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
 
   // Volume fraction and angles tolerance
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2) ;
-  ims_tols[0]= {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
-  ims_tols[1]= {.max_num_iter = 100, .arg_eps = 1.0e-13, .fun_eps = 1.0e-13};
+  ims_tols[0].max_num_iter = 1000;
+  ims_tols[0].arg_eps = 1.0e-15;
+  ims_tols[0].fun_eps = 1.0e-15;
+  ims_tols[1].max_num_iter = 100;
+  ims_tols[1].arg_eps = 1.0e-13;
+  ims_tols[1].fun_eps = 1.0e-13;
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>>
   cellmatpoly_list = run_driver<dim>(mesh_wrapper, ims_tols, isconvex, cell_num_mats,
