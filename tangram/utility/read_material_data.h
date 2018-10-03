@@ -48,10 +48,10 @@ void read_material_data(const Mesh_Wrapper& mesh,
   os.read(reinterpret_cast<char *>(&ncells), sizeof(int));
   assert(ncells = mesh.num_owned_cells());
   cell_num_mats.resize(ncells);
-  
+ 
   int nmatpoly = 0;
   cell_mat_ids.clear();
-  std::vector<int> offset(ncells, 0);
+  std::vector<int> offset(ncells+1, 0);
   for (int icell = 0; icell < ncells; icell++) {
     os.read(reinterpret_cast<char *>(&cell_num_mats[icell]), sizeof(int));
 
