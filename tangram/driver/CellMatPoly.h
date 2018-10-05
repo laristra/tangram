@@ -13,7 +13,6 @@
 #include <climits>
 
 #include "tangram/support/tangram.h"
-#include "tangram/support/Point.h"
 #include "tangram/support/MatPoly.h"
 
 namespace Tangram {

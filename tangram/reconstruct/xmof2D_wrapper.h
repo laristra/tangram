@@ -4,12 +4,15 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef TANGRAM_xmof2D_h
-#define TANGRAM_xmof2D_h
+#ifndef TANGRAM_RECONSTRUCT_XMOF2D_H_
+#define TANGRAM_RECONSTRUCT_XMOF2D_H_
 
 #include <memory>
+
 #include "xmof2D.h"
-#include "tangram/support/Point.h"
+
+// tangram includes
+#include "tangram/support/tangram.h"
 #include "tangram/driver/CellMatPoly.h"
 
 /*!
@@ -20,7 +23,7 @@
  */
 
 namespace Tangram {
-  
+
   /*!
    @class XMOF2D_Wrapper "xmof2D_wrapper.h"
    @brief Calculates material interfaces and constructs CellMatPoly objects
@@ -42,7 +45,7 @@ namespace Tangram {
      */
     XMOF2D_Wrapper(const Mesh_Wrapper& Mesh,
                    const std::vector<IterativeMethodTolerances_t>& ims_tols,
-                   bool all_convex = true) : 
+                   bool all_convex = true) :
                    mesh_(Mesh), ims_tols_(ims_tols) {
       assert(Dim == 2);
       assert(all_convex);
@@ -59,7 +62,7 @@ namespace Tangram {
       mesh_cfg.ifaces_nodes.resize(nfaces);
       for (int iface = 0; iface < nfaces; iface++)
         mesh_.face_get_nodes(iface, &mesh_cfg.ifaces_nodes[iface]);
-      
+
       int ncells = mesh_.num_owned_cells() + mesh_.num_ghost_cells();
       mesh_cfg.icells_faces.resize(ncells);
       for (int icell = 0; icell < ncells; icell++) {
@@ -68,7 +71,7 @@ namespace Tangram {
       }
       mesh_cfg.cells_material.clear();
       mesh_cfg.cells_material.resize(ncells, -1);
-      
+
       XMOF2D::IRTolerances ir_tol;
       ir_tol.dist_eps = ims_tols[0].fun_eps;
       ir_tol.div_eps = 1.0e-6;
@@ -119,14 +122,14 @@ namespace Tangram {
       }
       xmof_ir->set_materials_data(mat_data);
     }
-    
+
     /*!
       @brief Used iterative methods tolerances
-      @return  Tolerances for iterative methods, 
-      here ims_tols_[0] correspond to methods for volumes 
+      @return  Tolerances for iterative methods,
+      here ims_tols_[0] correspond to methods for volumes
       and ims_tols_[1] correspond to methods for centroids.
-      In particular, ims_tols_[0].arg_eps is a negligible 
-      change in cutting distance, ims_tols_[0].fun_eps is a 
+      In particular, ims_tols_[0].arg_eps is a negligible
+      change in cutting distance, ims_tols_[0].fun_eps is a
       negligible discrepancy in volume, ims_tols_[1].arg_eps
       is a negligible change in the cutting plane orientation,
       and ims_tols_[1].fun_eps is a negligible distance between
@@ -134,16 +137,16 @@ namespace Tangram {
       orientation is defined as the norm of change of the cutting
       plane's normal, which is expressed in polar coordinates (angles).
     */
-    const std::vector<IterativeMethodTolerances_t>& 
+    const std::vector<IterativeMethodTolerances_t>&
     iterative_methods_tolerances() const {
       return ims_tols_;
     }
 
     /*!
-     @brief Pass in the local partition indices of cells for which CellMatPoly objects 
+     @brief Pass in the local partition indices of cells for which CellMatPoly objects
      are to be constructed. If the index is in the list, a CellMatPoly object will be
      created even for a single-material cell.
-     @param[in] cellIDs_to_op_on A vector of length up to (num_local_partition_cells) 
+     @param[in] cellIDs_to_op_on A vector of length up to (num_local_partition_cells)
      specifying the local indices of cells for which CellMatPoly objects are requested.
      */
     void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
@@ -157,7 +160,7 @@ namespace Tangram {
       assert(Dim == 2);
       assert(cell_op_ID < icells_to_reconstruct.size());
       int cellID = icells_to_reconstruct[cell_op_ID];
-      
+
       CellMatPoly<Dim>* cell_mat_poly = new CellMatPoly<Dim>(cellID);
       const XMOF2D::BaseMesh& mesh = xmof_ir->get_base_mesh();
       if (xmof_ir->get_cell_materials(cellID).size() > 1) {
@@ -182,7 +185,7 @@ namespace Tangram {
             sides_iparent[iside] = subcell.get_face(iside).iparent();
             sides_parentkind[iside] = (sides_iparent[iside] == -1) ?
             Tangram::Entity_kind::UNKNOWN_KIND : Tangram::Entity_kind::FACE;
-            
+
           }
           (*cell_mat_poly).add_matpoly(subcell.get_material_index(), nvrts,
                                        &subcell_vrts[0],
@@ -201,7 +204,7 @@ namespace Tangram {
                                      nvrts, &cell_vrts[0],
                                      NULL, NULL, NULL, NULL);
       }
-    
+
       return std::shared_ptr<CellMatPoly<Dim>>(cell_mat_poly);
     }
 
@@ -213,4 +216,4 @@ namespace Tangram {
   }; // class XMOF2D_Wrapper
 }  // namespace Tangram
 
-#endif /* TANGRAM_xmof2D_h */
+#endif  /* TANGRAM_RECONSTRUCT_XMOF2D_WRAPPER_H_ */

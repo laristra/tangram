@@ -4,8 +4,8 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef TANGRAM_WRITE_TO_GMV_H_
-#define TANGRAM_WRITE_TO_GMV_H_
+#ifndef TANGRAM_DRIVER_WRITE_TO_GMV_H_
+#define TANGRAM_DRIVER_WRITE_TO_GMV_H_
 
 #include <fstream>
 #include <vector>
@@ -14,8 +14,6 @@
 #include <string>
 
 #include "tangram/support/tangram.h"
-#include "tangram/support/Point.h"
-
 #include "tangram/driver/CellMatPoly.h"
 
 namespace Tangram {
@@ -27,7 +25,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
                   std::vector<int> const& cell_mat_ids,
                   std::vector<std::shared_ptr<CellMatPoly<D>>> cellmatpoly_list,
                   std::string filename) {
-  
+
   int nc = mesh.num_entities(Entity_kind::CELL, Entity_type::PARALLEL_OWNED);
   std::vector<int> cell_offsets(nc);
   cell_offsets[0] = 0;
@@ -81,11 +79,11 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
   fout << "nodev " << nmatpnts << std::endl;
   for (int ip = 0; ip < nmatpnts; ip++) {
     fout << points[ip];
-    if (D == 2)  // GMV requires us to output 3 coordinates 
+    if (D == 2)  // GMV requires us to output 3 coordinates
       fout << " " << 0.000000;
     fout << std::endl;
   }
-    
+
 
   // Count the number of polygons we will write out
 
@@ -102,13 +100,13 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
 
   for (int c = 0; c < nc; c++) {
     CellMatPoly<D> *cellmatpoly = cellmatpoly_list[c].get();
-    
+
     if (cellmatpoly) {
-      
+
       // Write out the material polyhedra
       int nmp = cellmatpoly->num_matpolys();
       for (int i = 0; i < nmp; i++) {
-        
+
         if (D == 1 || D == 2) {
           std::vector<int> mverts = cellmatpoly->matpoly_vertices(i);
           fout << "general 1 " << mverts.size() << " ";
@@ -183,7 +181,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
         // Write out the cell
         std::vector<int> cverts;
         mesh.cell_get_nodes(c, &cverts);
-        
+
         // write cell out as polygons (even if its a quad or tri)
         fout << "general 1 " << cverts.size() << " ";
         for (auto n : cverts)
@@ -201,7 +199,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
           fout << fverts.size() << " ";
         }
         fout << std::endl;
-        
+
         int j = 0;
         for (auto f : cfaces) {
           std::vector<int> fverts;
@@ -247,13 +245,13 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
 //Simplified version: outputs CellMatPoly's list. If CellMatPoly's list
 //was obtained from a reconstructor, it corresponds to writing out only
 //multi-material cells. Does not require the base mesh and is therefore
-//convenient for debugging and/or when a single CellMatPoly needs to be 
+//convenient for debugging and/or when a single CellMatPoly needs to be
 //written out.
-//Note that unlike in the full version, nodes and faces of CellMatPoly's 
+//Note that unlike in the full version, nodes and faces of CellMatPoly's
 //are written as is and will be duplicated if shared by different CellMatPoly's.
 template<int D>
 void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpoly_list,
-                  const std::string& filename) {  
+                  const std::string& filename) {
   std::ofstream fout(filename);
   fout << std::scientific;
   fout.precision(17);
@@ -283,7 +281,7 @@ void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpol
   fout << "nodev " << nmatpnts << std::endl;
   for (int ip = 0; ip < nmatpnts; ip++) {
     fout << points[ip];
-    if (D == 2)  // GMV requires us to output 3 coordinates 
+    if (D == 2)  // GMV requires us to output 3 coordinates
       fout << " " << 0.000000;
     fout << std::endl;
   }
@@ -297,14 +295,14 @@ void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpol
 
     // Write out the material polyhedra
     int nmp = cellmatpoly->num_matpolys();
-    for (int i = 0; i < nmp; i++) {      
+    for (int i = 0; i < nmp; i++) {
       if (D == 1 || D == 2) {
         std::vector<int> mverts = cellmatpoly->matpoly_vertices(i);
         fout << "general 1 " << mverts.size() << " ";
         for (auto n : mverts)
-          fout << pts_offset + n + 1 << " ";       
+          fout << pts_offset + n + 1 << " ";
         fout << std::endl;
-      } 
+      }
       else if (D == 3) {
         std::vector<int> const& mfaces = cellmatpoly->matpoly_faces(i);
         fout << "general " << mfaces.size() << std::endl;
@@ -345,4 +343,4 @@ void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpol
 
 }  // namespace Tangram
 
-#endif  // TANGRAM_WRITE_TO_GMV_H_
+#endif  // TANGRAM_DRIVER_WRITE_TO_GMV_H_

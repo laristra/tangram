@@ -1,3 +1,7 @@
 [submodule "cinch"]
 	path = cinch
 	url = ssh://xcp-stash.lanl.gov:7999/laristra/cinch.git
+[submodule "wonton"]
+	path = wonton
+	url = ssh://git@xcp-stash.lanl.gov:7999/~cmalone/wonton
+	branch = sm_wonton

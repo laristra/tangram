@@ -21,7 +21,6 @@
 #include "mpi.h"
 #endif
 
-#include "tangram/support/Point.h"
 #include "tangram/support/tangram.h"
 #include "tangram/driver/CellMatPoly.h"
 
@@ -34,7 +33,6 @@
 */
 
 namespace Tangram {
-
 
 /*!
   @class Driver "driver.h"

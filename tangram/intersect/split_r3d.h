@@ -4,19 +4,20 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef SPLIT_R3D_H
-#define SPLIT_R3D_H
+#ifndef TANGRAM_INTERSECT_SPLIT_R3D_H_
+#define TANGRAM_INTERSECT_SPLIT_R3D_H_
 
 #include <vector>
 #include <algorithm>
 #include <memory>
+
+// tangram includes
+extern "C" {
+#include "tangram/intersect/r3d.h"
+}
 #include "tangram/support/tangram.h"
-#include "tangram/support/Point.h"
 #include "tangram/support/MatPoly.h"
 
-extern "C" {
-#include "r3d.h"
-}
 
 /*!
  @file split_r3d.h
@@ -524,6 +525,6 @@ BoundingBox_t<3> r3d_poly_bounding_box(const r3d_poly& r3dpoly) {
   return bbox;
 }
 
-} // namespace Tangram
+}  // namespace Tangram
 
-#endif
+#endif  // TANGRAM_INTERSECT_SPLIT_R3D_H_

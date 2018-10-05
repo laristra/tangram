@@ -25,7 +25,11 @@
 
 #endif
 
-#include "tangram/support/Vector.h"
+// wonton includes
+#include "wonton/support/wonton.h"
+#include "wonton/support/Point.h"
+#include "wonton/support/Vector.h"
+#include "wonton/support/Matrix.h"
 
 /*
   @file tangram.h
@@ -65,50 +69,28 @@
  */
 
 namespace Tangram {
-// TODO:  Right now we're relying on the fact that this enum is
-//        identical to Jali::Entity_kind.  Need to fix this.
-/// The type of mesh entity.
-enum Entity_kind {
-  ALL_KIND = -3,     /*!< All possible types */
-  ANY_KIND = -2,     /*!< Any of the possible types */
-  UNKNOWN_KIND = -1, /*!< Usually indicates an error */
-  NODE = 0,
-  EDGE,
-  FACE,
-  CELL,
-  SIDE,
-  WEDGE,
-  CORNER,
-  FACET,
-  BOUNDARY_FACE
-};
 
-const int NUM_ENTITY_KINDS = 8;
+  // Point aliases
+  template<long D>
+  using Point = Wonton::Point<D>;
+  using Wonton::Point3;
+  using Wonton::Point2;
 
-// Parallel status of entity
-/// The parallel type of a given entity.
-enum Entity_type {
-  TYPE_UNKNOWN = -1,
-  DELETED = 0,
-  PARALLEL_OWNED = 1,   /*!< Owned by this processor */
-  PARALLEL_GHOST = 2,   /*!< Owned by another processor */
-  BOUNDARY_GHOST = 3,   /*!< Ghost/Virtual entity on boundary */
-  ALL  = 4              /*!< PARALLEL_OWNED + PARALLEL_GHOST + BOUNDARY_GHOST */
-};
+  // Vector aliases
+  template<long D>
+  using Vector = Wonton::Vector<D>;
+  using Wonton::Vector3;
+  using Wonton::Vector2;
 
-/// Element (cell topology) type
-enum Element_type {
-  UNKNOWN_TOPOLOGY = 0,
-  TRI,
-  QUAD,
-  POLYGON,
-  TET,
-  PRISM,
-  PYRAMID,
-  HEX,
-  POLYHEDRON
-};
+  // Matrix alias
+  using Wonton::Matrix;
 
+  // useful enums
+  using Wonton::Entity_kind;
+  using Wonton::Entity_type;
+  using Wonton::Element_type;
+
+  using Wonton::Weights_t;
 
 #ifdef THRUST
 
@@ -180,11 +162,6 @@ inline void for_each(InputIterator first, InputIterator last,
 
 
 #endif
-
-struct Weights_t {
-  int entityID;
-  std::vector<double> weights;
-};
 
 template <int D>
 struct Plane_t {
@@ -269,8 +246,6 @@ inline bool overlapping_boxes(const BoundingBox_t<D>& bb1,
 inline bool is_equal(const double fp1, const double fp2) {
   return ( std::fabs(fp1 - fp2) < std::numeric_limits<double>::epsilon() );
 }
-
-inline double pow2(double x) { return x*x; }
 
 }  // namespace Tangram
 
