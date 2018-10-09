@@ -146,7 +146,7 @@ module load intel/18.0.1 openmpi/2.1.2 cmake/3.10.2
 TPL_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali-tpl/1.0.9-intel-18.0.1-openmpi-2.1.2
 NGC_INCLUDE_DIR=/usr/local/codes/ngc/private/include
 XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/529f2dcdbe4-intel-18.0.1
-JALI_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali/0.9.8-intel-18.0.1-openmpi-2.1.2
+JALI_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali/1.0.0-intel-18.0.1-openmpi-2.1.2
 mkdir build
 cd build
 cmake \
