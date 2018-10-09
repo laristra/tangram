@@ -13,11 +13,12 @@
 // Author: Rao Garimella, rao@lanl.gov
 
 #include <sys/time.h>
+#include <string>
+#include <memory>
+#include <vector>
+#include <iostream>
 
 #include <mpi.h>
-
-
-#include "tangram/support/tangram.h"
 
 
 // Jali mesh infrastructure library
@@ -28,10 +29,11 @@
 #include "JaliStateVector.h"
 #include "JaliState.h"
 
+// tangram includes
 #include "tangram/support/tangram.h"
-#include "tangram/support/Point.h"
-#include "tangram/support/Vector.h"
-#include "tangram/wrappers/mesh/jali/jali_mesh_wrapper.h"
+
+// wonton includes
+#include "wonton/mesh/jali/jali_mesh_wrapper.h"
 
 #include "vfgen.h"
 
@@ -89,7 +91,7 @@ int main(int argc, char *argv[]) {
 
   int ncells = mesh->num_cells();
 
-  Tangram::Jali_Mesh_Wrapper mesh_wrapper(*mesh);
+  Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh);
 
   std::string outfilename(basename + std::string(".vf"));
   std::string boutfilename(basename + std::string(".bvf"));
@@ -103,7 +105,7 @@ int main(int argc, char *argv[]) {
 
     Tangram::vector<vfcen_t<2>> vfcen(ncells);
     InFeatureEvaluator<2> feature_functor(features);
-    VolfracEvaluator<2, Tangram::Jali_Mesh_Wrapper>
+    VolfracEvaluator<2, Wonton::Jali_Mesh_Wrapper>
       volfrac_calculator(mesh_wrapper, feature_functor, ptol, global_nmats);
 
     gettimeofday(&begin_core, 0);
@@ -140,7 +142,7 @@ int main(int argc, char *argv[]) {
 
     Tangram::vector<vfcen_t<3>> vfcen(ncells);
     InFeatureEvaluator<3> feature_functor(features);
-    VolfracEvaluator<3, Tangram::Jali_Mesh_Wrapper>
+    VolfracEvaluator<3, Wonton::Jali_Mesh_Wrapper>
       volfrac_calculator(mesh_wrapper, feature_functor, ptol, global_nmats);
 
     gettimeofday(&begin_core, 0);
