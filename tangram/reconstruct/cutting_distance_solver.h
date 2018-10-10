@@ -157,7 +157,14 @@ public:
       }
       else
         d2orgn = 0.5*(cur_dst_bnd[0] + cur_dst_bnd[1]);
-      
+
+      if (std::fabs(cur_dst_bnd[1] - cur_dst_bnd[0]) <= tolerances_.arg_eps) {
+        // The currently used method is valid and possible change in 
+        // cutting distance is negligible, we can terminate
+        cur_moments.insert(cur_moments.begin(), cutting_plane.dist2origin);
+        return cur_moments;
+      } 
+
       cutting_plane.dist2origin = d2orgn;
       cur_moments = clip_matpolys();  
       
@@ -167,8 +174,7 @@ public:
         // Max number of iterations reached: we return the current distance.
         // Because the moments are also returned, the caller can calculate the
         // discrepancy in volumes and take appropriate action
-        cur_moments.insert(cur_moments.begin(), d2orgn);
-        return cur_moments;
+        break;
       }
 
       if (!use_secant) {

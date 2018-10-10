@@ -279,7 +279,7 @@ void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpol
     }
   }
 
-  int nmatpnts = (int) points.size();
+  int nmatpnts = static_cast<int>(points.size());
   fout << "nodev " << nmatpnts << std::endl;
   for (int ip = 0; ip < nmatpnts; ip++) {
     fout << points[ip];

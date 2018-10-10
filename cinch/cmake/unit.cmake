@@ -106,8 +106,6 @@ endif(ENABLE_UNIT_TESTS)
   ``NOOPENMPI``
     Test does NOT get run (but still build) if
     ENV{'OPENMPI'} is "true".
-  ``FOLDER``
-    Specify a project 'folder' to associate th eunit test with.
 #]=============================================================================]
 
 function(cinch_add_unit name)
@@ -121,7 +119,7 @@ function(cinch_add_unit name)
     #--------------------------------------------------------------------------#
 
     set(options NOCI NOOPENMPI)
-    set(one_value_args POLICY FOLDER)
+    set(one_value_args POLICY)
     set(multi_value_args
         SOURCES INPUTS THREADS LIBRARIES DEFINES DRIVER ARGUMENTS
     )
@@ -196,7 +194,7 @@ function(cinch_add_unit name)
       set(unit_policy_libraries ${PFUNIT_LIBRARY})
       set(unit_policy_defines ${PFUNIT_DEFINES})
 
-    elseif(MPI_${MPI_LANGUAGE}_FOUND AND unit_policy_main STREQUAL "MPI")
+    elseif(MPI_${MPI_LANGUAGE}_FOUND AND unit_policy_main STREQUAL "MPI" AND (NOT HPX_FOUND))
 
       set(unit_policy_runtime ${CINCH_SOURCE_DIR}/auxiliary/test-mpi.cc)
       set(unit_policy_flags ${MPI_${MPI_LANGUAGE}_COMPILE_FLAGS})
@@ -231,7 +229,7 @@ function(cinch_add_unit name)
       set(unit_policy_libraries ${Legion_LIBRARIES} ${Legion_LIB_FLAGS})
 
     elseif(MPI_${MPI_LANGUAGE}_FOUND AND HPX_FOUND AND
-        unit_policy_main STREQUAL "HPX")
+        (unit_policy_main STREQUAL "HPX" OR unit_policy_main STREQUAL "MPI"))
 
       set(unit_policy_runtime ${CINCH_SOURCE_DIR}/auxiliary/test-hpx.cc)
       set(unit_policy_flags ${HPX_CXX_FLAGS})
@@ -349,9 +347,16 @@ function(cinch_add_unit name)
             PRIVATE ${unit_policy_flags})
     endif()
 
-    if(unit_FOLDER)
-        set_target_properties(${name} PROPERTIES FOLDER "${unit_FOLDER}")
-    endif()
+    #--------------------------------------------------------------------------#
+    # Set the folder property for VS and XCode
+    #--------------------------------------------------------------------------#
+
+    get_filename_component(_leafdir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    string(SUBSTRING ${_leafdir} 0 1 _first)
+    string(TOUPPER ${_first} _first)
+    string(REGEX REPLACE "^.(.*)" "${_first}\\1" _leafdir "${_leafdir}")
+    string(CONCAT _folder "Tests/" ${_leafdir})
+    set_target_properties(${name} PROPERTIES FOLDER "${_folder}")
 
     #--------------------------------------------------------------------------#
     # Check for defines.
@@ -384,9 +389,8 @@ function(cinch_add_unit name)
         endforeach()
         add_custom_target(${name}_inputs
             DEPENDS ${_OUTPUT_FILES})
-        if(unit_FOLDER)
-            set_target_properties(${name}_inputs PROPERTIES FOLDER "${unit_FOLDER}/Inputs")
-        endif()
+        set_target_properties(${name}_inputs
+            PROPERTIES FOLDER "${_folder}/Inputs")
         add_dependencies(${name} ${name}_inputs)
     endif()
 
@@ -398,9 +402,7 @@ function(cinch_add_unit name)
       target_link_libraries(${name} ${unit_LIBRARIES})
     endif()
 
-    if(ENABLE_BOOST_PROGRAM_OPTIONS)
-        target_link_libraries(${name} ${Boost_LIBRARIES})
-    endif()
+    target_link_libraries(${name} ${CINCH_RUNTIME_LIBRARIES})
 
     if(unit_policy_libraries)
       target_link_libraries(${name} ${unit_policy_libraries})

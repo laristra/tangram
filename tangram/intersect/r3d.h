@@ -108,7 +108,7 @@ typedef struct
  * \param[in] nplanes The number of planes in the input array.
  *
  */
-void r3d_clip(r3d_poly *poly, r3d_plane *planes, r3d_int nplanes);
+void r3d_clip(r3d_poly *poly, const r3d_plane *planes, r3d_int nplanes);
 
 /**
  * \brief Splits a list of polyhedra across a single plane.
@@ -370,7 +370,7 @@ typedef struct r3d_brep
  * of determined components.
  *
  */
-void r3d_init_brep(r3d_poly *poly, r3d_brep **brep, r3d_int *numcomponents);
+void r3d_init_brep(const r3d_poly *poly, r3d_brep **brep, r3d_int *numcomponents);
 
 
 /**

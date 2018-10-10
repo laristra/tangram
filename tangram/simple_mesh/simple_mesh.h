@@ -1,7 +1,7 @@
 /*
- This file is part of the Ristra tangram project.
- Please see the license file at the root of this repository, or at:
- https://github.com/laristra/tangram/blob/master/LICENSE
+This file is part of the Ristra tangram project.
+Please see the license file at the root of this repository, or at:
+https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
 #ifndef SRC_SIMPLE_MESH_SIMPLE_MESH_H_

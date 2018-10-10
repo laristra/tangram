@@ -53,20 +53,29 @@ public:
     @brief Specifies the order in which materials are clipped
     @param[in] cell_materials_order Vector of local material indices, if a cell 
     has three materials, it will have three entries (0, 1, 2) in certain order
+  */
+  void set_cell_materials_order(const std::vector<int>& cell_materials_order) {
+    cell_materials_order_.clear();                              
+    cell_materials_order_.push_back(cell_materials_order);
+  }
+
+  /*!
+    @brief Sets materials clipping order: either all ordering permutations are
+    enabled, or materials are clipped in the order they are listed for the cell
     @param[in] enable_permutations Flag indicating whether the order permutations
     are to be used. If enabled, ID of the permutation can be used as the parameter
     of the operator
   */
-  void set_cell_materials_order(const std::vector<int>& cell_materials_order,
-                                const bool enable_permutations = false) {
-    cell_materials_order_.clear();                              
-    if (!enable_permutations)                              
-      cell_materials_order_.push_back(cell_materials_order);
-    else {
-      std::vector<int> cur_mat_order = cell_materials_order;
-      do {
+  void set_cell_materials_order(const bool enable_permutations = false) {
+    int nmats = static_cast<int>(reconstructor_.cell_materials(cell_id_).size());
+    cell_materials_order_.resize(1);
+    cell_materials_order_[0].resize(nmats);
+    std::iota(cell_materials_order_[0].begin(), cell_materials_order_[0].end(), 0);                              
+
+    if (enable_permutations) {
+      std::vector<int> cur_mat_order = cell_materials_order_[0];
+      while (std::next_permutation(cur_mat_order.begin(), cur_mat_order.end()))
         cell_materials_order_.push_back(cur_mat_order);
-      } while (std::next_permutation(cur_mat_order.begin(), cur_mat_order.end()));
     }
   }
 
@@ -77,7 +86,7 @@ public:
     @return  Number of materials orders, their index can be used as a parameter
     for this class's operator.
   */
-  int num_materials_orders() { return (int) cell_materials_order_.size(); }
+  int num_materials_orders() { return static_cast<int>(cell_materials_order_.size()); }
 
   /*!
     @brief Calculates the CellMatPoly for the given interface reconstruction method
@@ -89,7 +98,7 @@ public:
 
     // Get material indices for the cell from the reconstructor
     const std::vector<int>& mat_ids = reconstructor_.cell_materials(cell_id_);    
-    int nmats = (int) mat_ids.size();
+    int nmats = static_cast<int>(mat_ids.size());
 
     std::shared_ptr< CellMatPoly<Dim> > cmp_ptr = 
       std::make_shared< CellMatPoly<Dim> >(cell_id_);
@@ -101,7 +110,7 @@ public:
     else
       reconstructor_.cell_matpoly(cell_id_).faceted_matpoly(&cell_matpoly);
     
-    double vol_tol = reconstructor_.iterative_method_tolerances().fun_eps;
+    double vol_tol = reconstructor_.iterative_methods_tolerances()[0].fun_eps;
 
     Plane_t<Dim> cutting_plane;
     HalfSpaceSets_t<Dim> hs_sets; // Structure containing vectors of MatPoly's and their
