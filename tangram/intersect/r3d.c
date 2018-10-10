@@ -42,7 +42,7 @@
 		v.z /= (tmplen + 1.0e-299);				\
 	}
 
-void r3d_clip(r3d_poly *poly, r3d_plane *planes, r3d_int nplanes) {
+void r3d_clip(r3d_poly *poly, const r3d_plane *planes, r3d_int nplanes) {
 	// direct access to vertex buffer
 	r3d_vertex *vertbuffer = poly->verts;
 	r3d_int *nverts = &poly->nverts;
@@ -919,12 +919,12 @@ void r3d_print(r3d_poly *poly) {
 	}
 }
 
-void r3d_init_brep(r3d_poly *poly, r3d_brep **brep, r3d_int *numcomponents) {
+void r3d_init_brep(const r3d_poly *poly, r3d_brep **brep, r3d_int *numcomponents) {
 	// constants
-	r3d_int nverts = poly->nverts;
+	const r3d_int nverts = poly->nverts;
 
 	// local vertex buffer pointer
-	r3d_vertex *vertbuffer = poly->verts;
+	const r3d_vertex *vertbuffer = poly->verts;
 
 	// locals
 	r3d_int nc = 0, i, np, nv, nf, pnext, vstart, vcur, vnext, pedge, nvkept,

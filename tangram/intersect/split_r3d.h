@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <memory>
 #include "tangram/support/tangram.h"
+#include "tangram/support/Point.h"
 #include "tangram/support/MatPoly.h"
 
 extern "C" {
@@ -56,7 +57,7 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
   r3dized_poly_faces = new r3d_int* [nfaces];
   for (int iface = 0; iface < nfaces; iface++) {
     const std::vector<int>& matpoly_faces = mat_poly.face_vertices(iface);
-    int face_nvrts = (int) matpoly_faces.size();
+    int face_nvrts = static_cast<int>(matpoly_faces.size());
     nface_vrts[iface] = face_nvrts;
     r3dized_poly_faces[iface] = new r3d_int [face_nvrts];
     for (int ivrt = 0; ivrt < face_nvrts; ivrt++)
@@ -80,7 +81,7 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
   in the R3D polyhedron
 */
 void
-r3dpoly_to_matpolys(r3d_poly& r3dpoly,
+r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                     std::vector< MatPoly<3> >& mat_polys) {
   r3d_brep* poly_brep;
   r3d_int ncomponents;
@@ -92,7 +93,7 @@ r3dpoly_to_matpolys(r3d_poly& r3dpoly,
     return;
   }
 
-  mat_polys.resize(ncomponents);
+  mat_polys.reserve(ncomponents);
   for (int ipoly = 0; ipoly < ncomponents; ipoly++) {
     int nvrts = poly_brep[ipoly].numvertices;
     std::vector<Point3> curpoly_vrts;
@@ -118,27 +119,36 @@ r3dpoly_to_matpolys(r3d_poly& r3dpoly,
     }
     curpoly_vrts.shrink_to_fit();
 
+    if (curpoly_vrts.size() < 4) continue;
+
     int nfaces = poly_brep[ipoly].numfaces;
-    std::vector< std::vector<int> > curpoly_face(nfaces);
+    std::vector< std::vector<int> > curpoly_faces(nfaces);
     for (int iface = 0; iface < nfaces; iface++) {
       int face_nverts = poly_brep[ipoly].numvertsperface[iface];
       for (int ifv = 0; ifv < face_nverts; ifv++) {
         int cur_vrt_id = r3d2matpoly_vrt_ids[poly_brep[ipoly].faceinds[iface][ifv]];
         // We only add unique node indices to the list of face's nodes
-        if (std::find(curpoly_face[iface].begin(), curpoly_face[iface].end(), 
-                      cur_vrt_id) == curpoly_face[iface].end())
-          curpoly_face[iface].push_back(cur_vrt_id);
+        if (std::find(curpoly_faces[iface].begin(), curpoly_faces[iface].end(), 
+                      cur_vrt_id) == curpoly_faces[iface].end())
+          curpoly_faces[iface].push_back(cur_vrt_id);
       }
     }
 
     // Filter out degenerate faces
     int ind_face = 0;
-    while (ind_face < curpoly_face.size())
-      if (curpoly_face[ind_face].size() > 2) ind_face++;
-      else curpoly_face.erase(curpoly_face.begin() + ind_face);  
+    while (ind_face < curpoly_faces.size())
+      if (curpoly_faces[ind_face].size() > 2) ind_face++;
+      else curpoly_faces.erase(curpoly_faces.begin() + ind_face);  
 
-    mat_polys[ipoly].initialize(curpoly_vrts, curpoly_face);
+    // We do not store polyhedra with less than four faces, 
+    // as they are clearly degenerate
+    if (curpoly_faces.size() > 3) {
+      int inew_poly = static_cast<int>(mat_polys.size());
+      mat_polys.push_back(MatPoly<3>());
+      mat_polys[inew_poly].initialize(curpoly_vrts, curpoly_faces);
+    }
   }
+  mat_polys.shrink_to_fit();
 
   r3d_free_brep(&poly_brep, ncomponents);
 }
@@ -187,23 +197,30 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
 
     //Find the moments for a subpoly
     r3d_reduce(&r3d_subpolys[isp], r3d_moments, POLY_ORDER);
-//*
     if (r3d_moments[0] <= std::numeric_limits<double>::epsilon()) {
       subpoly_ptrs[isp]->clear();
       subpoly_moments_ptrs[isp]->clear();
       continue;
     }    
-//*/
     subpoly_moments_ptrs[isp]->assign(r3d_moments, r3d_moments + 4);
 
     //Get a MatPoly for a subpoly
     std::vector< MatPoly<3> > sub_matpoly;
     r3dpoly_to_matpolys(r3d_subpolys[isp], sub_matpoly);
-    int ncomponents = (int) sub_matpoly.size();
-    if (ncomponents > 1) 
-      throw std::runtime_error("Non-convex MatPoly is split using the method for convex MatPoly's!");
+    int ncomponents = static_cast<int>(sub_matpoly.size());
+    if (ncomponents > 1) {
+      // Filter out degenerate components
+      int ind_subpoly = 0;
+      while (ind_subpoly < sub_matpoly.size())
+        if (sub_matpoly[ind_subpoly].moments()[0] > 
+            std::numeric_limits<double>::epsilon()) ind_subpoly++;
+        else sub_matpoly.erase(sub_matpoly.begin() + ind_subpoly);  
+    }
+      
     if (ncomponents == 1) 
       *subpoly_ptrs[isp] = sub_matpoly[0];
+    else
+      throw std::runtime_error("Non-convex MatPoly is split using the method for convex MatPoly's!");
   }  
 }
 
@@ -248,7 +265,7 @@ class SplitR3D {
     if (all_convex_)
       convex_polys = &matpolys_;
     else {
-      int nncpolys = (int) matpolys_.size();
+      int nncpolys = static_cast<int>(matpolys_.size());
       for (int incp = 0; incp < nncpolys; incp++)
         matpolys_[incp].decompose(convex_components);
 
@@ -259,7 +276,7 @@ class SplitR3D {
       hs_moments_ptrs[ihs]->assign(4, 0.0);
 
     int hs_poly_count[2] = {0, 0};
-    int npolys = (int) convex_polys->size();
+    int npolys = static_cast<int>(convex_polys->size());
 
     for (int icp = 0; icp < npolys; icp++) {
       MatPoly<3> cur_subpolys[2];
@@ -410,6 +427,100 @@ class ClipR3D {
   const Plane_t<3>& cutting_plane_;
   bool planar_faces_;
 };
+
+/*!
+  @brief Computes moments of the intersection of a MatPoly and an r3d_poly. 
+  If MatPoly is convex, r3d_poly will be clipped with planes containing the
+  faces of MatPoly. Otherwise, MatPoly will be decomposed into tetrahedral
+  MatPolys, each of which will be intersected with r3d_poly. 
+  Note that r3d_poly does not need to be convex.
+  @param[in] mat_poly MatPoly object to intersect with
+  @param[in] r3dpoly r3d_poly that is intersected with MatPoly
+  @param[out] intersection_moments Moments of the intersection
+  @param[in] convex_matpoly flag indicating if MatPoly is convex: if not
+  it will be decomposed into tetrahedra
+*//*!
+  @brief Computes moments of the intersection of a MatPoly and an r3d_poly. 
+  If MatPoly is convex, r3d_poly will be clipped with planes containing the
+  faces of MatPoly. Otherwise, MatPoly will be decomposed into tetrahedral
+  MatPolys, each of which will be intersected with r3d_poly. 
+  Note that r3d_poly does not need to be convex.
+  @param[in] mat_poly MatPoly object to intersect with
+  @param[in] r3dpoly r3d_poly that is intersected with MatPoly
+  @param[out] intersection_moments Moments of the intersection
+  @param[in] convex_matpoly flag indicating if MatPoly is convex: if not
+  it will be decomposed into tetrahedra
+*/
+void get_intersection_moments(const MatPoly<3>& mat_poly,
+                              const r3d_poly& r3dpoly,
+                              std::vector<double>& intersection_moments,
+                              bool convex_matpoly = false) {   
+  const int POLY_ORDER = 1;
+  int nmoments = R3D_NUM_MOMENTS(POLY_ORDER);
+  r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
+
+  if (convex_matpoly) {                                
+    std::vector< Plane_t<3> > face_planes;
+    mat_poly.face_planes(face_planes);
+    r3d_poly intersection = r3dpoly;
+
+    int nplanes = static_cast<int>(face_planes.size());
+    r3d_plane* r3d_face_planes = new r3d_plane [nplanes];
+    for (int iplane = 0; iplane < nplanes; iplane++) {
+      for (int ixyz = 0; ixyz < 3; ixyz++)
+        r3d_face_planes[iplane].n.xyz[ixyz] = -face_planes[iplane].normal[ixyz];
+      r3d_face_planes[iplane].d = -face_planes[iplane].dist2origin;
+    }
+
+    r3d_clip(&intersection, r3d_face_planes, (r3d_int) nplanes);
+    
+    delete [] r3d_face_planes;
+
+    r3d_reduce(&intersection, r3d_moments, POLY_ORDER);
+    intersection_moments.resize(nmoments);
+    for (int im = 0; im < nmoments; im++)
+      intersection_moments[im] = r3d_moments[im];
+  }
+  else {
+    std::vector< MatPoly<3> > mat_poly_tets;
+    mat_poly.facetize_decompose(mat_poly_tets);
+
+    int ntets = static_cast<int>(mat_poly_tets.size());
+    intersection_moments.assign(nmoments, 0.0);
+    for (int itet = 0; itet < ntets; itet++) {
+      std::vector< Plane_t<3> > face_planes;
+      mat_poly_tets[itet].face_planes(face_planes);
+      assert(face_planes.size() == 4);
+
+      r3d_poly intersection = r3dpoly; 
+      r3d_plane r3d_face_planes[4];
+      for (int iplane = 0; iplane < 4; iplane++) {
+        for (int ixyz = 0; ixyz < 3; ixyz++)
+          r3d_face_planes[iplane].n.xyz[ixyz] = -face_planes[iplane].normal[ixyz];
+        r3d_face_planes[iplane].d = -face_planes[iplane].dist2origin;
+      }
+
+      r3d_clip(&intersection, r3d_face_planes, 4);
+
+      r3d_reduce(&intersection, r3d_moments, POLY_ORDER);
+      for (int im = 0; im < nmoments; im++)
+        intersection_moments[im] += r3d_moments[im];
+    }
+  }
+}
+
+BoundingBox_t<3> r3d_poly_bounding_box(const r3d_poly& r3dpoly) {
+  BoundingBox_t<3> bbox;
+  for (int ivrt = 0; ivrt < r3dpoly.nverts; ivrt++)
+    for (int idim = 0; idim < 3; idim++) {
+      if (r3dpoly.verts[ivrt].pos.xyz[idim] < bbox.min[idim])
+        bbox.min[idim] = r3dpoly.verts[ivrt].pos.xyz[idim];
+
+      if (r3dpoly.verts[ivrt].pos.xyz[idim] > bbox.max[idim])
+        bbox.max[idim] = r3dpoly.verts[ivrt].pos.xyz[idim];
+    }
+  return bbox;
+}
 
 } // namespace Tangram
 

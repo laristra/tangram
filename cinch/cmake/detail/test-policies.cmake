@@ -12,7 +12,7 @@
         set(test_policy_runtime ${CINCH_SOURCE_DIR}/auxiliary/test-standard.cc)
         set(test_policy_defines -DSERIAL)
 
-    elseif(MPI_${MPI_LANGUAGE}_FOUND AND test_POLICY STREQUAL "MPI")
+    elseif(MPI_${MPI_LANGUAGE}_FOUND AND test_POLICY STREQUAL "MPI" AND (NOT HPX_FOUND))
 
         set(test_policy_runtime ${CINCH_SOURCE_DIR}/auxiliary/test-mpi.cc)
         set(test_policy_flags ${MPI_${MPI_LANGUAGE}_COMPILE_FLAGS})
@@ -35,12 +35,16 @@
         set(test_policy_exec_threads ${MPIEXEC_NUMPROC_FLAG})
         set(test_policy_defines -DCINCH_ENABLE_MPI)
 
-    elseif(MPI_${MPI_LANGUAGE}_FOUND AND HPX_FOUND AND test_POLICY STREQUAL "HPX")
+    elseif(MPI_${MPI_LANGUAGE}_FOUND AND HPX_FOUND AND
+        (test_POLICY STREQUAL "HPX" OR test_POLICY STREQUAL "MPI"))
 
         set(test_policy_runtime ${CINCH_SOURCE_DIR}/auxiliary/test-hpx.cc)
-        set(test_policy_flags ${MPI_${MPI_LANGUAGE}_COMPILE_FLAGS})
-        set(test_policy_includes ${MPI_${MPI_LANGUAGE}_INCLUDE_PATH})
-        set(test_policy_libraries ${MPI_${MPI_LANGUAGE}_LIBRARIES})
+        set(test_policy_flags ${MPI_${MPI_LANGUAGE}_COMPILE_FLAGS}
+            ${HPX_CXX_FLAGS})
+        set(test_policy_includes ${MPI_${MPI_LANGUAGE}_INCLUDE_PATH}
+            ${HPX_INCLUDE_DIRS})
+        set(test_policy_libraries ${MPI_${MPI_LANGUAGE}_LIBRARIES}
+            ${HPX_LIBRARIES} ${HPX_LIB_FLAGS})
         set(test_policy_exec ${MPIEXEC})
         set(test_policy_exec_threads ${MPIEXEC_NUMPROC_FLAG})
         set(test_policy_defines -DCINCH_ENABLE_MPI)

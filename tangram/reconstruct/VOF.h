@@ -37,13 +37,17 @@ public:
     @brief Constructor for a VOF interface reconstruction algorithm
     @param[in] Mesh A lightweight wrapper to a specific input mesh
     implementation that provides certain functionality
-    @param[in] im_tols Tolerances for iterative methods
+    @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
   explicit VOF(const Mesh_Wrapper& Mesh, 
-               const IterativeMethodTolerances_t& im_tols,
+               const std::vector<IterativeMethodTolerances_t>& ims_tols,
                const bool all_convex = false) : 
-               mesh_(Mesh), im_tols_(im_tols), all_convex_(all_convex) {}
+               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+    if (ims_tols.empty())
+      throw std::runtime_error(
+        "VOF uses 0-order moments and needs tolerances for the related iterative method!");
+  }
   
   /*!
     @brief Pass in the volume fraction data for use in the reconstruction.
@@ -64,13 +68,15 @@ public:
     int ncells = mesh_.num_owned_cells() + mesh_.num_ghost_cells();
     cell_mat_ids_.resize(ncells);
     cell_mat_vfracs_.resize(ncells);  
+
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
       int nmats = cell_num_mats[icell];
-      cell_mat_ids_[icell].assign(cell_mat_ids.begin() + offset, 
-                                  cell_mat_ids.begin() + offset + nmats);
-      cell_mat_vfracs_[icell].assign(cell_mat_volfracs.begin() + offset, 
-                                     cell_mat_volfracs.begin() + offset + nmats);
+
+      for (int icmat = 0; icmat < nmats; icmat++) {
+        cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
+        cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
+      }
       offset += nmats;
     }
   }
@@ -78,10 +84,15 @@ public:
   /*!
     @brief Used iterative methods tolerances
     @return  Tolerances for iterative methods, 
-    here im_tols_.fun_eps is the volume tolerance
+    here ims_tols_[0] correspond to methods for volumes 
+    and ims_tols_[1] are NOT used.
+    In particular, ims_tols_[0].arg_eps is a negligible 
+    change in cutting distance, ims_tols_[0].fun_eps is a 
+    negligible discrepancy in volume.
   */
-  const IterativeMethodTolerances_t& iterative_method_tolerances() const {
-    return im_tols_;
+  const std::vector<IterativeMethodTolerances_t>& 
+  iterative_methods_tolerances() const {
+    return ims_tols_;
   }
 
   /*!
@@ -113,12 +124,12 @@ public:
                           const std::vector< MatPoly<Dim> >& mixed_polys,
                           Plane_t<Dim>& cutting_plane,
                           const bool planar_faces = true) const {
-    double vol_tol = im_tols_.fun_eps;
+    double vol_tol = ims_tols_[0].fun_eps;
 
     std::vector<int> istencil_cells;
     mesh_.cell_get_node_adj_cells(cellID, Entity_type::ALL, &istencil_cells);
     istencil_cells.insert(istencil_cells.begin(), cellID);
-    int nsc = (int) istencil_cells.size();
+    int nsc = static_cast<int>(istencil_cells.size());
 
     // Create stencil for the volume fractions gradient: the first entry corresponds
     // to the current cell, the rest correspond to all its neighbors through the nodes
@@ -126,8 +137,9 @@ public:
     std::vector< Point<Dim> > stencil_centroids(nsc);
     for (int isc = 0; isc < nsc; isc++) {
       const std::vector<int>& cur_mat_ids = cell_mat_ids_[istencil_cells[isc]];
-      int local_id = (int) (std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID) -
-                            cur_mat_ids.begin());
+      int local_id = std::distance(cur_mat_ids.begin(),
+        std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
+        
       if (local_id != cur_mat_ids.size())
         stencil_vfracs[isc] = cell_mat_vfracs_[istencil_cells[isc]][local_id];
 
@@ -149,7 +161,7 @@ public:
 
     //Create cutting distance solver
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
-      solve_cut_dst(mixed_polys, cutting_plane.normal, im_tols_, planar_faces);
+      solve_cut_dst(mixed_polys, cutting_plane.normal, ims_tols_[0], planar_faces);
 
     solve_cut_dst.set_target_volume(target_vol); 
     std::vector<double> clip_res = solve_cut_dst();
@@ -159,7 +171,7 @@ public:
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol) 
-      std::cerr << "VOF for cell " << cellID << ": after " << im_tols_.max_num_iter <<
+      std::cerr << "VOF for cell " << cellID << ": after " << ims_tols_[0].max_num_iter <<
         " iteration(s) achieved error in volume for material " << 
         matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
 #endif
@@ -193,13 +205,10 @@ public:
       nested_dissections(*this, cellID, all_convex_);
 
     // We clip material in the same order they are given for the cell
-    int nmats = (int) cell_mat_ids_[cellID].size();
-    std::vector<int> direct_order(nmats);
-    std::iota(direct_order.begin(), direct_order.end(), 0);
     // Note that this is the order of local materials, not material 
     // indices. Nested dissections uses cell_materials method to get
     // actual material indices.
-    nested_dissections.set_cell_materials_order(direct_order);
+    nested_dissections.set_cell_materials_order(false);
 
     return nested_dissections();
   }
@@ -225,7 +234,7 @@ public:
 
 private:
   const Mesh_Wrapper& mesh_;
-  const IterativeMethodTolerances_t im_tols_;
+  const std::vector<IterativeMethodTolerances_t> ims_tols_;
   const bool all_convex_;
   std::vector< std::vector<int> > cell_mat_ids_;
   std::vector< std::vector<double> > cell_mat_vfracs_;

@@ -22,6 +22,7 @@ set(reconstruct_HEADERS
     cutting_distance_solver.h
     nested_dissections.h
     VOF.h
+    MOF.h
     PARENT_SCOPE
 )
 

@@ -4,8 +4,10 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef SRC_LS_FITS_H_
-#define SRC_LS_FITS_H_
+
+
+#ifndef TANGRAM_LS_FITS_H_
+#define TANGRAM_LS_FITS_H_
 
 #include <algorithm>
 #include <stdexcept>

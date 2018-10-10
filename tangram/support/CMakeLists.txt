@@ -17,6 +17,7 @@ set(support_HEADERS
     Matrix.h
     MatPoly.h
     lsfits.h
+    bfgs.h
     PARENT_SCOPE
 )
 

@@ -20,7 +20,7 @@ to create `MatPoly` objects for every material in a cell, then adds
 them to the corresponding `CellMatPoly` object.  Note that it is possible
 for a single material to be represented by several `MatPoly` objects.
 The current implementation of `CellMatPoly` attemps to identify identical
-nodes and faces of stores material polytopes and to establish connectivity
+nodes and faces of stored material polytopes and to establish connectivity
 between them.
 
 Tangram works with your underlying mesh through a wrapper that provides 
@@ -51,9 +51,10 @@ Tangram works with reconstructors through a wrapper.  All such wrappers should
 expose methods for setting the material moments, for specifying the sets of cells
 for which `CellMatPoly` objects are to be generated, and the operator to
 perform interface reconstruction and create the corresponding `CellMatPoly` objects.
-Tangram provides several built-in reconstructors, such as SLIC and VOF, which are
-templated on the intersection routine.  The standard intersection algorithm for
-tangram is [r3d](https://github.com/devonmpowell/r3d), but custom intersectors 
+Tangram provides several built-in reconstructors, such as Volume-of-Fluid (VOF) and 
+Moment-of-Fluid (MOF), which are templated on the intersection routine.
+The standard intersection algorithm for tangram is 
+[r3d](https://github.com/devonmpowell/r3d), but custom intersectors 
 can also be used. Standalone reconstructors can also be used by writing a wrapper, 
 which is demonstrated with the wrapper for the XMOF2D library.
 
