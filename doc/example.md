@@ -145,7 +145,7 @@ as well as the intersection routine, and can be used with other frameworks.
 It need not be used at all, but is a nice starting point for writing one's 
 own interface reconstruction application.
 For every implemented reconstructor, we also include app tests. If only
-SimpleMesh mesh framework is available, they are ran for structured grids
+SimpleMesh mesh framework is available, they are run for structured grids
 (including the case of partitioning cells into simplices), and when Tangram is
 built with Jali, reconstructors are also tested on Voronoi meshes. In those tests,
 the domain contains three materials with planar/linear interfaces between then,
