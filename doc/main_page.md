@@ -26,7 +26,7 @@ hooking tangram up to a mesh and interface reconstructor.
 
 At a minimum, tangram requires:
 - A C++-11 compatible compiler; regular testing is performed with GCC
-  5.3+ and Intel 17+.
+  6.3+ and Intel 18+.
 - CMake 3.0+
 - Boost (1.53.0+) **or** Thrust (1.6.0+)
 
