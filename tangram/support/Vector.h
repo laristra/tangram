@@ -22,7 +22,7 @@
 #ifndef TANGRAM_VECTOR_H_
 #define TANGRAM_VECTOR_H_
 
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <iostream>
 #include <vector>

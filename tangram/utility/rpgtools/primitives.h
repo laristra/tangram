@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 #include <cmath>
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <algorithm>
 #include <memory>
