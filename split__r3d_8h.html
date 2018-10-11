@@ -35,7 +35,7 @@ https://github.com/laristra/tangram/blob/master/LICENSE
     <nav class="navbar navbar-default" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand">tangram dummy-0.0.0</a>
+          <a class="navbar-brand">tangram </a>
         </div>
       </div>
     </nav>
@@ -116,6 +116,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
 <code>#include &quot;<a class="el" href="tangram_8h_source.html">tangram/support/tangram.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Point_8h_source.html">tangram/support/Point.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="MatPoly_8h_source.html">tangram/support/MatPoly.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="r3d_8h_source.html">r3d.h</a>&quot;</code><br />
 </div>
@@ -138,15 +139,20 @@ Functions</h2></td></tr>
 <tr class="memitem:a2364ea47380698d6b380574978c068da"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a2364ea47380698d6b380574978c068da">Tangram::matpoly_to_r3dpoly</a> (const MatPoly&lt; 3 &gt; &amp;mat_poly, <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly)</td></tr>
 <tr class="memdesc:a2364ea47380698d6b380574978c068da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> to a polyhedron in R3D format.  <a href="namespaceTangram.html#a2364ea47380698d6b380574978c068da">More...</a><br /></td></tr>
 <tr class="separator:a2364ea47380698d6b380574978c068da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9cc5b5a8b5d621481b1d275a749c99b5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a9cc5b5a8b5d621481b1d275a749c99b5">Tangram::r3dpoly_to_matpolys</a> (<a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly, std::vector&lt; MatPoly&lt; 3 &gt; &gt; &amp;mat_polys)</td></tr>
-<tr class="memdesc:a9cc5b5a8b5d621481b1d275a749c99b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a polyhedron in R3D format to <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s.  <a href="namespaceTangram.html#a9cc5b5a8b5d621481b1d275a749c99b5">More...</a><br /></td></tr>
-<tr class="separator:a9cc5b5a8b5d621481b1d275a749c99b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad21544d74adf6c81745e56cb8a2d4a41"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ad21544d74adf6c81745e56cb8a2d4a41">Tangram::r3dpoly_to_matpolys</a> (const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly, std::vector&lt; MatPoly&lt; 3 &gt; &gt; &amp;mat_polys)</td></tr>
+<tr class="memdesc:ad21544d74adf6c81745e56cb8a2d4a41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a polyhedron in R3D format to <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s.  <a href="namespaceTangram.html#ad21544d74adf6c81745e56cb8a2d4a41">More...</a><br /></td></tr>
+<tr class="separator:ad21544d74adf6c81745e56cb8a2d4a41"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b33cbabca7f3d25bf3a39d72909f1be"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a3b33cbabca7f3d25bf3a39d72909f1be">Tangram::split_convex_matpoly_r3d</a> (const MatPoly&lt; 3 &gt; &amp;mat_poly, const Plane_t&lt; 3 &gt; &amp;cutting_plane, MatPoly&lt; 3 &gt; &amp;lower_halfspace_poly, MatPoly&lt; 3 &gt; &amp;upper_halfspace_poly, std::vector&lt; double &gt; &amp;lower_halfspace_moments, std::vector&lt; double &gt; &amp;upper_halfspace_moments)</td></tr>
 <tr class="memdesc:a3b33cbabca7f3d25bf3a39d72909f1be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a convex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into two (convex) <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s with a cutting plane.  <a href="namespaceTangram.html#a3b33cbabca7f3d25bf3a39d72909f1be">More...</a><br /></td></tr>
 <tr class="separator:a3b33cbabca7f3d25bf3a39d72909f1be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a424584e09f4771e7acc1438c8bbed38b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a424584e09f4771e7acc1438c8bbed38b">Tangram::lower_halfspace_moments_r3d</a> (const MatPoly&lt; 3 &gt; &amp;mat_poly, const Plane_t&lt; 3 &gt; &amp;cutting_plane, std::vector&lt; double &gt; &amp;lower_halfspace_moments)</td></tr>
 <tr class="memdesc:a424584e09f4771e7acc1438c8bbed38b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Moments of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s components below the cutting plane. For a non-convex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> no decomposition is performed.  <a href="namespaceTangram.html#a424584e09f4771e7acc1438c8bbed38b">More...</a><br /></td></tr>
 <tr class="separator:a424584e09f4771e7acc1438c8bbed38b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad580bc2bc65a62b3650d30447117732a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ad580bc2bc65a62b3650d30447117732a">Tangram::get_intersection_moments</a> (const MatPoly&lt; 3 &gt; &amp;mat_poly, const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly, std::vector&lt; double &gt; &amp;intersection_moments, bool convex_matpoly=false)</td></tr>
+<tr class="memdesc:ad580bc2bc65a62b3650d30447117732a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes moments of the intersection of a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> and an <a class="el" href="structr3d__poly.html">r3d_poly</a>. If <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> is convex, <a class="el" href="structr3d__poly.html">r3d_poly</a> will be clipped with planes containing the faces of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>. Otherwise, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> will be decomposed into tetrahedral MatPolys, each of which will be intersected with <a class="el" href="structr3d__poly.html">r3d_poly</a>. Note that <a class="el" href="structr3d__poly.html">r3d_poly</a> does not need to be convex.  <a href="namespaceTangram.html#ad580bc2bc65a62b3650d30447117732a">More...</a><br /></td></tr>
+<tr class="separator:ad580bc2bc65a62b3650d30447117732a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76a989a601d36db6dab4fcec22ed85fe"><td class="memItemLeft" align="right" valign="top">BoundingBox_t&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a76a989a601d36db6dab4fcec22ed85fe">Tangram::r3d_poly_bounding_box</a> (const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly)</td></tr>
+<tr class="separator:a76a989a601d36db6dab4fcec22ed85fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Routines for splitting convex or non-convex MatPoly's by a cutting plane. Uses R3D. A convex MatPoly will be split into two MatPoly's. A non-convex MatPoly will be decomposed into convex polyhedra using its centroid, several MatPoly's could be returned for each half-plane. All the faces of the input MatPoly are assumed to be planar and no additional facetization is performed, so when sequentially splitting of a faceted MatPoly, no additional facets will be introduced. </p>

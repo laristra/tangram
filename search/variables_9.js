@@ -1,10 +1,10 @@
 var searchData=
 [
-  ['n',['n',['../structr3d__plane.html#a6447f761d2c41d040a0fbdaa8e2885b1',1,'r3d_plane']]],
-  ['normal',['normal',['../structTangram_1_1Plane__t.html#aeb5db1642a6d790563f1ae78154de428',1,'Tangram::Plane_t']]],
-  ['num_5fentity_5fkinds',['NUM_ENTITY_KINDS',['../namespaceTangram.html#aae95e5bdd769633f727db3635c7f3cfb',1,'Tangram']]],
-  ['numfaces',['numfaces',['../structr3d__brep.html#ada56a04094fa2bdd74ff9085dbb7a85c',1,'r3d_brep']]],
-  ['numvertices',['numvertices',['../structr3d__brep.html#a1112473427a084ceeecbc603dbeaf65a',1,'r3d_brep']]],
-  ['numvertsperface',['numvertsperface',['../structr3d__brep.html#aafbf7bf0fe6d1d40eda771d747e1a985',1,'r3d_brep']]],
-  ['nverts',['nverts',['../structr3d__poly.html#a49cb139c24b05f1ce30bc385f6938b50',1,'r3d_poly']]]
+  ['matpolys',['matpolys',['../structTangram_1_1MatPolySet__t.html#acaf9404d98e86e9b6091a4e10b90c8a5',1,'Tangram::MatPolySet_t']]],
+  ['max',['max',['../structTangram_1_1BoundingBox__t.html#ad4ae706e0bc47e7416cfb1dc2d12d3db',1,'Tangram::BoundingBox_t']]],
+  ['max_5fnum_5fiter',['max_num_iter',['../structTangram_1_1IterativeMethodTolerances__t.html#ae2828b6f569aa9bbbd133757dc568a55',1,'Tangram::IterativeMethodTolerances_t']]],
+  ['mesh',['mesh',['../test__jali__mesh__wrapper_8cc.html#a461046ef25b165270b46b1faf478b043',1,'test_jali_mesh_wrapper.cc']]],
+  ['min',['min',['../structTangram_1_1BoundingBox__t.html#ab255aa2370f495b3c8b00f2a92ea72b0',1,'Tangram::BoundingBox_t']]],
+  ['mof_5fbfgs_5falg',['mof_bfgs_alg',['../namespaceTangram.html#ad2fbb26e259abb7a8f8d586ac8e52355',1,'Tangram']]],
+  ['moments',['moments',['../structTangram_1_1MatPolySet__t.html#a808230d69d8280dbec7bf0b9424086fa',1,'Tangram::MatPolySet_t::moments()'],['../structRefPolyData__t.html#aefb0fa5ae17ee93b7660f0c9757e76e9',1,'RefPolyData_t::moments()']]]
 ];

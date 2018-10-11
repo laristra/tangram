@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['h',['h',['../classAuxMeshTopology_1_1h.html',1,'AuxMeshTopology']]],
-  ['halfspacesets_5ft',['HalfSpaceSets_t',['../structTangram_1_1HalfSpaceSets__t.html',1,'Tangram']]]
+  ['flecsi_5fmesh_5ft',['flecsi_mesh_t',['../classflecsi__mesh__t.html',1,'']]]
 ];

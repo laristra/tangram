@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['y',['y',['../unionr3d__rvec3.html#a56d52d5f0da1967cd6552a3a86e38a53',1,'r3d_rvec3::y()'],['../namespaceTangram.html#a92e0faf2a1dc4fb9c9363d884fd0d2ef',1,'Tangram::Y()']]]
+  ['vertices',['vertices',['../structr3d__brep.html#a79581150384bbb65d71719c993b1c344',1,'r3d_brep']]],
+  ['verts',['verts',['../structr2d__poly.html#a92a7a2ba8a83f658c07866816acb1123',1,'r2d_poly::verts()'],['../structr3d__poly.html#a3a696a7627e82ee03e826c5ef5b19fe2',1,'r3d_poly::verts()']]]
 ];

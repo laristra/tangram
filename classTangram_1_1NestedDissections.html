@@ -35,7 +35,7 @@ https://github.com/laristra/tangram/blob/master/LICENSE
     <nav class="navbar navbar-default" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand">tangram dummy-0.0.0</a>
+          <a class="navbar-brand">tangram </a>
         </div>
       </div>
     </nav>
@@ -118,9 +118,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aabacd3bc9eee72cb80295000cd8f987a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1NestedDissections.html#aabacd3bc9eee72cb80295000cd8f987a">NestedDissections</a> (const Reconstructor &amp;rec, const int &amp;cellID, const bool convex_cell=false)</td></tr>
 <tr class="memdesc:aabacd3bc9eee72cb80295000cd8f987a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the nested dissections algorithm.  <a href="#aabacd3bc9eee72cb80295000cd8f987a">More...</a><br /></td></tr>
 <tr class="separator:aabacd3bc9eee72cb80295000cd8f987a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae825cfca8dee85ec563ca01903d1659d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1NestedDissections.html#ae825cfca8dee85ec563ca01903d1659d">set_cell_materials_order</a> (const std::vector&lt; int &gt; &amp;cell_materials_order, const bool enable_permutations=false)</td></tr>
-<tr class="memdesc:ae825cfca8dee85ec563ca01903d1659d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the order in which materials are clipped.  <a href="#ae825cfca8dee85ec563ca01903d1659d">More...</a><br /></td></tr>
-<tr class="separator:ae825cfca8dee85ec563ca01903d1659d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ff51e8150c8b46d03052cb58732ee1d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1NestedDissections.html#a6ff51e8150c8b46d03052cb58732ee1d">set_cell_materials_order</a> (const std::vector&lt; int &gt; &amp;cell_materials_order)</td></tr>
+<tr class="memdesc:a6ff51e8150c8b46d03052cb58732ee1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the order in which materials are clipped.  <a href="#a6ff51e8150c8b46d03052cb58732ee1d">More...</a><br /></td></tr>
+<tr class="separator:a6ff51e8150c8b46d03052cb58732ee1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2bb3ba3dd193b1f451087432dba152b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1NestedDissections.html#af2bb3ba3dd193b1f451087432dba152b">set_cell_materials_order</a> (const bool enable_permutations=false)</td></tr>
+<tr class="memdesc:af2bb3ba3dd193b1f451087432dba152b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets materials clipping order: either all ordering permutations are enabled, or materials are clipped in the order they are listed for the cell.  <a href="#af2bb3ba3dd193b1f451087432dba152b">More...</a><br /></td></tr>
+<tr class="separator:af2bb3ba3dd193b1f451087432dba152b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc2e88170d4bd1df9b0ffe8b33736833"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1NestedDissections.html#adc2e88170d4bd1df9b0ffe8b33736833">num_materials_orders</a> ()</td></tr>
 <tr class="memdesc:adc2e88170d4bd1df9b0ffe8b33736833"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of materials orders for which the respective <a class="el" href="classTangram_1_1CellMatPoly.html">CellMatPoly</a>'s can be constructed. If permuations are enabled, it is the number of possible permutations, otherwise it is equal to 1.  <a href="#adc2e88170d4bd1df9b0ffe8b33736833">More...</a><br /></td></tr>
 <tr class="separator:adc2e88170d4bd1df9b0ffe8b33736833"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -238,7 +241,7 @@ template&lt;class Reconstructor, int Dim, class MatPoly_Splitter&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ae825cfca8dee85ec563ca01903d1659d"></a>
+<a class="anchor" id="a6ff51e8150c8b46d03052cb58732ee1d"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -251,18 +254,8 @@ template&lt;class Reconstructor, int Dim, class MatPoly_Splitter&gt; </div>
           <td class="memname">void <a class="el" href="classTangram_1_1NestedDissections.html">Tangram::NestedDissections</a>&lt; Reconstructor, Dim, MatPoly_Splitter &gt;::set_cell_materials_order </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
-          <td class="paramname"><em>cell_materials_order</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>cell_materials_order</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>enable_permutations</em> = <code>false</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -276,6 +269,39 @@ template&lt;class Reconstructor, int Dim, class MatPoly_Splitter&gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cell_materials_order</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of local material indices, if a cell has three materials, it will have three entries (0, 1, 2) in certain order </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="af2bb3ba3dd193b1f451087432dba152b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Reconstructor, int Dim, class MatPoly_Splitter&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classTangram_1_1NestedDissections.html">Tangram::NestedDissections</a>&lt; Reconstructor, Dim, MatPoly_Splitter &gt;::set_cell_materials_order </td>
+          <td>(</td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>enable_permutations</em> = <code>false</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets materials clipping order: either all ordering permutations are enabled, or materials are clipped in the order they are listed for the cell. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">enable_permutations</td><td>Flag indicating whether the order permutations are to be used. If enabled, ID of the permutation can be used as the parameter of the operator </td></tr>
   </table>
   </dd>

@@ -35,7 +35,7 @@ https://github.com/laristra/tangram/blob/master/LICENSE
     <nav class="navbar navbar-default" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand">tangram dummy-0.0.0</a>
+          <a class="navbar-brand">tangram </a>
         </div>
       </div>
     </nav>
@@ -181,6 +181,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7d70ecf4b9a9fb27c01a424b1e4ae32a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a7d70ecf4b9a9fb27c01a424b1e4ae32a">decompose</a> (std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; D &gt; &gt; &amp;sub_polys) const </td></tr>
 <tr class="memdesc:a7d70ecf4b9a9fb27c01a424b1e4ae32a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decomposes this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid. If faces of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> are planar, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s in the decomposition will be convex.  <a href="#a7d70ecf4b9a9fb27c01a424b1e4ae32a">More...</a><br /></td></tr>
 <tr class="separator:a7d70ecf4b9a9fb27c01a424b1e4ae32a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cae374c1d25bcda8be87c086986611c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a7cae374c1d25bcda8be87c086986611c">facetize_decompose</a> (std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; D &gt; &gt; &amp;sub_polys) const </td></tr>
+<tr class="memdesc:a7cae374c1d25bcda8be87c086986611c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Facetizes and decomposes this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into simplex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid.  <a href="#a7cae374c1d25bcda8be87c086986611c">More...</a><br /></td></tr>
+<tr class="separator:a7cae374c1d25bcda8be87c086986611c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa50aa1ea219231515b547062e5ad928"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#aaa50aa1ea219231515b547062e5ad928">face_planes</a> (std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; D &gt; &gt; &amp;fplanes) const </td></tr>
+<tr class="memdesc:aaa50aa1ea219231515b547062e5ad928"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with area below machine epsilon will be omitted. If the number of valid planes is less than four, empty vector will be returned.  <a href="#aaa50aa1ea219231515b547062e5ad928">More...</a><br /></td></tr>
+<tr class="separator:aaa50aa1ea219231515b547062e5ad928"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9728068a7f5eaef1626b5b2c0377a4a7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTangram_1_1BoundingBox__t.html">BoundingBox_t</a>&lt; D &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a9728068a7f5eaef1626b5b2c0377a4a7">bounding_box</a> () const </td></tr>
+<tr class="separator:a9728068a7f5eaef1626b5b2c0377a4a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a96e1e58356a2fc9ddc311d041b99e0"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
 <tr class="memitem:a0a96e1e58356a2fc9ddc311d041b99e0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a0a96e1e58356a2fc9ddc311d041b99e0">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7fb85e2d6b6347abfb97f1d8179f50">Point2</a> &gt; &amp;poly_points)</td></tr>
 <tr class="memdesc:a0a96e1e58356a2fc9ddc311d041b99e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 2D polygon from its vertices.  <a href="#a0a96e1e58356a2fc9ddc311d041b99e0">More...</a><br /></td></tr>
@@ -213,6 +221,22 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aeb217fbc478559061f1d9a15302754fe"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#aeb217fbc478559061f1d9a15302754fe">decompose</a> (std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &gt; &amp;sub_polys) const</td></tr>
 <tr class="memdesc:aeb217fbc478559061f1d9a15302754fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decomposes a 3D <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid. If faces of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> are planar, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s in the decomposition will be convex.  <a href="#aeb217fbc478559061f1d9a15302754fe">More...</a><br /></td></tr>
 <tr class="separator:aeb217fbc478559061f1d9a15302754fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83ef428cceacc7a027e4d0f6318083be"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
+<tr class="memitem:a83ef428cceacc7a027e4d0f6318083be"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a83ef428cceacc7a027e4d0f6318083be">facetize_decompose</a> (std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &gt; &amp;sub_polys) const</td></tr>
+<tr class="memdesc:a83ef428cceacc7a027e4d0f6318083be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decomposes a 2D <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into triangular <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid. This method is identical to decompose.  <a href="#a83ef428cceacc7a027e4d0f6318083be">More...</a><br /></td></tr>
+<tr class="separator:a83ef428cceacc7a027e4d0f6318083be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf06a4d1872ec40eadeaa264a5b75db7"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
+<tr class="memitem:aaf06a4d1872ec40eadeaa264a5b75db7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#aaf06a4d1872ec40eadeaa264a5b75db7">facetize_decompose</a> (std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &gt; &amp;sub_polys) const</td></tr>
+<tr class="memdesc:aaf06a4d1872ec40eadeaa264a5b75db7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Facetizes and decomposes a 3D <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into tetrahedral <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid.  <a href="#aaf06a4d1872ec40eadeaa264a5b75db7">More...</a><br /></td></tr>
+<tr class="separator:aaf06a4d1872ec40eadeaa264a5b75db7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3b7e4023fdf489773ca52943d41006f"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
+<tr class="memitem:af3b7e4023fdf489773ca52943d41006f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#af3b7e4023fdf489773ca52943d41006f">face_planes</a> (std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 2 &gt; &gt; &amp;flines) const</td></tr>
+<tr class="memdesc:af3b7e4023fdf489773ca52943d41006f"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a line containing that face. Important: faces with length below machine epsilon will be omitted. If the number of valid lines is less than three, empty vector will be returned.  <a href="#af3b7e4023fdf489773ca52943d41006f">More...</a><br /></td></tr>
+<tr class="separator:af3b7e4023fdf489773ca52943d41006f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3139b7f9d551301f2c70240eb460fa7b"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
+<tr class="memitem:a3139b7f9d551301f2c70240eb460fa7b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a3139b7f9d551301f2c70240eb460fa7b">face_planes</a> (std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 3 &gt; &gt; &amp;fplanes) const</td></tr>
+<tr class="memdesc:a3139b7f9d551301f2c70240eb460fa7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with area below machine epsilon will be omitted. If the number of valid planes is less than four, empty vector will be returned.  <a href="#a3139b7f9d551301f2c70240eb460fa7b">More...</a><br /></td></tr>
+<tr class="separator:a3139b7f9d551301f2c70240eb460fa7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -321,6 +345,31 @@ template&lt;int D&gt; </div>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="a9728068a7f5eaef1626b5b2c0377a4a7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int D&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structTangram_1_1BoundingBox__t.html">BoundingBox_t</a>&lt;D&gt; <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; D &gt;::bounding_box </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -615,6 +664,84 @@ template&lt;&gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="aaa50aa1ea219231515b547062e5ad928"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int D&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; D &gt;::face_planes </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; D &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>fplanes</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with area below machine epsilon will be omitted. If the number of valid planes is less than four, empty vector will be returned. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fplanes</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of planes for all the faces of this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="af3b7e4023fdf489773ca52943d41006f"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 2 &gt;::face_planes </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 2 &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>flines</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>For every face, returns a line containing that face. Important: faces with length below machine epsilon will be omitted. If the number of valid lines is less than three, empty vector will be returned. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">flines</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of lines for all the faces of this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a3139b7f9d551301f2c70240eb460fa7b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt;::face_planes </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 3 &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>fplanes</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with area below machine epsilon will be omitted. If the number of valid planes is less than four, empty vector will be returned. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fplanes</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of planes for all the faces of this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="a9b9a153543ce1b7daf5aee29c2cec169"></a>
 <div class="memitem">
 <div class="memproto">
@@ -811,6 +938,87 @@ template&lt;&gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">faceted_poly</td><td>Pointer to a 3D material polyhedron object to which the faceted version of this polyhedron is written to </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a7cae374c1d25bcda8be87c086986611c"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int D&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; D &gt;::facetize_decompose </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; D &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>sub_polys</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Facetizes and decomposes this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into simplex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mat_poly</td><td><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> to decompose </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">convex_matpolys</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s: as many <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s as mat_poly has facets will be appended to it. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a83ef428cceacc7a027e4d0f6318083be"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 2 &gt;::facetize_decompose </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>sub_polys</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decomposes a 2D <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into triangular <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid. This method is identical to decompose. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mat_poly</td><td><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> to decompose </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">convex_matpolys</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s: as many <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s as mat_poly has faces will be appended to it. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="aaf06a4d1872ec40eadeaa264a5b75db7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt;::facetize_decompose </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>sub_polys</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Facetizes and decomposes a 3D <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into tetrahedral <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mat_poly</td><td><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> to decompose </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">convex_matpolys</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s: as many <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s as mat_poly has facets will be appended to it. </td></tr>
   </table>
   </dd>
 </dl>

@@ -35,7 +35,7 @@ https://github.com/laristra/tangram/blob/master/LICENSE
     <nav class="navbar navbar-default" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand">tangram dummy-0.0.0</a>
+          <a class="navbar-brand">tangram </a>
         </div>
       </div>
     </nav>
@@ -102,7 +102,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">test_jali_mesh_wrapper.cc File Reference</div>  </div>
 </div><!--header-->
@@ -129,6 +130,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a88ac04a4b1b4f6d90cb2950c6bfece29"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a88ac04a4b1b4f6d90cb2950c6bfece29">dual_cell_coordinates_canonical_rotation</a> (const <a class="el" href="classTangram_1_1Jali__Mesh__Wrapper.html">Tangram::Jali_Mesh_Wrapper</a> &amp;mesh_wrapper, int const nodeid, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 2 &gt;&gt; *const xylist)</td></tr>
 <tr class="memdesc:a88ac04a4b1b4f6d90cb2950c6bfece29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotate the <code>xylist</code> vector into a canonical (unique) form. The first point will be the one with the lowest angle between it, the nodeid and the x-axis.  <a href="#a88ac04a4b1b4f6d90cb2950c6bfece29">More...</a><br /></td></tr>
 <tr class="separator:a88ac04a4b1b4f6d90cb2950c6bfece29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a085ba7477b89d4803d11a740d12f21"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a3a085ba7477b89d4803d11a740d12f21">faceted_poly_ok</a> (std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt;&gt; const &amp;fctpoints, std::vector&lt; std::vector&lt; int &gt;&gt; const &amp;facets, double expected_area, double expected_volume, <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; expected_centroid, double tol)</td></tr>
+<tr class="memdesc:a3a085ba7477b89d4803d11a740d12f21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check validity of faceted polyhedron.  <a href="#a3a085ba7477b89d4803d11a740d12f21">More...</a><br /></td></tr>
+<tr class="separator:a3a085ba7477b89d4803d11a740d12f21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a171402f6d1de479e1b05eb776ee7c547"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a171402f6d1de479e1b05eb776ee7c547">TEST</a> (Jali_Mesh, <a class="el" href="test__jali__mesh__wrapper_8cc.html#a926ec7b24831b2847fed62f7eab6048c">vdd_eq</a>)</td></tr>
 <tr class="memdesc:a171402f6d1de479e1b05eb776ee7c547"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for equality comparisons.  <a href="#a171402f6d1de479e1b05eb776ee7c547">More...</a><br /></td></tr>
 <tr class="separator:a171402f6d1de479e1b05eb776ee7c547"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -144,34 +148,156 @@ Functions</h2></td></tr>
 <tr class="memitem:a6235d46ee18605e2191c6d8eaec221c5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a6235d46ee18605e2191c6d8eaec221c5">TEST</a> (Jali_Mesh_Wrapper, Get_Neighbor_Cells)</td></tr>
 <tr class="memdesc:a6235d46ee18605e2191c6d8eaec221c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for getting neighbor cells.  <a href="#a6235d46ee18605e2191c6d8eaec221c5">More...</a><br /></td></tr>
 <tr class="separator:a6235d46ee18605e2191c6d8eaec221c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5ff264beb02d5961ecbcdbb7eaf0808"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#ac5ff264beb02d5961ecbcdbb7eaf0808">TEST</a> (Jali_Mesh_Wrapper, Get_Exterior_Flag)</td></tr>
+<tr class="memdesc:ac5ff264beb02d5961ecbcdbb7eaf0808"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for getting entities on the exterior boundary.  <a href="#ac5ff264beb02d5961ecbcdbb7eaf0808">More...</a><br /></td></tr>
+<tr class="separator:ac5ff264beb02d5961ecbcdbb7eaf0808"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7872b81f4e5216743f2ead32c670ea6f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a7872b81f4e5216743f2ead32c670ea6f">TEST</a> (Jali_Mesh_Wrapper, Decompose_Cell_Into_Tets)</td></tr>
 <tr class="memdesc:a7872b81f4e5216743f2ead32c670ea6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 5-tet hex decomposition.  <a href="#a7872b81f4e5216743f2ead32c670ea6f">More...</a><br /></td></tr>
 <tr class="separator:a7872b81f4e5216743f2ead32c670ea6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0303ddf40bcfa9afc07d7e08e98edea"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#af0303ddf40bcfa9afc07d7e08e98edea">ASSERT_NE</a> (<a class="el" href="test__jali__mesh__wrapper_8cc.html#a461046ef25b165270b46b1faf478b043">mesh</a>, nullptr)</td></tr>
+<tr class="separator:af0303ddf40bcfa9afc07d7e08e98edea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01ebbadddae000ca2fd8ce0ddb43aba0"><td class="memItemLeft" align="right" valign="top">mesh_wrapper&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a01ebbadddae000ca2fd8ce0ddb43aba0">decompose_cell_into_tets</a> (0,&amp;<a class="el" href="test__jali__mesh__wrapper_8cc.html#aea896216228b61ad821039543ad6e25e">tcoords</a>, false)</td></tr>
+<tr class="separator:a01ebbadddae000ca2fd8ce0ddb43aba0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9fc51b2b72ab3ed53bacefb4bbf67b0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#ae9fc51b2b72ab3ed53bacefb4bbf67b0">EXPECT_EQ</a> (tcoords.size(), 24)</td></tr>
+<tr class="separator:ae9fc51b2b72ab3ed53bacefb4bbf67b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae94e67d5b4b6a8e9527a5c341dca338b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="test__jali__mesh__wrapper_8cc.html#aea896216228b61ad821039543ad6e25e">tcoords</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#ae94e67d5b4b6a8e9527a5c341dca338b">clear</a> ()</td></tr>
+<tr class="separator:ae94e67d5b4b6a8e9527a5c341dca338b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3905f18878b85b57eca2feca088b774"><td class="memItemLeft" align="right" valign="top">mesh_wrapper&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#aa3905f18878b85b57eca2feca088b774">decompose_cell_into_tets</a> (0,&amp;<a class="el" href="test__jali__mesh__wrapper_8cc.html#aea896216228b61ad821039543ad6e25e">tcoords</a>, true)</td></tr>
+<tr class="separator:aa3905f18878b85b57eca2feca088b774"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a41aae5d6fb66487e9a3f38b2dcca00"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a0a41aae5d6fb66487e9a3f38b2dcca00">EXPECT_EQ</a> (tcoords.size(), 5)</td></tr>
+<tr class="separator:a0a41aae5d6fb66487e9a3f38b2dcca00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac001b1991b486325dce5f0646003e26a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#ac001b1991b486325dce5f0646003e26a">TEST</a> (Jali_Mesh_Wrapper, MESH_SIDES_2D)</td></tr>
-<tr class="memdesc:ac001b1991b486325dce5f0646003e26a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 2D sides construction and queries in the wrapper class (and not natively in Jali).  <a href="#ac001b1991b486325dce5f0646003e26a">More...</a><br /></td></tr>
+<tr class="memdesc:ac001b1991b486325dce5f0646003e26a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 2D sides construction and queries in the &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><h1>wrapper class (and not natively in Jali). </h1>
+wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+ <a href="#ac001b1991b486325dce5f0646003e26a">More...</a><br /></td></tr>
 <tr class="separator:ac001b1991b486325dce5f0646003e26a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4705c93c5d7be2f80761e82567138e9d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a4705c93c5d7be2f80761e82567138e9d">TEST</a> (Jali_Mesh_Wrapper, MESH_SIDES_3D)</td></tr>
-<tr class="memdesc:a4705c93c5d7be2f80761e82567138e9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 3D sides construction and queries in the wrapper class (and not natively in Jali).  <a href="#a4705c93c5d7be2f80761e82567138e9d">More...</a><br /></td></tr>
+<tr class="memdesc:a4705c93c5d7be2f80761e82567138e9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 3D sides construction and queries in the </p><h1>wrapper class (and not natively in Jali). </h1>
+ <a href="#a4705c93c5d7be2f80761e82567138e9d">More...</a><br /></td></tr>
 <tr class="separator:a4705c93c5d7be2f80761e82567138e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9e60ff8290d97e18c977211a1d98186"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#ad9e60ff8290d97e18c977211a1d98186">TEST</a> (Jali_Mesh_Wrapper, MESH_WEDGES_2D)</td></tr>
-<tr class="memdesc:ad9e60ff8290d97e18c977211a1d98186"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 2D wedges construction and queries in the wrapper class (and not natively in Jali).  <a href="#ad9e60ff8290d97e18c977211a1d98186">More...</a><br /></td></tr>
+<tr class="memdesc:ad9e60ff8290d97e18c977211a1d98186"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 2D wedges construction and queries in the &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><h1>wrapper class (and not natively in Jali). </h1>
+wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+ <a href="#ad9e60ff8290d97e18c977211a1d98186">More...</a><br /></td></tr>
 <tr class="separator:ad9e60ff8290d97e18c977211a1d98186"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a25d1f8585a47f9d092d7b76da71fd85a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a25d1f8585a47f9d092d7b76da71fd85a">TEST</a> (Jali_Mesh_Wrapper, MESH_WEDGES_3D)</td></tr>
-<tr class="memdesc:a25d1f8585a47f9d092d7b76da71fd85a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 3D wedges construction and queries in the wrapper class (and not natively in Jali).  <a href="#a25d1f8585a47f9d092d7b76da71fd85a">More...</a><br /></td></tr>
-<tr class="separator:a25d1f8585a47f9d092d7b76da71fd85a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af7733fcf7642802f19e06fe1157d969c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#af7733fcf7642802f19e06fe1157d969c">TEST</a> (Jali_Mesh_Wrapper, MESH_CORNERS_2D)</td></tr>
-<tr class="memdesc:af7733fcf7642802f19e06fe1157d969c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 2D corners construction and queries in the wrapper class (and not natively in Jali).  <a href="#af7733fcf7642802f19e06fe1157d969c">More...</a><br /></td></tr>
-<tr class="separator:af7733fcf7642802f19e06fe1157d969c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d9d66a26d28d1d02284612d68941fc8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a5d9d66a26d28d1d02284612d68941fc8">TEST</a> (Jali_Mesh_Wrapper, MESH_CORNERS_3D)</td></tr>
-<tr class="memdesc:a5d9d66a26d28d1d02284612d68941fc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 3D sides construction and queries in the wrapper class (and not natively in Jali).  <a href="#a5d9d66a26d28d1d02284612d68941fc8">More...</a><br /></td></tr>
+<tr class="memdesc:a5d9d66a26d28d1d02284612d68941fc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unit test for 3D sides construction and queries in the &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><h1>wrapper class (and not natively in Jali). </h1>
+wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+ <a href="#a5d9d66a26d28d1d02284612d68941fc8">More...</a><br /></td></tr>
 <tr class="separator:a5d9d66a26d28d1d02284612d68941fc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f1ef44788e392833979f949751a4840"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a3f1ef44788e392833979f949751a4840">TEST</a> (Jali_Mesh_Wrapper, MESH_NON_DEFAULT_OPTS)</td></tr>
 <tr class="memdesc:a3f1ef44788e392833979f949751a4840"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test instantiation of Jali mesh wrapper with non-default options.  <a href="#a3f1ef44788e392833979f949751a4840">More...</a><br /></td></tr>
 <tr class="separator:a3f1ef44788e392833979f949751a4840"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a461046ef25b165270b46b1faf478b043"><td class="memItemLeft" align="right" valign="top">v0 std::shared_ptr&lt; Jali::Mesh &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a461046ef25b165270b46b1faf478b043">mesh</a> = mf(0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2, 2, 2)</td></tr>
+<tr class="separator:a461046ef25b165270b46b1faf478b043"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea896216228b61ad821039543ad6e25e"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::array&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt;, 4 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__jali__mesh__wrapper_8cc.html#aea896216228b61ad821039543ad6e25e">tcoords</a></td></tr>
+<tr class="separator:aea896216228b61ad821039543ad6e25e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Unit tests for the Jali mesh wrapper class. </p>
+<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><hr/>
+<p> file <a class="el" href="test__jali__mesh__wrapper_8cc.html" title="Unit tests for the Jali mesh wrapper class. ">test_jali_mesh_wrapper.cc</a> </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="af0303ddf40bcfa9afc07d7e08e98edea"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ASSERT_NE </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="test__jali__mesh__wrapper_8cc.html#a461046ef25b165270b46b1faf478b043">mesh</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">nullptr&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae94e67d5b4b6a8e9527a5c341dca338b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="test__jali__mesh__wrapper_8cc.html#aea896216228b61ad821039543ad6e25e">tcoords</a> clear </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a4bbbb938c639baf56e7f77cf368e3c28"></a>
 <div class="memitem">
 <div class="memproto">
@@ -204,6 +330,70 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="a01ebbadddae000ca2fd8ce0ddb43aba0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">mesh_wrapper decompose_cell_into_tets </td>
+          <td>(</td>
+          <td class="paramtype">0&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&amp;&#160;</td>
+          <td class="paramname"><em>tcoords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">false&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa3905f18878b85b57eca2feca088b774"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">mesh_wrapper decompose_cell_into_tets </td>
+          <td>(</td>
+          <td class="paramtype">0&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&amp;&#160;</td>
+          <td class="paramname"><em>tcoords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">true&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -249,6 +439,122 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ae9fc51b2b72ab3ed53bacefb4bbf67b0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EXPECT_EQ </td>
+          <td>(</td>
+          <td class="paramtype">tcoords.&#160;</td>
+          <td class="paramname"><em>size</em>(), </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">24&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0a41aae5d6fb66487e9a3f38b2dcca00"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EXPECT_EQ </td>
+          <td>(</td>
+          <td class="paramtype">tcoords.&#160;</td>
+          <td class="paramname"><em>size</em>(), </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">5&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3a085ba7477b89d4803d11a740d12f21"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool faceted_poly_ok </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt;&gt; const &amp;&#160;</td>
+          <td class="paramname"><em>fctpoints</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; int &gt;&gt; const &amp;&#160;</td>
+          <td class="paramname"><em>facets</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>expected_area</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>expected_volume</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt;&#160;</td>
+          <td class="paramname"><em>expected_centroid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tol</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check validity of faceted polyhedron. </p>
+<h1>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </h1>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fctpoints</td><td>Vector of unique points of facetization </td></tr>
+    <tr><td class="paramname">facets</td><td>Vector of vector of facet points (indexing fctpoints) </td></tr>
+    <tr><td class="paramname">centroid</td><td>Centroid of polyhedron </td></tr>
+    <tr><td class="paramname">expected_area</td><td>Expected area of polyhedron surface (-1 means don't check) </td></tr>
+    <tr><td class="paramname">expected_volume</td><td>Expected volume of polyhedron (-1 means don't check) </td></tr>
+    <tr><td class="paramname">expected_centroid</td><td>Expected centroid of polyhedron ([-99, -99, -99] means don't check) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="a171402f6d1de479e1b05eb776ee7c547"></a>
 <div class="memitem">
 <div class="memproto">
@@ -274,6 +580,21 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Unit test for equality comparisons. </p>
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
 
 </div>
 </div>
@@ -389,6 +710,35 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ac5ff264beb02d5961ecbcdbb7eaf0808"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">Jali_Mesh_Wrapper&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Get_Exterior_Flag&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Unit test for getting entities on the exterior boundary. </p>
+<h1>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </h1>
+
+</div>
+</div>
 <a class="anchor" id="a7872b81f4e5216743f2ead32c670ea6f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -414,6 +764,21 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Unit test for 5-tet hex decomposition. </p>
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
 
 </div>
 </div>
@@ -441,7 +806,23 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Unit test for 2D sides construction and queries in the wrapper class (and not natively in Jali). </p>
+<p>Unit test for 2D sides construction and queries in the &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><h1>wrapper class (and not natively in Jali). </h1>
+wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</p>
 <p>For this we only need cells (always present), faces and nodes (always present) from Jali </p>
 
 </div>
@@ -470,7 +851,24 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Unit test for 3D sides construction and queries in the wrapper class (and not natively in Jali). </p>
+<p>Unit test for 3D sides construction and queries in the </p><h1>wrapper class (and not natively in Jali). </h1>
+</p>
+<p>}</p>
+<p>/*!Unit test for 3D sides construction and queries in the wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0 </p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
 <p>For this we only need cells (always present), faces and nodes (always present) from Jali </p>
 
 </div>
@@ -499,66 +897,58 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Unit test for 2D wedges construction and queries in the wrapper class (and not natively in Jali). </p>
+<p>Unit test for 2D wedges construction and queries in the &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><h1>wrapper class (and not natively in Jali). </h1>
+wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</p>
 <p>For this we only need cells (always present), faces and nodes (always present) from Jali </p>
-
-</div>
-</div>
-<a class="anchor" id="a25d1f8585a47f9d092d7b76da71fd85a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">TEST </td>
-          <td>(</td>
-          <td class="paramtype">Jali_Mesh_Wrapper&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">MESH_WEDGES_3D&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Unit test for 3D wedges construction and queries in the wrapper class (and not natively in Jali). </p>
-<p>For this we only need cells (always present), faces and nodes (always present) from Jali </p>
-
-</div>
-</div>
-<a class="anchor" id="af7733fcf7642802f19e06fe1157d969c"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">TEST </td>
-          <td>(</td>
-          <td class="paramtype">Jali_Mesh_Wrapper&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">MESH_CORNERS_2D&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Unit test for 2D corners construction and queries in the wrapper class (and not natively in Jali). </p>
-<p>For this we only need cells (always present), faces and nodes (always present) from Jali </p>
+<p>Unit test for 3D wedges construction and queries in the &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><h1>wrapper class (and not natively in Jali). </h1>
+<p>wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0 </p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>For this we only need cells (always present), faces and nodes (always present) from Jali</p>
+<p>Unit test for 2D corners construction and queries in the &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><h1>wrapper class (and not natively in Jali). </h1>
+<p>wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0 </p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>For this we only need cells (always present), faces and nodes (always present) from Jali</p>
 
 </div>
 </div>
@@ -586,7 +976,23 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Unit test for 3D sides construction and queries in the wrapper class (and not natively in Jali). </p>
+<p>Unit test for 3D sides construction and queries in the &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD </p><h1>wrapper class (and not natively in Jali). </h1>
+wrapper class (and not natively in Jali). </p><blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<blockquote class="doxtable">
+<p>v0.9.0</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</p>
 <p>For this we only need cells (always present), faces and nodes (always present) from Jali </p>
 
 </div>
@@ -660,6 +1066,31 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Whether a == b within the accuracy <code>eps</code> </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="a461046ef25b165270b46b1faf478b043"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTangram_1_1Jali__Mesh__Wrapper.html">Tangram::Jali_Mesh_Wrapper</a> mesh_wrapper * mesh = mf(0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2, 2, 2)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aea896216228b61ad821039543ad6e25e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;std::array&lt;<a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt;3&gt;, 4&gt; &gt; tcoords</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

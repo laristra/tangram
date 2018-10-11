@@ -35,7 +35,7 @@ https://github.com/laristra/tangram/blob/master/LICENSE
     <nav class="navbar navbar-default" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand">tangram dummy-0.0.0</a>
+          <a class="navbar-brand">tangram </a>
         </div>
       </div>
     </nav>
@@ -133,6 +133,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3fec346b7471636c40134ae4db2f6db5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1CellMatPoly.html#a3fec346b7471636c40134ae4db2f6db5">num_materials</a> () const </td></tr>
 <tr class="memdesc:a3fec346b7471636c40134ae4db2f6db5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of distinct materials in cell.  <a href="#a3fec346b7471636c40134ae4db2f6db5">More...</a><br /></td></tr>
 <tr class="separator:a3fec346b7471636c40134ae4db2f6db5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56f968bc7e391812f027b363c194e3a5"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; int &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1CellMatPoly.html#a56f968bc7e391812f027b363c194e3a5">cell_matids</a> () const </td></tr>
+<tr class="memdesc:a56f968bc7e391812f027b363c194e3a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">IDs of distinct materials in cell.  <a href="#a56f968bc7e391812f027b363c194e3a5">More...</a><br /></td></tr>
+<tr class="separator:a56f968bc7e391812f027b363c194e3a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b92d3a9a471a053148a7fc4cf85c8d4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1CellMatPoly.html#a5b92d3a9a471a053148a7fc4cf85c8d4">is_cell_material</a> (const int mat_id) const </td></tr>
+<tr class="memdesc:a5b92d3a9a471a053148a7fc4cf85c8d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if cell contains a material with the given ID.  <a href="#a5b92d3a9a471a053148a7fc4cf85c8d4">More...</a><br /></td></tr>
+<tr class="separator:a5b92d3a9a471a053148a7fc4cf85c8d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1431f9de3f3626c5981120ac52d1f3c7"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; int &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1CellMatPoly.html#a1431f9de3f3626c5981120ac52d1f3c7">matpoly_matids</a> () const </td></tr>
 <tr class="memdesc:a1431f9de3f3626c5981120ac52d1f3c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Which material do material polygons in cell contain?  <a href="#a1431f9de3f3626c5981120ac52d1f3c7">More...</a><br /></td></tr>
 <tr class="separator:a1431f9de3f3626c5981120ac52d1f3c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,9 +235,9 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:aa56d740de39b25ace6eb1f699bcd87c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1CellMatPoly.html#aa56d740de39b25ace6eb1f699bcd87c7">compute_material_moments</a> (std::vector&lt; std::vector&lt; double &gt; &gt; &amp;mat_moments) const </td></tr>
-<tr class="memdesc:aa56d740de39b25ace6eb1f699bcd87c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes aggregated moments for distinct materials.  <a href="#aa56d740de39b25ace6eb1f699bcd87c7">More...</a><br /></td></tr>
-<tr class="separator:aa56d740de39b25ace6eb1f699bcd87c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32858f907e25f667fc18aed984031eb3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1CellMatPoly.html#a32858f907e25f667fc18aed984031eb3">compute_material_moments</a> (const int cmp_mat_id) const </td></tr>
+<tr class="memdesc:a32858f907e25f667fc18aed984031eb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes aggregated moments for a cell's material.  <a href="#a32858f907e25f667fc18aed984031eb3">More...</a><br /></td></tr>
+<tr class="separator:a32858f907e25f667fc18aed984031eb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="afcded230407560449f70d62e20aeaec6"></a>
@@ -695,7 +701,35 @@ template&lt;int D&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="aa56d740de39b25ace6eb1f699bcd87c7"></a>
+<a class="anchor" id="a56f968bc7e391812f027b363c194e3a5"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int D&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::vector&lt;int&gt;&amp; <a class="el" href="classTangram_1_1CellMatPoly.html">Tangram::CellMatPoly</a>&lt; D &gt;::cell_matids </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>IDs of distinct materials in cell. </p>
+<dl class="section return"><dt>Returns</dt><dd>IDs of unique materials </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a32858f907e25f667fc18aed984031eb3"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -707,8 +741,8 @@ template&lt;int D&gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classTangram_1_1CellMatPoly.html">Tangram::CellMatPoly</a>&lt; D &gt;::compute_material_moments </td>
           <td>(</td>
-          <td class="paramtype">std::vector&lt; std::vector&lt; double &gt; &gt; &amp;&#160;</td>
-          <td class="paramname"><em>mat_moments</em></td><td>)</td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>cmp_mat_id</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -719,10 +753,10 @@ template&lt;int D&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Computes aggregated moments for distinct materials. </p>
+<p>Computes aggregated moments for a cell's material. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">mat_moments</td><td>Computed moments, mat_moments[mat_id][0] is the size, mat_moments[mat_id][i+1]/mat_moments[mat_id][0] is i-th coordinate of the centroid </td></tr>
+    <tr><td class="paramname">cmp_mat_id</td><td>Local ID of a distinct cell's material </td></tr>
   </table>
   </dd>
 </dl>
@@ -842,6 +876,41 @@ template&lt;int D&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> objects containing that material, vector is empty if no polys with that material are present </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a5b92d3a9a471a053148a7fc4cf85c8d4"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int D&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classTangram_1_1CellMatPoly.html">Tangram::CellMatPoly</a>&lt; D &gt;::is_cell_material </td>
+          <td>(</td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>mat_id</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if cell contains a material with the given ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mat_id</td><td>ID of the material </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if such material is in cell </dd></dl>
 
 </div>
 </div>

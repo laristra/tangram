@@ -14,11 +14,13 @@ var searchData=
   ['matface_5fpoints',['matface_points',['../classTangram_1_1CellMatPoly.html#ae700be15c9576d0de482e554afa6df9e',1,'Tangram::CellMatPoly']]],
   ['matface_5fvertices',['matface_vertices',['../classTangram_1_1CellMatPoly.html#a2f59a3a48787909de4eec787f2b916a0',1,'Tangram::CellMatPoly']]],
   ['matpoly',['MatPoly',['../classTangram_1_1MatPoly.html#acc2a5d89ddc811f6acb3ef4d4780d753',1,'Tangram::MatPoly']]],
+  ['matpoly_5fcases',['matpoly_cases',['../test__split__r2d_8cc.html#a2a01d1dc50af93c5be23059aaef3fa5f',1,'test_split_r2d.cc']]],
   ['matpoly_5fcentroid',['matpoly_centroid',['../classTangram_1_1CellMatPoly.html#a8e8e9570b4cd64e724646e567cec881f',1,'Tangram::CellMatPoly']]],
   ['matpoly_5ffaces',['matpoly_faces',['../classTangram_1_1CellMatPoly.html#ae6e107b386ca16bb325842b6da29e2c7',1,'Tangram::CellMatPoly']]],
   ['matpoly_5fmatid',['matpoly_matid',['../classTangram_1_1CellMatPoly.html#a366c0d0543f19ce4e9008f3f481151a6',1,'Tangram::CellMatPoly']]],
   ['matpoly_5fmatids',['matpoly_matids',['../classTangram_1_1CellMatPoly.html#a1431f9de3f3626c5981120ac52d1f3c7',1,'Tangram::CellMatPoly']]],
   ['matpoly_5fpoints',['matpoly_points',['../classTangram_1_1CellMatPoly.html#ab12a7b4a60b1e772f8081b070cc4df6d',1,'Tangram::CellMatPoly']]],
+  ['matpoly_5fto_5fr2dpoly',['matpoly_to_r2dpoly',['../namespaceTangram.html#ae282114f99c97df0c59c6006bc065e0b',1,'Tangram']]],
   ['matpoly_5fto_5fr3dpoly',['matpoly_to_r3dpoly',['../namespaceTangram.html#a2364ea47380698d6b380574978c068da',1,'Tangram']]],
   ['matpoly_5fvertices',['matpoly_vertices',['../classTangram_1_1CellMatPoly.html#a1991bb76c3d7a706ca37948ea2f35232',1,'Tangram::CellMatPoly']]],
   ['matpoly_5fvolume',['matpoly_volume',['../classTangram_1_1CellMatPoly.html#a141601374111fb21ee76b33b0c34dc10',1,'Tangram::CellMatPoly']]],
@@ -26,6 +28,10 @@ var searchData=
   ['matvertex_5fparent_5fid',['matvertex_parent_id',['../classTangram_1_1CellMatPoly.html#aefd23cf9231a4892fa13374fd6d4d3ef',1,'Tangram::CellMatPoly']]],
   ['matvertex_5fparent_5fkind',['matvertex_parent_kind',['../classTangram_1_1CellMatPoly.html#a3cb791dc59fbccd5b696a6a931fb8e8f',1,'Tangram::CellMatPoly']]],
   ['matvertex_5fpoint',['matvertex_point',['../classTangram_1_1CellMatPoly.html#a22e6b3d6633e11e272d6b6b0a89586e5',1,'Tangram::CellMatPoly']]],
+  ['max_5fnorm',['max_norm',['../classTangram_1_1Vector.html#af5566ae42fde264ebcb8458236454d61',1,'Tangram::Vector']]],
   ['maxcomponent',['MaxComponent',['../namespaceTangram.html#acbb1e4675e88e2f9fc5721337322c37c',1,'Tangram']]],
-  ['moments',['moments',['../classTangram_1_1MatPoly.html#a864140d64ebf6629e4e4115fc5068104',1,'Tangram::MatPoly']]]
+  ['mesh_5fto_5fr3d_5fpolys',['mesh_to_r3d_polys',['../cuts_8h.html#a596320bb9784b72160079e8b774d271c',1,'cuts.h']]],
+  ['mof',['MOF',['../classTangram_1_1MOF.html#af38877375df8ad7e88c5e6a19a14459f',1,'Tangram::MOF']]],
+  ['moments',['moments',['../classTangram_1_1MatPoly.html#a864140d64ebf6629e4e4115fc5068104',1,'Tangram::MatPoly']]],
+  ['mwwp_5flinesearch',['mwwp_linesearch',['../namespaceTangram.html#a84e465c8dac381dbf8c8ae38acf4b7e5',1,'Tangram']]]
 ];

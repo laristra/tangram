@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['lower_5fhalfspace_5fset',['lower_halfspace_set',['../structTangram_1_1HalfSpaceSets__t.html#add9a75f9a740f31c1d57305349170690',1,'Tangram::HalfSpaceSets_t']]]
+  ['k',['k',['../unionr3d__dvec3.html#a912fcda6369e589d6f149605eaf1bbd5',1,'r3d_dvec3']]]
 ];

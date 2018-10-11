@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['node',['NODE',['../namespaceTangram.html#a840fe3ad4970cc1d7e2262328080ddbeaf1897ff2824eec3ea775a14ba49dd7af',1,'Tangram']]]
+  ['inside',['INSIDE',['../namespaceR3DPOLY.html#ae900fb35bd45f210fcc3cf379902b476ad326fe9d7be3050967d63e0f04bf0dc3',1,'R3DPOLY']]],
+  ['intersects',['INTERSECTS',['../namespaceR3DPOLY.html#ae900fb35bd45f210fcc3cf379902b476a7625300bf4886037ed4e0afd3e3aec4c',1,'R3DPOLY']]]
 ];

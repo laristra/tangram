@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['quad',['QUAD',['../namespaceTangram.html#a73dc10e867038dc6da11089add329dd2a3ff6dbe80853a427b506057367366a9a',1,'Tangram']]]
+  ['outside',['OUTSIDE',['../namespaceR3DPOLY.html#ae900fb35bd45f210fcc3cf379902b476a89677de1619bc4e547fb084eb72fcee9',1,'R3DPOLY']]]
 ];

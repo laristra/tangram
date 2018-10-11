@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['x',['x',['../unionr3d__rvec3.html#a3e98cc68f635a6089d11cbf9dc0f7639',1,'r3d_rvec3::x()'],['../namespaceTangram.html#aa04c3462626d657aa99bf6b2cd073ba0',1,'Tangram::X()']]],
-  ['xyz',['xyz',['../unionr3d__rvec3.html#ab127c0310533e3caaafcad80b7280fe1',1,'r3d_rvec3']]]
+  ['upper',['upper',['../structPolyHalfspaceData__t.html#aae79baaa04dc8e6a7957db39c74a0b59',1,'PolyHalfspaceData_t']]],
+  ['upper_5fhalfspace_5fset',['upper_halfspace_set',['../structTangram_1_1HalfSpaceSets__t.html#a0aaef7e80ff5bcea881e7cacde2a4ab2',1,'Tangram::HalfSpaceSets_t']]]
 ];

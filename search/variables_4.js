@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['i',['i',['../unionr3d__dvec3.html#a781899662493dbce37ab204094df090a',1,'r3d_dvec3']]],
-  ['ijk',['ijk',['../unionr3d__dvec3.html#a89ff8f4ef09310aaee9e5d0a61353a76',1,'r3d_dvec3']]]
+  ['faceinds',['faceinds',['../structr3d__brep.html#adaa9649c626cb6f0e1959eeac9617520',1,'r3d_brep']]],
+  ['fun_5feps',['fun_eps',['../structTangram_1_1IterativeMethodTolerances__t.html#aaa333906552f34e8e972387b4f4671ee',1,'Tangram::IterativeMethodTolerances_t']]]
 ];

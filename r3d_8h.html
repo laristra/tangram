@@ -35,7 +35,7 @@ https://github.com/laristra/tangram/blob/master/LICENSE
     <nav class="navbar navbar-default" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand">tangram dummy-0.0.0</a>
+          <a class="navbar-brand">tangram </a>
         </div>
       </div>
     </nav>
@@ -155,9 +155,9 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a9430fedc50ab62c50330ca9b9bb6f382"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="r3d_8h.html#a9430fedc50ab62c50330ca9b9bb6f382">r3d_clip</a> (<a class="el" href="structr3d__poly.html">r3d_poly</a> *poly, <a class="el" href="structr3d__plane.html">r3d_plane</a> *planes, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> nplanes)</td></tr>
-<tr class="memdesc:a9430fedc50ab62c50330ca9b9bb6f382"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clip a polyhedron against an arbitrary number of clip planes (find its intersection with a set of half-spaces).  <a href="#a9430fedc50ab62c50330ca9b9bb6f382">More...</a><br /></td></tr>
-<tr class="separator:a9430fedc50ab62c50330ca9b9bb6f382"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3f21c5ada02190326fbe535032bfbe0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="r3d_8h.html#ab3f21c5ada02190326fbe535032bfbe0">r3d_clip</a> (<a class="el" href="structr3d__poly.html">r3d_poly</a> *poly, const <a class="el" href="structr3d__plane.html">r3d_plane</a> *planes, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> nplanes)</td></tr>
+<tr class="memdesc:ab3f21c5ada02190326fbe535032bfbe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clip a polyhedron against an arbitrary number of clip planes (find its intersection with a set of half-spaces).  <a href="#ab3f21c5ada02190326fbe535032bfbe0">More...</a><br /></td></tr>
+<tr class="separator:ab3f21c5ada02190326fbe535032bfbe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad337c9fbabbd571b25490c27f3709d9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="r3d_8h.html#aad337c9fbabbd571b25490c27f3709d9">r3d_split</a> (<a class="el" href="structr3d__poly.html">r3d_poly</a> *inpolys, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> npolys, <a class="el" href="structr3d__plane.html">r3d_plane</a> plane, <a class="el" href="structr3d__poly.html">r3d_poly</a> *out_pos, <a class="el" href="structr3d__poly.html">r3d_poly</a> *out_neg)</td></tr>
 <tr class="memdesc:aad337c9fbabbd571b25490c27f3709d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a list of polyhedra across a single plane.  <a href="#aad337c9fbabbd571b25490c27f3709d9">More...</a><br /></td></tr>
 <tr class="separator:aad337c9fbabbd571b25490c27f3709d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,9 +205,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a91ef5379f6f306d4f5d58aa1fa7b387f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="r3d_8h.html#a91ef5379f6f306d4f5d58aa1fa7b387f">r3d_poly_faces_from_verts</a> (<a class="el" href="structr3d__plane.html">r3d_plane</a> *faces, <a class="el" href="unionr3d__rvec3.html">r3d_rvec3</a> *vertices, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> numverts, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> **faceinds, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> *numvertsperface, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> numfaces)</td></tr>
 <tr class="memdesc:a91ef5379f6f306d4f5d58aa1fa7b387f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all faces (unit normals and distances to the origin) from a full boundary description of a polyhedron.  <a href="#a91ef5379f6f306d4f5d58aa1fa7b387f">More...</a><br /></td></tr>
 <tr class="separator:a91ef5379f6f306d4f5d58aa1fa7b387f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a499a75fbb03156a10e97838d9b37ef6e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="r3d_8h.html#a499a75fbb03156a10e97838d9b37ef6e">r3d_init_brep</a> (<a class="el" href="structr3d__poly.html">r3d_poly</a> *poly, <a class="el" href="structr3d__brep.html">r3d_brep</a> **brep, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> *numcomponents)</td></tr>
-<tr class="memdesc:a499a75fbb03156a10e97838d9b37ef6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert from R3D's internal vertex-edge format to the boundary representation.  <a href="#a499a75fbb03156a10e97838d9b37ef6e">More...</a><br /></td></tr>
-<tr class="separator:a499a75fbb03156a10e97838d9b37ef6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e35e1242db9a7738a98bbf423962b51"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="r3d_8h.html#a4e35e1242db9a7738a98bbf423962b51">r3d_init_brep</a> (const <a class="el" href="structr3d__poly.html">r3d_poly</a> *poly, <a class="el" href="structr3d__brep.html">r3d_brep</a> **brep, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> *numcomponents)</td></tr>
+<tr class="memdesc:a4e35e1242db9a7738a98bbf423962b51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert from R3D's internal vertex-edge format to the boundary representation.  <a href="#a4e35e1242db9a7738a98bbf423962b51">More...</a><br /></td></tr>
+<tr class="separator:a4e35e1242db9a7738a98bbf423962b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4bd13a19519552d66e0e63b0b548685c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="r3d_8h.html#a4bd13a19519552d66e0e63b0b548685c">r3d_print_brep</a> (<a class="el" href="structr3d__brep.html">r3d_brep</a> **brep, <a class="el" href="r3d_8h.html#a3aa887a1c16c46e933b08d25625aa024">r3d_int</a> numcomponents)</td></tr>
 <tr class="memdesc:a4bd13a19519552d66e0e63b0b548685c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints the boundary representation of an array of polyhedons given in boundary representation form. For debugging.  <a href="#a4bd13a19519552d66e0e63b0b548685c">More...</a><br /></td></tr>
 <tr class="separator:a4bd13a19519552d66e0e63b0b548685c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -384,7 +384,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a9430fedc50ab62c50330ca9b9bb6f382"></a>
+<a class="anchor" id="ab3f21c5ada02190326fbe535032bfbe0"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -397,7 +397,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structr3d__plane.html">r3d_plane</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structr3d__plane.html">r3d_plane</a> *&#160;</td>
           <td class="paramname"><em>planes</em>, </td>
         </tr>
         <tr>
@@ -496,14 +496,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a499a75fbb03156a10e97838d9b37ef6e"></a>
+<a class="anchor" id="a4e35e1242db9a7738a98bbf423962b51"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void r3d_init_brep </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structr3d__poly.html">r3d_poly</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structr3d__poly.html">r3d_poly</a> *&#160;</td>
           <td class="paramname"><em>poly</em>, </td>
         </tr>
         <tr>

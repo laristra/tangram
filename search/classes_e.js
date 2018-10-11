@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['xmof2d_5fwrapper',['XMOF2D_Wrapper',['../classTangram_1_1XMOF2D__Wrapper.html',1,'Tangram']]]
+  ['weights_5ft',['Weights_t',['../structTangram_1_1Weights__t.html',1,'Tangram']]]
 ];
