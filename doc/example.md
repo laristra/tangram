@@ -4,7 +4,7 @@ Tangram provides very crude built-in mesh framework aptly
 called `Simple_Mesh`.  The goal of this framework
 is to show how one can wrap their favorite mesh infrastructure for
 use with tangram - _they should not be used in any production sense._
-Tangram also provides implementations of a 3D SLIC and VOF (Youngs') 
+Tangram also provides implementations of 2D and 3D VOF (Youngs') and MOF
 interface reconstruction algorithms, as well as a wrapper for XMOF2D,
 which is a library implementing the 2D X-MOF method. These serve to
 demonstrate how to wrap or implement a specific interface recontruction
@@ -17,14 +17,14 @@ algorithm.
 ## Tangram::Simple_Mesh
 
 This mesh framework is a non-distributed (i.e. has no ghost
-information), 3D, regular Cartesian mesh framework.  A Simple_Mesh is
+information), 2D or 3D, regular Cartesian mesh framework.  A Simple_Mesh is
 constructed by specifying the extents of the box and the number of
 cells in each direction.  The constructor then builds connectivity
 information between cell, node, and face indices.  The ordering of
 things like the nodes making up a cell, or the faces making up a cell
 are specified consistently, but the choice of ordering does not
 matter.  There are a few helper functions like
-Portage::Simple_Mesh::cell_get_nodes() that will retrieve the indices
+Tangram::Simple_Mesh::cell_get_nodes() that will retrieve the indices
 of some connected mesh entities given another mesh entity's index.
 
 # The Intersector
@@ -82,7 +82,7 @@ defer to AuxMeshTopology to perform more advanced queries.
 In addition to the advanced mesh entities (sides, wedges, and
 corners), AuxMeshTopology also resolves some advanced connectivity
 information.  An example is
-Portage::AuxMeshTopology::node_get_cell_adj_nodes(), which, given a node index
+Tangram::AuxMeshTopology::node_get_cell_adj_nodes(), which, given a node index
 in the mesh, returns a vector of all the nodes that are attached to
 all cells attached to the given node.  AuxMeshTopology additionally
 creates iterators over all the various types of mesh entities,
@@ -110,7 +110,7 @@ answers to queries that AuxMeshTopology would otherwise solve in a
 general sense.  Two trivial examples are:
 
 1. Tangram::Simple_Mesh_Wrapper::cell_get_type(), which determines the
-   Portage::Entity_type (e.g. PARALLEL_OWNED, PARALLEL_GHOST, etc.).
+   Tangram::Entity_type (e.g. PARALLEL_OWNED, PARALLEL_GHOST, etc.).
    We know Tangram::Simple_Mesh does not know anything about ghost
    information, so we simple return
    Tangram::Entity_type::PARALLEL_OWNED.
@@ -135,15 +135,19 @@ with the standard tangram driver.
 
 # Applications and Tests
 
-There are several applications that allow to perform interface reconstruction
-using the provided reconstructor and mesh wrappers.  In particular, the
-`app/xmof-linetest-simplemesh-app/xmof-linetest-simplemesh-app.cc` program 
-shows how to wrap mesh and reconstructor objects, set the material data, 
-and utilize Tangram::Driver with SimpleMesh and XMOF2D to perform interface 
-reconstruction.  This test program expects a single linear material interface
-and computes the Hausdorff distance between the reference and reconstructed 
-interfaces.  Material data obtained by sampling is provided for several mesh
-resolutions. The Tangram::Driver is templated on mesh and reconstructor wrapper type, 
+There are several demo applications that allow to perform interface reconstruction
+using different provided reconstructors.  For example, the `app/demo-mof-app/demo-mof-app.cc`
+program shows how to wrap the mesh object, set the material data, 
+and utilize Tangram::Driver with Jali and built-in MOF to perform interface 
+reconstruction in 2D or 3D on an unstructured mesh given in Exodus II format.
+The Tangram::Driver is templated on mesh and reconstructor wrapper type, 
 as well as the intersection routine, and can be used with other frameworks.  
 It need not be used at all, but is a nice starting point for writing one's 
 own interface reconstruction application.
+For every implemented reconstructor, we also include app tests. If only
+SimpleMesh mesh framework is available, they are run for structured grids
+(including the case of partitioning cells into simplices), and when Tangram is
+built with Jali, reconstructors are also tested on Voronoi meshes. In those tests,
+the domain contains three materials with planar/linear interfaces between then,
+which form so-called T-junction. Reconstructors are tested in 2D, or 3D, or both,
+depending on dimensionality they support.

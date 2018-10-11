@@ -53,9 +53,9 @@ void read_mat_data(const Mesh_Wrapper& Mesh,
   std::vector<int> on_rank_ids(ncells);
   std::vector<int> mesh_cell_num_mats(ncells);
   for (int icell = 0; icell < ncells; icell++) {
-    on_rank_ids[icell] = (int) (std::find(rank_cells_gid.begin(),
-                                          rank_cells_gid.end(), icell) -
-                                rank_cells_gid.begin());
+    on_rank_ids[icell] = std::distance(rank_cells_gid.begin(), 
+      std::find(rank_cells_gid.begin(), rank_cells_gid.end(), icell));
+      
     int on_rank_id = on_rank_ids[icell];
     bool on_rank = (on_rank_id < nrank_cells);
     os.read(reinterpret_cast<char *>(&mesh_cell_num_mats[icell]), sizeof(int));
@@ -129,6 +129,12 @@ int main(int argc, char** argv) {
   MPI_Comm_rank(comm, &comm_rank);
   MPI_Comm_size(comm, &world_size);
 
+  if ((world_size > 1) && (comm_rank == 0)) {
+    std::string err_msg = "Distributed runs are currently DISABLED "; 
+    err_msg += "as they require pre-partitioned material data files!";
+    throw XMOF2D::Exception(err_msg);
+  }
+
   std::string in_data_fname = argv[1];
   std::string out_gmv_fname = in_data_fname;
   out_gmv_fname.resize(out_gmv_fname.size() - 4);
@@ -153,12 +159,13 @@ int main(int argc, char** argv) {
   read_mat_data(mesh_wrapper, in_data_fname, cell_num_mats, cell_mat_ids,
                 cell_mat_volfracs, cell_mat_centroids);
   
-  // Distance(angle) and volume fraction tolerances
-  Tangram::IterativeMethodTolerances_t im_tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-14, .fun_eps = 1.0e-15};
+  // Distance(angle) and volume tolerances
+  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  ims_tols[1] = {.max_num_iter = 1000, .arg_eps = 1.0e-14, .fun_eps = 1.0e-14};
 
   Tangram::Driver<Tangram::XMOF2D_Wrapper, 2,
-    Tangram::Jali_Mesh_Wrapper> xmof_driver(mesh_wrapper, im_tols, true);
+    Tangram::Jali_Mesh_Wrapper> xmof_driver(mesh_wrapper, ims_tols, true);
   
   xmof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
   xmof_driver.reconstruct();

@@ -22,10 +22,11 @@
 #ifndef TANGRAM_VECTOR_H_
 #define TANGRAM_VECTOR_H_
 
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <iostream>
 #include <vector>
+#include <limits>
 
 namespace Tangram {
 
@@ -47,6 +48,15 @@ template <long D> class Vector {
       m_comp[i] = 0.0;
   }
 
+  /*!
+    @brief Specialized constructor for 1d Vectors.
+    @param[in] xm_comp The x coordinate.
+  */
+  inline Vector(const double& xm_comp) {
+    assert(D == 1);
+    m_comp[0] = xm_comp;
+  }
+  
   /*!
     @brief Specialized constructor for 2d Vectors.
     @param[in] xm_comp,ym_comp The (x,y) coordinate pair.
@@ -133,6 +143,28 @@ template <long D> class Vector {
     return result;
   }
 
+  /*!
+    @brief Calculate the 1-norm of a Vector.
+  */
+  double one_norm() const {
+    double result = 0.0;
+    for (int i = 0; i < D; i++) result += std::fabs(m_comp[i]);
+    return result;
+  }
+
+  /*!
+    @brief Calculate the max norm of a Vector.
+  */
+  double max_norm() const {
+    double result = std::fabs(m_comp[0]);
+    for (int i = 0; i < D - 1; i++) {
+      double abs_val = std::fabs(m_comp[i + 1]);
+      if (result < abs_val)
+        result = abs_val;
+    }
+    return result;
+  }
+
   /// Convert this Vector into a unit Vector.
   void normalize() {
     double s = norm();
@@ -142,6 +174,14 @@ template <long D> class Vector {
   /// Convert this Vector into a zero Vector.
   void zero() {
     for (int i = 0; i < D; i++) m_comp[i] = 0;
+  }
+
+  /// Check if this Vector is a zero Vector.
+  bool is_zero() const {
+    for (int i = 0; i < D; i++) 
+      if (std::fabs(m_comp[i]) > std::numeric_limits<double>::epsilon()) 
+        return false;
+    return true;
   }
 
   /*!
@@ -162,7 +202,7 @@ template <long D> class Vector {
   }
 
   /// Pretty printing of a Vector to an output stream.
-  std::ostream& writeToStream(std::ostream& os) {
+  std::ostream& writeToStream(std::ostream& os) const {
     for (int i = 0; i < D; i++) {
       if (i > 0) os << ' ';
       os << m_comp[i];

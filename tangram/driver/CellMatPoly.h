@@ -66,7 +66,24 @@ class CellMatPoly {
     @brief Number of distinct materials in cell
     @return Number of unique materials
   */
-  int num_materials() const { return num_materials_; }
+  int num_materials() const { return static_cast<int>(cell_materialids_.size()); }
+
+  /*!
+    @brief IDs of distinct materials in cell
+    @return IDs of unique materials
+  */
+  const std::vector<int>& cell_matids() const { return cell_materialids_; }
+
+  /*!
+    @brief Check if cell contains a material with the given ID
+    @param mat_id ID of the material
+    @return True if such material is in cell
+  */
+  bool is_cell_material(const int mat_id) const { 
+    return !(std::find(cell_materialids_.begin(), 
+                       cell_materialids_.end(), mat_id) == 
+             cell_materialids_.end()); 
+  }
 
   /*!
     @brief Which material do material polygons in cell contain?
@@ -388,11 +405,16 @@ class CellMatPoly {
   */  
   void assign_material_moments(const int mat_id,
                                const std::vector<double>& moments) const {
-    assert(moments.size() == D + 1);                        
-    if (mat_id >= material_moments_.size())
-      material_moments_.resize(mat_id + 1);
+    assert(moments.size() == D + 1);
+    int cmp_mat_id = std::distance(cell_materialids_.begin(),
+                                   std::find(cell_materialids_.begin(), 
+                                             cell_materialids_.end(), mat_id));
+    assert(cmp_mat_id < num_materials());
 
-    material_moments_[mat_id] = moments;
+    if (cmp_mat_id >= material_moments_.size())
+      material_moments_.resize(cmp_mat_id + 1);
+
+    material_moments_[cmp_mat_id] = moments;
   }
 
   /*!
@@ -402,30 +424,39 @@ class CellMatPoly {
    @return  Vector of moments for the respective material
   */  
   const std::vector<double>& material_moments(const int mat_id) const {
-    if (material_moments_.empty())
-      compute_material_moments(material_moments_);
-    return material_moments_[mat_id];
+    int cmp_mat_id = std::distance(cell_materialids_.begin(),
+                                   std::find(cell_materialids_.begin(), 
+                                             cell_materialids_.end(), mat_id));
+    assert(cmp_mat_id < num_materials());
+
+    if (cmp_mat_id >= material_moments_.size()) {
+      material_moments_.resize(cmp_mat_id + 1);
+      compute_material_moments(cmp_mat_id);
+    }
+    else if (material_moments_[cmp_mat_id].empty())
+      compute_material_moments(cmp_mat_id);
+
+    return material_moments_[cmp_mat_id];
   }
 
  protected:
   /*!
-   @brief Computes aggregated moments for distinct materials
-   @param mat_moments Computed moments, mat_moments[mat_id][0] is the size, 
-   mat_moments[mat_id][i+1]/mat_moments[mat_id][0] is i-th coordinate of the centroid
+   @brief Computes aggregated moments for a cell's material
+   @param cmp_mat_id Local ID of a distinct cell's material
   */  
-  void compute_material_moments(std::vector< std::vector<double> >& mat_moments) const {
-    for (int ipoly = 0; ipoly < num_matpolys_; ipoly++) {
-      int matid = materialids_[ipoly];
-      if (matid >= material_moments_.size()) {
-        material_moments_.resize(matid + 1);
-        material_moments_[matid].assign(D + 1, 0.0);
-      }
+  void compute_material_moments(const int cmp_mat_id) const {
+    assert(cmp_mat_id < material_moments_.size());
+    material_moments_[cmp_mat_id].assign(D + 1, 0.0);
 
-      material_moments_[matid][0] += matpoly_volumes_[ipoly];
-      for (int idim = 0; idim < D; idim++)
-        material_moments_[matid][idim + 1] += 
-          matpoly_volumes_[ipoly]*matpoly_centroids_[ipoly][idim];
-    }
+    int mat_id = cell_materialids_[cmp_mat_id];
+
+    for (int ipoly = 0; ipoly < num_matpolys_; ipoly++)
+      if (materialids_[ipoly] == mat_id) {
+        material_moments_[cmp_mat_id][0] += matpoly_volumes_[ipoly];
+        for (int idim = 0; idim < D; idim++)
+          material_moments_[cmp_mat_id][idim + 1] += 
+            matpoly_volumes_[ipoly]*matpoly_centroids_[ipoly][idim];
+      }
   }
 
  private:
@@ -435,7 +466,7 @@ class CellMatPoly {
   int num_matpolys_ = 0;  // Number of material polygons
   //                      // Redundant but convenient!
   std::vector<int> materialids_;  // Material IDs of matpolys (can be repeated)
-  int num_materials_ = 0; // Number of distinct materials
+  std::vector<int> cell_materialids_;  // IDs of distinct materials in this CellMatPoly
   mutable std::vector< std::vector<double> > material_moments_;  // Aggregated moments for distinct material
   std::vector<std::vector<int>> matpoly_faces_;  // IDs of faces of matpolys
   std::vector<std::vector<int>> matpoly_facedirs_;  // Dirs of faces of matpolys
@@ -484,8 +515,9 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   assert(D == 1);
 
   int new_matpoly_id = num_matpolys_;
-  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end())
-    num_materials_++;
+  if (std::find(cell_materialids_.begin(), cell_materialids_.end(), matid) == 
+      cell_materialids_.end())
+    cell_materialids_.push_back(matid);
 
   materialids_.push_back(matid);
   matpoly_faces_.resize(num_matpolys_+1);
@@ -596,8 +628,9 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   assert(D == 2);
 
   int new_matpoly_id = num_matpolys_;
-  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end())
-    num_materials_++;
+  if (std::find(cell_materialids_.begin(), cell_materialids_.end(), matid) == 
+      cell_materialids_.end())
+    cell_materialids_.push_back(matid);
 
   materialids_.push_back(matid);
 
@@ -740,8 +773,10 @@ void CellMatPoly<D>::add_matpoly(int matid,
   assert(D == 3);
 
   int new_matpoly_id = num_matpolys_;
-  if (std::find(materialids_.begin(), materialids_.end(), matid) == materialids_.end())
-    num_materials_++;
+  if (std::find(cell_materialids_.begin(), cell_materialids_.end(), matid) == 
+      cell_materialids_.end())
+    cell_materialids_.push_back(matid);
+
 
   materialids_.push_back(matid);
 
@@ -977,23 +1012,24 @@ MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
   assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
 #endif
   const std::vector<int>& mp_vrt_ids = matpoly_vertices(matpoly_id);
-  int nvrts = (int) mp_vrt_ids.size();
+  int nvrts = static_cast<int>(mp_vrt_ids.size());
   std::vector<Point<3>> mp_pts;
   mp_pts.reserve(nvrts);
   for (int ivrt = 0; ivrt < nvrts; ivrt++)
     mp_pts.push_back(matvertex_points_[mp_vrt_ids[ivrt]]);
   
   const std::vector<int>& mp_faces = matpoly_faces(matpoly_id);
-  int nfaces = (int) mp_faces.size();
+  int nfaces = static_cast<int>(mp_faces.size());
   std::vector<std::vector<int>> mf_vrts(nfaces);
   for (int iface = 0; iface < nfaces; iface++) {
     mf_vrts[iface] = matface_vertices(mp_faces[iface]);
     if (matpoly_facedirs_[matpoly_id][iface] == 0)
       std::reverse(mf_vrts[iface].begin(), mf_vrts[iface].end());
     for (int ivrt = 0; ivrt < mf_vrts[iface].size(); ivrt++) {
-      int local_vrt_id = (int) (std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(),
-                                          mf_vrts[iface][ivrt]) -
-                                mp_vrt_ids.begin());
+      int local_vrt_id = std::distance(mp_vrt_ids.begin(), 
+        std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(),
+                  mf_vrts[iface][ivrt]));
+                  
       mf_vrts[iface][ivrt] = local_vrt_id;
     }
   }
