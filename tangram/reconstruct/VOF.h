@@ -4,27 +4,32 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef VOF_H
-#define VOF_H
+#ifndef TANGRAM_RECONSTRUCT_VOF_H_
+#define TANGRAM_RECONSTRUCT_VOF_H_
 
 #include <vector>
+
+// tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
-#include "tangram/support/lsfits.h"
 #include "tangram/reconstruct/nested_dissections.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
+
+// wonton includes
+#include "wonton/support/lsfits.h"
+
 
 /*!
  @file VOF.h
   @brief Calculates the interface and constructs CellMatPoly using the VOF
   algorithm.
-  
+
   @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
   implementation that provides certain functionality
   @tparam Dim The spatial dimension of the problem
-  @tparam MatPoly_Splitter An operator for splitting a vector of MatPoly's 
+  @tparam MatPoly_Splitter An operator for splitting a vector of MatPoly's
   into half-space sets with a cutting plane
-  @tparam MatPoly_Clipper An operator for computing moments of 
+  @tparam MatPoly_Clipper An operator for computing moments of
   components of a vector of MatPoly's below a cutting plane
  */
 
@@ -40,15 +45,15 @@ public:
     @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
-  explicit VOF(const Mesh_Wrapper& Mesh, 
+  explicit VOF(const Mesh_Wrapper& Mesh,
                const std::vector<IterativeMethodTolerances_t>& ims_tols,
-               const bool all_convex = false) : 
+               const bool all_convex = false) :
                mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.empty())
       throw std::runtime_error(
         "VOF uses 0-order moments and needs tolerances for the related iterative method!");
   }
-  
+
   /*!
     @brief Pass in the volume fraction data for use in the reconstruction.
     @param[in] cell_num_mats A vector of length (num_cells) specifying the
@@ -64,10 +69,10 @@ public:
                             std::vector<Point<Dim>>
                             const& cell_mat_centroids = {}) {
     cell_mat_ids_.clear();
-    cell_mat_vfracs_.clear();                                      
+    cell_mat_vfracs_.clear();
     int ncells = mesh_.num_owned_cells() + mesh_.num_ghost_cells();
     cell_mat_ids_.resize(ncells);
-    cell_mat_vfracs_.resize(ncells);  
+    cell_mat_vfracs_.resize(ncells);
 
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
@@ -80,32 +85,32 @@ public:
       offset += nmats;
     }
   }
-  
+
   /*!
     @brief Used iterative methods tolerances
-    @return  Tolerances for iterative methods, 
-    here ims_tols_[0] correspond to methods for volumes 
+    @return  Tolerances for iterative methods,
+    here ims_tols_[0] correspond to methods for volumes
     and ims_tols_[1] are NOT used.
-    In particular, ims_tols_[0].arg_eps is a negligible 
-    change in cutting distance, ims_tols_[0].fun_eps is a 
+    In particular, ims_tols_[0].arg_eps is a negligible
+    change in cutting distance, ims_tols_[0].fun_eps is a
     negligible discrepancy in volume.
   */
-  const std::vector<IterativeMethodTolerances_t>& 
+  const std::vector<IterativeMethodTolerances_t>&
   iterative_methods_tolerances() const {
     return ims_tols_;
   }
 
   /*!
-    @brief Pass in indices of cells for which CellMatPoly objects 
+    @brief Pass in indices of cells for which CellMatPoly objects
     are to be constructed. If the index is in the list, a CellMatPoly object will be
     created even for a single-material cell.
-    @param[in] cellIDs_to_op_on A vector of length up to (num_cells) 
+    @param[in] cellIDs_to_op_on A vector of length up to (num_cells)
     specifying the indices of cells for which CellMatPoly objects are requested.
   */
   void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
     icells_to_reconstruct = cellIDs_to_op_on;
   }
-  
+
   /*!
     @brief Calculate the position of a plane that clips off a particular material.
     This method is used on every step of the nested dissections algorithm.
@@ -118,7 +123,7 @@ public:
     @param[out] cutting_plane The resulting cutting plane position
     @param[in] planar_faces Flag indicating whether the faces of all mixed_polys
     are planar
-  */  
+  */
   void get_plane_position(const int cellID,
                           const int matID,
                           const std::vector< MatPoly<Dim> >& mixed_polys,
@@ -139,7 +144,7 @@ public:
       const std::vector<int>& cur_mat_ids = cell_mat_ids_[istencil_cells[isc]];
       int local_id = std::distance(cur_mat_ids.begin(),
         std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
-        
+
       if (local_id != cur_mat_ids.size())
         stencil_vfracs[isc] = cell_mat_vfracs_[istencil_cells[isc]][local_id];
 
@@ -160,25 +165,25 @@ public:
       cutting_plane.normal /= grad_norm;
 
     //Create cutting distance solver
-    CuttingDistanceSolver<Dim, MatPoly_Clipper> 
+    CuttingDistanceSolver<Dim, MatPoly_Clipper>
       solve_cut_dst(mixed_polys, cutting_plane.normal, ims_tols_[0], planar_faces);
 
-    solve_cut_dst.set_target_volume(target_vol); 
+    solve_cut_dst.set_target_volume(target_vol);
     std::vector<double> clip_res = solve_cut_dst();
     cutting_plane.dist2origin = clip_res[0];
 
 #ifdef DEBUG
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
-    if (cur_vol_err > vol_tol) 
+    if (cur_vol_err > vol_tol)
       std::cerr << "VOF for cell " << cellID << ": after " << ims_tols_[0].max_num_iter <<
-        " iteration(s) achieved error in volume for material " << 
+        " iteration(s) achieved error in volume for material " <<
         matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
 #endif
   }
 
   /*!
-    @brief Given a cell index, calculate the CellMatPoly using the VOF 
+    @brief Given a cell index, calculate the CellMatPoly using the VOF
     interface reconstruction method.
     Uses nested dissections algorithm.
   */
@@ -201,11 +206,11 @@ public:
     // to invoke get_plane_position position method. Nested dissections
     // itself does not have its own MeshWrapper, MatPoly_Clipper, etc.,
     // they all are reconstructor specific
-    NestedDissections<VOF, Dim, MatPoly_Splitter> 
+    NestedDissections<VOF, Dim, MatPoly_Splitter>
       nested_dissections(*this, cellID, all_convex_);
 
     // We clip material in the same order they are given for the cell
-    // Note that this is the order of local materials, not material 
+    // Note that this is the order of local materials, not material
     // indices. Nested dissections uses cell_materials method to get
     // actual material indices.
     nested_dissections.set_cell_materials_order(false);
@@ -225,7 +230,7 @@ public:
     @param[in] cellID Cell index
     @return  MatPoly for this cell
   */
-  MatPoly<Dim> cell_matpoly(const int cellID) const { 
+  MatPoly<Dim> cell_matpoly(const int cellID) const {
     MatPoly<Dim> mat_poly;
     cell_get_matpoly(mesh_, cellID, &mat_poly);
 
@@ -241,6 +246,6 @@ private:
   std::vector<int> icells_to_reconstruct;
 };  // class VOF
 
-} // namespace Tangram
+}  // namespace Tangram
 
-#endif  
+#endif  // TANGRAM_RECONSTRUCT_VOF_H_

@@ -23,7 +23,7 @@ fi
 
 # set modules and install paths
 
-jali_version=0.9.8
+jali_version=1.0.0
 xmof2d_version=529f2dcdbe4
 
 export NGC=/usr/local/codes/ngc
@@ -49,7 +49,7 @@ elif [[ $compiler == "gcc" ]]; then
   jali_install_dir=$NGC/private/jali/${jali_version}-gcc-${gcc_version}-openmpi-${openmpi_version}
   xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-${gcc_version}
 fi
-  
+
 # build-type-specific settings
 cmake_build_type=Release
 extra_flags=

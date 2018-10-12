@@ -15,18 +15,19 @@
 #include <string>
 #include <sstream>
 
-#ifdef ENABLE_MPI 
+#ifdef ENABLE_MPI
   #include "mpi.h"
 #endif
 #if ENABLE_JALI
   #include "Mesh.hh"
   #include "MeshFactory.hh"
-  #include "tangram/wrappers/mesh/jali/jali_mesh_wrapper.h"
+  #include "wonton/mesh/jali/jali_mesh_wrapper.h"
 #else
-  #include "tangram/simple_mesh/simple_mesh.h"
-  #include "tangram/wrappers/mesh/simple_mesh/simple_mesh_wrapper.h"
+  #include "wonton/mesh/simple/simple_mesh.h"
+  #include "wonton/mesh/simple/simple_mesh_wrapper.h"
 #endif
 
+// tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/MOF.h"
@@ -34,9 +35,12 @@
 #include "tangram/utility/get_material_moments.h"
 #include "tangram/utility/get_mat_sym_diff_vol.h"
 
+// wonton includes
+#include "wonton/support/Vector.h"
+
 /* Test app for a 3D mesh and planar material interfaces.
    Uses SimpleMesh/Jali and MOF.
-   Generates (SimpleMesh) or reads mesh from file (Jali), 
+   Generates (SimpleMesh) or reads mesh from file (Jali),
    computes material moments for a sequence of planar interfaces,
    performs interface reconstruction (MOF), and outputs volumes of
    symmetric difference for every material in every
@@ -44,7 +48,7 @@
 
 #include <set>
 
-const std::vector<int> mesh_materials = {5, 0, 3}; 
+const std::vector<int> mesh_materials = {5, 0, 3};
 const std::vector< Tangram::Vector3 > material_interface_normals = {
   Tangram::Vector3(0.5, 0.5, 0.0), Tangram::Vector3(0.5, 0.025, -0.375)
 };
@@ -55,7 +59,7 @@ const std::vector< Tangram::Point3 > material_interface_points = {
 
 
 int main(int argc, char** argv) {
-#ifdef ENABLE_MPI  
+#ifdef ENABLE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
 
@@ -63,7 +67,7 @@ int main(int argc, char** argv) {
   MPI_Comm_size(comm, &world_size);
   if (world_size > 1)
     throw std::runtime_error("This app is designed to run in serial!");
-#endif  
+#endif
 
   assert((material_interface_normals.size() == material_interface_points.size()) &&
          (mesh_materials.size() == material_interface_normals.size() + 1));
@@ -84,17 +88,17 @@ int main(int argc, char** argv) {
       " <nx> <ny> <nz>" << std::endl;
     throw std::runtime_error(os.str());
   }
-#endif  
+#endif
 
   bool decompose_cells = atoi(argv[1]);
 
-  int nmesh_materials = static_cast<int>(mesh_materials.size()); 
+  int nmesh_materials = static_cast<int>(mesh_materials.size());
   std::vector< Tangram::Plane_t<3> > material_interfaces(nmesh_materials - 1);
   for (int iplane = 0; iplane < nmesh_materials - 1; iplane++) {
     material_interfaces[iplane].normal = material_interface_normals[iplane];
     material_interfaces[iplane].normal.normalize();
-    material_interfaces[iplane].dist2origin = 
-      -Tangram::dot(material_interface_points[iplane].asV(),
+    material_interfaces[iplane].dist2origin =
+      -Wonton::dot(material_interface_points[iplane].asV(),
                     material_interfaces[iplane].normal);
   }
 
@@ -109,7 +113,7 @@ int main(int argc, char** argv) {
     os << "simple_mesh_" << nx << "x" << ny << "x" << nz;
     mesh_name = os.str();
   }
-#endif  
+#endif
 
 #ifdef DEBUG
   std::string ref_gmv_fname = mesh_name + "_ref_matpolys.gmv";
@@ -121,14 +125,14 @@ int main(int argc, char** argv) {
   mesh_factory.framework(Jali::MSTK);
   mesh_factory.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
   std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[2]);
-  
+
   assert(mesh != nullptr);
-  Tangram::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, false, false);
+  Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, false, false);
 #else
-  Tangram::Simple_Mesh mesh(0.0, 0.0, 0.0,
+  Wonton::Simple_Mesh mesh(0.0, 0.0, 0.0,
                             1.0, 1.0, 1.0,
                             nx, ny, nz);
-  Tangram::Simple_Mesh_Wrapper mesh_wrapper(mesh);
+  Wonton::Simple_Mesh_Wrapper mesh_wrapper(mesh);
 #endif
 
   int ncells = mesh_wrapper.num_owned_cells();
@@ -140,33 +144,33 @@ int main(int argc, char** argv) {
   std::vector< std::vector< std::vector<r3d_poly> > > reference_mat_polys;
 
 #if ENABLE_JALI
-  get_material_moments<Tangram::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces, 
+  get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     reference_mat_polys, decompose_cells);
 #else
-  get_material_moments<Tangram::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces, 
+  get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     reference_mat_polys, decompose_cells);
-#endif    
+#endif
 
-  std::vector<int> offsets(ncells, 0);  
+  std::vector<int> offsets(ncells, 0);
   for (int icell = 0; icell < ncells - 1; icell++)
     offsets[icell + 1] = offsets[icell] + cell_num_mats[icell];
 
   int nmmcells = 0;
   std::vector<double> mmcells_material_volumes(nmesh_materials, 0.0);
-  for (int icell = 0; icell < ncells; icell++) 
+  for (int icell = 0; icell < ncells; icell++)
     if (cell_num_mats[icell] > 1) {
       double cell_volume = mesh_wrapper.cell_volume(icell);
       for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
         int cur_mat_id = cell_mat_ids[offsets[icell] + icmat];
         int mesh_matid = std::distance(mesh_materials.begin(),
-          std::find(mesh_materials.begin(), 
+          std::find(mesh_materials.begin(),
                    mesh_materials.end(), cur_mat_id));
-        mmcells_material_volumes[mesh_matid] += 
+        mmcells_material_volumes[mesh_matid] +=
           cell_volume*cell_mat_volfracs[offsets[icell] + icmat];
       }
-      nmmcells++;  
+      nmmcells++;
     }
 
 #ifdef DEBUG
@@ -196,21 +200,21 @@ int main(int argc, char** argv) {
   ims_tols[1] = {.max_num_iter = 100, .arg_eps = 1.0e-14, .fun_eps = 1.0e-15};
 
   // Build the driver
-#if ENABLE_JALI  
-  Tangram::Driver<Tangram::MOF, 3, Tangram::Jali_Mesh_Wrapper, 
-                  Tangram::SplitR3D, Tangram::ClipR3D> 
+#if ENABLE_JALI
+  Tangram::Driver<Tangram::MOF, 3, Wonton::Jali_Mesh_Wrapper,
+                  Tangram::SplitR3D, Tangram::ClipR3D>
     mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #else
-  Tangram::Driver<Tangram::MOF, 3, Tangram::Simple_Mesh_Wrapper, 
-                  Tangram::SplitR3D, Tangram::ClipR3D> 
+  Tangram::Driver<Tangram::MOF, 3, Wonton::Simple_Mesh_Wrapper,
+                  Tangram::SplitR3D, Tangram::ClipR3D>
     mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
-#endif    
+#endif
 
-  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
+  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
                                   cell_mat_volfracs, cell_mat_centroids);
-  mof_driver.reconstruct();    
+  mof_driver.reconstruct();
 
-  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list = 
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list =
     mof_driver.cell_matpoly_ptrs();
 
   std::vector<double> total_mat_sym_diff_vol(nmesh_materials, 0.0);
@@ -227,24 +231,24 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    std::vector<int> cell_ref_mat_ids(cell_mat_ids.begin() + offsets[icell], 
+    std::vector<int> cell_ref_mat_ids(cell_mat_ids.begin() + offsets[icell],
       cell_mat_ids.begin() + offsets[icell] + ncmats);
 
-    std::vector<double> cell_ref_mat_vols(cell_mat_volfracs.begin() + offsets[icell], 
-      cell_mat_volfracs.begin() + offsets[icell] + ncmats); 
-    double cell_volume = mesh_wrapper.cell_volume(icell);  
+    std::vector<double> cell_ref_mat_vols(cell_mat_volfracs.begin() + offsets[icell],
+      cell_mat_volfracs.begin() + offsets[icell] + ncmats);
+    double cell_volume = mesh_wrapper.cell_volume(icell);
     for (int icmat = 0; icmat < ncmats; icmat++)
       cell_ref_mat_vols[icmat] *= cell_volume;
 
     std::vector<double> cell_mat_sym_diff_vol;
-    get_mat_sym_diff_vol(reference_mat_polys[icell], cell_ref_mat_ids, 
-                         cell_ref_mat_vols, cellmatpoly_list[icell], 
+    get_mat_sym_diff_vol(reference_mat_polys[icell], cell_ref_mat_ids,
+                         cell_ref_mat_vols, cellmatpoly_list[icell],
                          cell_mat_sym_diff_vol, true);
 
     for (int icmat = 0; icmat < ncmats; icmat++) {
       int material_id = cell_ref_mat_ids[icmat];
       int mesh_matid = std::distance(mesh_materials.begin(),
-        std::find(mesh_materials.begin(), 
+        std::find(mesh_materials.begin(),
                   mesh_materials.end(), material_id));
 
       total_mat_sym_diff_vol[mesh_matid] += cell_mat_sym_diff_vol[icmat];
@@ -261,29 +265,29 @@ int main(int argc, char** argv) {
   if (decompose_cells)
     res_out_fname += "_decomposed";
   res_out_fname += ".txt";
-  
+
   std::ofstream fout(res_out_fname);
   fout << std::scientific;
   fout.precision(17);
   for (int imat = 0; imat < nmesh_materials; imat++)
     for (int icell = 0; icell < ncells; icell++)
       if (mat_cells_sym_diff_vol[imat][icell] != -1.0)
-        fout << mesh_materials[imat]*ncells + icell << " " << 
+        fout << mesh_materials[imat]*ncells + icell << " " <<
           mat_cells_sym_diff_vol[imat][icell] << std::endl;
-  
-  fout.close();        
+
+  fout.close();
 
 std::cout << std::endl << "Stats for ";
 #if ENABLE_JALI
   std::cout << "computational mesh " << mesh_name;
 #else
-  std::cout << "structured " << nx << "x" << ny << 
+  std::cout << "structured " << nx << "x" << ny <<
     "x" << nz << " computational mesh";
 #endif
-  std::cout << ":" << std::endl << "  " << ncells << " cells," << 
+  std::cout << ":" << std::endl << "  " << ncells << " cells," <<
     std::endl << "  " << nmesh_materials << " materials," <<
-    std::endl << "  " << nmmcells << " multi-material cells." << 
-    std::endl << std::endl << 
+    std::endl << "  " << nmmcells << " multi-material cells." <<
+    std::endl << std::endl <<
     "For each material over all multi-material cells:" << std::endl;
 
   for (int imat = 0; imat < nmesh_materials; imat++) {
@@ -292,10 +296,10 @@ std::cout << std::endl << "Stats for ";
     if (max_mat_sym_diff_icell[imat] != -1) {
       imaxcell = max_mat_sym_diff_icell[imat];
       int cell_matid = std::distance(cell_mat_ids.begin() + offsets[imaxcell],
-          std::find(cell_mat_ids.begin() + offsets[imaxcell], 
-                    cell_mat_ids.begin() + offsets[imaxcell] + cell_num_mats[imaxcell], 
+          std::find(cell_mat_ids.begin() + offsets[imaxcell],
+                    cell_mat_ids.begin() + offsets[imaxcell] + cell_num_mats[imaxcell],
                     mesh_materials[imat]));
-                    
+
       max_sym_diff_mat_vol = cell_mat_volfracs[offsets[imaxcell] + cell_matid]*
         mesh_wrapper.cell_volume(imaxcell);
     }
@@ -303,14 +307,14 @@ std::cout << std::endl << "Stats for ";
       "    Aggregate vol = " << mmcells_material_volumes[imat] << "," << std::endl <<
       "    aggregate sym.diff.vol = " << total_mat_sym_diff_vol[imat];
     if (total_mat_sym_diff_vol[imat] > std::numeric_limits<double>::epsilon())
-      std::cout << "," << std::endl << "    relative sym.diff.vol = " << 
-        total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat]; 
+      std::cout << "," << std::endl << "    relative sym.diff.vol = " <<
+        total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat];
     std::cout << std::endl;
     if (max_mat_sym_diff_icell[imat] != -1)
       std::cout << "    Max sym.diff.vol in cell " << imaxcell << ":" << std::endl <<
       "      cell material vol = " << max_sym_diff_mat_vol << "," << std::endl <<
       "      sym.diff.vol = " << max_mat_sym_diff_vol[imat] << "," << std::endl <<
-      "      relative sym.diff.vol = " << 
+      "      relative sym.diff.vol = " <<
         max_mat_sym_diff_vol[imat]/max_sym_diff_mat_vol << std::endl;
   }
 
@@ -319,7 +323,7 @@ std::cout << std::endl << "Stats for ";
   for (int icell = 0; icell < ncells; icell++) {
     if (cell_num_mats[icell] == 1) {
       assert(cellmatpoly_list[icell] == nullptr);
-      std::shared_ptr< Tangram::CellMatPoly<3> > 
+      std::shared_ptr< Tangram::CellMatPoly<3> >
         cmp_ptr(new Tangram::CellMatPoly<3>(icell));
       Tangram::MatPoly<3> cell_matpoly;
       cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
@@ -334,7 +338,7 @@ std::cout << std::endl << "Stats for ";
 
 #ifdef ENABLE_MPI
   MPI_Finalize();
-#endif  
+#endif
 
   return 0;
 }

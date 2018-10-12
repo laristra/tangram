@@ -4,16 +4,21 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#include "tangram/driver/write_to_gmv.h"
-#include "tangram/driver/CellMatPoly.h"
-#include "tangram/wrappers/mesh/jali/jali_mesh_wrapper.h"
-#include "tangram/support/tangram.h"
-
 #include "gtest/gtest.h"
+
 #include "mpi.h"
 
-#include "Mesh.hh"             // Jali
-#include "MeshFactory.hh"      // Jali
+// tangram includes
+#include "tangram/driver/write_to_gmv.h"
+#include "tangram/driver/CellMatPoly.h"
+#include "tangram/support/tangram.h"
+
+// wonton includes
+#include "wonton/mesh/jali/jali_mesh_wrapper.h"
+
+// Jali includes
+#include "Mesh.hh"
+#include "MeshFactory.hh"
 
 /// Test the CellMatPoly structure for one-dimensional cells
 
@@ -27,7 +32,7 @@ TEST(WriteCellMatPoly, Mesh3D) {
 
   // Make an 8-cell three-dimensional mesh
   std::shared_ptr<Jali::Mesh> mesh = mf(0.0, 0.0, 0.0, 2.0, 2.0, 2.0, 2, 2, 2);
-  Tangram::Jali_Mesh_Wrapper mesh_wrapper(*mesh);
+  Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh);
 
   // Make a 2-material CellMatPoly object for cell 0
 
@@ -170,7 +175,7 @@ TEST(WriteCellMatPoly, Mesh3D) {
   std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list(8);
   cellmatpoly_list[0] = std::make_shared<Tangram::CellMatPoly<3>>(cellmatpoly);
 
-  Tangram::write_to_gmv<Tangram::Jali_Mesh_Wrapper, 3>(mesh_wrapper, 2,
+  Tangram::write_to_gmv<Wonton::Jali_Mesh_Wrapper, 3>(mesh_wrapper, 2,
                                                        cell_num_mats,
                                                        cell_mat_ids,
                                                        cellmatpoly_list,

@@ -15,16 +15,20 @@
 #include <string>
 #include <sstream>
 
+// tangram includes
 #include "tangram/support/tangram.h"
-#include "tangram/simple_mesh/simple_mesh.h"
-#include "tangram/wrappers/mesh/simple_mesh/simple_mesh_wrapper.h"
 #include "tangram/intersect/split_r3d.h"
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/SLIC.h"
 #include "tangram/driver/write_to_gmv.h"
 
-using Tangram::Simple_Mesh;
-using Tangram::Simple_Mesh_Wrapper;
+// wonton includes
+#include "wonton/mesh/simple/simple_mesh.h"
+#include "wonton/mesh/simple/simple_mesh_wrapper.h"
+
+using Wonton::Simple_Mesh;
+using Wonton::Simple_Mesh_Wrapper;
+
 using Tangram::Driver;
 using Tangram::SLIC;
 
