@@ -345,8 +345,6 @@ endif(ENABLE_THRUST)
 #-----------------------------------------------------------------------------
 
 cinch_add_application_directory(app)
-cinch_add_library_target(tangram tangram)
-
 
 # Add application tests
 # May pull this logic into cinch at some future point

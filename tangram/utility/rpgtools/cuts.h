@@ -13,7 +13,7 @@
 #include <memory>
 
 extern "C" {
-#include "tangram/intersect/r3d.h"
+#include "wonton/intersect/r3d.h"
 }
 
 #include "tangram/support/tangram.h"

@@ -8,8 +8,8 @@
 # demo-mof-app - uses 2D/3D mesh from Jali
 #-------------------------------------------------------------------------------
 add_executable(demo-mof-app demo-mof-app.cc)
-target_link_libraries(demo-mof-app tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
-                                     ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+target_link_libraries(demo-mof-app wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+                                   ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)
   if(MPI_CXX_COMPILE_FLAGS)

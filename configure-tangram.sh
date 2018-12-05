@@ -2,10 +2,10 @@
 
 BUILD_TYPE=Debug
 BASE_PATH=/Users/kikinzon/research
-TANGRAM_DIR=${BASE_PATH}/tangram-fork
+TANGRAM_DIR=${BASE_PATH}/tangramf
 JALI_INSTALL_PREFIX=${BASE_PATH}/jali/inst-jali
 TPL_INSTALL_PREFIX=${BASE_PATH}/jali/inst-tpl
-XMOF2D_INSTALL_PREFIX=${BASE_PATH}/github-xmof2d/install-${BUILD_TYPE}
+XMOF2D_INSTALL_PREFIX=${BASE_PATH}/github-xmof2d/install-Release
 THRUST_PATH=${BASE_PATH}/thrust
 BOOST_PATH=${BASE_PATH}/boost
 LAPACKE_PATH=${BASE_PATH}/lapack/install-Release
@@ -16,8 +16,8 @@ INSTALL_DIR=install-${BUILD_TYPE}
 CC=/usr/local/bin/mpicc
 CXX=/usr/local/bin/mpic++
 
-#rm -rf ${BUILD_DIR}
-#mkdir ${BUILD_DIR}
+rm -rf ${BUILD_DIR}
+mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 
 cmake \
