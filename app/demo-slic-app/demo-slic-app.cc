@@ -40,6 +40,7 @@
    performs interface reconstruction, and outputs material
    polygons to a gmv file */
 /*
+ * This code block can be activated when the library starts to use C++14. 
 template<size_t dim>
 using SplitRnD = std::conditional_t<dim==2, Tangram::SplitR2D, Tangram::SplitR3D>;
 
@@ -138,7 +139,7 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   cellmatpoly_list = run_driver<dim>(mesh_wrapper, ims_tols, isconvex, cell_num_mats,
                      cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
- //Create MatPoly's for single-material cells
+ // Create MatPoly's for single-material cells
   std::vector<int> offsets(ncells, 0);
   for (int icell = 0; icell < ncells - 1; icell++)
     offsets[icell + 1] = offsets[icell] + cell_num_mats[icell];

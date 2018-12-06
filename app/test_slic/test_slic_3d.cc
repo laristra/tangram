@@ -12,6 +12,7 @@
 #include <ostream>
 #include <iterator>
 #include <algorithm>
+#include <set>
 #include <string>
 #include <sstream>
 
@@ -44,8 +45,6 @@
    performs interface reconstruction (SLIC), and outputs volumes of
    symmetric difference for every material in every
    multi-material cell */
-
-#include <set>
 
 const std::vector<int> mesh_materials = {5, 0, 3};
 const std::vector< Tangram::Vector3 > material_interface_normals = {
