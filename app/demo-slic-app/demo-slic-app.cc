@@ -26,7 +26,7 @@
 #include "tangram/intersect/split_r2d.h"
 #include "tangram/intersect/split_r3d.h"
 #include "tangram/driver/driver.h"
-#include "tangram/reconstruct/VOF.h"
+#include "tangram/reconstruct/SLIC.h"
 #include "tangram/driver/write_to_gmv.h"
 #include "tangram/utility/read_material_data.h"
 
@@ -70,17 +70,17 @@ run_driver<2>(Wonton::Jali_Mesh_Wrapper &mesh_wrapper,
               std::vector<Tangram::Point<2>> &cell_mat_centroids)
 {
 
-  Tangram::Driver<Tangram::VOF, 2, Wonton::Jali_Mesh_Wrapper,
+  Tangram::Driver<Tangram::SLIC, 2, Wonton::Jali_Mesh_Wrapper,
                   Tangram::SplitR2D, Tangram::ClipR2D>
-  vof_driver(mesh_wrapper, ims_tols, isconvex);
+  slic_driver(mesh_wrapper, ims_tols, isconvex);
 
-  vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
+  slic_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
                                   cell_mat_volfracs, cell_mat_centroids);
 
-  vof_driver.reconstruct();
+  slic_driver.reconstruct();
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>>
-  cellmatpoly_list = vof_driver.cell_matpoly_ptrs();
+  cellmatpoly_list = slic_driver.cell_matpoly_ptrs();
 
   return cellmatpoly_list;
 };
@@ -96,17 +96,17 @@ run_driver<3>(Wonton::Jali_Mesh_Wrapper &mesh_wrapper,
               std::vector<Tangram::Point<3>> &cell_mat_centroids)
 {
 
-  Tangram::Driver<Tangram::VOF, 3, Wonton::Jali_Mesh_Wrapper,
+  Tangram::Driver<Tangram::SLIC, 3, Wonton::Jali_Mesh_Wrapper,
                   Tangram::SplitR3D, Tangram::ClipR3D>
-  vof_driver(mesh_wrapper, ims_tols, isconvex);
+  slic_driver(mesh_wrapper, ims_tols, isconvex);
 
-  vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
+  slic_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
                                   cell_mat_volfracs, cell_mat_centroids);
 
-  vof_driver.reconstruct();
+  slic_driver.reconstruct();
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>>
-  cellmatpoly_list = vof_driver.cell_matpoly_ptrs();
+  cellmatpoly_list = slic_driver.cell_matpoly_ptrs();
 
   return cellmatpoly_list;
 };
@@ -139,7 +139,7 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   cellmatpoly_list = run_driver<dim>(mesh_wrapper, ims_tols, isconvex, cell_num_mats,
                      cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
- //Create MatPoly's for single-material cells
+ // Create MatPoly's for single-material cells
   std::vector<int> offsets(ncells, 0);
   for (int icell = 0; icell < ncells - 1; icell++)
     offsets[icell + 1] = offsets[icell] + cell_num_mats[icell];
