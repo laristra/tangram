@@ -40,7 +40,7 @@ namespace Tangram {
    @tparam Dim The spatial dimension of the problem.
    */
 
-  template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter, class MatPoly_Clipper=void>
+  template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter, class MatPoly_Clipper>
   class SLIC {
   public:
     /*!
@@ -51,7 +51,6 @@ namespace Tangram {
                   const bool all_convex = false) :
                   mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
       // For now
-      assert(Dim == 3);
       if (ims_tols.empty())
         throw std::runtime_error(
           "SLIC uses 0-order moments and needs tolerances for the related iterative method!");
@@ -74,8 +73,7 @@ namespace Tangram {
       cell_num_mats_ = cell_num_mats;
       cell_mat_ids_ = cell_mat_ids;
       cell_mat_volfracs_ = cell_mat_volfracs;
-
-      auto nc = mesh_.num_entities(Entity_kind::CELL);
+      int nc = mesh_.num_owned_cells() + mesh_.num_ghost_cells();
       cell_mat_offsets_.resize(nc);
       cell_mat_offsets_[0] = 0;
       for (int c(1); c < nc; ++c)
@@ -122,7 +120,9 @@ namespace Tangram {
 
       // Just going along x-direction
       Plane_t<Dim> cutting_plane;
-      cutting_plane.normal = Vector3(1.0, 0.0, 0.0);
+      for (int i = 0 ; i < Dim; i++)
+       cutting_plane.normal[i] = 0.0;
+      cutting_plane.normal[0] = 1.0;  
 
       //Create Splitter instance
       MatPoly_Splitter split_matpolys(hs_sets.upper_halfspace_set.matpolys,
@@ -130,7 +130,7 @@ namespace Tangram {
 
       //Create cutting distance solver: if not all cells are convex, we assume that
       //faces are non-planar
-      CuttingDistanceSolver<Dim, Tangram::ClipR3D>
+      CuttingDistanceSolver<Dim, MatPoly_Clipper>
         solve_cut_dst(hs_sets.upper_halfspace_set.matpolys,
                       cutting_plane.normal, ims_tols_[0], all_convex_);
 
@@ -141,8 +141,9 @@ namespace Tangram {
         // If the target volume is too small, skip it
         if (target_vol < vol_tol) continue;
 
-        const MatPolySet_t<Dim>* single_mat_set_ptr;
-        //On the last iteration the remaining part is single-material,
+        MatPolySet_t<Dim>* single_mat_set_ptr;
+        
+	//On the last iteration the remaining part is single-material,
         //so we don't need to split it
         if (iMat == numMats - 1)
           single_mat_set_ptr = &hs_sets.upper_halfspace_set;
@@ -168,24 +169,10 @@ namespace Tangram {
         }
         //Add single-material MatPoly's to CellMatPoly
         for (int ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
-          const MatPoly<Dim>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
-          // Flatten the face vertices for the single-material MatPoly
-          int nfaces = cur_matpoly.num_faces();
-          std::vector<int> nface_vrts(nfaces);
-          std::vector<int> faces_vrts;
-          for (int iface = 0; iface < nfaces; iface++) {
-            const std::vector<int>& face_ivrts = cur_matpoly.face_vertices(iface);
-            nface_vrts[iface] = face_ivrts.size();
-            faces_vrts.insert(faces_vrts.end(), face_ivrts.begin(), face_ivrts.end());
-          }
-          //Add the MatPoly below the cutting plane to CellMatPoly
-          (*cellpoly).add_matpoly(cell_mat_ids_[iStart + iMat],
-                                  cur_matpoly.num_vertices(),
-                                  &cur_matpoly.points()[0],
-                                  nullptr, nullptr,
-                                  nfaces, &nface_vrts[0], &faces_vrts[0],
-                                  nullptr, nullptr);
-        }
+          MatPoly<Dim>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
+          cur_matpoly.set_mat_id(cell_mat_ids_[iStart+iMat]);
+          cellpoly->add_matpoly(cur_matpoly);
+    	}
       }
 
       return std::shared_ptr<CellMatPoly<Dim>>(cellpoly);

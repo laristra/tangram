@@ -18,9 +18,6 @@ extern "C" {
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 
-#include "tangram/driver/write_to_gmv.h"
-#include "tangram/driver/CellMatPoly.h"
-
 
 /*!
  @file split_r3d.h
@@ -69,15 +66,6 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
   }
   
   r3d_init_poly(&r3dpoly, r3dized_poly_vrts, nvrts, r3dized_poly_faces, nface_vrts, nfaces);
-  std::cout << "Number of MatPoly vertices -> " << nvrts << "; Number of r3d_poly vertices -> " << r3dpoly.nverts << std::endl;
-  if (nvrts > 4) {
-    for (int ivrt = 0; ivrt < nvrts; ivrt++)
-      std::cout << "MatPoly vertex #" << ivrt << ": " << matpoly_vrts[ivrt] << std::endl;
-    std::vector<std::shared_ptr<CellMatPoly<3>>> cellmatpoly_list(1);
-    cellmatpoly_list[0] = std::make_shared<CellMatPoly<3>>();
-    cellmatpoly_list[0]->add_matpoly(mat_poly);
-    write_to_gmv(cellmatpoly_list, "matpoly.gmv");
-  }
 
   delete [] r3dized_poly_vrts;
   delete [] nface_vrts;

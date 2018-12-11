@@ -40,6 +40,7 @@
    performs interface reconstruction, and outputs material
    polygons to a gmv file */
 /*
+ * This code block can be activated when the library starts to use C++14. 
 template<size_t dim>
 using SplitRnD = std::conditional_t<dim==2, Tangram::SplitR2D, Tangram::SplitR3D>;
 
