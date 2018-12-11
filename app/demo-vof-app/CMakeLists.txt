@@ -8,7 +8,7 @@
 # demo-vof-app - uses 2D/3D mesh from Jali
 #-------------------------------------------------------------------------------
 add_executable(demo-vof-app demo-vof-app.cc)
-target_link_libraries(demo-vof-app wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+target_link_libraries(demo-vof-app tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
                                    ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)

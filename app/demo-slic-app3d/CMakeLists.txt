@@ -8,7 +8,7 @@
 # demo-slic-app3d - uses 3D Simple_Mesh
 #-------------------------------------------------------------------------------
 add_executable(demo-slic-app3d demo-slic-app3d.cc)
-target_link_libraries(demo-slic-app3d wonton ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+target_link_libraries(demo-slic-app3d tangram wonton ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)
   if(MPI_CXX_COMPILE_FLAGS)
