@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/laristra/tangram.svg?branch=master)](https://travis-ci.org/laristra/tangram)
+[![Build Status](https://travis-ci.com/laristra/tangram.svg?branch=master)](https://travis-ci.com/laristra/tangram)
 [![codecov.io](https://codecov.io/github/laristra/tangram/coverage.svg?branch=master)](https://codecov.io/github/laristra/tangram/tangram?branch=master)
 [![Quality Gate](https://sonarqube.com/api/badges/gate?key=tangram%3A%2Fmaster)](https://sonarqube.com/dashboard?id=tangram%3A%2Fmaster)
 
