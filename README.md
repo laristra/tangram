@@ -57,7 +57,7 @@ support for these is _optional_:
 ### Installing
 
 In the simplest case where you have the appropriate versions mentioned
-above and Boost is in the usual locations that CMake
+above and LAPACKE and Boost are in the usual locations that CMake
 searches, then the build step is:
 
 ```sh
@@ -99,6 +99,7 @@ assigned **LA-CC-17-133**.
 BUILD_TYPE=Release
 JALI_INSTALL_PREFIX=/path/to/jali/installation
 TPLS_INSTALL_PREFIX=/path/to/jali/tpls/installation
+LAPACKE_INSTALL_PREFIX=/path/to/LAPACKE/intallation
 XMOF2D_INSTALL_PREFIX=/path/to/XMOF2D/installation
 THRUST_PATH=/path/to/thrust
 BOOST_PATH=/path/to/boost
@@ -120,6 +121,7 @@ cmake \
     -D ENABLE_MPI=True \
     -D XMOF2D_DIR:FILEPATH=${XMOF2D_INSTALL_PREFIX}/share/cmake \
     -D BOOST_ROOT:FILEPATH=${BOOST_PATH} \
+    -D LAPACKE_DIR:FILEPATH=${LAPACKE_INSTALL_PREFIX} \
     -D ENABLE_THRUST:BOOL=True \
     -D THRUST_DIR:PATH=${THRUST_PATH} \
     -D Jali_DIR:FILEPATH=${JALI_INSTALL_PREFIX}/lib \
