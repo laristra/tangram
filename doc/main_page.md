@@ -3,9 +3,9 @@
 Tangram is a framework that computational physics applications can use
 to build a highly customized, hybrid parallel (MPI+X) interface
 reconstruction library for constructing in-cell material polytopes
-based on given volume fractions and, optionally, centroids data.
+based on given volume fractions and, optionally, material centroid data.
 
-We aim to provide:
+Tangram aims to provide:
 - A modern, modular design - pick and choose your preferred
   intersection and interface reconstruction methods
 - Support for general polytopal meshes and higher-order material moments
@@ -31,7 +31,7 @@ At a minimum, Tangram requires:
 - [LAPACKE](https://https://github.com/Reference-LAPACK/lapack/tree/master/LAPACKE) 3.8.0+
 - [Boost](https://www.boost.org) 1.68.0+ **or** [Thrust](https://thrust.github.io/) 1.8.1+
 
-In addition to the minimum set of libraries, Tangram has been known to
+In addition to the minimum set of libraries, Tangram is known to
 work with version 1.0.0 of the [Jali](https://github.com/lanl/jali).
 
 Distributed parallelism of Tangram is currently supported through MPI;

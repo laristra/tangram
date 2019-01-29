@@ -2,9 +2,9 @@
 [![codecov.io](https://codecov.io/github/laristra/tangram/coverage.svg?branch=master)](https://codecov.io/github/laristra/tangram/tangram?branch=master)
 [![Quality Gate](https://sonarqube.com/api/badges/gate?key=tangram%3A%2Fmaster)](https://sonarqube.com/dashboard?id=tangram%3A%2Fmaster)
 
-# tangram
+# Tangram
 
-The tangram library provides a framework for interface reconstruction
+The Tangram library provides a framework for interface reconstruction
 in computational physics applications. Interface reconstruction is
 facilitated through the use of user-supplied _wrappers_ around
 meshes with their materials data. Interface reconstruction algorithms 
@@ -13,7 +13,7 @@ advantage of hybrid parallelism (MPI+X).
 
 ## Getting Started
 
-To obtain a copy of tangram and its submodules from GitHub, clone
+To obtain a copy of Tangram and its submodules from GitHub, clone
 recursively:
 
 ```sh
@@ -25,7 +25,7 @@ our
 [Dockerfile](https://github.com/laristra/tangram/blob/master/docker/Dockerfile) for
 a working build environment.  In particular, the Dockerfile builds off
 of
-the [tangram-buildenv](https://github.com/laristra/tangram-buildenv)
+the [portage-buildenv](https://github.com/laristra/portage-buildenv)
 Dockerfile, and uses
 our
 [travis.yml](https://github.com/laristra/tangram/blob/master/.travis.yml) file
@@ -35,7 +35,7 @@ with Travis CI.
 
 Tangram uses standard C++11 features, so a fairly modern compiler is
 needed.  We regularly test with Intel 18+ or GCC 6.4+.  Utilizing the
-full capabilities of tangram will require an MPI implementation; we
+full capabilities of Tangram will require an MPI implementation; we
 regularly test with OpenMPI 2.1.2+ The build system _requires_ CMake
 version 3.0+.
 
@@ -138,7 +138,7 @@ below to ensure they build.
 
 ## Varan
 
-Execute the following from the tangram root directory:
+Execute the following from the Tangram root directory:
 
 ```c++
 # machine=varan
