@@ -150,9 +150,6 @@ class Driver {
     int comm_rank = 0;
     int world_size = 1;
 
-    // Will be null if it's a parallel executor
-    auto serialexecutor = dynamic_cast<Wonton::SerialExecutor_type const *>(executor);
-    
 #ifdef TANGRAM_ENABLE_MPI
     MPI_Comm mycomm = MPI_COMM_NULL;
     auto mpiexecutor = dynamic_cast<Wonton::MPIExecutor_type const *>(executor);
