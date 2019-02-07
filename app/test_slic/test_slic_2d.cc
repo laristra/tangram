@@ -15,7 +15,7 @@
 #include <string>
 #include <sstream>
 
-#ifdef ENABLE_MPI
+#ifdef TANGRAM_ENABLE_MPI
   #include "mpi.h"
 #endif
 #if ENABLE_JALI
@@ -57,7 +57,7 @@ const std::vector< Tangram::Point2 > material_interface_points = {
 };
 
 int main(int argc, char** argv) {
-#ifdef ENABLE_MPI
+#ifdef TANGRAM_ENABLE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
 
@@ -340,7 +340,7 @@ std::cout << std::endl << "Stats for ";
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
 #endif
 
-#ifdef ENABLE_MPI
+#ifdef TANGRAM_ENABLE_MPI
   MPI_Finalize();
 #endif
 

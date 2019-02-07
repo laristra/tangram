@@ -17,7 +17,7 @@
 #include <iostream>
 #include <type_traits>
 
-#ifdef ENABLE_MPI
+#ifdef TANGRAM_ENABLE_MPI
 #include "mpi.h"
 #endif
 
@@ -144,12 +144,22 @@ class Driver {
   /*!
     @brief Perform the reconstruction
   */
-  void reconstruct() {
+  void reconstruct(Wonton::Executor_type const *executor = nullptr) {
+
+    bool distributed = false;
     int comm_rank = 0;
     int world_size = 1;
-#ifdef ENABLE_MPI
-    MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+#ifdef TANGRAM_ENABLE_MPI
+    MPI_Comm mycomm = MPI_COMM_NULL;
+    auto mpiexecutor = dynamic_cast<Wonton::MPIExecutor_type const *>(executor);
+    if (mpiexecutor && mpiexecutor->mpicomm != MPI_COMM_NULL) {
+      mycomm = mpiexecutor->mpicomm;
+      MPI_Comm_rank(mycomm, &comm_rank);
+      MPI_Comm_size(mycomm, &world_size);
+      if (world_size > 1)
+        distributed = true;
+    }
 #endif
 
     assert(!cell_num_mats_.empty());
@@ -235,10 +245,10 @@ class Driver {
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
       
       float max_transform_time = tot_seconds;
-#ifdef ENABLE_MPI
+#ifdef TANGRAM_ENABLE_MPI
       if (world_size > 1) {
         MPI_Allreduce(&tot_seconds, &max_transform_time, 1, MPI_FLOAT, MPI_MAX,
-          MPI_COMM_WORLD);
+          mycomm);
       }
 #endif
       if (comm_rank == 0)
