@@ -6,8 +6,7 @@
 
 project(tangram)
 
-cinch_minimum_required(2.0)
-
+cinch_minimum_required(VERSION 1.0)
 
 
 # If a C++14 compiler is available, then set the appropriate flags
@@ -343,7 +342,6 @@ endif(ENABLE_THRUST)
 
 cinch_add_application_directory(app)
 cinch_add_library_target(tangram tangram)
-
 
 # Add application tests
 # May pull this logic into cinch at some future point

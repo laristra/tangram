@@ -11,7 +11,7 @@ add_executable(test_slic_2d test_slic_2d.cc)
 target_link_libraries(test_slic_2d tangram ${Jali_TPL_LIBRARIES})
 
 if(Jali_DIR)
-  target_link_libraries(test_slic_2d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES})
+  target_link_libraries(test_slic_2d tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES})
 endif(Jali_DIR)
 
 if(ENABLE_MPI)
@@ -38,7 +38,7 @@ endif(ENABLE_TCMALLOC)
 # test_slic_3d - uses 3D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_slic_3d test_slic_3d.cc)
-target_link_libraries(test_slic_3d tangram ${Jali_TPL_LIBRARIES})
+target_link_libraries(test_slic_3d tangram wonton ${Jali_TPL_LIBRARIES})
 
 if(Jali_DIR)
   target_link_libraries(test_slic_3d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES})

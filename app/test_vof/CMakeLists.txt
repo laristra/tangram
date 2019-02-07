@@ -8,7 +8,7 @@
 # test_vof_3d - uses 3D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_vof_3d test_vof_3d.cc)
-target_link_libraries(test_vof_3d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+target_link_libraries(test_vof_3d tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
                                   ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)
@@ -34,7 +34,7 @@ endif(ENABLE_TCMALLOC)
 # test_vof_2d - uses 2D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_vof_2d test_vof_2d.cc)
-target_link_libraries(test_vof_2d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+target_link_libraries(test_vof_2d tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
                                   ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)

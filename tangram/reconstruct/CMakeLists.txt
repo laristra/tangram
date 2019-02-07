@@ -36,7 +36,7 @@ set(reconstruct_SOURCES
 if (ENABLE_UNIT_TESTS)
   cinch_add_unit(cutting_distance_solver
     SOURCES test/test_cutting_distance_solver.cc
-    LIBRARIES tangram
+    LIBRARIES tangram wonton
     POLICY SERIAL
     )
 endif (ENABLE_UNIT_TESTS)

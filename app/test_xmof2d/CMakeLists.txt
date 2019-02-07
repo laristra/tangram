@@ -8,7 +8,7 @@
 # test_mof_2d - uses 2D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_xmof2d test_xmof2d.cc)
-target_link_libraries(test_xmof2d tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+target_link_libraries(test_xmof2d tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
                                   ${XMOF2D_LIBRARIES} ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)

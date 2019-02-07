@@ -8,8 +8,8 @@
 # demo-slic-app3d - uses 3D Simple_Mesh
 #-------------------------------------------------------------------------------
 add_executable(demo-slic-app demo-slic-app.cc)
-target_link_libraries(demo-slic-app tangram ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
-					      ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+target_link_libraries(demo-slic-app tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+					                          ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)
   if(MPI_CXX_COMPILE_FLAGS)

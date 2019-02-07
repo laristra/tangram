@@ -13,7 +13,7 @@
 
 // tangram includes
 extern "C" {
-#include "tangram/intersect/r3d.h"
+#include "wonton/intersect/r3d/r3d.h"
 }
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
@@ -86,7 +86,8 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                     std::vector< MatPoly<3> >& mat_polys) {
   r3d_brep* poly_brep;
   r3d_int ncomponents;
-  r3d_init_brep(&r3dpoly, &poly_brep, &ncomponents);
+  r3d_poly poly_copy = r3dpoly;
+  r3d_init_brep(&poly_copy, &poly_brep, &ncomponents);
 
   mat_polys.clear();
   if (ncomponents == 0) {
