@@ -7,6 +7,14 @@
 #ifndef TANGRAM_H_
 #define TANGRAM_H_
 
+// Semantic version numbers for Tangram
+// Will be filled in the CMAKE when installing (make install)
+
+#define TANGRAM_VERSION_MAJOR @TANGRAM_VERSION_MAJOR@
+#define TANGRAM_VERSION_MINOR @TANGRAM_VERSION_MINOR@
+#define TANGRAM_VERSION_PATCH @TANGRAM_VERSION_PATCH@
+
+
 #include <cfloat>
 #include <vector>
 #include <algorithm>
