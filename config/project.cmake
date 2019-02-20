@@ -9,6 +9,15 @@ project(tangram)
 cinch_minimum_required(VERSION 1.0)
 
 
+# SEMANTIC VERSION NUMBERS - UPDATE DILIGENTLY
+# As soon as a change with a new version number is merged into the master,
+# tag the central repository.
+
+set(TANGRAM_VERSION_MAJOR 0)
+set(TANGRAM_VERSION_MINOR 9)
+set(TANGRAM_VERSION_PATCH 3)
+
+
 # If a C++14 compiler is available, then set the appropriate flags
 include(cxx14)
 check_for_cxx14_compiler(CXX14_COMPILER)
@@ -38,6 +47,10 @@ set(CINCH_HEADER_SUFFIXES "\\.h")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
+# set the name of the Portage library
+
+set(TANGRAM_LIBRARY "tangram" CACHE STRING "Name of the tangram library")
+
 
 #-----------------------------------------------------------------------------
 # Gather all the third party libraries needed for Tangram
@@ -45,23 +58,42 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
 set(ARCHOS ${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_SYSTEM_NAME})
 
+set(TANGRAM_EXTRA_LIBRARIES)
+
 #-----------------------------------------------------------------------------
 # Wonton
 #-----------------------------------------------------------------------------
-file(GLOB _wonton_contents ${CMAKE_SOURCE_DIR}/wonton/*)
-if (_wonton_contents)
-  if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    # We are building portage, and wonton is a subdirectory
-    add_subdirectory(${CMAKE_SOURCE_DIR}/wonton)
+if (WONTON_DIR)
+
+  # Link with an existing installation of Wonton, if provided. 
+  find_package(WONTON REQUIRED)
+  message(STATUS "WONTON_LIBRARIES=${WONTON_LIBRARIES}" )
+  include_directories(${WONTON_INCLUDE_DIR})
+  message(STATUS "WONTON_INCLUDE_DIRS=${WONTON_INCLUDE_DIR}")
+ 
+  list(APPEND TANGRAM_EXTRA_LIBRARIES ${WONTON_LIBRARIES})
+
+else (WONTON_DIR)
+
+  # Build Wonton from a submodule
+  file(GLOB _wonton_contents ${CMAKE_SOURCE_DIR}/wonton/*)
+  if (_wonton_contents)
+    if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+      # We are building tangram, and wonton is a subdirectory
+      add_subdirectory(${CMAKE_SOURCE_DIR}/wonton)
+    endif()
+    include_directories(${CMAKE_SOURCE_DIR}/wonton)
+    list(APPEND TANGRAM_EXTRA LIBRARIES wonton)
+    set(WONTON_FOUND True)
+
+    # If Wonton is included as a submodule, it will get installed alongside Portage
+    set(WONTON_DIR ${CMAKE_INSTALL_PREFIX})
   endif()
-  include_directories(${CMAKE_SOURCE_DIR}/wonton)
-  list(APPEND portage_LIBRARIES wonton)
-else()
-  # wonton is not a subdirectory -- bail for now
-  # may want to revisit this in the future if we want to link against a built
-  # version
-  message(FATAL_ERROR "Missing wonton subdirectory")
-endif(_wonton_contents)
+endif (WONTON_DIR)
+  
+if (NOT WONTON_FOUND)
+  message(FATAL_ERROR "WONTON_DIR is not specified and Wonton is not a subdirectory !")
+endif() 
 
 
 #------------------------------------------------------------------------------#
@@ -100,11 +132,13 @@ if (ENABLE_FleCSI)
  message(STATUS "FleCSI_LIBRARIES=${FleCSI_LIBRARIES}" )
  include_directories(${FleCSI_INCLUDE_DIR})
  message(STATUS "FleCSI_INCLUDE_DIRS=${FleCSI_INCLUDE_DIR}")
+ list(APPEND TANGRAM_EXTRA_LIBRARIES ${FleCSI_LIBRARIES})
 
  find_package(FleCSISP REQUIRED)
  message(STATUS "FleCSISP_LIBRARIES=${FleCSISP_LIBRARIES}" )
  include_directories(${FleCSISP_INCLUDE_DIR})
  message(STATUS "FleCSISP_INCLUDE_DIRS=${FleCSISP_INCLUDE_DIR}")
+ list(APPEND TANGRAM_EXTRA_LIBRARIES ${FleCSISP_LIBRARIES})
 
   ######################################################################
   # This is a placeholder for how we would do IO with FleCSI
@@ -168,6 +202,7 @@ if (Jali_DIR)
 
    add_definitions(-DENABLE_JALI)
 
+   list(APPEND TANGRAM_EXTRA_LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES})
 endif (Jali_DIR)
 
 #------------------------------------------------------------------------------#
@@ -239,6 +274,7 @@ endif (LAPACKE_DIR)
 if (LAPACKE_FOUND) 
   include_directories(${LAPACKE_INCLUDE_DIRS})
   add_definitions("-DHAVE_LAPACKE")
+  list(APPEND TANGRAM_EXTRA_LIBRARIES ${LAPACKE_LIBRARIES})
 
   message(STATUS "LAPACKE_FOUND ${LAPACKE_FOUND}")
   message(STATUS "LAPACKE_LIBRARIES  ${LAPACKE_LIBRARIES}")
@@ -272,6 +308,7 @@ if (XMOF2D_DIR)
    # message(STATUS "XMOF2D_LIBRARIES=${XMOF2D_LIBRARIES}")
 
    include_directories(${XMOF2D_INCLUDE_DIRS})
+   list(APPEND PORTAGE_EXTRA_LIBRARIES ${XMOF2D_LIBRARIES})
 
 endif (XMOF2D_DIR)
 
@@ -353,4 +390,26 @@ endif()
 #------------------------------------------------------------------------------#
 #
 #------------------------------------------------------------------------------#
+
+# retrieve all the definitions we added for compiling
+get_directory_property(TANGRAM_COMPILE_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+
+# build the TANGRAM_LIBRARIES variable
+set(TANGRAM_LIBRARIES ${TANGRAM_LIBRARY} ${TANGRAM_EXTRA_LIBRARIES} CACHE STRING "List of libraries to link with tangram")
+
+############################################################################## 
+# Write a configuration file from template replacing only variables enclosed
+# by the @ sign. This will let other programs build on TANGRAM discover how
+# TANGRAM was built and which TPLs it used
+#############################################################################
+
+configure_file(${PROJECT_SOURCE_DIR}/cmake/tangram_config.cmake.in 
+               ${PROJECT_BINARY_DIR}/tangram_config.cmake @ONLY)
+install(FILES ${PROJECT_BINARY_DIR}/tangram_config.cmake 
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/)
+
+configure_file(${PROJECT_SOURCE_DIR}/tangram/support/tangram.h
+               ${PROJECT_BINARY_DIR}/tangram/support/tangram.h @ONLY)
+install(FILES ${PROJECT_BINARY_DIR}/tangram/support/tangram.h
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/tangram/support/)
 
