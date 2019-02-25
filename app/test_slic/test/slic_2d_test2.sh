@@ -18,4 +18,4 @@ set -x
 ${RUN_COMMAND} ${TESTAPPDIR}/test_slic_2d 1 voronoi124.exo
 
 # Compare the values for the field
-${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold2_2d.txt cell_sym_diff_2d_voronoi124_decomposed.txt 1e-08
+${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold2_2d.txt cell_sym_diff_2d_voronoi124_decomposed.txt 1e-13

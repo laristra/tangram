@@ -152,9 +152,9 @@ public:
     }
 
     double target_vol = stencil_vfracs[0]*mesh_.cell_volume(cellID);
-
     // Use least squares to compute the gradient
     cutting_plane.normal = -ls_gradient(stencil_centroids, stencil_vfracs);
+
     double grad_norm = cutting_plane.normal.norm();
     if (is_equal(grad_norm, 0.0)) {
       // Zero gradient: we choose SLIC-like plane orientation

@@ -244,21 +244,17 @@ TEST(split_r3d, Mesh3D) {
     }
   }  
 
-  //Get moments without decomposing into convex components
-  std::vector<double> fast_below_plane_moments;
-  Tangram::lower_halfspace_moments_r3d(ncv_matpoly, cutting_plane, 
-                                       fast_below_plane_moments);
-  ASSERT_EQ(fast_below_plane_moments.size(), 4);
-
   //Get moments using ClipR3D class and facetizing faces
-  Tangram::ClipR3D clip_poly(ncv_matpolys, cutting_plane);
-  std::vector<double> clipper_moments = clip_poly();
+  Tangram::ClipR3D clip_poly;
+  clip_poly.set_matpolys(ncv_matpolys);
+  clip_poly.set_plane(cutting_plane);
 
-  //Check that all methods return the same values
-  for(int im = 0; im < 4; im++) {
-    ASSERT_NEAR((*hs_moments_ptrs[0])[im], fast_below_plane_moments[im], 1.0e-15);
+  std::vector<double> clipper_moments = clip_poly();
+  ASSERT_EQ(clipper_moments.size(), 4);
+
+  //Check that methods return the same values
+  for(int im = 0; im < 4; im++)
     ASSERT_NEAR((*hs_moments_ptrs[0])[im], clipper_moments[im], 1.0e-15);
-  }
 
 #ifdef OUTPUT_TO_GMV
   cellmatpoly_list.clear();

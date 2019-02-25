@@ -295,21 +295,17 @@ TEST(clip_r2d, ConvexPoly) {
   //Reference
   std::vector<double> ref_moments = {0.875, 0.625, 0.604166666666666667};
 
-  //Compute moments using the lowest level function
-  std::vector<double> lsmoments;
-  lower_halfplane_moments_r2d(cpmatpolys[0], cutting_plane, lsmoments);
-  ASSERT_EQ(lsmoments.size(),3);
-
   //Clip using ClipR2D class
-  Tangram::ClipR2D clip(cpmatpolys, cutting_plane, true);
+  Tangram::ClipR2D clip;
+  clip.set_matpolys(cpmatpolys, true);
+  clip.set_plane(cutting_plane);
+
   std::vector<double> agmoments = clip();
+  ASSERT_EQ(agmoments.size(),3);
 
   //Check
   for (int i = 0; i < 3; i++)
-  {
-    ASSERT_NEAR(lsmoments[i], ref_moments[i], 1.0e-15);
     ASSERT_NEAR(agmoments[i], ref_moments[i], 1.0e-15);
-  }
 }
 
 TEST(clip_r2d, NonConvexPoly) {
@@ -325,19 +321,15 @@ TEST(clip_r2d, NonConvexPoly) {
   //Reference
   std::vector<double> ref_moments = {0.5, 1.83333333333333333, 1.0};
 
-  //Compute moments using the lowest level function
-  std::vector<double> lsmoments;
-  lower_halfplane_moments_r2d(cpmatpolys[0], cutting_plane, lsmoments);
-  ASSERT_EQ(lsmoments.size(),3);
-
   //Clip using ClipR2D class
-  Tangram::ClipR2D clip(cpmatpolys, cutting_plane, true);
+  Tangram::ClipR2D clip;
+  clip.set_matpolys(cpmatpolys, true);
+  clip.set_plane(cutting_plane);
+
   std::vector<double> agmoments = clip();
+  ASSERT_EQ(agmoments.size(),3);
 
   //Check
   for (int i = 0; i < 3; i++)
-  {
-    ASSERT_NEAR(lsmoments[i], ref_moments[i], 1.0e-15);
     ASSERT_NEAR(agmoments[i], ref_moments[i], 1.0e-15);
-  }
 }

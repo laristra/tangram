@@ -17,7 +17,6 @@
 #include "tangram/support/tangram.h"
 #include "tangram/driver/CellMatPoly.h"
 #include "tangram/support/MatPoly.h"
-#include "tangram/intersect/split_r3d.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
 
 /*!

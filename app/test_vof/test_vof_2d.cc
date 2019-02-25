@@ -201,7 +201,8 @@ int main(int argc, char** argv) {
 
   // Volume fraction and angles tolerance
   std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(1);
-  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15,
+                 .fun_eps = std::numeric_limits<double>::epsilon()};
 
   // Build the driver
 #if ENABLE_JALI
