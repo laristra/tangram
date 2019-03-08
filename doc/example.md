@@ -4,7 +4,8 @@ Tangram provides a very crude mesh framework aptly
 called `Simple_Mesh` through its support package, Wonton.  
 The goal of this framework
 is to show how one can wrap their favorite mesh infrastructure for
-use with Tangram - _they should not be used in any production sense._
+use with Tangram; its practical use is limited to serial applications
+operating with Cartesian meshes.
 The details on the `Wonton::Simple_Mesh` framework, its wrapper 
 `Wonton::Simple_Mesh_Wrapper`, and the helper class
 `Wonton::AuxMeshTopology`, which builds the additional mesh entities and
@@ -151,7 +152,7 @@ std::vector<std::shared_ptr< Tangram::CellMatPoly<3> >> cellmatpoly_list =
   mof_driver.cell_matpoly_ptrs();
 ```
 
-Note that by default ``CellMatPoly` objects are not created for single-material cells, so
+Note that by default `CellMatPoly` objects are not created for single-material cells, so
 the corresponding entries of the `cellmatpoly_list` vector will contain `nullptr`'s.
 
 # Applications and Tests

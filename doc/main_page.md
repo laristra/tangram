@@ -11,7 +11,6 @@ Tangram aims to provide:
 - Support for general polytopal meshes and higher-order material moments
 - High flexibility for application customization
 - Algorithms that take advantage of both distributed and on-node parallelism
-- An _Open Source Community_ for these tools!
 - Use of client application's native mesh data structures
 
 See the [Concepts](@ref concepts) page for a high-level discussion of
