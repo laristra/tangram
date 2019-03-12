@@ -91,13 +91,10 @@ public:
       return empty;
     }
 
-    // Aggregate moments of the cut MatPoly's
-    std::vector<double> full_moments(D + 1, 0.0);
-    for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
-      const std::vector<double>& poly_moments = matpolys_[ipoly].moments();
-      for (int im = 0; im < D + 1; im++)
-        full_moments[im] += poly_moments[im];
-    }
+    MatPoly_Clipper clip_matpolys;
+    clip_matpolys.set_matpolys(matpolys_, planar_faces_);
+    // Get aggregate moments of the cut MatPoly's
+    std::vector<double> full_moments = clip_matpolys.aggregated_moments();
 
     if (target_vol_ > full_moments[0] - vol_eps) {
       // All the poly's are below the plane: we return the distance corresponding
@@ -119,7 +116,6 @@ public:
     int iter_count = 0;
     
     Plane_t<D> cutting_plane = {.normal = plane_normal_, .dist2origin = d2orgn};
-    MatPoly_Clipper clip_matpolys(matpolys_, cutting_plane, planar_faces_);
 
     // We iterative solve for the cutting distance that corresponds to the target volume
     // below the cutting plane. By default, the secant method is used.
@@ -166,6 +162,7 @@ public:
       } 
 
       cutting_plane.dist2origin = d2orgn;
+      clip_matpolys.set_plane(cutting_plane);
       cur_moments = clip_matpolys();  
       
       vol_err = std::fabs(cur_moments[0] - target_vol_);

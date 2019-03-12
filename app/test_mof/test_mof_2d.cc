@@ -128,8 +128,8 @@ int main(int argc, char** argv) {
   Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, false, false);
 #else
   Wonton::Simple_Mesh mesh(0.0, 0.0,
-                            1.0, 1.0,
-                            nx, ny );
+                           1.0, 1.0,
+                           nx, ny );
   Wonton::Simple_Mesh_Wrapper mesh_wrapper(mesh);
 #endif
 
@@ -193,7 +193,8 @@ int main(int argc, char** argv) {
 
   // Volume fraction and angles tolerance
  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2) ;
- ims_tols[0]= {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+ ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15,
+                .fun_eps = std::numeric_limits<double>::epsilon()};
  ims_tols[1]= {.max_num_iter = 100, .arg_eps = 1.0e-14, .fun_eps = 1.0e-15};
 
   // Build the driver

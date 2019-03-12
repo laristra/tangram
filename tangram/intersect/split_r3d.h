@@ -66,7 +66,7 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
   }
   
   r3d_init_poly(&r3dpoly, r3dized_poly_vrts, nvrts, r3dized_poly_faces, nface_vrts, nfaces);
-
+  
   delete [] r3dized_poly_vrts;
   delete [] nface_vrts;
   for (int iface = 0; iface < nfaces; iface++)
@@ -109,6 +109,8 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
         cur_vrt[ixyz] = poly_brep[ipoly].vertices[ivrt].xyz[ixyz];
       // Check if this point is already stored
       for (int i = 0; i < curpoly_vrts.size(); i++)
+        //Points are considered equivalent if all their respective coordinates 
+        //are within machine epsilon from each other
         if (cur_vrt == curpoly_vrts[i]) {
           r3d2matpoly_vrt_ids[ivrt] = i;
           break;
@@ -136,11 +138,86 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
       }
     }
 
-    // Filter out degenerate faces
-    int ind_face = 0;
-    while (ind_face < curpoly_faces.size())
-      if (curpoly_faces[ind_face].size() > 2) ind_face++;
-      else curpoly_faces.erase(curpoly_faces.begin() + ind_face);  
+    std::vector<int> hanging_nodes;
+    bool removed_nodes = true;
+    while (removed_nodes) {
+      //Removing nodes can result in new degenerate faces, so keep removing
+      //such faces until no hanging nodes are left
+      removed_nodes = false;
+      // Filter out degenerate faces
+      int ind_face = 0;
+      while (ind_face < curpoly_faces.size())
+        if (curpoly_faces[ind_face].size() > 2) ind_face++;
+        else {
+          //A degenerate face can collapse into a hanging point on an edge, i.e.
+          //a node that is connected to less than three other nodes.
+          //We eliminate such nodes from faces: converting a polyhedron that has
+          //hanging nodes using r3d_init_poly can result in an r3d_poly
+          //with no vertices
+          for (int ifn = 0; ifn < curpoly_faces[ind_face].size(); ifn++) {
+            int inode = curpoly_faces[ind_face][ifn];
+            std::vector<int> iconnected_nodes;
+            std::vector<std::pair<int,int>> node_in_faces;
+            for (int iface = 0; iface < curpoly_faces.size(); iface++) {
+              int in_face_id = std::distance(curpoly_faces[iface].begin(),
+                                             std::find(curpoly_faces[iface].begin(),
+                                                       curpoly_faces[iface].end(), inode));
+              int nface_vrts = curpoly_faces[iface].size();
+              if (in_face_id != nface_vrts) {
+                //Node of a degenerate face is also a node of the current face
+                node_in_faces.push_back(std::pair<int,int>(iface, in_face_id));
+                //We look for unique adjacent nodes in the current face
+                for (int p0n1 = 0; p0n1 < 2; p0n1++) {
+                  int adj_node_face_id = (nface_vrts + in_face_id + 2*p0n1 - 1)%nface_vrts;
+                  if (std::find(iconnected_nodes.begin(), iconnected_nodes.end(),
+                                curpoly_faces[iface][adj_node_face_id]) == iconnected_nodes.end())
+                    iconnected_nodes.push_back(curpoly_faces[iface][adj_node_face_id]);
+                }
+              }
+            }  
+            //Check if the current face node is a hanging node, if so, remove it
+            if (iconnected_nodes.size() < 3) {
+              removed_nodes = true;
+              hanging_nodes.push_back(inode);
+              for (int icf = 0; icf < node_in_faces.size(); icf++) {
+                int iface = node_in_faces[icf].first;
+                curpoly_faces[iface].erase(curpoly_faces[iface].begin() + 
+                                           node_in_faces[icf].second);
+              }
+            }
+          }
+          //Now, remove the degenerate face
+          curpoly_faces.erase(curpoly_faces.begin() + ind_face);  
+        }
+    }
+
+    //We remove nodes no longer present in the poly: passing to r3d_init_poly
+    //vertices that are not used by any faces can result in an empty r3d_poly
+    if (!hanging_nodes.empty()) {
+      nvrts = static_cast<int>(curpoly_vrts.size());
+      std::vector<int> old2new_vrt_ids(nvrts, -1);
+      std::vector<Point3> shrunk_vrts;
+      shrunk_vrts.reserve(nvrts - hanging_nodes.size());
+      for (int ivrt = 0; ivrt < nvrts; ivrt++) {
+        // Check if this point was removed
+        if (std::find(hanging_nodes.begin(), hanging_nodes.end(), ivrt) ==
+            hanging_nodes.end()) {
+            old2new_vrt_ids[ivrt] = shrunk_vrts.size();
+            shrunk_vrts.push_back(curpoly_vrts[ivrt]);
+        }
+      }
+      curpoly_vrts = shrunk_vrts;  
+
+      nfaces = static_cast<int>(curpoly_faces.size());
+      std::vector< std::vector<int> > updated_faces(nfaces);
+      for (int iface = 0; iface < nfaces; iface++) {
+        int face_nverts = static_cast<int>(curpoly_faces[iface].size());
+        updated_faces[iface].resize(face_nverts);
+        for (int ifv = 0; ifv < face_nverts; ifv++) 
+          updated_faces[iface][ifv] = old2new_vrt_ids[curpoly_faces[iface][ifv]];
+      }
+      curpoly_faces = updated_faces;
+    }
 
     // We do not store polyhedra with less than four faces, 
     // as they are clearly degenerate
@@ -317,40 +394,6 @@ class SplitR3D {
   bool all_convex_;
 };
 
-
-/*!
-  @brief Moments of MatPoly's components below the cutting plane.
-  For a non-convex MatPoly no decomposition is performed.
-  @param[in] mat_poly MatPoly to split
-  @param[in] cutting_plane Cutting plane to split with
-  @param[out] lower_halfspace_moments Computed moments
-*/
-void
-lower_halfspace_moments_r3d(const MatPoly<3>& mat_poly,
-                            const Plane_t<3>& cutting_plane,
-                            std::vector<double>& lower_halfspace_moments) {
-  //Translate the cutting plane to R3D format
-  r3d_plane r3d_cut_plane;
-  for (int ixyz = 0; ixyz < 3; ixyz++)
-    r3d_cut_plane.n.xyz[ixyz] = -cutting_plane.normal[ixyz];
-  r3d_cut_plane.d = -cutting_plane.dist2origin;
-
-  r3d_poly r3dized_poly;
-  matpoly_to_r3dpoly(mat_poly, r3dized_poly);
-  r3d_clip(&r3dized_poly, &r3d_cut_plane, 1);
-
-  const int POLY_ORDER = 1;
-  r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
-  //Check if the subpoly is empty
-  if (r3dized_poly.nverts == 0)
-    lower_halfspace_moments.clear();
-  else {
-    //Find the moments for a halfspace
-    r3d_reduce(&r3dized_poly, r3d_moments, POLY_ORDER);
-    lower_halfspace_moments.assign(r3d_moments, r3d_moments + 4);
-  }
-}
-
 /*!
  * \class ClipR3D  3-D clipping algorithm
  *
@@ -370,49 +413,97 @@ lower_halfspace_moments_r3d(const MatPoly<3>& mat_poly,
 
 class ClipR3D {
  public:
-  ClipR3D(const std::vector< MatPoly<3> >& matpolys,
-          const Plane_t<3>& cutting_plane, 
-          const bool planar_faces = false) : 
-          matpolys_(matpolys), 
-          cutting_plane_(cutting_plane),
-          planar_faces_(planar_faces) {}
+  ClipR3D() {}
+
+  /*! 
+    @brief Set the cutting plane used by the functor. 
+    @param[in] cutting_plane Cutting plane to clip with. 
+  */
+  void set_plane(const Plane_t<3>& cutting_plane) {
+    for (int ixyz = 0; ixyz < 3; ixyz++)
+      r3d_cut_plane_.n.xyz[ixyz] = -cutting_plane.normal[ixyz];
+    r3d_cut_plane_.d = -cutting_plane.dist2origin;
+  }
+
+  /*! 
+    @brief Set the material polyhedra to be used by the functor.
+    @param[in] matpolys Material polyhedra to be clipped.
+    @param[in] planar_faces Flag indicating whether the faces of
+    material polyhedra are planar: if not, they are facetized.
+  */
+  void set_matpolys(const std::vector< MatPoly<3> >& matpolys,
+                    const bool planar_faces = false) {
+    int npolys = static_cast<int>(matpolys.size());
+    r3d_polys_.resize(npolys);
+    if (planar_faces) {
+      for(int ipoly = 0; ipoly < npolys; ipoly++)
+        matpoly_to_r3dpoly(matpolys[ipoly], r3d_polys_[ipoly]);
+    }
+    else {
+      for(int ipoly = 0; ipoly < npolys; ipoly++) {
+        MatPoly<3> faceted_poly;
+        matpolys[ipoly].faceted_matpoly(&faceted_poly);
+        matpoly_to_r3dpoly(faceted_poly, r3d_polys_[ipoly]);
+      }
+    }
+  }
+
+  /*! 
+    @brief Computes moments of provided material polyhedra 
+    @return Vector containing aggregated moments of all
+    provided material polyhedra
+  */
+  std::vector<double> aggregated_moments() {
+    std::vector<double> agg_moments;
+    if (!r3d_polys_.empty()) {
+      agg_moments.assign(4, 0.0);
+
+      const int POLY_ORDER = 1;
+      r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
+      for(int ipoly = 0; ipoly < r3d_polys_.size(); ipoly++) {
+        if (r3d_polys_[ipoly].nverts != 0) {
+          r3d_reduce(&r3d_polys_[ipoly], r3d_moments, POLY_ORDER);
+          if (r3d_moments[0] > std::numeric_limits<double>::epsilon())
+            for (int im = 0; im < 4; im++)
+              agg_moments[im] += r3d_moments[im];
+        }
+      }
+    }
+
+    return agg_moments;
+  }
 
   /*! 
     @brief Computes moments of chopped off components: 
     the parts of MatPoly's below the plane
-    @return Vector containing aggreagted moments 
+    @return Vector containing aggregated moments 
     of the chopped off part of all MatPoly's
-   */
+  */
   std::vector<double> operator() () const {
     std::vector<double> below_plane_moments(4, 0.0);
 
     int poly_counter = 0;
-    if (planar_faces_)
-      for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
-        std::vector<double> cur_moments;
-        lower_halfspace_moments_r3d(matpolys_[ipoly], cutting_plane_, 
-                                    cur_moments);
+    const int POLY_ORDER = 1;
+    r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
 
-        if (!cur_moments.empty()) {
-          for (int im = 0; im < 4; im++)
-            below_plane_moments[im] += cur_moments[im];
-          poly_counter++;
+    for (int ipoly = 0; ipoly < r3d_polys_.size(); ipoly++) {
+      if (r3d_polys_[ipoly].nverts != 0) {
+        //r3d does in-place clipping and does not have the const modifier
+        //for the plane: we need to make copies
+        r3d_poly clipped_poly = r3d_polys_[ipoly];
+        r3d_plane plane_copy = r3d_cut_plane_;
+        r3d_clip(&clipped_poly, &plane_copy, 1);
+        if (clipped_poly.nverts != 0) {
+          //Find the moments for the part in the lower halfspace
+          r3d_reduce(&clipped_poly, r3d_moments, POLY_ORDER);
+          if (r3d_moments[0] > std::numeric_limits<double>::epsilon()) {
+            for (int im = 0; im < 4; im++)
+              below_plane_moments[im] += r3d_moments[im];
+            poly_counter++;
+          }
         }
       }
-    else 
-      for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
-        MatPoly<3> faceted_poly;
-        matpolys_[ipoly].faceted_matpoly(&faceted_poly);
-        std::vector<double> cur_moments;
-        lower_halfspace_moments_r3d(faceted_poly, cutting_plane_, 
-                                    cur_moments);
-
-        if (!cur_moments.empty()) {
-          for (int im = 0; im < 4; im++)
-            below_plane_moments[im] += cur_moments[im];
-          poly_counter++;
-        }                            
-      }
+    }
     
     if (poly_counter == 0)
       below_plane_moments.clear();
@@ -420,16 +511,12 @@ class ClipR3D {
     return below_plane_moments;
   }
 
-//! Default constructor (disabled)
-  ClipR3D() = delete;
-
   //! Assignment operator (disabled)
   ClipR3D& operator = (const ClipR3D&) = delete;
 
  private:
-  const std::vector< MatPoly<3> >& matpolys_;
-  const Plane_t<3>& cutting_plane_;
-  bool planar_faces_;
+  std::vector<r3d_poly> r3d_polys_;
+  r3d_plane r3d_cut_plane_;
 };
 
 /*!
@@ -460,7 +547,6 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
                               std::vector<double>& intersection_moments,
                               bool convex_matpoly = false) {   
   const int POLY_ORDER = 1;
-  int nmoments = R3D_NUM_MOMENTS(POLY_ORDER);
   r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
 
   if (convex_matpoly) {                                
@@ -481,8 +567,8 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
     delete [] r3d_face_planes;
 
     r3d_reduce(&intersection, r3d_moments, POLY_ORDER);
-    intersection_moments.resize(nmoments);
-    for (int im = 0; im < nmoments; im++)
+    intersection_moments.resize(4);
+    for (int im = 0; im < 4; im++)
       intersection_moments[im] = r3d_moments[im];
   }
   else {
@@ -490,11 +576,12 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
     mat_poly.facetize_decompose(mat_poly_tets);
 
     int ntets = static_cast<int>(mat_poly_tets.size());
-    intersection_moments.assign(nmoments, 0.0);
+    intersection_moments.assign(4, 0.0);
     for (int itet = 0; itet < ntets; itet++) {
       std::vector< Plane_t<3> > face_planes;
       mat_poly_tets[itet].face_planes(face_planes);
-      assert(face_planes.size() == 4);
+
+      if(face_planes.size() < 4) continue;
 
       r3d_poly intersection = r3dpoly; 
       r3d_plane r3d_face_planes[4];
@@ -507,7 +594,7 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
       r3d_clip(&intersection, r3d_face_planes, 4);
 
       r3d_reduce(&intersection, r3d_moments, POLY_ORDER);
-      for (int im = 0; im < nmoments; im++)
+      for (int im = 0; im < 4; im++)
         intersection_moments[im] += r3d_moments[im];
     }
   }

@@ -196,7 +196,8 @@ int main(int argc, char** argv) {
 
   // Volume and angles tolerance
   std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(2);
-  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
+  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, 
+                 .fun_eps = std::numeric_limits<double>::epsilon()};
   ims_tols[1] = {.max_num_iter = 100, .arg_eps = 1.0e-14, .fun_eps = 1.0e-15};
 
   // Build the driver
