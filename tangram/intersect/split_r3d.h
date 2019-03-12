@@ -109,6 +109,8 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
         cur_vrt[ixyz] = poly_brep[ipoly].vertices[ivrt].xyz[ixyz];
       // Check if this point is already stored
       for (int i = 0; i < curpoly_vrts.size(); i++)
+        //Points are considered equivalent if all their respective coordinates 
+        //are within machine epsilon from each other
         if (cur_vrt == curpoly_vrts[i]) {
           r3d2matpoly_vrt_ids[ivrt] = i;
           break;
@@ -139,14 +141,19 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
     std::vector<int> hanging_nodes;
     bool removed_nodes = true;
     while (removed_nodes) {
+      //Removing nodes can result in new degenerate faces, so keep removing
+      //such faces until no hanging nodes are left
       removed_nodes = false;
       // Filter out degenerate faces
       int ind_face = 0;
       while (ind_face < curpoly_faces.size())
         if (curpoly_faces[ind_face].size() > 2) ind_face++;
         else {
-          //If node is connected to less than three other nodes,
-          //we eliminate it from faces
+          //A degenerate face can collapse into a hanging point on an edge, i.e.
+          //a node that is connected to less than three other nodes.
+          //We eliminate such nodes from faces: converting a polyhedron that has
+          //hanging nodes using r3d_init_poly can result in an r3d_poly
+          //with no vertices
           for (int ifn = 0; ifn < curpoly_faces[ind_face].size(); ifn++) {
             int inode = curpoly_faces[ind_face][ifn];
             std::vector<int> iconnected_nodes;
@@ -157,7 +164,9 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                                                        curpoly_faces[iface].end(), inode));
               int nface_vrts = curpoly_faces[iface].size();
               if (in_face_id != nface_vrts) {
+                //Node of a degenerate face is also a node of the current face
                 node_in_faces.push_back(std::pair<int,int>(iface, in_face_id));
+                //We look for unique adjacent nodes in the current face
                 for (int p0n1 = 0; p0n1 < 2; p0n1++) {
                   int adj_node_face_id = (nface_vrts + in_face_id + 2*p0n1 - 1)%nface_vrts;
                   if (std::find(iconnected_nodes.begin(), iconnected_nodes.end(),
@@ -166,7 +175,7 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                 }
               }
             }  
-
+            //Check if the current face node is a hanging node, if so, remove it
             if (iconnected_nodes.size() < 3) {
               removed_nodes = true;
               hanging_nodes.push_back(inode);
@@ -177,11 +186,13 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
               }
             }
           }
+          //Now, remove the degenerate face
           curpoly_faces.erase(curpoly_faces.begin() + ind_face);  
         }
     }
 
-    //We remove nodes no longer present in the poly
+    //We remove nodes no longer present in the poly: passing to r3d_init_poly
+    //vertices that are not used by any faces can result in an empty r3d_poly
     if (!hanging_nodes.empty()) {
       nvrts = static_cast<int>(curpoly_vrts.size());
       std::vector<int> old2new_vrt_ids(nvrts, -1);

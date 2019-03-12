@@ -60,7 +60,9 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
 
     for (int ivrt = 0; ivrt < nvrts; ivrt++) {
       // Check if this point is coincident with the next one,
-      // i.e. if the respective edge is degenerate
+      // i.e. if the respective edge is degenerate: points 
+      // are considered coincident if all their respective 
+      // coordinates are within machine epsilon from each other
       if (!(r2d_poly_vrts[ivrt] == r2d_poly_vrts[(ivrt + 1)%nvrts]))
         matpoly_vrts.push_back(r2d_poly_vrts[ivrt]);
     }
