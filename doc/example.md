@@ -155,6 +155,26 @@ std::vector<std::shared_ptr< Tangram::CellMatPoly<3> >> cellmatpoly_list =
 Note that by default `CellMatPoly` objects are not created for single-material cells, so
 the corresponding entries of the `cellmatpoly_list` vector will contain `nullptr`'s.
 
+`CellMatPoly` class has the capability to store the results of the interface reconstruction
+in the form of a local mesh, where material polytopes inside the cell of the computational mesh 
+are subcells of the local mesh and their connectivity is known. This functionality is guaranteed
+only for compatible interface reconstruction methods, such as X-MOF, which provide the local
+topology and parentage, i.e. the information of what entities of the computational mesh the
+entities of the local mesh were derived from.
+
+If regular interface reconstruction methods are used, `CellMatPoly` object can be thought of
+as a collection of material polytopes, which can be requested based on their material ID:
+
+```c++
+int cell_id = 16; int mat_id = 3;
+std::vector< Tangram::MatPoly<3> > cur_matpolys = cellmatpoly_list[cell_id]->get_matpolys(mat_id);
+```
+
+The command above will retrieve all material polyhedra in cell 16 that contain material 3. 
+`MatPoly` objects store material polytopes in the boundary face format and are simple and light-weight.
+Details on the methods provided by `CellMatPoly` and `MatPoly` classes can be found in the Doxygen-generated
+documentation.
+
 # Applications and Tests
 
 There are several demo applications and tests that perform interface reconstruction
