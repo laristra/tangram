@@ -4,14 +4,20 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef TANGRAM_BFGS_H_
-#define TANGRAM_BFGS_H_
+#ifndef TANGRAM_SUPPORT_BFGS_H_
+#define TANGRAM_SUPPORT_BFGS_H_
 
 #include <functional>
+
+// tangram includes
 #include "tangram/support/tangram.h"
-#include "tangram/support/Matrix.h"
+
+// wonton includes
+#include "wonton/support/wonton.h"
 
 namespace Tangram {
+
+  using Wonton::pow2;
 
 /*!
   @brief Computes the minimizer of a quadratic interpolant in the interval
@@ -30,7 +36,7 @@ double quad_interpolant_minimizer(const double arg0,
                                   const double fval1,
                                   const double df0,
                                   const double* safeguards) {
-  double darg = arg1 - arg0;                                    
+  double darg = arg1 - arg0;
   double denominator = fval1 - fval0 - df0*(darg);
   double arg_min;
   double bnd0 = arg0 + safeguards[0]*darg,
@@ -51,7 +57,7 @@ double quad_interpolant_minimizer(const double arg0,
 /*!
   @brief Forward finite difference approximation of a gradient
   @param[in] fun  Function for which we compute the gradient
-  @param[in] arg_val  We approximate the gradient 
+  @param[in] arg_val  We approximate the gradient
   for this value of the argument
   @param[in] fun_val  Value of function at arg_val
   @param[out] approx_grad  Computed approximation of the gradient at arg_val
@@ -64,7 +70,6 @@ void fwd_diff_grad(const std::function<double(const Vector<arg_dim>&)>& fun,
                    Vector<arg_dim>& approx_grad,
                    double& fdiff_h) {
   fdiff_h = sqrt(std::numeric_limits<double>::epsilon());
-  
   Vector<arg_dim> fwd_arg = arg_val;
   for (int i = 0; i < arg_dim; i++) {
     fwd_arg[i] += fdiff_h;
@@ -76,7 +81,7 @@ void fwd_diff_grad(const std::function<double(const Vector<arg_dim>&)>& fun,
 }
 
 /*!
-  @brief Linesearch algorithm: finds the argument satisfying 
+  @brief Linesearch algorithm: finds the argument satisfying
   the strong Wolfe conditions
   @param[in] obj_fun  Objective function
   @param[in] arg  Current argument
@@ -85,9 +90,9 @@ void fwd_diff_grad(const std::function<double(const Vector<arg_dim>&)>& fun,
   @param[in] c1  Value of c1 parameter in Wolfe conditions
   @param[in] c2  Value of c2 parameter in Wolfe conditions
   @param[in] im_tols  Tolerances
-  @param[in/out] cur_fval  Value of the function at arg [in] 
+  @param[in/out] cur_fval  Value of the function at arg [in]
   and arg + alpha*dir [out]
-  @param[in/out] cur_grad  Value of the gradient at arg [in] 
+  @param[in/out] cur_grad  Value of the gradient at arg [in]
   and arg + alpha*dir [out]
   @return Value of the minimizer
 */
@@ -108,8 +113,8 @@ double linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_fun,
   assert(df0 < -std::numeric_limits<double>::epsilon());
   double fdiff_h;
 
-  auto fval = [&obj_fun, &arg, &dir](double alpha) { 
-    return obj_fun(arg + alpha*dir); 
+  auto fval = [&obj_fun, &arg, &dir](double alpha) {
+    return obj_fun(arg + alpha*dir);
   };
 
   // alpha_max is chosen so that it should violate the sufficient decrease condition
@@ -129,7 +134,7 @@ double linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_fun,
       return alpha_bnd[1];
     }
 
-    if ( (bnd_fval[1] > fval0 + c1*alpha_bnd[1]*df0) || 
+    if ( (bnd_fval[1] > fval0 + c1*alpha_bnd[1]*df0) ||
          ((bnd_fval[1] >= bnd_fval[0]) && (i > 0)) )
       break;
 
@@ -150,7 +155,7 @@ double linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_fun,
     double dalpha = alpha_bnd[1] - alpha_bnd[0];
     double tau = 9.0; // interval length scaling
 
-    alpha_bnd[0] = alpha_bnd[1];  
+    alpha_bnd[0] = alpha_bnd[1];
     bnd_fval[0] = bnd_fval[1];
     alpha_bnd[1] += tau*dalpha;
 
@@ -168,7 +173,7 @@ double linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_fun,
     if (std::fabs(alpha_bnd[1] - alpha_bnd[0]) < im_tols.arg_eps)
       return alpha_bnd[0];
 
-    double cur_alpha = quad_interpolant_minimizer(alpha_bnd[0], alpha_bnd[1], bnd_fval[0], 
+    double cur_alpha = quad_interpolant_minimizer(alpha_bnd[0], alpha_bnd[1], bnd_fval[0],
                                                   bnd_fval[1], df_lbnd, safeguards);
 
     cur_fval = fval(cur_alpha);
@@ -204,21 +209,21 @@ double linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_fun,
 
 /*!
   @brief Linesearch algorithm, based on MWWP algorithm from
-  "Global convergence of BFGS and PRP methods under 
-  a modified weak Wolfe–Powell line search" 
+  "Global convergence of BFGS and PRP methods under
+  a modified weak Wolfe–Powell line search"
   by Gonglin Yuana, Zengxin Weia, Xiwen Lu,
   Applied Mathematical Modelling 47 (2017) 811–825.
 
   @param[in] obj_fun  Objective function
   @param[in] arg  Current argument
   @param[in] dir  Linesearch direction
-  @param[in] initial_guess  Starting value of the argument  
+  @param[in] initial_guess  Starting value of the argument
   @param[in] delta  Value of delta parameter in MWWP conditions
   @param[in] delta1  Value of delta_1 parameter in MWWP conditions
   @param[in] im_tols  Tolerances
-  @param[in/out] cur_fval  Value of the function at arg [in] 
+  @param[in/out] cur_fval  Value of the function at arg [in]
   and arg + alpha*dir [out]
-  @param[in/out] cur_grad  Value of the gradient at arg [in] 
+  @param[in/out] cur_grad  Value of the gradient at arg [in]
   and arg + alpha*dir [out]
 
   @return Value of the minimizer
@@ -242,21 +247,21 @@ double mwwp_linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_
   assert(dphi0 < -std::numeric_limits<double>::epsilon());
   double fdiff_h;
 
-  auto fval = [&obj_fun, &arg, &dir](double alpha) { 
-    return obj_fun(arg + alpha*dir); 
+  auto fval = [&obj_fun, &arg, &dir](double alpha) {
+    return obj_fun(arg + alpha*dir);
   };
 
-  auto phi = [&delta, &delta1, &phi0, &dphi0, &dir_dot_dir](double alpha, double f_alpha) { 
-    return f_alpha - phi0 - delta*dphi0*alpha - 
-      alpha*std::min(-delta1*dphi0, 0.5*delta*dir_dot_dir*alpha); 
+  auto phi = [&delta, &delta1, &phi0, &dphi0, &dir_dot_dir](double alpha, double f_alpha) {
+    return f_alpha - phi0 - delta*dphi0*alpha -
+      alpha*std::min(-delta1*dphi0, 0.5*delta*dir_dot_dir*alpha);
   };
 
   auto dphi = [&dir, &delta, &delta1, &dphi0, &dir_dot_dir](
-    double alpha, Vector<arg_dim>& grad_alpha) { 
-    return dot(grad_alpha, dir) - delta*dphi0 - 
+    double alpha, Vector<arg_dim>& grad_alpha) {
+    return dot(grad_alpha, dir) - delta*dphi0 -
       std::min(-delta1*dphi0, delta*dir_dot_dir*alpha);
   };
-  
+
   double alpha_max = (obj_fun_lbnd - phi0)/((delta - delta1)*dphi0);
 
   double alpha_bnd[2] = {0.0, initial_guess};
@@ -280,7 +285,7 @@ double mwwp_linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_
     fwd_diff_grad<arg_dim>(obj_fun, arg + alpha_bnd[1]*dir, ubnd_fval, cur_grad, fdiff_h);
     dphi_lbnd = dphi(alpha_bnd[1], cur_grad);
 
-    if (dphi_lbnd >= 0.0) 
+    if (dphi_lbnd >= 0.0)
       return alpha_bnd[1];
 
     if (alpha_bnd[1] > alpha_max - im_tols.arg_eps)
@@ -290,7 +295,7 @@ double mwwp_linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_
     double dalpha = alpha_bnd[1] - alpha_bnd[0];
     double tau = 9.0; // interval length scaling
 
-    alpha_bnd[0] = alpha_bnd[1];  
+    alpha_bnd[0] = alpha_bnd[1];
     bnd_phi[0] = bnd_phi[1];
     alpha_bnd[1] += tau*dalpha;
 
@@ -310,7 +315,7 @@ double mwwp_linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_
     if (std::fabs(alpha_bnd[1] - alpha_bnd[0]) < im_tols.arg_eps)
       return alpha_bnd[0];
 
-    double cur_alpha = quad_interpolant_minimizer(alpha_bnd[0], alpha_bnd[1], bnd_phi[0], 
+    double cur_alpha = quad_interpolant_minimizer(alpha_bnd[0], alpha_bnd[1], bnd_phi[0],
                                                   bnd_phi[1], dphi_lbnd, safeguards);
 
     cur_fval = fval(cur_alpha);
@@ -326,7 +331,6 @@ double mwwp_linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_
       cur_fval = lbnd_fval;
       continue;
     }
-    
     fwd_diff_grad<arg_dim>(obj_fun, arg + cur_alpha*dir, cur_fval, cur_grad, fdiff_h);
     double cur_dphi = dphi(cur_alpha, cur_grad);
     if (cur_dphi >= 0.0)
@@ -369,13 +373,13 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
   double dfval, cur_fval = obj_fun(cur_arg);
   fwd_diff_grad<arg_dim>(obj_fun, cur_arg, cur_fval, cur_grad, fdiff_h);
 
-  for (int i = 0; i < im_tols.max_num_iter; i++) {   
+  for (int i = 0; i < im_tols.max_num_iter; i++) {
     // Forward differences are O(fdiff_h) accurate
-    if (cur_grad.max_norm()*fdiff_h/std::max(1.0, std::fabs(cur_fval)) <= 
+    if (cur_grad.max_norm()*fdiff_h/std::max(1.0, std::fabs(cur_fval)) <=
         std::numeric_limits<double>::epsilon())
       break;
 
-    solve<arg_dim>(B, -cur_grad, cur_dir);
+    Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
 
     double df0 = dot(cur_grad, cur_dir);
     // Function is flat in the linesearch direction
@@ -383,7 +387,7 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
       break;
 
     double initial_alpha = 1.0;
-    if (i > 0) initial_alpha = std::min(1.0, 
+    if (i > 0) initial_alpha = std::min(1.0,
       -2*std::max(-dfval, 10*std::numeric_limits<double>::epsilon())/df0);
 
     dfval = -cur_fval;
@@ -391,7 +395,7 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
 
     double alpha = linesearch<arg_dim>(obj_fun, obj_fun_lbnd,
                                        cur_arg, cur_dir, initial_alpha,
-                                       linesearch_c1, linesearch_c2, 
+                                       linesearch_c1, linesearch_c2,
                                        im_tols, cur_fval, cur_grad);
     dfval += cur_fval;
     darg = alpha*cur_dir;
@@ -405,7 +409,7 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
 
     dgrad = cur_grad - prev_grad;
 
-    // We update B if the change in gradient is above 
+    // We update B if the change in gradient is above
     // forward differences error
     if (dgrad.max_norm() > fdiff_h) {
       Vector<arg_dim> B_darg = B*darg;
@@ -432,7 +436,6 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
         B_darg = B*darg;
         darg_B_darg = dot(darg, B_darg);
       }
-      
       B += (1.0/darg_dgrad)*(dgrad*dgrad) - (1.0/darg_B_darg)*(B_darg*B_darg);
     }
   }
@@ -469,13 +472,13 @@ Vector<arg_dim> bfgs_mwwp(const std::function<double(const Vector<arg_dim>&)>& o
   double dfval, cur_fval = obj_fun(cur_arg);
   fwd_diff_grad<arg_dim>(obj_fun, cur_arg, cur_fval, cur_grad, fdiff_h);
 
-  for (int i = 0; i < im_tols.max_num_iter; i++) {   
+  for (int i = 0; i < im_tols.max_num_iter; i++) {
     // Forward differences are O(fdiff_h) accurate
-    if (cur_grad.max_norm()*fdiff_h/std::max(1.0, std::fabs(cur_fval)) <= 
+    if (cur_grad.max_norm()*fdiff_h/std::max(1.0, std::fabs(cur_fval)) <=
         std::numeric_limits<double>::epsilon())
       break;
 
-    solve<arg_dim>(B, -cur_grad, cur_dir);
+    Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
 
     double df0 = dot(cur_grad, cur_dir);
     // Function is flat in the linesearch direction
@@ -483,7 +486,7 @@ Vector<arg_dim> bfgs_mwwp(const std::function<double(const Vector<arg_dim>&)>& o
       break;
 
     double initial_alpha = 1.0;
-    if (i > 0) initial_alpha = std::min(1.0, 
+    if (i > 0) initial_alpha = std::min(1.0,
       -2*std::max(-dfval, 10*std::numeric_limits<double>::epsilon())/df0);
 
     dfval = -cur_fval;
@@ -505,7 +508,7 @@ Vector<arg_dim> bfgs_mwwp(const std::function<double(const Vector<arg_dim>&)>& o
 
     dgrad += cur_grad;
 
-    // We update B if the change in gradient is above 
+    // We update B if the change in gradient is above
     // forward differences error
     if (dgrad.max_norm() > fdiff_h) {
       Vector<arg_dim> B_darg = B*darg;
@@ -532,7 +535,6 @@ Vector<arg_dim> bfgs_mwwp(const std::function<double(const Vector<arg_dim>&)>& o
         B_darg = B*darg;
         darg_B_darg = dot(darg, B_darg);
       }
-      
       B += (1.0/darg_dgrad)*(dgrad*dgrad) - (1.0/darg_B_darg)*(B_darg*B_darg);
     }
   }
@@ -542,7 +544,7 @@ Vector<arg_dim> bfgs_mwwp(const std::function<double(const Vector<arg_dim>&)>& o
 
 /*!
   @brief D-BFGS algorithm: finds the minimizer of the objective function
-  Based on "Improved Damped Quasi-Newton Methods for Unconstrained Optimization" 
+  Based on "Improved Damped Quasi-Newton Methods for Unconstrained Optimization"
   by Mehiddin Al-Baali and Lucio Grandinetti,
   Pacific Journal of Optimization (to appear).
 
@@ -571,21 +573,21 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
   double dfval, cur_fval = obj_fun(cur_arg);
   fwd_diff_grad<arg_dim>(obj_fun, cur_arg, cur_fval, cur_grad, fdiff_h);
 
-  for (int i = 0; i < im_tols.max_num_iter; i++) { 
+  for (int i = 0; i < im_tols.max_num_iter; i++) {
     // Forward differences are O(fdiff_h) accurate
-    if (cur_grad.max_norm()*fdiff_h/std::max(1.0, std::fabs(cur_fval)) <= 
+    if (cur_grad.max_norm()*fdiff_h/std::max(1.0, std::fabs(cur_fval)) <=
         std::numeric_limits<double>::epsilon())
       break;
 
-    solve<arg_dim>(B, -cur_grad, cur_dir);
-    
+    Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+
     double df0 = dot(cur_grad, cur_dir);
     // Function is flat in the linesearch direction
     if (df0 >= -std::numeric_limits<double>::epsilon())
       break;
 
     double initial_alpha = 1.0;
-    if (i > 0) initial_alpha = std::min(1.0, 
+    if (i > 0) initial_alpha = std::min(1.0,
       -2*std::max(-dfval, 10*std::numeric_limits<double>::epsilon())/df0);
 
     dfval = -cur_fval;
@@ -593,7 +595,7 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
 
     double alpha = linesearch<arg_dim>(obj_fun, obj_fun_lbnd,
                                        cur_arg, cur_dir, initial_alpha,
-                                       linesearch_c1, linesearch_c2, 
+                                       linesearch_c1, linesearch_c2,
                                        im_tols, cur_fval, cur_grad);
     dfval += cur_fval;
     darg = alpha*cur_dir;
@@ -606,7 +608,7 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
 
     dgrad = cur_grad - prev_grad;
 
-    // We update B if the change in gradient is above 
+    // We update B if the change in gradient is above
     // forward differences error
     if (dgrad.max_norm() > fdiff_h) {
       Vector<arg_dim> B_darg = B*darg;
@@ -618,7 +620,7 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
 
       double b_rec = darg_dgrad/darg_B_darg;
       Vector<arg_dim> H_dgrad;
-      solve<arg_dim>(B, dgrad, H_dgrad);
+      Wonton::solve<arg_dim>(B, dgrad, H_dgrad);
       double h_rec = darg_dgrad/dot(dgrad, H_dgrad);
 
       double l = std::min(b_rec, b_rec*h_rec);
@@ -654,7 +656,6 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
         B_darg = B*darg;
         darg_B_darg = dot(darg, B_darg);
       }
-      
       B += (1.0/darg_dgrad)*(dgrad*dgrad) - (1.0/darg_B_darg)*(B_darg*B_darg);
     }
   }
@@ -664,4 +665,4 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
 
 }  // namespace Tangram
 
-#endif
+#endif  // TANGRAM_SUPPORT_BFGS_H_

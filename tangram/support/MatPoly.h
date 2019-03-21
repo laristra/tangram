@@ -13,7 +13,6 @@
 #include <numeric>
 
 #include "tangram/support/tangram.h"
-#include "tangram/support/Point.h"
 
 namespace Tangram {
 
