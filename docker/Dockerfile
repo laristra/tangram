@@ -34,7 +34,7 @@ RUN cmake -D CMAKE_BUILD_TYPE=Debug -D ENABLE_UNIT_TESTS=True \
     -D ENABLE_MPI_CXX_BINDINGS=True ${COVERAGE:+-DENABLE_COVERAGE_BUILD=ON} \
     -D ENABLE_DOXYGEN=True ..
 RUN ${SONARQUBE:+build-wrapper-linux-x86-64 --out-dir bw-output} make VERBOSE=1 -j2
-RUN make CTEST_OUTPUT_ON_FAILURE=1 test
+RUN make test
 RUN cd .. && if [ ${COVERAGE} ]; then \
   if [ ${CC} = clang ]; then \
     $HOME/.local/bin/codecov --gcov-exec "llvm-cov gcov"; \

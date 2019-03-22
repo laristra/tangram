@@ -11,8 +11,6 @@
 
 # Add header files
 set(intersect_HEADERS
-    r2d.h
-    r3d.h
     split_r2d.h
     split_r3d.h
     PARENT_SCOPE
@@ -20,8 +18,6 @@ set(intersect_HEADERS
 
 # Add source files
 set(intersect_SOURCES
-    r2d.c
-    r3d.c
     PARENT_SCOPE
 )
 
@@ -30,18 +26,18 @@ set(intersect_SOURCES
 if (ENABLE_UNIT_TESTS) 
 
   cinch_add_unit(split_r3d
-    SOURCES test/test_split_r3d.cc r3d.c
-    LIBRARIES tangram
+    SOURCES test/test_split_r3d.cc
+    LIBRARIES tangram wonton
     POLICY SERIAL
     )
   cinch_add_unit(split_r2d
-    SOURCES test/test_split_r2d.cc r2d.c
-    LIBRARIES tangram
+    SOURCES test/test_split_r2d.cc
+    LIBRARIES tangram wonton
     POLICY SERIAL
     )
   cinch_add_unit(split_order
-    SOURCES test/test_split_order.cc r2d.c r3d.c
-    LIBRARIES tangram
+    SOURCES test/test_split_order.cc
+    LIBRARIES tangram wonton
     POLICY SERIAL
     )
 endif(ENABLE_UNIT_TESTS)

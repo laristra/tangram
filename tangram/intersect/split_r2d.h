@@ -16,7 +16,7 @@
 #include "tangram/support/MatPoly.h"
 
 extern "C" {
-#include "r2d.h"
+#include "wonton/intersect/r3d/r2d.h"
 }
 
 /*!
@@ -42,41 +42,39 @@ namespace Tangram {
 */
 void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
 {
-   //Obtain the vertices from r2d_poly in the correct order. This
-   //may include duplicates. 
-   int nverts = r2dpoly.nverts;
-   std::vector<Point2> matpoly_verts;
-   matpoly_verts.resize(nverts);
-   
-   int nextvert = 0; 
-   matpoly_verts[0][0] = r2dpoly.verts[0].pos.xy[0];
-   matpoly_verts[0][1] = r2dpoly.verts[0].pos.xy[1];
-   
-   for (int v = 1; v < nverts; v++){
-     nextvert = r2dpoly.verts[nextvert].pnbrs[0];
-     for (int ixy = 0; ixy < 2; ixy++)
-      matpoly_verts[v][ixy] = r2dpoly.verts[nextvert].pos.xy[ixy];
+    int nvrts = r2dpoly.nverts;
+    std::vector<Point2> r2d_poly_vrts(nvrts);
+
+    // Walk the r2d graph to collect vertices in the ccw order
+    int icur_node = 0;
+    for (int ivrt = 0; ivrt < nvrts; ivrt++) {
+      for (int ixy = 0; ixy < 2; ixy++)
+        r2d_poly_vrts[ivrt][ixy] = r2dpoly.verts[icur_node].pos.xy[ixy];
+
+      icur_node = r2dpoly.verts[icur_node].pnbrs[0];
     }
 
-   //Detect duplicates from the ordered vertices list. 
-   std::vector<bool> isdup(nverts, false); 
-   for (int i = 0 ; i < nverts; i++){
-     for (int j = i+1; j < nverts; j++)
-       if ((!isdup[j]) && (std::abs(matpoly_verts[j][0]-matpoly_verts[i][0]) < 1e-16)  &&
-                    (std::abs(matpoly_verts[j][1]-matpoly_verts[i][1]) < 1e-16))
-      	   isdup[j] = true;
-   }
+    // We only store non-degenerate edges
+    std::vector<Point2> matpoly_vrts;
+    matpoly_vrts.reserve(nvrts);
 
-   //Create a new vector without duplicates
-   std::vector<Point2> unimatpoly_verts; 
-   for (int i = 0; i < nverts; i++)
-    if (!isdup[i])
-       unimatpoly_verts.push_back(matpoly_verts[i]);   
+    for (int ivrt = 0; ivrt < nvrts; ivrt++) {
+      // Check if this point is coincident with the next one,
+      // i.e. if the respective edge is degenerate: points 
+      // are considered coincident if all their respective 
+      // coordinates are within machine epsilon from each other
+      if (!(r2d_poly_vrts[ivrt] == r2d_poly_vrts[(ivrt + 1)%nvrts]))
+        matpoly_vrts.push_back(r2d_poly_vrts[ivrt]);
+    }
+    matpoly_vrts.shrink_to_fit();
 
-   //Initialize the matpoly with the unique list of vertices. 
-   mat_poly.initialize(unimatpoly_verts);
+    // We do not store polygons with less than three faces,
+    // as they are clearly degenerate
+    if (matpoly_vrts.size() > 2)
+      mat_poly.initialize(matpoly_vrts);
+    else
+      mat_poly.clear();
 }
-
 
 /*!
   @brief Converts a MatPoly to a polygon in R2D format.
@@ -333,123 +331,119 @@ class SplitR2D {
   bool all_convex_;
 };
 
-
-/*!
-  @brief Moments of MatPoly's components below the cutting plane.
-  For a non-convex MatPoly no decomposition is performed.
-  @param[in] mat_poly MatPoly to split
-  @param[in] cutting_plane Cutting plane to split with
-  @param[out] lower_halfspace_moments Computed moments
-*/
-void
-lower_halfplane_moments_r2d(const MatPoly<2>& mat_poly,
-                            const Plane_t<2>& cutting_plane,
-                            std::vector<double>& lower_halfplane_moments) {
- 
-  //Translate the cutting plane to R2D format
-  r2d_plane r2d_cut_plane;
-  for (int ixy = 0; ixy < 2; ixy++)
-    r2d_cut_plane.n.xy[ixy] = -cutting_plane.normal[ixy];
-  r2d_cut_plane.d = -cutting_plane.dist2origin;
-
-  //Convert matpoly to r2dpoly and clip
-  r2d_poly r2dized_poly;
-  matpoly_to_r2dpoly(mat_poly, r2dized_poly);
-  r2d_clip(&r2dized_poly, &r2d_cut_plane, 1);
-
-  //Compute moments for subpoly
-  const int POLY_ORDER = 1;
-  r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
-  //Check if the subpoly is empty
-  if (r2dized_poly.nverts == 0)
-    lower_halfplane_moments.clear();
-  else {
-    //Find the moments for a halfspace
-    r2d_reduce(&r2dized_poly, r2d_moments, POLY_ORDER);
-    lower_halfplane_moments.assign(r2d_moments, r2d_moments + 3);
-  }
-}//lower_halfspace_moments_r2d
-
 /*!
  * \class ClipR2D  2-D clipping algorithm
  *
  * For a vector of MatPoly's, computes the aggregated moments of their 
- * parts below the cutting plane.
+ * parts below the cutting line.
  * This can be interpreted as moments of chopped off parts in the nested 
  * dissections algorithm.
  * 
  * In this routine, we utilize the fact that R2D can clip a non-convex 
- * polyhedron with a plane.
+ * polygon with a plane.
  * 
- * By default, the faces of MatPoly's are assumed to be non-planar
- * and are facetized. If planar_faces is set to true,
- * faces of all MatPoly's are assumed to be planar and are NOT facetized.
+ * For compatibility with the 3D functor we use the planar_faces flag, 
+ * which does not have an effect in 2D.
  *
  */
 
 class ClipR2D {
  public:
-  ClipR2D(const std::vector< MatPoly<2> >& matpolys,
-          const Plane_t<2>& cutting_plane, 
-          const bool planar_faces = false) : 
-          matpolys_(matpolys), 
-          cutting_plane_(cutting_plane),
-          planar_faces_(planar_faces){}
+  ClipR2D() {}
+
+  /*! 
+    @brief Set the cutting line used by the functor. 
+    @param[in] cutting_line Cutting line to clip with. 
+  */
+  void set_plane(const Plane_t<2>& cutting_line) {
+    for (int ixy = 0; ixy < 2; ixy++)
+      r2d_cut_line_.n.xy[ixy] = -cutting_line.normal[ixy];
+    r2d_cut_line_.d = -cutting_line.dist2origin;
+  }
+
+  /*! 
+    @brief Set the material polygons to be used by the functor.
+    @param[in] matpolys Material polygons to be clipped.
+    @param[in] planar_faces Flag kept for compatibility with the
+    3D version.
+  */
+  void set_matpolys(const std::vector< MatPoly<2> >& matpolys,
+                    const bool planar_faces = true) {
+    int npolys = static_cast<int>(matpolys.size());
+    r2d_polys_.resize(npolys);
+
+    for(int ipoly = 0; ipoly < npolys; ipoly++)
+      matpoly_to_r2dpoly(matpolys[ipoly], r2d_polys_[ipoly]);
+  }
+
+  /*! 
+    @brief Computes moments of provided material polygons 
+    @return Vector containing aggregated moments of all
+    provided material polygons
+  */
+  std::vector<double> aggregated_moments() {
+    std::vector<double> agg_moments;
+    if (!r2d_polys_.empty()) {
+      agg_moments.assign(3, 0.0);
+
+      const int POLY_ORDER = 1;
+      r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
+      for(int ipoly = 0; ipoly < r2d_polys_.size(); ipoly++)
+        if (r2d_polys_[ipoly].nverts != 0) {
+          r2d_reduce(&r2d_polys_[ipoly], r2d_moments, POLY_ORDER);
+          if (r2d_moments[0] > std::numeric_limits<double>::epsilon())
+            for (int im = 0; im < 3; im++)
+              agg_moments[im] += r2d_moments[im];
+        }
+    }
+
+    return agg_moments;
+  }
 
   /*! 
     @brief Computes moments of chopped off components: 
-    the parts of MatPoly's below the plane
-    @return Vector containing aggreagted moments 
+    the parts of MatPoly's below the line
+    @return Vector containing aggregated moments 
     of the chopped off part of all MatPoly's
    */
   std::vector<double> operator() () const {
- 
-     std::vector<double> below_plane_moments(3, 0.0);
+    std::vector<double> below_plane_moments(3, 0.0);
 
     int poly_counter = 0;
-    if (planar_faces_)
-      for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
-        std::vector<double> cur_moments;
-        lower_halfplane_moments_r2d(matpolys_[ipoly], cutting_plane_, 
-                                    cur_moments);
+    const int POLY_ORDER = 1;
+    r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
 
-        if (!cur_moments.empty()) {
-          for (int im = 0; im < 3; im++)
-            below_plane_moments[im] += cur_moments[im];
-          poly_counter++;
+    for (int ipoly = 0; ipoly < r2d_polys_.size(); ipoly++) {
+      if (r2d_polys_[ipoly].nverts != 0) {
+        //r2d does in-place clipping and does not have the const modifier
+        //for the line: we need to make copies
+        r2d_poly clipped_poly = r2d_polys_[ipoly];
+        r2d_plane line_copy = r2d_cut_line_;
+        r2d_clip(&clipped_poly, &line_copy, 1);
+        if (clipped_poly.nverts != 0) {
+          //Find the moments for the part in the lower halfspace
+          r2d_reduce(&clipped_poly, r2d_moments, POLY_ORDER);
+          if (r2d_moments[0] > std::numeric_limits<double>::epsilon()) {
+            for (int im = 0; im < 3; im++)
+              below_plane_moments[im] += r2d_moments[im];
+            poly_counter++;
+          }
         }
       }
-    else 
-      for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
-        MatPoly<2> faceted_poly;
-        matpolys_[ipoly].faceted_matpoly(&faceted_poly);
-        std::vector<double> cur_moments;
-        lower_halfplane_moments_r2d(faceted_poly, cutting_plane_, 
-                                    cur_moments);
+    }
 
-        if (!cur_moments.empty()) {
-          for (int im = 0; im < 3; im++)
-            below_plane_moments[im] += cur_moments[im];
-          poly_counter++;
-        }                            
-      }
-    
     if (poly_counter == 0)
       below_plane_moments.clear();
       
     return below_plane_moments;
- }
-
-//! Default constructor (disabled)
-  ClipR2D() = delete;
+  }
 
   //! Assignment operator (disabled)
   ClipR2D& operator = (const ClipR2D&) = delete;
 
  private:
-  const std::vector< MatPoly<2> >& matpolys_;
-  const Plane_t<2>& cutting_plane_;
-  bool planar_faces_; 
+  std::vector<r2d_poly> r2d_polys_;
+  r2d_plane r2d_cut_line_;
 };
 
 } // namespace Tangram

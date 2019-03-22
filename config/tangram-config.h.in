@@ -1,0 +1,30 @@
+/*
+This file is part of the Ristra Tangram project.
+Please see the license file at the root of this repository, or at:
+    https://github.com/laristra/tangram/blob/master/LICENSE
+*/
+
+#ifndef TANGRAM_CONFIG_H_
+#define TANGRAM_CONFIG_H_
+
+// This file contains a set of defines generated automatically by
+// CMake during installation
+
+
+// TANGRAM version number
+
+#define TANGRAM_VERSION_MAJOR @TANGRAM_VERSION_MAJOR@
+#define TANGRAM_VERSION_MINOR @TANGRAM_VERSION_MINOR@
+#define TANGRAM_VERSION_PATCH @TANGRAM_VERSION_PATCH@
+
+// Is TANGRAM compiled with MPI
+
+#cmakedefine TANGRAM_ENABLE_MPI
+
+// Is TANGRAM compiled with Thrust
+
+#cmakedefine TANGRAM_ENABLE_THRUST
+
+
+#endif  // TANGRAM_CONFIG_H_
+

@@ -12,11 +12,7 @@
 # Add header files
 set(support_HEADERS
     tangram.h
-    Vector.h
-    Point.h
-    Matrix.h
     MatPoly.h
-    lsfits.h
     bfgs.h
     PARENT_SCOPE
 )
@@ -28,12 +24,7 @@ set(support_SOURCES
 
 # Unit tests
 
-if (ENABLE_UNIT_TESTS) 
-
-  cinch_add_unit(test_matfuncs
-    SOURCES test/test_matfuncs.cc
-    POLICY MPI
-    THREADS 1)
+if (ENABLE_UNIT_TESTS)
 
   cinch_add_unit(test_MatPoly_2D
     SOURCES test/test_MatPoly_2D.cc
