@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['jali_5fmesh_5fwrapper_2eh',['jali_mesh_wrapper.h',['../jali__mesh__wrapper_8h.html',1,'']]]
+  ['nested_5fdissections_2eh',['nested_dissections.h',['../nested__dissections_8h.html',1,'']]]
 ];

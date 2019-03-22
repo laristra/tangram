@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['dbfgs',['DBFGS',['../namespaceTangram.html#acbc93a9c17403e5d2e10e53fb002d1b3a31463a1a03f66e2d5728a58df0c91305',1,'Tangram']]],
-  ['deleted',['DELETED',['../namespaceTangram.html#a532af2ac5b79d1a387d05293745310cba70026071d56b6d272e42dc052387cfb4',1,'Tangram']]]
+  ['inside',['INSIDE',['../namespaceR3DPOLY.html#ae900fb35bd45f210fcc3cf379902b476ad326fe9d7be3050967d63e0f04bf0dc3',1,'R3DPOLY']]],
+  ['intersects',['INTERSECTS',['../namespaceR3DPOLY.html#ae900fb35bd45f210fcc3cf379902b476a7625300bf4886037ed4e0afd3e3aec4c',1,'R3DPOLY']]]
 ];

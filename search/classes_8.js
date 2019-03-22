@@ -1,8 +1,17 @@
 var searchData=
 [
-  ['matpoly',['MatPoly',['../classTangram_1_1MatPoly.html',1,'Tangram']]],
-  ['matpoly_3c_203_20_3e',['MatPoly&lt; 3 &gt;',['../classTangram_1_1MatPoly.html',1,'Tangram']]],
-  ['matpolyset_5ft',['MatPolySet_t',['../structTangram_1_1MatPolySet__t.html',1,'Tangram']]],
-  ['matrix',['Matrix',['../classTangram_1_1Matrix.html',1,'Tangram']]],
-  ['mof',['MOF',['../classTangram_1_1MOF.html',1,'Tangram']]]
+  ['r2d_5fdvec2',['r2d_dvec2',['../unionr2d__dvec2.html',1,'']]],
+  ['r2d_5fplane',['r2d_plane',['../structr2d__plane.html',1,'']]],
+  ['r2d_5fpoly',['r2d_poly',['../structr2d__poly.html',1,'']]],
+  ['r2d_5frvec2',['r2d_rvec2',['../unionr2d__rvec2.html',1,'']]],
+  ['r2d_5fvertex',['r2d_vertex',['../structr2d__vertex.html',1,'']]],
+  ['r3d_5fbrep',['r3d_brep',['../structr3d__brep.html',1,'']]],
+  ['r3d_5fdvec3',['r3d_dvec3',['../unionr3d__dvec3.html',1,'']]],
+  ['r3d_5fplane',['r3d_plane',['../structr3d__plane.html',1,'']]],
+  ['r3d_5fpoly',['r3d_poly',['../structr3d__poly.html',1,'']]],
+  ['r3d_5fpoly_5fintersect_5fcheck',['r3d_poly_intersect_check',['../classr3d__poly__intersect__check.html',1,'']]],
+  ['r3d_5frvec3',['r3d_rvec3',['../unionr3d__rvec3.html',1,'']]],
+  ['r3d_5fsplit_5foperator',['r3d_split_operator',['../classr3d__split__operator.html',1,'']]],
+  ['r3d_5fvertex',['r3d_vertex',['../structr3d__vertex.html',1,'']]],
+  ['refpolydata_5ft',['RefPolyData_t',['../structRefPolyData__t.html',1,'']]]
 ];

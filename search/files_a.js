@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['nested_5fdissections_2eh',['nested_dissections.h',['../nested__dissections_8h.html',1,'']]]
+  ['slic_2eh',['SLIC.h',['../SLIC_8h.html',1,'']]],
+  ['split_5fr2d_2eh',['split_r2d.h',['../split__r2d_8h.html',1,'']]],
+  ['split_5fr3d_2eh',['split_r3d.h',['../split__r3d_8h.html',1,'']]]
 ];

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['all',['ALL',['../namespaceTangram.html#a532af2ac5b79d1a387d05293745310cba1a6cdcb10095acb7bb7f79c9a6c2956a',1,'Tangram']]],
-  ['all_5fkind',['ALL_KIND',['../namespaceTangram.html#a840fe3ad4970cc1d7e2262328080ddbea910347bcabd7211f9c1ed4cb22f6cd78',1,'Tangram']]],
-  ['any_5fkind',['ANY_KIND',['../namespaceTangram.html#a840fe3ad4970cc1d7e2262328080ddbeae73a945937c50c5a14dd241e705f87b5',1,'Tangram']]]
+  ['bfgs',['BFGS',['../namespaceTangram.html#acbc93a9c17403e5d2e10e53fb002d1b3a69c8d5b5c7c91d37e9c7e05fae6d0f86',1,'Tangram']]],
+  ['bfgs_5fmwwp',['BFGS_MWWP',['../namespaceTangram.html#acbc93a9c17403e5d2e10e53fb002d1b3adb9f9f1d0b1333c648d3ceccd7539bdd',1,'Tangram']]]
 ];

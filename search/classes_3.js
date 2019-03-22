@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['driver',['Driver',['../classTangram_1_1Driver.html',1,'Tangram']]]
+  ['halfspacesets_5ft',['HalfSpaceSets_t',['../structTangram_1_1HalfSpaceSets__t.html',1,'Tangram']]]
 ];

@@ -69,11 +69,10 @@ var searchData=
   ['read_5fmaterial_5fdata',['read_material_data',['../read__material__data_8h.html#a5855382f4898b92331820bb762b4b2e0',1,'read_material_data.h']]],
   ['read_5fmaterial_5fdata_2eh',['read_material_data.h',['../read__material__data_8h.html',1,'']]],
   ['readfromstream',['readFromStream',['../classTangram_1_1Point.html#ad499e04df8d9131ed7f077e9023792a5',1,'Tangram::Point::readFromStream()'],['../classTangram_1_1Vector.html#a9dcdf905c03d883b9a754c53dac03529',1,'Tangram::Vector::readFromStream()']]],
-  ['real_5ft',['real_t',['../classflecsi__mesh__t.html#a67322a4bc787185e791534ebc9d66e9b',1,'flecsi_mesh_t::real_t()'],['../test__flecsi__mesh__wrapper_8cc.html#ab5831bd05f941d724f47ec2c3fb30e86',1,'real_t():&#160;test_flecsi_mesh_wrapper.cc']]],
-  ['reconstruct',['reconstruct',['../classTangram_1_1Driver.html#a2338657aea597c61d5ae95439ea152fd',1,'Tangram::Driver']]],
+  ['reconstruct',['reconstruct',['../classTangram_1_1Driver.html#a15a26d870c6a7c0b775fd623ce21bbfa',1,'Tangram::Driver']]],
   ['reference_5fmatpolys',['reference_matpolys',['../test__split__r2d_8cc.html#a43654a7513279b6fd67cd285ad7ad95d',1,'test_split_r2d.cc']]],
   ['refpolydata_5ft',['RefPolyData_t',['../structRefPolyData__t.html',1,'']]],
   ['reset_5fmat_5fid',['reset_mat_id',['../classTangram_1_1MatPoly.html#a4ffd8855a46fd704ce7749d43f8ded4e',1,'Tangram::MatPoly']]],
   ['rotation_5fmatrix',['rotation_matrix',['../primitives_8h.html#ab83a491778e83e7349e339a0503eb9f4',1,'primitives.h']]],
-  ['rows',['rows',['../classTangram_1_1Matrix.html#ac2fcf37d4d251283c5ad638f7acd2894',1,'Tangram::Matrix']]]
+  ['rows',['rows',['../classTangram_1_1Matrix.html#a5c79e431fbca1f0cf9330dfccdd7a09d',1,'Tangram::Matrix']]]
 ];

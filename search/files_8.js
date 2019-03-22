@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['lsfits_2eh',['lsfits.h',['../lsfits_8h.html',1,'']]]
+  ['point_2eh',['Point.h',['../Point_8h.html',1,'']]],
+  ['primitives_2eh',['primitives.h',['../primitives_8h.html',1,'']]]
 ];
