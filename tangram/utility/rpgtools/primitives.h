@@ -16,7 +16,7 @@
 // tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
-#include "tangram/support/Matrix.h"
+#include "wonton/wonton/support/Matrix.h"
 
 // wonton includes
 #include "wonton/support/Vector.h"
@@ -313,7 +313,7 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
     base_cen2vrt_vec /= base_cen2vrt_dst;
 
     //acos gives the value from 0 to PI, need sin to determine the angle sign
-    int sign_rot_angle = Wonton::dot(Tangram::cross(base_start_vec, base_cen2vrt_vec),
+    int sign_rot_angle = Wonton::dot(Wonton::cross(base_start_vec, base_cen2vrt_vec),
                                       base_normal_vec) > 0.0 ? 1 : -1;
 
     double cos_ang = Wonton::dot(base_cen2vrt_vec, base_start_vec);
