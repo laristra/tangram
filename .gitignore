@@ -53,3 +53,6 @@ install
 install-Debug
 install-Release
 .vscode
+
+# Editor backup files
+*~
