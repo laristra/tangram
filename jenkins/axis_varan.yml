@@ -3,7 +3,6 @@ COMPILER:
   - intel18
   - gcc6
   - gcc7
-  - gcc8
 
 BUILD_TYPE:
   - base
@@ -15,6 +14,3 @@ exclude:
     BUILD_TYPE: readme
   - COMPILER: gcc7
     BUILD_TYPE: readme
-  - COMPILER: gcc8
-    BUILD_TYPE: readme
-
