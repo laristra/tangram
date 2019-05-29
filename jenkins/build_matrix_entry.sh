@@ -26,9 +26,11 @@ fi
 jali_version=1.0.4
 xmof2d_version=0.9.4
 lapack_version=3.8.0
+thrust_version=1.8.3
 
 export NGC=/usr/local/codes/ngc
 ngc_include_dir=$NGC/private/include
+thrust_dir=$NGC/private/thrust/${thrust_version}
 
 # compiler-specific settings
 if [[ $compiler == "intel18" ]]; then
@@ -73,7 +75,6 @@ elif [[ $compiler == "gcc8" ]]; then
   lapacke_dir=$NGC/private/lapack/${lapack_version}-patched-gcc-${gcc_version} 
 fi
 
-extra_flags=
 jali_flags="-D Jali_DIR:FILEPATH=$jali_install_dir/lib"
 xmof2d_flags="-D XMOF2D_DIR:FILEPATH=$xmof2d_install_dir/share/cmake"
 mpi_flags="-D ENABLE_MPI=True"
@@ -81,8 +82,15 @@ lapacke_flags="-D LAPACKE_DIR:FILEPATH=$lapacke_dir"
 
 # build-type-specific settings
 cmake_build_type=Release
+mpi_flags="-D ENABLE_MPI=True"
+thrust_flags=
 if [[ $build_type == "debug" ]]; then
-  cmake_build_type=Debug
+    cmake_build_type=Debug
+elif [[ $build_type == "serial" ]]; then
+    mpi_flags=
+    jali_flags=    # jali is not available in serial
+elif [[ $build_type == "thrust" ]]; then
+    thrust_flags="_D ENABLE_THRUST=True -DTHRUST_DIR:FILEPATH=${thrust_dir}"
 fi
 
 export SHELL=/bin/sh
@@ -107,11 +115,12 @@ cmake \
   -D ENABLE_APP_TESTS=True \
   -D ENABLE_JENKINS_OUTPUT=True \
   -D NGC_INCLUDE_DIR:FILEPATH=$ngc_include_dir \
+  -D BOOST_ROOT:FILEPATH=$boost_dir \
   $mpi_flags \
   $jali_flags \
   $xmof2d_flags \
   $lapacke_flags \
-  $extra_flags \
+  $thrust_flags \
   ..
 make -j2
 ctest --output-on-failure
