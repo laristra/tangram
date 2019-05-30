@@ -15,6 +15,8 @@
 #include <string>
 #include <sstream>
 
+#include "tangram/support/tangram.h"  // TANGRAM_ENABLE_MPI enabled in this file
+
 #ifdef TANGRAM_ENABLE_MPI
   #include "mpi.h"
 #endif
@@ -28,7 +30,6 @@
 #endif
 
 // tangram includes
-#include "tangram/support/tangram.h"
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/xmof2D_wrapper.h"
 #include "tangram/driver/write_to_gmv.h"
