@@ -15,7 +15,7 @@ $( document ).ready(function() {
     $("div.headertitle").addClass("page-header");
     $("div.title").addClass("h1");
 
-    $('#main-menu li > a[href="index.html"]').text("wonton");
+    $('#main-menu li > a[href="index.html"]').text("tangram");
     // add icons
     $('#main-menu li > a[href="index.html"]')
 	.prepend("<i class='fa fa-cog fa-lg'></i> ");
