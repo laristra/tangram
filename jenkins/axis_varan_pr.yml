@@ -6,6 +6,8 @@ COMPILER:
 BUILD_TYPE:
   - base
   - debug
+  - serial
+  - thrust
   - readme
 
 exclude:
