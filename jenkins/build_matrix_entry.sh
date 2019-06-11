@@ -23,14 +23,17 @@ fi
 
 # set modules and install paths
 
-jali_version=1.0.0
-xmof2d_version=529f2dcdbe4
+jali_version=1.0.4
+xmof2d_version=0.9.4
+lapack_version=3.8.0
+thrust_version=1.8.3
 
 export NGC=/usr/local/codes/ngc
 ngc_include_dir=$NGC/private/include
+thrust_dir=$NGC/private/thrust/${thrust_version}
 
 # compiler-specific settings
-if [[ $compiler == "intel" ]]; then
+if [[ $compiler == "intel18" ]]; then
   intel_version=18.0.1
   cxxmodule=intel/${intel_version}
   # openmpi version that libs were built against
@@ -39,7 +42,8 @@ if [[ $compiler == "intel" ]]; then
   mpi_module=openmpi/2.1.2
   jali_install_dir=$NGC/private/jali/${jali_version}-intel-${intel_version}-openmpi-${openmpi_version}
   xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-intel-${intel_version}
-elif [[ $compiler == "gcc" ]]; then
+  lapacke_dir=$NGC/private/lapack/${lapack_version}-patched-intel-${intel_version}
+elif [[ $compiler == "gcc6" ]]; then
   gcc_version=6.4.0
   cxxmodule=gcc/${gcc_version}
   # openmpi version that libs were built against
@@ -48,12 +52,45 @@ elif [[ $compiler == "gcc" ]]; then
   mpi_module=openmpi/2.1.2
   jali_install_dir=$NGC/private/jali/${jali_version}-gcc-${gcc_version}-openmpi-${openmpi_version}
   xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-${gcc_version}
+  lapacke_dir=$NGC/private/lapack/${lapack_version}-patched-gcc-${gcc_version}
+elif [[ $compiler == "gcc7" ]]; then
+  gcc_version=7.3.0
+  cxxmodule=gcc/${gcc_version}
+  # openmpi version that libs were built against
+  openmpi_version=2.1.2
+  # openmpi module for compiling and linking
+  mpi_module=openmpi/2.1.2
+  jali_install_dir=$NGC/private/jali/${jali_version}-gcc-${gcc_version}-openmpi-${openmpi_version}
+  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-${gcc_version}
+  lapacke_dir=$NGC/private/lapack/${lapack_version}-patched-gcc-${gcc_version}
+elif [[ $compiler == "gcc8" ]]; then
+  gcc_version=8.2.0
+  cxxmodule=gcc/${gcc_version}
+  # openmpi version that libs were built against
+  openmpi_version=3.1.3
+  # openmpi module for compiling and linking
+  mpi_module=openmpi/3.1.3
+  jali_install_dir=$NGC/private/jali/${jali_version}-gcc-${gcc_version}-openmpi-${openmpi_version}
+  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-${gcc_version} 
+  lapacke_dir=$NGC/private/lapack/${lapack_version}-patched-gcc-${gcc_version} 
 fi
+
+jali_flags="-D Jali_DIR:FILEPATH=$jali_install_dir/lib"
+xmof2d_flags="-D XMOF2D_DIR:FILEPATH=$xmof2d_install_dir/share/cmake"
+mpi_flags="-D ENABLE_MPI=True"
+lapacke_flags="-D LAPACKE_DIR:FILEPATH=$lapacke_dir"
+
 # build-type-specific settings
 cmake_build_type=Release
-extra_flags=
+mpi_flags="-D ENABLE_MPI=True"
+thrust_flags=
 if [[ $build_type == "debug" ]]; then
-  cmake_build_type=Debug
+    cmake_build_type=Debug
+elif [[ $build_type == "serial" ]]; then
+    mpi_flags=
+    jali_flags=    # jali is not available in serial
+elif [[ $build_type == "thrust" ]]; then
+    thrust_flags="_D ENABLE_THRUST=True -DTHRUST_DIR:FILEPATH=${thrust_dir}"
 fi
 
 export SHELL=/bin/sh
@@ -77,13 +114,13 @@ cmake \
   -D ENABLE_UNIT_TESTS=True \
   -D ENABLE_APP_TESTS=True \
   -D ENABLE_JENKINS_OUTPUT=True \
-  -D ENABLE_MPI=True \
-  -D ENABLE_MPI_CXX_BINDINGS=True \
-  -D Jali_DIR:FILEPATH=$jali_install_dir/lib \
   -D NGC_INCLUDE_DIR:FILEPATH=$ngc_include_dir \
-  -D XMOF2D_DIR:FILEPATH=$xmof2d_install_dir/share/cmake \
   -D BOOST_ROOT:FILEPATH=$boost_dir \
-  $extra_flags \
+  $mpi_flags \
+  $jali_flags \
+  $xmof2d_flags \
+  $lapacke_flags \
+  $thrust_flags \
   ..
 make -j2
 ctest --output-on-failure

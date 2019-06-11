@@ -186,7 +186,8 @@ public:
     //we look at the volume of the actual intersection
     r3d_poly intersection = r3dpoly;
     for (int iplane = 0; iplane < face_planes_.size(); iplane++) {
-      r3d_clip(&intersection, &face_planes_[iplane], 1);
+      r3d_plane cur_plane = face_planes_[iplane];
+      r3d_clip(&intersection, &cur_plane, 1);
       if (intersection.nverts == 0) return R3DPOLY::Position::OUTSIDE;
     }
     
@@ -250,8 +251,7 @@ public:
           hs_data_ptrs[ihs]->r3dpoly.nverts = 0;
         else {
           assert(poly_components.size() == 1);
-          if (hs_data_ptrs[ihs]->r3dpoly.nverts != poly_components[0].nverts)
-            hs_data_ptrs[ihs]->r3dpoly = poly_components[0];
+          hs_data_ptrs[ihs]->r3dpoly = poly_components[0];
           hs_data_ptrs[ihs]->cellID = cellID;
           r3d_reduce(&hs_data_ptrs[ihs]->r3dpoly, hs_data_ptrs[ihs]->moments, R3D_POLY_ORDER);
         }

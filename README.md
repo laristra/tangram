@@ -34,9 +34,9 @@ with Travis CI.
 ### Prerequisites
 
 Tangram uses standard C++11 features, so a fairly modern compiler is
-needed.  We regularly test with Intel 18+ or GCC 6.4+.  Utilizing the
-full capabilities of Tangram will require an MPI implementation; we
-regularly test with OpenMPI 2.1.2+ The build system _requires_ CMake
+needed.  We regularly test with Intel 18.0.1, GCC 6.4.0, and GCC 7.3.0.  
+Utilizing the full capabilities of Tangram will require an MPI implementation; 
+we regularly test with OpenMPI 2.1.2. The build system _requires_ CMake
 version 3.0+.
 
 The following libraries are also _required_ (see examples below):
@@ -50,7 +50,7 @@ support for these is _optional_:
 
 - [Jali](http://github.com/lanl/jali):
 
-  We regularly test with verison 0.9.8.  You will need to set the
+  We regularly test with verison 1.0.4.  You will need to set the
   `Jali_Dir` CMake variable if you wish to build support for Jali and
   its tests (see examples below).
 
@@ -145,10 +145,10 @@ Execute the following from the Tangram root directory:
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
 module load intel/18.0.1 openmpi/2.1.2 cmake/3.10.2
-TPL_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali-tpl/1.0.9-intel-18.0.1-openmpi-2.1.2
+TPL_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali-tpl/1.2.0-intel-18.0.1-openmpi-2.1.2
 NGC_INCLUDE_DIR=/usr/local/codes/ngc/private/include
-XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/529f2dcdbe4-intel-18.0.1
-JALI_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali/1.0.0-intel-18.0.1-openmpi-2.1.2
+XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/0.9.4-intel-18.0.1
+JALI_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali/1.0.4-intel-18.0.1-openmpi-2.1.2
 mkdir build
 cd build
 cmake \

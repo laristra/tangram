@@ -182,6 +182,9 @@ endif()
 #------------------------------------------------------------------------------#
 
 set(ENABLE_JALI OFF CACHE BOOL "")
+if (JALI_DIR)  # forgive users for capitalization mistake
+  set(Jali_DIR ${JALI_DIR})
+endif (JALI_DIR)
 if (Jali_DIR)
 
    # Look for the Jali package
