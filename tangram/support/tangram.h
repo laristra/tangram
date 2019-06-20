@@ -18,7 +18,7 @@
 #include <memory>
 #include <limits>
 
-#ifdef THRUST
+#ifdef TANGRAM_ENABLE_THRUST
 
 #include "thrust/device_vector.h"
 #include "thrust/iterator/counting_iterator.h"
@@ -97,7 +97,7 @@ namespace Tangram {
 
   using Wonton::Weights_t;
 
-#ifdef THRUST
+#ifdef TANGRAM_ENABLE_THRUST
 
 template<typename T>
     using vector = thrust::device_vector<T>;

@@ -15,7 +15,7 @@ cinch_minimum_required(VERSION 1.0)
 
 set(TANGRAM_VERSION_MAJOR 0)
 set(TANGRAM_VERSION_MINOR 9)
-set(TANGRAM_VERSION_PATCH 4)
+set(TANGRAM_VERSION_PATCH 5)
 
 
 # If a C++14 compiler is available, then set the appropriate flags
@@ -330,6 +330,8 @@ endif(NGC_INCLUDE_DIR)
 set(ENABLE_THRUST FALSE CACHE BOOL "Use Thrust")
 if(ENABLE_THRUST)
   message(STATUS "Enabling compilation with Thrust")
+
+  set(TANGRAM_ENABLE_THRUST True CACHE BOOL "Is Tangram compiled with Thrust?")
 
   # allow the user to specify a THRUST_DIR, otherwise use ${NGC_INCLUDE_DIR}
   # NOTE: thrust internally uses include paths from the 'root' directory, e.g.
