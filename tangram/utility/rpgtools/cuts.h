@@ -590,9 +590,7 @@ unsigned int factorial(unsigned int n)
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
  @param[out] reference_mat_polys For every mesh cell and every material inside that cell, 
- the collection of single-material polyhedra containing that material          
- @param[in] permute_order If true, the order of materials in every cell will be 
- additionally permuted a random number of times                     
+ a pointer to the collection of single-material polyhedra containing that material                 
 */
 void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyData_t> > >& 
                          ref_sets_data,
@@ -601,9 +599,8 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
                        std::vector<int>& cell_mat_ids,
                        std::vector<double>& cell_mat_volfracs,
                        std::vector< Tangram::Point<3> >& cell_mat_centroids,
-                       std::vector< std::vector< std::vector<r3d_poly> > >&
-                         reference_mat_polys,
-                       bool permute_order=false) {                     
+                       std::vector< std::vector< std::vector<r3d_poly> > >*
+                         reference_mat_polys = nullptr) {                     
   int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
   for (int iset = 0; iset < nsets; iset++) {
     int set_max_cellID = -1;
@@ -619,8 +616,10 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
 
   std::vector< std::vector<int> > cells_mat_ids(ncells);
   std::vector< std::vector< std::vector<double> > > cells_mat_moments(ncells);
-  reference_mat_polys.clear();
-  reference_mat_polys.resize(ncells);
+  if (reference_mat_polys != nullptr) {
+    reference_mat_polys->clear();
+    reference_mat_polys->resize(ncells);
+  }
 
   for (int iset = 0; iset < nsets; iset++) {
     int cur_mat_id = sets_material_IDs[iset];
@@ -633,14 +632,16 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
 
       if (cell_mat_id == cells_mat_ids[icell].size()) {
         cells_mat_ids[icell].resize(cell_mat_id + 1);
-        reference_mat_polys[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
         cells_mat_ids[icell][cell_mat_id] = cur_mat_id;
+        if (reference_mat_polys != nullptr)
+          (*reference_mat_polys)[icell].resize(cell_mat_id + 1);
       }
 
-      reference_mat_polys[icell][cell_mat_id].push_back(
-        ref_sets_data[iset][ipoly]->r3dpoly);
+      if (reference_mat_polys != nullptr)
+        (*reference_mat_polys)[icell][cell_mat_id].push_back(
+          ref_sets_data[iset][ipoly]->r3dpoly);
       for (int im = 0; im < nmoments; im++)
         cells_mat_moments[icell][cell_mat_id][im] += 
           ref_sets_data[iset][ipoly]->moments[im];
@@ -652,38 +653,9 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
   cell_mat_volfracs.clear();
   cell_mat_centroids.clear();
 
-  if (permute_order)
-    srand(20150420);
-
   for (int icell = 0; icell < ncells; icell++) {
     int ncmats = static_cast<int>(cells_mat_ids[icell].size());
     cell_num_mats[icell] = ncmats;
-
-    // If requested, we permuate the order of materials a random number of times
-    // This can be used for testing accuracy of material order dependent methods
-    if (permute_order) {
-      int max_npermutations = factorial(ncmats);
-      int cur_npermutations = rand()%max_npermutations;
-
-      if (cur_npermutations != 0) {
-        std::vector<int> new_mat_order(ncmats);
-        std::iota(new_mat_order.begin(), new_mat_order.end(), 0);
-        for (int ip = 0; ip < cur_npermutations; ip++)
-          std::next_permutation(new_mat_order.begin(), new_mat_order.end());
-
-        std::vector<int> new_cell_mat_ids(ncmats);
-        std::vector< std::vector<double> > new_cell_mat_moments(ncmats);
-        std::vector< std::vector<r3d_poly> > new_cell_ref_mat_polys(ncmats);
-        for (int icmat = 0; icmat <ncmats; icmat++) {
-          new_cell_mat_ids[icmat] = cells_mat_ids[icell][new_mat_order[icmat]];
-          new_cell_mat_moments[icmat] = cells_mat_moments[icell][new_mat_order[icmat]];
-          new_cell_ref_mat_polys[icmat] = reference_mat_polys[icell][new_mat_order[icmat]];
-        }
-        cells_mat_ids[icell] = new_cell_mat_ids;
-        cells_mat_moments[icell] = new_cell_mat_moments;
-        reference_mat_polys[icell] = new_cell_ref_mat_polys;
-      }
-    }
 
     cell_mat_ids.insert(cell_mat_ids.end(), cells_mat_ids[icell].begin(), 
                         cells_mat_ids[icell].end());

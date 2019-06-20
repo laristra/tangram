@@ -32,7 +32,7 @@
 #include "tangram/utility/rpgtools/cuts.h"
 #include "tangram/utility/rpgtools/primitives.h"
 #include "tangram/utility/get_mat_sym_diff_vol.h"
-#include "matdata_rotor3d.h"
+#include "tangram/utility/rpgtools/examples/matdata_rotor3d.h"
 
 /* Demo app for the 3D Rotor example.
    Uses SimpleMesh, VOF, and MOF.
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
 
   rotor_material_moments(mesh_wrapper, mesh_material_IDs, mesh_material_names, 
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids, 
-    reference_mat_polys, decompose_cells);
+    decompose_cells, &reference_mat_polys);
 
   gettimeofday(&end_timeval, 0);
   timersub(&end_timeval, &begin_timeval, &diff_timeval);
