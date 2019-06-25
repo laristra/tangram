@@ -401,10 +401,10 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                                vector, requires computations of offsets
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
- @param[out] reference_mat_polys For every cell and every material inside that cell, 
- the collection of single-material polyhedra containing that material
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
- in order to decompose cells into tetrahedrons                            
+ in order to decompose cells into tetrahedrons  
+ @param[out] reference_mat_polys For every cell and every material inside that cell, 
+ a pointer to the collection of single-material polyhedra containing that material
 */
 template <class Mesh_Wrapper>
 void rotor_material_moments(const Mesh_Wrapper& mesh,
@@ -414,9 +414,9 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
                             std::vector<int>& cell_mat_ids,
                             std::vector<double>& cell_mat_volfracs,
                             std::vector< Tangram::Point<3> >& cell_mat_centroids,
-                            std::vector< std::vector< std::vector<r3d_poly> > >&
-                              reference_mat_polys,
-                            bool decompose_cells = true) {
+                            bool decompose_cells = true,
+                            std::vector< std::vector< std::vector<r3d_poly> > >*
+                              reference_mat_polys = nullptr ) {
   mesh_material_names = {"Water", "Air", "Main shaft", "Blades assembly", "Gears frames",
                          "Ring gears", "Sun gears", "Planet gears", "Carriers", "Outer shafts",
                          "Primary shafts gaskets", "Gear frames sealants", "Planet shafts gaskets"};
@@ -763,7 +763,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
 
   std::cout << "Finalizing rotor data..." << std::endl;
   finalize_ref_data(ref_poly_sets, sets_material_IDs, cell_num_mats, cell_mat_ids, 
-    cell_mat_volfracs, cell_mat_centroids, reference_mat_polys, false);
+    cell_mat_volfracs, cell_mat_centroids, reference_mat_polys);
   std::cout << "Done with rotor data!" << std::endl;
 }
 
