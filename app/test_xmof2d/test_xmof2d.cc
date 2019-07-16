@@ -51,7 +51,7 @@
 
 const std::vector<int> mesh_materials = {5, 0, 3};
 const std::vector< Tangram::Vector2 > material_interface_normals = {
-  Tangram::Vector2(0.5, 0.5), Tangram::Vector2(0.5, -0.375)
+  Tangram::Vector2(-0.5, -0.5), Tangram::Vector2(-0.5, 0.375)
 };
 const std::vector< Tangram::Point2 > material_interface_points = {
   Tangram::Point2(0.5, 0.5), Tangram::Point2(0.5, 0.5)
