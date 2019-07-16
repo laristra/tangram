@@ -319,7 +319,7 @@ template <class Mesh_Wrapper>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector<int>& material_IDs,
                           const Tangram::Point<3>& center,
-                          const std::vector<double> radius,
+                          const std::vector<double>& radius,
                           const int nquadrant_samples,
                           std::vector<int>& cell_num_mats,
                           std::vector<int>& cell_mat_ids,
@@ -328,7 +328,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           bool decompose_cells,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
                             reference_mat_polys = nullptr) {
-  int nspheres = static_cast<int>(radius.size())
+  int nspheres = static_cast<int>(radius.size());
   assert(material_IDs.size() == nspheres + 1);
 
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
