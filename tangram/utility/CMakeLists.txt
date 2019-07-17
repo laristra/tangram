@@ -17,6 +17,7 @@ set(utility_HEADERS
     advance_moments.h
     rpgtools/primitives.h
     rpgtools/cuts.h
+    rpgtools/examples/matdata_rotor3d.h
     PARENT_SCOPE
 )
 
