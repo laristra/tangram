@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 #include "tangram/support/tangram.h"
-#include "tangram/support/rk4.h"
+#include "tangram/utility/rk4.h"
 
 /*!
  @brief For the given mesh, velocity field, and material data for cells' inverse images

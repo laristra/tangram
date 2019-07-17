@@ -15,6 +15,7 @@ set(utility_HEADERS
     get_material_moments.h
     get_mat_sym_diff_vol.h
     advance_moments.h
+    rk4.h
     rpgtools/primitives.h
     rpgtools/cuts.h
     rpgtools/examples/matdata_rotor3d.h

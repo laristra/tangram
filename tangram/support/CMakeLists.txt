@@ -14,7 +14,6 @@ set(support_HEADERS
     tangram.h
     MatPoly.h
     bfgs.h
-    rk4.h
     PARENT_SCOPE
 )
 
