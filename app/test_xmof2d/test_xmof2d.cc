@@ -51,7 +51,7 @@
 
 const std::vector<int> mesh_materials = {5, 0, 3};
 const std::vector< Tangram::Vector2 > material_interface_normals = {
-  Tangram::Vector2(0.5, 0.5), Tangram::Vector2(0.5, -0.375)
+  Tangram::Vector2(-0.5, -0.5), Tangram::Vector2(-0.5, 0.375)
 };
 const std::vector< Tangram::Point2 > material_interface_points = {
   Tangram::Point2(0.5, 0.5), Tangram::Point2(0.5, 0.5)
@@ -145,11 +145,11 @@ int main(int argc, char** argv) {
 #if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
   get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    reference_mat_polys, decompose_cells);
+    decompose_cells, &reference_mat_polys);
 #else
   get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    reference_mat_polys, decompose_cells);
+    decompose_cells, &reference_mat_polys);
 #endif
 
   std::vector<int> offsets(ncells, 0);

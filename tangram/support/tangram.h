@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <memory>
 #include <limits>
+#include <numeric>
 
 #ifdef TANGRAM_ENABLE_THRUST
 
@@ -250,6 +251,33 @@ inline bool overlapping_boxes(const BoundingBox_t<D>& bb1,
 // Check if two floating point values are equal up to the machine precision
 inline bool is_equal(const double fp1, const double fp2) {
   return ( std::fabs(fp1 - fp2) < std::numeric_limits<double>::epsilon() );
+}
+
+/*!
+ @brief Get the sequence of indices corresponding to the ascending or descending
+ order of vector's values
+ @tparam T Type of the vector's values
+
+ @param[in] v Vector of type T
+ @param[in] ascending If true, values are to be ascending, otherwise descending
+ @return Vector of indices in the order corresponding to the ascending/descending
+ values of v
+*/
+template <typename T>
+std::vector<int> sorted_indices(const std::vector<T> &v,
+                                bool ascending = true) {
+  std::vector<int> ids(v.size());
+  std::iota(ids.begin(), ids.end(), 0);
+
+  // Sort indices based on values of v
+  if (ascending)
+    std::sort(ids.begin(), ids.end(),
+              [&v](int i1, int i2) { return v[i1] < v[i2]; });
+  else
+    std::sort(ids.begin(), ids.end(),
+              [&v](int i1, int i2) { return v[i1] > v[i2]; });
+
+  return ids;
 }
 
 }  // namespace Tangram
