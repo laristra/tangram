@@ -22,11 +22,11 @@ double polygon3d_area(const std::vector<Point3>& points,
 
   int nvrts = static_cast<int>(poly_vertices.size());
   if (nvrts == 3) {
-    poly_area = 0.5*cross(points[poly_vertices[1]] - points[poly_vertices[0]], 
-      points[poly_vertices[2]] - points[poly_vertices[0]]).norm();
-
-    if (std::fabs(poly_area) <= std::numeric_limits<double>::epsilon())
-      return 0.0;
+    poly_area = 0.5*cross(
+      points[poly_vertices[1]] - points[poly_vertices[0]], 
+      points[poly_vertices[2]] - points[poly_vertices[0]]
+    ).norm();
+    return std::fabs(poly_area) <= std::numeric_limits<double>::epsilon() ? 0. : poly_area;
   }
 
   Point3 gcenter;
