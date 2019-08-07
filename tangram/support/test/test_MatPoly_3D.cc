@@ -13,7 +13,8 @@
 
 TEST(MatPoly, Mesh3D) {
   int mat_id = 1;
-  
+  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();  
+
   //Test for a right triangular prism
   std::vector<Tangram::Point3> prism_points = {
     Tangram::Point3(1.0, 0.0, 0.0), Tangram::Point3(0.0, 1.0, 0.0),
@@ -31,7 +32,7 @@ TEST(MatPoly, Mesh3D) {
   ASSERT_EQ(mat_id, prism_matpoly.mat_id());
   
   //Initialization
-  prism_matpoly.initialize(prism_points, prism_faces);
+  prism_matpoly.initialize(prism_points, prism_faces, dst_tol);
   
   //Verify coordinates
   const std::vector<Tangram::Point3>& matpoly_points = prism_matpoly.points();
@@ -120,7 +121,7 @@ TEST(MatPoly, Mesh3D) {
   
   Tangram::MatPoly<3> ncv_prism_matpoly(mat_id);
   //Initialization
-  ncv_prism_matpoly.initialize(ncv_prism_points, ncv_prism_faces);
+  ncv_prism_matpoly.initialize(ncv_prism_points, ncv_prism_faces, dst_tol);
   
   //Verify face centroids
   for (int iface = 0; iface < ncv_prism_faces.size(); iface++)

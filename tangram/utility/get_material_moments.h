@@ -35,6 +35,8 @@
                                 requires computations of offsets
  @param[out] reference_mat_polys For every cell and every material inside that cell, 
  the collection of single-material polyhedra containing that material
+ @param[in] vol_tol Volume tolerance 
+ @param[in] dst_tol Distance tolerance 
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
  in order to decompose cells into tetrahedrons                            
 */
@@ -46,7 +48,9 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
                           std::vector< Tangram::Point<3> >& cell_mat_centroids,
-                          bool decompose_cells,
+                          const double vol_tol,
+                          const double dst_tol,
+                          const bool decompose_cells,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nplanes = static_cast<int>(planar_interfaces.size());
@@ -59,7 +63,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   std::vector<int> cur_polys_cellID;
   for (int icell = 0; icell < ncells; icell++) {
     Tangram::MatPoly<3> mat_poly;
-    Tangram::cell_get_matpoly(mesh, icell, &mat_poly);
+    Tangram::cell_get_matpoly(mesh, icell, &mat_poly, dst_tol);
 
     if (decompose_cells) {
       mat_poly.facetize_decompose(cells_polys[icell]);
@@ -119,7 +123,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
       bool nnz_cutoff = false;
       if (lower_hs_polys[ipoly].nverts > 0) {
         r3d_reduce(&lower_hs_polys[ipoly], r3d_moments, POLY_ORDER);
-        if (r3d_moments[0] > std::numeric_limits<double>::epsilon()) {
+        if (r3d_moments[0] >= vol_tol) {
           nnz_cutoff = true;
           // Poly below the plane is cut off by the plane, add it to 
           // the cell's list of single-material poly's
@@ -153,7 +157,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
           for (int im = 0; im < nmoments; im++)
             r3d_moments[im] = cur_polys_moments[ipoly][im];
         }
-        if (r3d_moments[0] > std::numeric_limits<double>::epsilon()) {
+        if (r3d_moments[0] >= vol_tol) {
           int irpoly = iremaining_polys.size();
           iremaining_polys.push_back(ipoly);
           remaining_polys_moments.resize(irpoly + 1);
@@ -250,6 +254,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                                vector, requires computations of offsets
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
+ @param[in] vol_tol Volume tolerance
+ @param[in] dst_tol Distance tolerance
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
  in order to decompose cells into tetrahedrons 
  @param[out] reference_mat_polys For every mesh cell and every material inside that cell, 
@@ -266,22 +272,24 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
                           std::vector< Tangram::Point<3> >& cell_mat_centroids,
-                          bool decompose_cells,
+                          const double vol_tol,
+                          const double dst_tol,
+                          const bool decompose_cells,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
                             reference_mat_polys = nullptr) {
   assert(material_IDs.size() == 2);
 
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
   
-  Tangram::MatPoly<3> sphere_poly = sphere(center, radius, nquadrant_samples);
+  Tangram::MatPoly<3> sphere_poly = sphere(center, radius, nquadrant_samples, dst_tol);
 
   std::vector< std::shared_ptr<RefPolyData_t> > mesh_polys;
-  mesh_to_r3d_polys<Mesh_Wrapper>(mesh, mesh_polys, decompose_cells);
+  mesh_to_r3d_polys<Mesh_Wrapper>(mesh, mesh_polys, dst_tol, decompose_cells);
 
   std::vector< std::vector< std::shared_ptr<RefPolyData_t> > > ref_poly_sets(2);
-  apply_poly(mesh_polys, sphere_poly, ref_poly_sets[1], ref_poly_sets[0], true);
+  apply_poly(mesh_polys, sphere_poly, ref_poly_sets[1], ref_poly_sets[0], vol_tol, true);
 
-  finalize_ref_data(ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
+  finalize_ref_data(mesh_polys, ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
     cell_mat_volfracs, cell_mat_centroids, reference_mat_polys);
 }
 
@@ -309,6 +317,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                                vector, requires computations of offsets
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
+ @param[in] vol_tol Volume tolerance
+ @param[in] dst_tol Distance tolerance 
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
  in order to decompose cells into tetrahedrons 
  @param[out] reference_mat_polys For every mesh cell and every material inside that cell, 
@@ -325,7 +335,9 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
                           std::vector< Tangram::Point<3> >& cell_mat_centroids,
-                          bool decompose_cells,
+                          const double vol_tol,
+                          const double dst_tol,
+                          const bool decompose_cells,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nspheres = static_cast<int>(radius.size());
@@ -333,18 +345,21 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
   
-  std::vector< std::shared_ptr<RefPolyData_t> > cur_polys_data, rem_polys_data;
-  mesh_to_r3d_polys<Mesh_Wrapper>(mesh, cur_polys_data, decompose_cells);
+  std::vector< std::shared_ptr<RefPolyData_t> > mesh_polys, cur_polys_data, rem_polys_data;
+  mesh_to_r3d_polys<Mesh_Wrapper>(mesh, mesh_polys, dst_tol, decompose_cells);
 
   std::vector< std::vector< std::shared_ptr<RefPolyData_t> > > ref_poly_sets(nspheres + 1);
+  cur_polys_data = mesh_polys;
   for (int isphere = 0; isphere < nspheres; isphere++) {
-    Tangram::MatPoly<3> sphere_poly = sphere(center, radius[isphere], nquadrant_samples);
-    apply_poly(cur_polys_data, sphere_poly, ref_poly_sets[isphere], rem_polys_data, true);
+    Tangram::MatPoly<3> sphere_poly = sphere(center, radius[isphere], 
+                                             nquadrant_samples, dst_tol);
+    apply_poly(cur_polys_data, sphere_poly, ref_poly_sets[isphere], rem_polys_data, 
+               vol_tol, true);
     cur_polys_data = rem_polys_data;
     rem_polys_data.clear();
   }
   ref_poly_sets[nspheres] = cur_polys_data;
-  finalize_ref_data(ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
+  finalize_ref_data(mesh_polys,ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
     cell_mat_volfracs, cell_mat_centroids, reference_mat_polys);
 }
 
@@ -369,6 +384,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                                 requires computations of offsets
  @param[out] reference_mat_polys For every cell and every material inside that cell, 
  the collection of single-material polygons containing that material
+ @param[in] vol_tol Volume tolerance
+ @param[in] dst_tol Distance tolerance
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
  in order to decompose cells into triangles                            
 */
@@ -380,7 +397,9 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
                           std::vector< Tangram::Point<2> >& cell_mat_centroids,
-                          bool decompose_cells,
+                          const double vol_tol,
+                          const double dst_tol,
+                          const bool decompose_cells,
                           std::vector< std::vector< std::vector<r2d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nlines = static_cast<int>(linear_interfaces.size());
@@ -393,7 +412,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   std::vector<int> cur_polys_cellID;
   for (int icell = 0; icell < ncells; icell++) {
     Tangram::MatPoly<2> mat_poly;
-    Tangram::cell_get_matpoly(mesh, icell, &mat_poly);
+    Tangram::cell_get_matpoly(mesh, icell, &mat_poly, dst_tol);
 
     if (decompose_cells) {
       mat_poly.decompose(cells_polys[icell]);
@@ -453,7 +472,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
       bool nnz_cutoff = false;
       if (lower_hp_polys[ipoly].nverts > 0) {
         r2d_reduce(&lower_hp_polys[ipoly], r2d_moments, POLY_ORDER);
-        if (r2d_moments[0] > std::numeric_limits<double>::epsilon()) {
+        if (r2d_moments[0] >= vol_tol) {
           nnz_cutoff = true;
           // Poly below the line is cut off by the line, add it to 
           // the cell's list of single-material poly's
@@ -487,7 +506,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
           for (int im = 0; im < nmoments; im++)
             r2d_moments[im] = cur_polys_moments[ipoly][im];
         }
-        if (r2d_moments[0] > std::numeric_limits<double>::epsilon()) {
+        if (r2d_moments[0] >= vol_tol) {
           int irpoly = iremaining_polys.size();
           iremaining_polys.push_back(ipoly);
           remaining_polys_moments.resize(irpoly + 1);
@@ -583,6 +602,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                                vector, requires computations of offsets
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
+ @param[in] vol_tol Volume tolerance
+ @param[in] dst_tol Distance tolerance 
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
  in order to decompose cells into tetrahedrons 
  @param[out] reference_mat_polys For every mesh cell and every material inside that cell, 
@@ -599,7 +620,9 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
                           std::vector< Tangram::Point<2> >& cell_mat_centroids,
-                          bool decompose_cells,
+                          const double vol_tol,
+                          const double dst_tol,
+                          const bool decompose_cells,
                           std::vector< std::vector< std::vector<r2d_poly> > >*
                             reference_mat_polys = nullptr) {
   assert(material_IDs.size() == 2);
@@ -619,7 +642,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   }
 
   Tangram::MatPoly<2> circle_poly;
-  circle_poly.initialize(circle_pts);
+  circle_poly.initialize(circle_pts, dst_tol);
 
   // Get the lines containing the circle's faces
   std::vector< Tangram::Plane_t<2> > face_lines;
@@ -690,7 +713,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
       bool nnz_cutoff = false;
       if (upper_hp_polys[ipoly].nverts > 0) {
         r2d_reduce(&upper_hp_polys[ipoly], r2d_moments, POLY_ORDER);
-        if (r2d_moments[0] > std::numeric_limits<double>::epsilon()) {
+        if (r2d_moments[0] >= vol_tol) {
           nnz_cutoff = true;
           // Poly above the line is exterior with respect to the circle,
           // add it to the list of cell's poly's, which currently can only
@@ -723,7 +746,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
           for (int im = 0; im < nmoments; im++)
             r2d_moments[im] = cur_polys_moments[ipoly][im];
         }
-        if (r2d_moments[0] > std::numeric_limits<double>::epsilon()) {
+        if (r2d_moments[0] >= vol_tol) {
           int irpoly = iremaining_polys.size();
           iremaining_polys.push_back(ipoly);
           remaining_polys_moments.resize(irpoly + 1);

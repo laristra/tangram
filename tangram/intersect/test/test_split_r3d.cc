@@ -21,6 +21,9 @@
 // will be written to a gmv file.
 
 TEST(split_r3d, Mesh3D) {
+  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
+  double vol_tol = pow(dst_tol, 3);
+
   //Right triangular prism
   std::vector<Tangram::Point3> prism_points = {
     Tangram::Point3(0.0, 0.0, 0.0), Tangram::Point3(1.0, 0.0, 0.0),
@@ -52,14 +55,14 @@ TEST(split_r3d, Mesh3D) {
 
   //Initialize MatPoly
   Tangram::MatPoly<3> prism_matpoly;
-  prism_matpoly.initialize(prism_points, prism_faces);
+  prism_matpoly.initialize(prism_points, prism_faces, dst_tol);
 
   //Split the prism with the cutting plane
   Tangram::MatPoly<3> convex_polys[2];
   std::vector<double> cp_moments[2];
   split_convex_matpoly_r3d(prism_matpoly, cutting_plane, 
                            convex_polys[0], convex_polys[1], 
-                           cp_moments[0], cp_moments[1]);
+                           cp_moments[0], cp_moments[1], vol_tol, dst_tol);
 
   //Check that vertices and faces of polygons below and above the plane match
   for (int ihs = 0; ihs < 2; ihs++) {
@@ -78,7 +81,7 @@ TEST(split_r3d, Mesh3D) {
 
   //Use the class instead
   std::vector< Tangram::MatPoly<3> > convex_matpolys = {prism_matpoly};
-  Tangram::SplitR3D split_poly(convex_matpolys, cutting_plane, true);
+  Tangram::SplitR3D split_poly(convex_matpolys, cutting_plane, vol_tol, dst_tol, true);
   Tangram::HalfSpaceSets_t<3> hs_poly_sets = split_poly();
 
   ASSERT_EQ(hs_poly_sets.lower_halfspace_set.matpolys.size(), 1);
@@ -157,11 +160,11 @@ TEST(split_r3d, Mesh3D) {
 
   //Initialize non-convex MatPoly
   Tangram::MatPoly<3> ncv_matpoly;
-  ncv_matpoly.initialize(ncv_poly_points, ncv_poly_faces);
+  ncv_matpoly.initialize(ncv_poly_points, ncv_poly_faces, dst_tol);
 
   //Split non-convex MatPoly with the horizontal cutting plane
   std::vector< Tangram::MatPoly<3> > ncv_matpolys = {ncv_matpoly};
-  Tangram::SplitR3D split_ncv_poly(ncv_matpolys, cutting_plane);
+  Tangram::SplitR3D split_ncv_poly(ncv_matpolys, cutting_plane, vol_tol, dst_tol);
   hs_poly_sets = split_ncv_poly();
 
   std::vector< Tangram::MatPoly<3> >* hs_poly_sets_ptr[2] = {
@@ -214,7 +217,7 @@ TEST(split_r3d, Mesh3D) {
   //Decompose manually
   std::vector< Tangram::MatPoly<3> > cv_matpolys;
   ncv_matpoly.decompose(cv_matpolys);
-  Tangram::SplitR3D split_cv_poly(cv_matpolys, cutting_plane, true);
+  Tangram::SplitR3D split_cv_poly(cv_matpolys, cutting_plane, vol_tol, dst_tol, true);
   Tangram::HalfSpaceSets_t<3> alt_hs_poly_sets = split_cv_poly();
 
   std::vector< Tangram::MatPoly<3> >* alt_hs_poly_sets_ptr[2] = {
@@ -245,7 +248,7 @@ TEST(split_r3d, Mesh3D) {
   }  
 
   //Get moments using ClipR3D class and facetizing faces
-  Tangram::ClipR3D clip_poly;
+  Tangram::ClipR3D clip_poly(dst_tol);
   clip_poly.set_matpolys(ncv_matpolys);
   clip_poly.set_plane(cutting_plane);
 

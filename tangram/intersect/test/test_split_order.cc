@@ -47,6 +47,8 @@ Tangram::Plane_t<Dim> get_cutting_plane(Tangram::Point<Dim>& plane_pt, Tangram::
  */
 
 TEST(split_order, ConvexPoly2D) {
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+  double vol_tol = pow(dst_tol, 2);
 
   //Cutting plane in 2d
   Tangram::Point2 plane_pt2d(0.5,0.0);
@@ -69,7 +71,7 @@ TEST(split_order, ConvexPoly2D) {
     Tangram::Point2(1.0, 1.0), Tangram::Point2(0.0, 1.0)};
 
   Tangram::MatPoly<2> square_matpoly;
-  square_matpoly.initialize(square_pnts);
+  square_matpoly.initialize(square_pnts, dst_tol);
 
   //Convert matpoly to r2d_poly and split
   r2d_poly r2dized_poly;
@@ -88,8 +90,8 @@ TEST(split_order, ConvexPoly2D) {
 
   //Get a MatPoly for a r2d subpoly
   Tangram::MatPoly<2> square_low, square_up;
-  Tangram::r2dpoly_to_matpoly(r2d_subpolys[0], square_low);
-  Tangram::r2dpoly_to_matpoly(r2d_subpolys[1], square_up);
+  Tangram::r2dpoly_to_matpoly(r2d_subpolys[0], square_low, dst_tol);
+  Tangram::r2dpoly_to_matpoly(r2d_subpolys[1], square_up, dst_tol);
 
   ///Check lower and upper subpolys
   for (int i = 0; i < square_low.num_vertices(); i++)
@@ -117,6 +119,8 @@ TEST(split_order, ConvexPoly2D) {
  */
 
 TEST(split_order, ConvexPoly3D) {
+  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
+  double vol_tol = pow(dst_tol, 3);  
 
   //Cutting plane in 3d
   Tangram::Point3 plane_pt3d(0.5, 0.0, 0.0);
@@ -144,7 +148,7 @@ TEST(split_order, ConvexPoly3D) {
                                               {2,3,7,6},{0,4,7,3},{4,5,6,7}};
 
   Tangram::MatPoly<3> cube_matpoly;
-  cube_matpoly.initialize(cube_pnts, cube_faces);
+  cube_matpoly.initialize(cube_pnts, cube_faces, dst_tol);
 
   //Convert matpoly to r3d_poly and split
   r3d_poly r3dized_poly;
@@ -167,8 +171,8 @@ TEST(split_order, ConvexPoly3D) {
 
   //Get a MatPoly for a r2d subpoly
   std::vector<Tangram::MatPoly<3>> cube_low, cube_up;
-  Tangram::r3dpoly_to_matpolys(r3d_subpolys[0], cube_low);
-  Tangram::r3dpoly_to_matpolys(r3d_subpolys[1], cube_up);
+  Tangram::r3dpoly_to_matpolys(r3d_subpolys[0], cube_low, dst_tol);
+  Tangram::r3dpoly_to_matpolys(r3d_subpolys[1], cube_up, dst_tol);
 
   ASSERT_EQ(cube_low.size(), 1);
   ASSERT_EQ(cube_up.size(), 1);

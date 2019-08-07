@@ -27,6 +27,9 @@ TEST(CellMatPoly, Mesh1D) {
   // Make a 1-cell one-dimensional mesh
   std::shared_ptr<Jali::Mesh> mesh = mf(0.0, 1.0, 2);
 
+  // Distance tolerance
+  double dst_tol = std::numeric_limits<double>::epsilon();
+
   // Make a 2-material CellMatPoly object for the cell
 
   Tangram::CellMatPoly<1> cellmatpoly;
@@ -48,12 +51,12 @@ TEST(CellMatPoly, Mesh1D) {
 
   // Add a two material polygons with material ID 0 and 1 for the cell
 
-  cellmatpoly.add_matpoly(0, cpoints[0][0], cpoints[2][0],
+  cellmatpoly.add_matpoly(0, cpoints[0][0], cpoints[2][0], dst_tol,
                           Tangram::Entity_kind::NODE,
                           Tangram::Entity_kind::CELL,
                           cnodes[0], cellid);
 
-  cellmatpoly.add_matpoly(1, cpoints[2][0], cpoints[1][0],
+  cellmatpoly.add_matpoly(1, cpoints[2][0], cpoints[1][0], dst_tol,
                           Tangram::Entity_kind::CELL,
                           Tangram::Entity_kind::NODE,
                           cellid, cnodes[1]);

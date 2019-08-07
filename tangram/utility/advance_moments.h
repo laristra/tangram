@@ -30,7 +30,7 @@
  vector, requires computations of offsets (in: previous time step, out: current time step)
  @param[in, out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
  requires computations of offsets (in: previous time step, out: current time step)
- @param[in] vol_eps Volume tolerance                           
+ @param[in] vol_tol Volume tolerance                           
 */
 template <class Mesh_Wrapper, int D>
 void advance_moments(const Mesh_Wrapper& mesh,
@@ -44,7 +44,7 @@ void advance_moments(const Mesh_Wrapper& mesh,
                      const std::vector<int>& cell_mat_ids,
                      std::vector<double>& cell_mat_volfracs,
                      std::vector< Tangram::Point<D> >& cell_mat_centroids,
-                     double vol_eps = std::numeric_limits<double>::epsilon()) {
+                     double vol_tol) {
 
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
   std::vector<int> offsets(ncells, 0);
@@ -66,7 +66,7 @@ void advance_moments(const Mesh_Wrapper& mesh,
   // Determine cells that have too much material and push it out
   for (int icell = 0; icell < ncells; icell++) {
     double cell_size = mesh.cell_volume(icell);
-    if (total_mat_volfracs[icell] < 1.0 + vol_eps/cell_size)
+    if (total_mat_volfracs[icell] < 1.0 + vol_tol/cell_size)
       continue;
 
     // Sort material indices in the order of increasing volume fractions
@@ -84,14 +84,14 @@ void advance_moments(const Mesh_Wrapper& mesh,
         (1.0 - 1.0/total_mat_volfracs[icell]);
 
       std::vector<int> ireceivers = iadj_cells;
-      while (extra_mat_vol >= vol_eps/ncmats) {
+      while (extra_mat_vol >= vol_tol/ncmats) {
         std::vector<int> ireceivers_upd;
         double slice_vol = extra_mat_vol/ireceivers.size();
         for (int irc = 0; irc < ireceivers.size(); irc++) {
           int iadj_cell = ireceivers[irc];
           double adj_cell_size = mesh.cell_volume(iadj_cell);
           double adjc_capacity = adj_cell_size*(1.0 - total_mat_volfracs[iadj_cell]);
-          if (adjc_capacity < vol_eps)
+          if (adjc_capacity < vol_tol)
             continue;
           
           int adjc_matid = std::distance(cell_mat_ids.begin() + offsets[iadj_cell],
@@ -107,7 +107,7 @@ void advance_moments(const Mesh_Wrapper& mesh,
           double adjc_vf_delta = vol_delta/adj_cell_size;
           cell_mat_volfracs[offsets[iadj_cell] + adjc_matid] += adjc_vf_delta;
           total_mat_volfracs[iadj_cell] += adjc_vf_delta;
-          if (adjc_capacity >= vol_eps)
+          if (adjc_capacity >= vol_tol)
             ireceivers_upd.push_back(iadj_cell);
 
           extra_mat_vol -= vol_delta;
@@ -143,7 +143,7 @@ void advance_moments(const Mesh_Wrapper& mesh,
   // Determine cells that have too little material and fill them up
   for (int icell = 0; icell < ncells; icell++) {
     double cell_size = mesh.cell_volume(icell);
-    if (total_mat_volfracs[icell] > 1.0 - vol_eps/cell_size)
+    if (total_mat_volfracs[icell] > 1.0 - vol_tol/cell_size)
       continue;  
 
     int ncmats = cell_num_mats[icell];
@@ -161,7 +161,7 @@ void advance_moments(const Mesh_Wrapper& mesh,
 
     // Weight the material based on the leftover volumes
     std::vector<double> cmat_weights(ncmats);
-    if (total_extra_mat_vol < vol_eps)
+    if (total_extra_mat_vol < vol_tol)
       cmat_weights.assign(ncmats, 1.0/ncmats);
     else {
       for (int icmat = 0; icmat < ncmats; icmat++)
@@ -186,7 +186,7 @@ void advance_moments(const Mesh_Wrapper& mesh,
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++)
       mat_volfrac += cell_mat_volfracs[offsets[icell] + icmat];
 
-    assert(std::fabs(mat_volfrac - 1.0) < vol_eps/mesh.cell_volume(icell));
+    assert(std::fabs(mat_volfrac - 1.0) < vol_tol/mesh.cell_volume(icell));
   }
 }
 

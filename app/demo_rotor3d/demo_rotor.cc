@@ -91,6 +91,13 @@ int main(int argc, char** argv) {
 
   int ncells = mesh_wrapper.num_owned_cells();
 
+ // Volume and angle tolerances
+  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
+  double vol_tol = 1.0e-16;
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {1000, dst_tol, vol_tol};
+  ims_tols[1] = {100, 1.0e-12, 1.0e-12};
+
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
   std::vector<double> cell_mat_volfracs;
@@ -104,7 +111,7 @@ int main(int argc, char** argv) {
 
   rotor_material_moments(mesh_wrapper, mesh_material_IDs, mesh_material_names, 
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids, 
-    decompose_cells, &reference_mat_polys);
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 
   gettimeofday(&end_timeval, 0);
   timersub(&end_timeval, &begin_timeval, &diff_timeval);
@@ -134,11 +141,6 @@ int main(int argc, char** argv) {
       }
       nmmcells++;  
     }
-
-  // Volume and angles tolerance
-  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(2);
-  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
-  ims_tols[1] = {.max_num_iter = 100, .arg_eps = 1.0e-08, .fun_eps = 1.0e-08};
 
   std::string IR_names[2] = {"VOF", "MOF"};
   std::vector< std::shared_ptr< Tangram::CellMatPoly<3> > > IR_cellmatpoly_list[2];
@@ -275,7 +277,7 @@ int main(int argc, char** argv) {
         "    over all multi-material cells:" << std::endl << std::scientific <<
         "      Aggregate vol = " << mmcells_material_volumes[imat] << "," << std::endl <<
         "      aggregate sym.diff.vol = " << total_mat_sym_diff_vol[imat];
-      if (total_mat_sym_diff_vol[imat] > std::numeric_limits<double>::epsilon())
+      if (total_mat_sym_diff_vol[imat] >= ims_tols[0].fun_eps)
         std::cout << "," << std::endl << "      relative sym.diff.vol = " << 
           total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat]; 
       std::cout << std::endl;
@@ -306,7 +308,7 @@ int main(int argc, char** argv) {
         std::shared_ptr< Tangram::CellMatPoly<3> > 
           cmp_ptr(new Tangram::CellMatPoly<3>(icell));
         Tangram::MatPoly<3> cell_matpoly;
-        cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
+        cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly, dst_tol);
         cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
         cmp_ptr->add_matpoly(cell_matpoly);
         IR_cellmatpoly_list[iIR][icell] = cmp_ptr;

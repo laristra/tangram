@@ -129,14 +129,12 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   read_material_data<Wonton::Jali_Mesh_Wrapper, dim>(mesh_wrapper, in_data_fname,
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
-  // Volume fraction and angles tolerance
-  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2) ;
-  ims_tols[0].max_num_iter = 1000;
-  ims_tols[0].arg_eps = 1.0e-15;
-  ims_tols[0].fun_eps = 1.0e-15;
-  ims_tols[1].max_num_iter = 100;
-  ims_tols[1].arg_eps = 1.0e-13;
-  ims_tols[1].fun_eps = 1.0e-13;
+  // Volume and angle tolerances
+  double dst_tol = sqrt(dim)*std::numeric_limits<double>::epsilon();
+  double vol_tol = std::numeric_limits<double>::epsilon();
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {1000, dst_tol, vol_tol};
+  ims_tols[1] = {100, 1.0e-15, 1.0e-15}; 
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>>
   cellmatpoly_list = run_driver<dim>(mesh_wrapper, ims_tols, isconvex, cell_num_mats,
@@ -153,7 +151,7 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
       std::shared_ptr< Tangram::CellMatPoly<dim> >
         cmp_ptr(new Tangram::CellMatPoly<dim>(icell));
       Tangram::MatPoly<dim> cell_matpoly;
-      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
+      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly, dst_tol);
       cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
       cmp_ptr->add_matpoly(cell_matpoly);
       cellmatpoly_list[icell] = cmp_ptr;

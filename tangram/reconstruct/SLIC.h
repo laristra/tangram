@@ -102,6 +102,7 @@ namespace Tangram {
      */
     std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
       double vol_tol = ims_tols_[0].fun_eps;  // Volume tolerance
+      double dst_tol = ims_tols_[0].arg_eps;  // Distance tolerance
 
       int cellID = icells_to_reconstruct[cell_op_ID];
       auto numMats = cell_num_mats_[cellID];
@@ -115,7 +116,8 @@ namespace Tangram {
 
       // For every chopped off material, we split MatPoly's above the plane
       hs_sets.upper_halfspace_set.matpolys.resize(1);
-      Tangram::cell_get_matpoly(mesh_, cellID, &hs_sets.upper_halfspace_set.matpolys[0]);
+      Tangram::cell_get_matpoly(mesh_, cellID, 
+                                &hs_sets.upper_halfspace_set.matpolys[0], dst_tol);
 
       // Just going along x-direction
       Plane_t<Dim> cutting_plane;
@@ -125,7 +127,7 @@ namespace Tangram {
 
       //Create Splitter instance
       MatPoly_Splitter split_matpolys(hs_sets.upper_halfspace_set.matpolys,
-                                      cutting_plane, all_convex_);
+                                      cutting_plane, vol_tol, dst_tol, all_convex_);
 
       //Create cutting distance solver: if not all cells are convex, we assume that
       //faces are non-planar
@@ -156,7 +158,7 @@ namespace Tangram {
           // Check if the resulting volume matches the reference value
           double cur_vol_err = std::fabs(clip_res[1] - target_vol);
           if (cur_vol_err > vol_tol)
-            std::cerr << "SLIC for cell " << cellID << ": after " << ims_tols_[0].max_num_iter <<
+            std::cerr << "SLIC for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
               " iteration(s) achieved error in volume for material " <<
               cell_mat_ids_[iStart + iMat] << " is " << cur_vol_err <<
               ", volume tolerance is " << vol_tol << std::endl;
