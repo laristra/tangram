@@ -47,7 +47,7 @@ public:
   */
   explicit VOF(const Mesh_Wrapper& Mesh,
                const std::vector<IterativeMethodTolerances_t>& ims_tols,
-               const bool all_convex = false) :
+               const bool all_convex) :
                mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.empty())
       throw std::runtime_error(
@@ -128,7 +128,7 @@ public:
                           const int matID,
                           const std::vector< MatPoly<Dim> >& mixed_polys,
                           Plane_t<Dim>& cutting_plane,
-                          const bool planar_faces = true) const {
+                          const bool planar_faces) const {
     double vol_tol = ims_tols_[0].fun_eps;
 
     std::vector<int> istencil_cells;

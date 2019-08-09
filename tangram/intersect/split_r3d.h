@@ -238,7 +238,7 @@ class SplitR3D {
            const Plane_t<3>& cutting_plane, 
            const double vol_tol,
            const double dst_tol, 
-           const bool all_convex = false) : 
+           const bool all_convex) : 
            matpolys_(matpolys), 
            cutting_plane_(cutting_plane),
            vol_tol_(vol_tol),
@@ -352,7 +352,7 @@ class ClipR3D {
     material polyhedra are planar: if not, they are facetized.
   */
   void set_matpolys(const std::vector< MatPoly<3> >& matpolys,
-                    const bool planar_faces = false) {
+                    const bool planar_faces) {
     int npolys = static_cast<int>(matpolys.size());
     r3d_polys_.resize(npolys);
     if (planar_faces) {
@@ -464,7 +464,7 @@ class ClipR3D {
 void get_intersection_moments(const MatPoly<3>& mat_poly,
                               const r3d_poly& r3dpoly,
                               std::vector<double>& intersection_moments,
-                              bool convex_matpoly = false) {   
+                              bool convex_matpoly) {   
   const int POLY_ORDER = 1;
   r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
 

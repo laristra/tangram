@@ -73,20 +73,20 @@ std::vector<Tangram::Point3> circle3d(const Tangram::Point3& center,
                                       const Tangram::Vector3& normal,
                                       int nsamples,
                                       double dst_tol) {
-  //By default, we start with the i vector aligned with the x-axis
-  Tangram::Vector<3> start_vec(1.0, 0.0, 0.0);
-  //Then we project that vector on the circle's plane
-  start_vec = start_vec - Wonton::dot(start_vec, normal)*normal;
-  double vnorm = start_vec.norm();
-  //If we projection is too small, we restart with the j vector
-  //aligned with the y-axis
-  if (vnorm < dst_tol) {
-    start_vec.axis(1);
-    start_vec = start_vec - Wonton::dot(start_vec, normal)*normal;
-    vnorm = start_vec.norm();
+  //We start with the i vector aligned with the x-axis and
+  //the j vector aligned with the x-axis, then pick the one with 
+  //the larger projection
+  Tangram::Vector<3> test_vec[2];
+  for (int iv = 0; iv < 2; iv++) {
+    test_vec[iv].axis(iv);
+    //We project the current vector on the circle's plane
+    test_vec[iv] = test_vec[iv] - Wonton::dot(test_vec[iv], normal)*normal;
   }
+  Tangram::Vector<3> start_vec = (test_vec[0].norm() >= test_vec[1].norm()) ?
+    test_vec[0] : test_vec[1];
+
   //Scale to radius length
-  start_vec *= (radius/vnorm);
+  start_vec *= (radius/start_vec.norm());
 
   std::vector<Tangram::Point3> circle_pts;
   circle_pts.reserve(nsamples);
@@ -122,18 +122,19 @@ std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
                                    double dst_tol) {
   assert(nteeth > 2);
 
-  //By default, we start with the i vector aligned with the x-axis
-  Tangram::Vector<3> outer_start_vec(1.0, 0.0, 0.0);
-  //Then we project that vector on the circle's plane
-  outer_start_vec = outer_start_vec - Wonton::dot(outer_start_vec, normal)*normal;
-  double vnorm = outer_start_vec.norm();
-  //If we projection is too small, we restart with the j vector
-  //aligned with the y-axis
-  if (vnorm < dst_tol) {
-    outer_start_vec.axis(1);
-    outer_start_vec = outer_start_vec - Wonton::dot(outer_start_vec, normal)*normal;
-    vnorm = outer_start_vec.norm();
+  //We start with the i vector aligned with the x-axis and
+  //the j vector aligned with the x-axis, then pick the one with
+  //the larger projection
+  Tangram::Vector<3> test_vec[2];
+  for (int iv = 0; iv < 2; iv++) {
+    test_vec[iv].axis(iv);
+    //We project the current vector on the circle's plane
+    test_vec[iv] = test_vec[iv] - Wonton::dot(test_vec[iv], normal)*normal;
   }
+  Tangram::Vector<3> outer_start_vec = (test_vec[0].norm() >= test_vec[1].norm()) ?
+    test_vec[0] : test_vec[1];
+
+  double vnorm = outer_start_vec.norm();
   Tangram::Vector<3> inner_start_vec = outer_start_vec;
   //Scale to the espective radius length
   outer_start_vec *= (outer_radius/vnorm);

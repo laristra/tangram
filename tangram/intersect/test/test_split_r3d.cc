@@ -164,7 +164,7 @@ TEST(split_r3d, Mesh3D) {
 
   //Split non-convex MatPoly with the horizontal cutting plane
   std::vector< Tangram::MatPoly<3> > ncv_matpolys = {ncv_matpoly};
-  Tangram::SplitR3D split_ncv_poly(ncv_matpolys, cutting_plane, vol_tol, dst_tol);
+  Tangram::SplitR3D split_ncv_poly(ncv_matpolys, cutting_plane, vol_tol, dst_tol, false);
   hs_poly_sets = split_ncv_poly();
 
   std::vector< Tangram::MatPoly<3> >* hs_poly_sets_ptr[2] = {
@@ -249,7 +249,7 @@ TEST(split_r3d, Mesh3D) {
 
   //Get moments using ClipR3D class and facetizing faces
   Tangram::ClipR3D clip_poly(dst_tol);
-  clip_poly.set_matpolys(ncv_matpolys);
+  clip_poly.set_matpolys(ncv_matpolys, false);
   clip_poly.set_plane(cutting_plane);
 
   std::vector<double> clipper_moments = clip_poly();

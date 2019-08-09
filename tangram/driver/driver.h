@@ -59,7 +59,7 @@ class Driver {
   */
   explicit Driver(Mesh_Wrapper const& Mesh,
                   const std::vector<IterativeMethodTolerances_t>& ims_tols,
-                  const bool all_convex = false)
+                  const bool all_convex)
       : mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) { }
 
   /// Copy constructor (disabled)

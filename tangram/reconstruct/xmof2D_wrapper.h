@@ -45,7 +45,7 @@ namespace Tangram {
      */
     XMOF2D_Wrapper(const Mesh_Wrapper& Mesh,
                    const std::vector<IterativeMethodTolerances_t>& ims_tols,
-                   bool all_convex = true) :
+                   bool all_convex) :
                    mesh_(Mesh), ims_tols_(ims_tols) {
       assert(Dim == 2);
       assert(all_convex);

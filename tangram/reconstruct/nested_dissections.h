@@ -45,7 +45,7 @@ public:
   */
   explicit NestedDissections(const Reconstructor& rec,
                              const int& cellID,
-                             const bool convex_cell = false) : 
+                             const bool convex_cell) : 
                              reconstructor_(rec), cell_id_(cellID),
                              convex_cell_(convex_cell) {}
 
@@ -66,7 +66,7 @@ public:
     are to be used. If enabled, ID of the permutation can be used as the parameter
     of the operator
   */
-  void set_cell_materials_order(const bool enable_permutations = false) {
+  void set_cell_materials_order(const bool enable_permutations) {
     int nmats = static_cast<int>(reconstructor_.cell_materials(cell_id_).size());
     cell_materials_order_.resize(1);
     cell_materials_order_[0].resize(nmats);

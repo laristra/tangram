@@ -115,9 +115,9 @@ void polygon3d_moments(const std::vector<Point3>& points,
 Vector<3> polygon3d_normal(const std::vector<Point3>& points,
                            const std::vector<int>& poly_vertices,
                            double dst_tol) {
-  int nvrts = static_cast<int>(poly_vertices.size());
   Vector3 poly_normal(0.0, 0.0, 0.0);
 
+  int nvrts = static_cast<int>(poly_vertices.size());
   if (nvrts == 3) {
     int nnz_edges = 0;
     Vector<3> side_vec[2];
@@ -127,8 +127,10 @@ Vector<3> polygon3d_normal(const std::vector<Point3>& points,
     }
 
     if ((nnz_edges == 2) && 
-        ((points[poly_vertices[2]] - points[poly_vertices[1]]).norm() >= dst_tol))
+        ((points[poly_vertices[2]] - points[poly_vertices[1]]).norm() >= dst_tol)) {
       poly_normal = cross(side_vec[0], side_vec[1]);
+      poly_normal.normalize();
+    }
     
     return poly_normal;
   }
@@ -143,10 +145,10 @@ Vector<3> polygon3d_normal(const std::vector<Point3>& points,
   for (int idim = 0; idim < 3; idim++)
     poly_centroid[idim] = poly_moments[idim + 1]/poly_moments[0];
 
-  
   for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-    Vector3 tri_normal = cross(points[poly_vertices[ivrt]] - poly_centroid,
-                               points[poly_vertices[(ivrt + 1)%nvrts]] - poly_centroid);
+    Vector<3> side_vec = points[poly_vertices[(ivrt + 1)%nvrts]] - 
+                         points[poly_vertices[ivrt]];
+    Vector<3> tri_normal = cross(side_vec, poly_centroid - points[poly_vertices[ivrt]]);
     poly_normal += tri_normal;
   }
   poly_normal.normalize();
@@ -1110,7 +1112,7 @@ if set to false, it will be decomposed into tetrahedrons
 bool point_inside_matpoly(const MatPoly<3> mat_poly,
                           const Point<3>& pt, 
                           double dst_tol,
-                          bool convex_poly=false) {
+                          bool convex_poly) {
   std::vector< MatPoly<3> > convex_polys;
   if (convex_poly)
     convex_polys.push_back(mat_poly);

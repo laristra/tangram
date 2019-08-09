@@ -102,7 +102,7 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly,
   void get_intersection_moments(const MatPoly<2>& mat_poly,
                                 const r2d_poly& r2dpoly,
                                 std::vector<double>& intersection_moments,
-                                bool convex_matpoly = false) {   
+                                bool convex_matpoly) {   
   const int POLY_ORDER = 1;
   int nmoments = R2D_NUM_MOMENTS(POLY_ORDER);
   r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
@@ -264,7 +264,7 @@ class SplitR2D {
            const Plane_t<2>& cutting_plane,
            const double vol_tol,
            const double dst_tol, 
-           const bool all_convex = false) : 
+           const bool all_convex) : 
            matpolys_(matpolys), 
            cutting_plane_(cutting_plane),
            vol_tol_(vol_tol),

@@ -287,7 +287,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   mesh_to_r3d_polys<Mesh_Wrapper>(mesh, mesh_polys, dst_tol, decompose_cells);
 
   std::vector< std::vector< std::shared_ptr<RefPolyData_t> > > ref_poly_sets(2);
-  apply_poly(mesh_polys, sphere_poly, ref_poly_sets[1], ref_poly_sets[0], vol_tol, true);
+  apply_poly(mesh_polys, sphere_poly, ref_poly_sets[1], ref_poly_sets[0],
+             vol_tol, dst_tol, true);
 
   finalize_ref_data(mesh_polys, ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
     cell_mat_volfracs, cell_mat_centroids, reference_mat_polys);
@@ -354,7 +355,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     Tangram::MatPoly<3> sphere_poly = sphere(center, radius[isphere], 
                                              nquadrant_samples, dst_tol);
     apply_poly(cur_polys_data, sphere_poly, ref_poly_sets[isphere], rem_polys_data, 
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     cur_polys_data = rem_polys_data;
     rem_polys_data.clear();
   }

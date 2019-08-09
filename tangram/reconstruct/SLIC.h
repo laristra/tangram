@@ -47,7 +47,7 @@ namespace Tangram {
      */
     explicit SLIC(const Mesh_Wrapper & Mesh,
                   const std::vector<IterativeMethodTolerances_t>& ims_tols,
-                  const bool all_convex = false) :
+                  const bool all_convex) :
                   mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
       // For now
       if (ims_tols.empty())

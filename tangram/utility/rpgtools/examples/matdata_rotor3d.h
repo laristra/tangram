@@ -304,18 +304,19 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   std::vector< std::shared_ptr<RefPolyData_t> > mmpolys_data, rem_polys_data;
 
   //Cutting out frame interior
-  apply_poly(polys_data, frame_poly, mmpolys_data, res_poly_sets_data[0], vol_tol, true);
+  apply_poly(polys_data, frame_poly, mmpolys_data, res_poly_sets_data[0],
+             vol_tol, dst_tol, true);
 
   //Cutting out sun's shaft
   apply_poly(mmpolys_data, sun_shaft_poly, res_poly_sets_data[1], rem_polys_data, 
-             vol_tol, true);
+             vol_tol, dst_tol, true);
   mmpolys_data = rem_polys_data;
   rem_polys_data.clear();
 
   for (int iplanet = 0; iplanet < nplanets; iplanet++) {
     //Cutting out shaft of planet
     apply_poly(mmpolys_data, planet_shafts[iplanet], 
-      res_poly_sets_data[iplanet + 2], rem_polys_data, vol_tol, true);
+      res_poly_sets_data[iplanet + 2], rem_polys_data, vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   }    
@@ -323,7 +324,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int iplanet = 0; iplanet < nplanets; iplanet++) {
     //Cutting out shaft gasket of the planet
     apply_poly(mmpolys_data, planet_shaft_gaskets[iplanet], 
-      res_poly_sets_data[nplanets + 2 + iplanet], rem_polys_data, vol_tol, true);
+      res_poly_sets_data[nplanets + 2 + iplanet], rem_polys_data, vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   } 
@@ -331,7 +332,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int iplanet = 0; iplanet < nplanets; iplanet++) {
     //Cutting out center of planet
     apply_poly(mmpolys_data, planet_holes[iplanet], 
-      res_poly_sets_data[2*nplanets + 2 + iplanet], rem_polys_data, vol_tol, true);
+      res_poly_sets_data[2*nplanets + 2 + iplanet], rem_polys_data, vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   } 
@@ -339,7 +340,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int icarrier = 0; icarrier < 2; icarrier++) {
     //Cutting out center of carrier
     apply_poly(mmpolys_data, carrier_cen_polys[icarrier], 
-      res_poly_sets_data[3*nplanets + 2 + icarrier], rem_polys_data, vol_tol, true);
+      res_poly_sets_data[3*nplanets + 2 + icarrier], rem_polys_data, vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   }     
@@ -347,7 +348,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int icarrier = 0; icarrier < 2; icarrier++) {
     //Cutting out carrier
     apply_poly(mmpolys_data, carrier_polys[icarrier], 
-      res_poly_sets_data[3*nplanets + 4 + icarrier], rem_polys_data, vol_tol, false);
+      res_poly_sets_data[3*nplanets + 4 + icarrier], rem_polys_data, vol_tol, dst_tol, false);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   }      
@@ -359,13 +360,14 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   {
     std::vector< std::shared_ptr<RefPolyData_t> > ring_box_poly_data;
     //Cutting out ring box
-    apply_poly(mmpolys_data, ring_box, ring_box_poly_data, rem_polys_data, vol_tol, true);
+    apply_poly(mmpolys_data, ring_box, ring_box_poly_data, rem_polys_data,
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
   
     //Cutting out ring interior from the box
     apply_poly(ring_box_poly_data, ring_poly, rem_polys_data, 
-      res_poly_sets_data[3*nplanets + 6], vol_tol, false);
+      res_poly_sets_data[3*nplanets + 6], vol_tol, dst_tol, false);
 
     //Remaining polys are outside the box or inside the ring  
     mmpolys_data.reserve(mmpolys_data.size() + rem_polys_data.size());
@@ -375,7 +377,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
 
   //Cutting out the sun gear
   apply_poly(mmpolys_data, sun_poly, res_poly_sets_data[3*nplanets + 7], rem_polys_data, 
-             vol_tol, false);
+             vol_tol, dst_tol, false);
   mmpolys_data = rem_polys_data;
   rem_polys_data.clear();  
   std::cout << "Center of the sun gear is at (" << 
@@ -384,7 +386,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int iplanet = 0; iplanet < nplanets; iplanet++) {
     //Cutting out planet gear
     apply_poly(mmpolys_data, planet_polys[iplanet], 
-      res_poly_sets_data[3*nplanets + 8 + iplanet], rem_polys_data, vol_tol, false);
+      res_poly_sets_data[3*nplanets + 8 + iplanet], rem_polys_data, vol_tol, dst_tol, false);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
     std::cout << "Center of the planet gear " << iplanet + 1 << " is at (" << 
@@ -429,7 +431,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
                             std::vector< Tangram::Point<3> >& cell_mat_centroids,
                             const double vol_tol,
                             const double dst_tol,
-                            const bool decompose_cells = true,
+                            const bool decompose_cells,
                             std::vector< std::vector< std::vector<r3d_poly> > >*
                               reference_mat_polys = nullptr ) {
   mesh_material_names = {"Water", "Air", "Main shaft", "Blades assembly", "Gears frames",
@@ -518,7 +520,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
   ref_poly_sets.resize(icur_ref_set + 1);
 
   apply_poly(mesh_polys, shaft_cen_poly, ref_poly_sets[icur_ref_set], mmpolys_data, 
-             vol_tol, true);
+             vol_tol, dst_tol, true);
   sets_material_IDs.push_back(mesh_material_IDs[2]);
 
   //Prepare shaft's mounting part
@@ -532,7 +534,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
   ref_poly_sets.resize(icur_ref_set + 1);
 
   apply_poly(mmpolys_data, shaft_mount_poly, ref_poly_sets[icur_ref_set], rem_polys_data, 
-             vol_tol, true);
+             vol_tol, dst_tol, true);
   mmpolys_data = rem_polys_data;
   rem_polys_data.clear();
   sets_material_IDs.push_back(mesh_material_IDs[2]);
@@ -548,7 +550,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
   ref_poly_sets.resize(icur_ref_set + 1);
 
   apply_poly(mmpolys_data, blades_mount_poly, ref_poly_sets[icur_ref_set], rem_polys_data,
-             vol_tol, true);
+             vol_tol, dst_tol, true);
   mmpolys_data = rem_polys_data;
   rem_polys_data.clear();
   sets_material_IDs.push_back(mesh_material_IDs[3]);
@@ -569,7 +571,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     ref_poly_sets.resize(icur_ref_set + 1);
 
     apply_poly(mmpolys_data, blade_poly, ref_poly_sets[icur_ref_set], rem_polys_data, 
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
     sets_material_IDs.push_back(mesh_material_IDs[3]);
@@ -593,7 +595,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     ref_poly_sets.resize(icur_ref_set + 1);
 
     apply_poly(mmpolys_data, shaft_gasket_poly, ref_poly_sets[icur_ref_set], rem_polys_data,
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
     sets_material_IDs.push_back(mesh_material_IDs[10]);
@@ -610,7 +612,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     ref_poly_sets.resize(icur_ref_set + 1);
 
     apply_poly(mmpolys_data, gear_frame_joint_poly, ref_poly_sets[icur_ref_set], rem_polys_data,
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
     sets_material_IDs.push_back(mesh_material_IDs[11]);
@@ -625,7 +627,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     ref_poly_sets.resize(icur_ref_set + 1);
 
     apply_poly(mmpolys_data, gear_frame_joint_poly, ref_poly_sets[icur_ref_set], rem_polys_data,
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
     sets_material_IDs.push_back(mesh_material_IDs[4]);
@@ -643,7 +645,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     std::vector< std::shared_ptr<RefPolyData_t> > planetary_gear_polys;
 
     apply_poly(mmpolys_data, gear_frame_main_poly, planetary_gear_polys, rem_polys_data,
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
 
@@ -726,7 +728,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     ref_poly_sets.resize(icur_ref_set + 1);
 
     apply_poly(mmpolys_data, carrier_shaft_poly, ref_poly_sets[icur_ref_set], rem_polys_data,
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
     sets_material_IDs.push_back(mesh_material_IDs[9]);
@@ -743,7 +745,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     ref_poly_sets.resize(icur_ref_set + 1);
 
     apply_poly(mmpolys_data, carrier_shaft_gasket_poly, 
-      ref_poly_sets[icur_ref_set], rem_polys_data, vol_tol, true);
+      ref_poly_sets[icur_ref_set], rem_polys_data, vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
     sets_material_IDs.push_back(mesh_material_IDs[10]);
@@ -760,7 +762,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     ref_poly_sets.resize(icur_ref_set + 1);
 
     apply_poly(mmpolys_data, gear_frame_outer_poly, ref_poly_sets[icur_ref_set], rem_polys_data,
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
     sets_material_IDs.push_back(mesh_material_IDs[11]);
@@ -775,7 +777,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     ref_poly_sets.resize(icur_ref_set + 1);
 
     apply_poly(mmpolys_data, gear_frame_outer_poly, ref_poly_sets[icur_ref_set], rem_polys_data,
-               vol_tol, true);
+               vol_tol, dst_tol, true);
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();
     sets_material_IDs.push_back(mesh_material_IDs[4]);

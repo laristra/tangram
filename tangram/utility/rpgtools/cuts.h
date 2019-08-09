@@ -140,9 +140,10 @@ public:
   */
   r3d_poly_intersect_check(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                            const std::vector<int>& IDs_to_check,
+                           const double dst_tol,
                            const Tangram::MatPoly<3>& convex_matpoly) :
                            polys_data_(polys_data), IDs_to_check_(IDs_to_check),
-                           convex_matpoly_(convex_matpoly) {
+                           dst_tol_(dst_tol), convex_matpoly_(convex_matpoly) {
     std::vector< Tangram::Plane_t<3> > fplanes;
     convex_matpoly_.face_planes(fplanes);
 
@@ -174,7 +175,7 @@ public:
       for (int ixyz = 0; ixyz < 3; ixyz++)
         cur_vrt[ixyz] = r3dpoly.verts[ivrt].pos.xyz[ixyz];
 
-      if (Tangram::point_inside_matpoly(convex_matpoly_, cur_vrt, true)) {
+      if (Tangram::point_inside_matpoly(convex_matpoly_, cur_vrt, dst_tol_, true)) {
         if (!intersects && (ivrt > 0)) return R3DPOLY::Position::INTERSECTS;
         intersects = true;
       }
@@ -199,6 +200,7 @@ private:
   const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data_;
   const std::vector<int>& IDs_to_check_;
   const Tangram::MatPoly<3>& convex_matpoly_;
+  const double dst_tol_;
   std::vector<r3d_plane> face_planes_;
 };
 
@@ -313,7 +315,7 @@ template <class Mesh_Wrapper>
 void mesh_to_r3d_polys(const Mesh_Wrapper& mesh,
                        std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                        const double dst_tol,
-                       bool decompose_cells = true) {
+                       bool decompose_cells) {
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
 
   polys_data.clear();
@@ -402,7 +404,8 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
                           const Tangram::MatPoly<3>& convex_matpoly,
                           std::vector<int>& iinterior_polys,
                           std::vector<int>& iinstersecting_polys,
-                          std::vector<int>& iexterior_polys) {
+                          std::vector<int>& iexterior_polys,
+                          const double dst_tol) {
   std::vector< Tangram::Plane_t<3> > face_planes;
   convex_matpoly.face_planes(face_planes);
   Tangram::BoundingBox_t<3> poly_bbox = convex_matpoly.bounding_box();
@@ -415,7 +418,8 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
   for (int ipoly = 0; ipoly < npolys; ipoly++) {
     Tangram::BoundingBox_t<3> cur_bbox = 
       Tangram::r3d_poly_bounding_box(polys_data[ipoly]->r3dpoly);
-    if(overlapping_boxes(cur_bbox, poly_bbox, std::numeric_limits<double>::epsilon()))
+
+    if(overlapping_boxes(cur_bbox, poly_bbox, dst_tol))
       iin_box_polys.push_back(ipoly);
     else
       iexterior_polys.push_back(ipoly);
@@ -424,7 +428,8 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
   //Sort out the polys inside the box
   int num_in_box = static_cast<int>(iin_box_polys.size());
 
-  r3d_poly_intersect_check r3d_isect_check(polys_data, iin_box_polys, convex_matpoly);
+  r3d_poly_intersect_check r3d_isect_check(polys_data, iin_box_polys, 
+                                           dst_tol, convex_matpoly);
   Tangram::vector<R3DPOLY::Position> check_result(num_in_box);
 
   Tangram::transform(Tangram::make_counting_iterator(0), 
@@ -483,13 +488,14 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                 std::vector< std::shared_ptr<RefPolyData_t> >& interior_data,
                 std::vector< std::shared_ptr<RefPolyData_t> >& exterior_data,
                 const double vol_tol,
-                bool convex_matpoly = false) {
+                const double dst_tol,
+                bool convex_matpoly) {
   if (convex_matpoly) {
     //We need to make sure that we only split r3d_polys that actually
     //intersect the MatPoly
     std::vector<int> iexterior_polys, iinstersecting_polys, iinterior_polys;
     sort_wrt_convex_poly(polys_data, mat_poly, iinterior_polys, 
-                         iinstersecting_polys, iexterior_polys);
+                         iinstersecting_polys, iexterior_polys, dst_tol);
 
     extract_data(polys_data, iinterior_polys, interior_data);
     extract_data(polys_data, iexterior_polys, exterior_data);
@@ -535,7 +541,7 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
       //intersect the tets of MatPoly
       std::vector<int> iexterior_polys, iinstersecting_polys, iinterior_polys;
       sort_wrt_convex_poly(remaining_data, matpoly_tets[itet], iinterior_polys,
-                           iinstersecting_polys, iexterior_polys);
+                           iinstersecting_polys, iexterior_polys, dst_tol);
       
       std::vector< std::shared_ptr<RefPolyData_t> > tet_interior_data, 
                                                     intersection_data;
@@ -687,14 +693,17 @@ void finalize_ref_data(const std::vector< std::shared_ptr<RefPolyData_t> >&
             cell_mat_moments[im] += mesh_polys_data[imp]->moments[im];
         }
 
+      int ncell_mesh_polys = static_cast<int>(cell_mesh_poly_ids.size());
+      assert(ncell_mesh_polys > 0);
+
       for (int idim = 0; idim < 3; idim++)
         cell_mat_centroids[offset][idim] = cell_mat_moments[idim + 1]/cell_mat_moments[0];
 
       if (reference_mat_polys != nullptr) {
-        int ncell_mesh_polys = static_cast<int>(cell_mesh_poly_ids.size());
-        (*reference_mat_polys)[icell][cells_mat_ids[icell][0]].reserve(ncell_mesh_polys);
+        (*reference_mat_polys)[icell][0].clear();
+        (*reference_mat_polys)[icell][0].reserve(ncell_mesh_polys);
         for (int icmp = 0; icmp < ncell_mesh_polys; icmp++)
-          (*reference_mat_polys)[icell][cells_mat_ids[icell][0]].push_back(
+          (*reference_mat_polys)[icell][0].push_back(
             mesh_polys_data[cell_mesh_poly_ids[icmp]]->r3dpoly);
       }
       continue;

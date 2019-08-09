@@ -72,7 +72,7 @@ public:
   */
   explicit MOF(const Mesh_Wrapper& Mesh, 
                const std::vector<IterativeMethodTolerances_t>& ims_tols,
-               const bool all_convex = false) : 
+               const bool all_convex) : 
                mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.size() < 2)
       throw std::runtime_error(
@@ -161,7 +161,7 @@ public:
                           const int matID,
                           const std::vector< MatPoly<Dim> >& mixed_polys,
                           Plane_t<Dim>& cutting_plane,
-                          const bool planar_faces = true) const {
+                          const bool planar_faces) const {
     assert(Dim > 1);
 
     int cellMatID = std::distance(cell_mat_ids_[cellID].begin(),
