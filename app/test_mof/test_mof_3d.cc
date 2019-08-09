@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
     std::vector<double> cell_mat_sym_diff_vol;
     get_mat_sym_diff_vol(reference_mat_polys[icell], cell_ref_mat_ids,
                          cell_ref_mat_vols, cellmatpoly_list[icell],
-                         cell_mat_sym_diff_vol, true);
+                         cell_mat_sym_diff_vol, !decompose_cells);
 
     for (int icmat = 0; icmat < ncmats; icmat++) {
       int material_id = cell_ref_mat_ids[icmat];
