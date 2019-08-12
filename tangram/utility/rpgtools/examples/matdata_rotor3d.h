@@ -523,6 +523,8 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
              vol_tol, dst_tol, true);
   sets_material_IDs.push_back(mesh_material_IDs[2]);
 
+  mesh_polys.clear();
+
   //Prepare shaft's mounting part
   std::vector<Tangram::Point3> shaft_mount_base = 
     circle3d(shaft_centroid + Tangram::Point3(0.0, 0.5*blades_mount_len, 0.0), 
@@ -792,8 +794,8 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
   sets_material_IDs.push_back(mesh_material_IDs[0]);
 
   std::cout << "Finalizing rotor data..." << std::endl;
-  finalize_ref_data(mesh_polys, ref_poly_sets, sets_material_IDs, cell_num_mats,
-    cell_mat_ids, cell_mat_volfracs, cell_mat_centroids, reference_mat_polys);
+  finalize_ref_data(mesh, ref_poly_sets, sets_material_IDs, cell_num_mats, cell_mat_ids,
+    cell_mat_volfracs, cell_mat_centroids, dst_tol, decompose_cells, reference_mat_polys);
   std::cout << "Done with rotor data!" << std::endl;
 }
 

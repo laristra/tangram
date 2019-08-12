@@ -315,7 +315,7 @@ template <class Mesh_Wrapper>
 void mesh_to_r3d_polys(const Mesh_Wrapper& mesh,
                        std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                        const double dst_tol,
-                       bool decompose_cells) {
+                       const bool decompose_cells) {
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
 
   polys_data.clear();
@@ -489,7 +489,7 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                 std::vector< std::shared_ptr<RefPolyData_t> >& exterior_data,
                 const double vol_tol,
                 const double dst_tol,
-                bool convex_matpoly) {
+                const bool convex_matpoly) {
   if (convex_matpoly) {
     //We need to make sure that we only split r3d_polys that actually
     //intersect the MatPoly
@@ -594,8 +594,10 @@ unsigned int factorial(unsigned int n)
 /*!
  @brief For a given collections of single-material reference polyhedra sets
  generates data compatible with Tangram's driver. 
+ @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
+                      implementation that provides required functionality
 
- @param[in] mesh_polys_data Collection of data for mesh cells
+ @param[in] mesh Mesh wrapper
  @param[in] ref_sets_data Collection of data for single-material polyhedra sets
  @param[in] sets_material_IDs Material IDs for every set in the collection
  @param[out] cell_num_mats Number of material in each mesh cell, vector of length cell_num
@@ -608,8 +610,8 @@ unsigned int factorial(unsigned int n)
  @param[out] reference_mat_polys For every mesh cell and every material inside that cell, 
  a pointer to the collection of single-material polyhedra containing that material                 
 */
-void finalize_ref_data(const std::vector< std::shared_ptr<RefPolyData_t> >& 
-                         mesh_polys_data,
+template <class Mesh_Wrapper>
+void finalize_ref_data(const Mesh_Wrapper& mesh,
                        const std::vector< std::vector< std::shared_ptr<RefPolyData_t> > >& 
                          ref_sets_data,
                        const std::vector<int>& sets_material_IDs,
@@ -617,6 +619,8 @@ void finalize_ref_data(const std::vector< std::shared_ptr<RefPolyData_t> >&
                        std::vector<int>& cell_mat_ids,
                        std::vector<double>& cell_mat_volfracs,
                        std::vector< Tangram::Point<3> >& cell_mat_centroids,
+                       const double dst_tol,
+                       const bool decompose_cells,
                        std::vector< std::vector< std::vector<r3d_poly> > >*
                          reference_mat_polys = nullptr) {                     
   int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
@@ -683,29 +687,29 @@ void finalize_ref_data(const std::vector< std::shared_ptr<RefPolyData_t> >&
     cell_mat_centroids.resize(offset + cell_num_mats[icell]);
 
     if (cell_num_mats[icell] == 1) {
+      // Single-material cell
       cell_mat_volfracs[offset] = 1.0;
-      std::vector<int> cell_mesh_poly_ids;
-      std::vector<double> cell_mat_moments(nmoments, 0.0);
-      for (int imp = 0; imp < mesh_polys_data.size(); imp++)
-        if (mesh_polys_data[imp]->cellID == icell) {
-          cell_mesh_poly_ids.push_back(imp);
-          for (int im = 0; im < nmoments; im++)
-            cell_mat_moments[im] += mesh_polys_data[imp]->moments[im];
-        }
 
-      int ncell_mesh_polys = static_cast<int>(cell_mesh_poly_ids.size());
-      assert(ncell_mesh_polys > 0);
-
-      for (int idim = 0; idim < 3; idim++)
-        cell_mat_centroids[offset][idim] = cell_mat_moments[idim + 1]/cell_mat_moments[0];
-
-      if (reference_mat_polys != nullptr) {
-        (*reference_mat_polys)[icell][0].clear();
-        (*reference_mat_polys)[icell][0].reserve(ncell_mesh_polys);
-        for (int icmp = 0; icmp < ncell_mesh_polys; icmp++)
-          (*reference_mat_polys)[icell][0].push_back(
-            mesh_polys_data[cell_mesh_poly_ids[icmp]]->r3dpoly);
+      // We discard reference poly's for the cell and create a single new one
+      Tangram::MatPoly<3> cell_mat_poly;
+      r3d_poly cell_r3d_poly;
+      Tangram::cell_get_matpoly(mesh, icell, &cell_mat_poly, dst_tol);
+      if (decompose_cells) {
+        Tangram::MatPoly<3> flat_face_matpoly;
+        cell_mat_poly.faceted_matpoly(&flat_face_matpoly);
+        Tangram::matpoly_to_r3dpoly(flat_face_matpoly, cell_r3d_poly);
       }
+      else
+        Tangram::matpoly_to_r3dpoly(cell_mat_poly, cell_r3d_poly);
+
+      if (reference_mat_polys != nullptr)
+        (*reference_mat_polys)[icell][0] = {cell_r3d_poly};
+
+      r3d_real cell_moments[R3D_NUM_MOMENTS(R3D_POLY_ORDER)];
+      r3d_reduce(&cell_r3d_poly, cell_moments, R3D_POLY_ORDER);
+      for (int idim = 0; idim < 3; idim++)
+        cell_mat_centroids[offset][idim] = cell_moments[idim + 1]/cell_moments[0];
+
       continue;
     }
 

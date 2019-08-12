@@ -289,9 +289,10 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   std::vector< std::vector< std::shared_ptr<RefPolyData_t> > > ref_poly_sets(2);
   apply_poly(mesh_polys, sphere_poly, ref_poly_sets[1], ref_poly_sets[0],
              vol_tol, dst_tol, true);
+  mesh_polys.clear();             
 
-  finalize_ref_data(mesh_polys, ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
-    cell_mat_volfracs, cell_mat_centroids, reference_mat_polys);
+  finalize_ref_data(mesh, ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
+    cell_mat_volfracs, cell_mat_centroids, dst_tol, decompose_cells, reference_mat_polys);
 }
 
 /*!
@@ -351,6 +352,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 
   std::vector< std::vector< std::shared_ptr<RefPolyData_t> > > ref_poly_sets(nspheres + 1);
   cur_polys_data = mesh_polys;
+  mesh_polys.clear();
   for (int isphere = 0; isphere < nspheres; isphere++) {
     Tangram::MatPoly<3> sphere_poly = sphere(center, radius[isphere], 
                                              nquadrant_samples, dst_tol);
@@ -360,8 +362,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     rem_polys_data.clear();
   }
   ref_poly_sets[nspheres] = cur_polys_data;
-  finalize_ref_data(mesh_polys,ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
-    cell_mat_volfracs, cell_mat_centroids, reference_mat_polys);
+  finalize_ref_data(mesh,ref_poly_sets, material_IDs, cell_num_mats, cell_mat_ids, 
+    cell_mat_volfracs, cell_mat_centroids, dst_tol, decompose_cells, reference_mat_polys);
 }
 
 /*!

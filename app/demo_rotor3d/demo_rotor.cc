@@ -95,8 +95,7 @@ int main(int argc, char** argv) {
 
   int ncells = mesh_wrapper.num_owned_cells();
 
-  //std::vector<std::string> IR_names = {"VOF", "MOF"};
-  std::vector<std::string> IR_names = {"MOF"};
+  std::vector<std::string> IR_names = {"VOF", "MOF"};
 
    // Volume and angle tolerances
   double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
@@ -237,7 +236,7 @@ int main(int argc, char** argv) {
       if (IR_cellmatpoly_list[iIR][icell] != nullptr)
         get_mat_sym_diff_vol(reference_mat_polys[icell], cell_ref_mat_ids, 
                              cell_ref_mat_vols, IR_cellmatpoly_list[iIR][icell], 
-                             cell_mat_sym_diff_vol, true);
+                             cell_mat_sym_diff_vol, !decompose_cells);
 
       for (int icmat = 0; icmat < ncmats; icmat++) {
         int material_id = cell_ref_mat_ids[icmat];
