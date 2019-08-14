@@ -326,6 +326,7 @@ std::cout << std::endl << "Stats for ";
       assert(cellmatpoly_list[icell] == nullptr);
       std::shared_ptr< Tangram::CellMatPoly<2> >
         cmp_ptr(new Tangram::CellMatPoly<2>(icell));
+      // Create a MatPoly with the same geometry as the current cell        
       Tangram::MatPoly<2> cell_matpoly;
       cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly, dst_tol);
       cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);

@@ -731,6 +731,17 @@ void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys) const 
   }
 }
 
+/*!
+  @brief Initializes a material polygon that corresponds to (i.e. has
+  the same geometry as) a given mesh cell.
+  @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
+  implementation that provides certain functionality
+
+  @param[in] Mesh Mesh wrapper
+  @param[in] cellid Index of a cell
+  @param[out] mat_poly Pointer to the material polygon to initialize
+  @param[in] dst_tol Distance tolerance to be used by that material polygon
+*/
 template <class Mesh_Wrapper>
 void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       const int cellid,
@@ -747,6 +758,17 @@ void cell_get_matpoly(const Mesh_Wrapper& Mesh,
   mat_poly->initialize(poly_points, dst_tol);
 }
 
+/*!
+  @brief Initializes a material polyhedron that corresponds to (i.e. has
+  the same geometry as) a given mesh cell.
+  @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
+  implementation that provides certain functionality
+
+  @param[in] Mesh Mesh wrapper
+  @param[in] cellid Index of a cell
+  @param[out] mat_poly Pointer to the material polyhedron to initialize
+  @param[in] dst_tol Distance tolerance to be used by that material polyhedron
+*/
 template <class Mesh_Wrapper>
 void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       const int cellid,
@@ -899,7 +921,9 @@ MatPoly<2> natural_selection(const std::vector< Point<2> >& poly_points,
 }
 
 /*!
-  @brief Eliminates degeneracies from the boundary representation
+  @brief Eliminates degeneracies from the boundary representation,
+  which includes vertices within distance tolerance from other vertices,
+  hanging nodes, and degenerate faces with less than three vertices.
   @param[in] vertex_points Vertices of the polyhedron
   @param[in] face_vertices Faces of the polyhedron, every face is given by
   IDs of its vertices in counter-clockwise order

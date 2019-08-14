@@ -58,6 +58,8 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly,
       icur_node = r2dpoly.verts[icur_node].pnbrs[0];
     }
 
+    // Eliminate degeneracies that r2d has potentially introduced: adjacent
+    // vertices within dst_tol from each other are replaced by a single vertex
     mat_poly = natural_selection(r2d_poly_vrts, dst_tol, reference_pts);
 }
 
@@ -203,6 +205,9 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
     int nverts = r2d_subpolys[isp].nverts;
 
     //Check if the subpoly is empty
+    //Note that if one of the subpoly's is empty, then the other is the
+    //original MatPoly, so we just need the ID (0 or 1) of the empty subpoly
+    //to get the result
     if (nverts == 0) {
 	    subpoly_ptrs[isp]->clear();
 	    subpoly_moments_ptrs[isp]->assign(3, 0.0);
@@ -223,6 +228,9 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
     subpoly_moments_ptrs[isp]->assign(r2d_moments, r2d_moments + 3);
   }
 
+  //If there are no empty subpolys, we return two resulting pieces.
+  //If one of the subpolys is empty, we return the original MatPoly to
+  //ensure consistency and prevent unnecessary changes
   if (iempty_subpoly == -1) {
     for (int isp = 0; isp < 2; isp++) {
       //Get a MatPoly for a r2d subpoly

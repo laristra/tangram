@@ -116,6 +116,10 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
         curpoly_faces[iface][ifv] = poly_brep[ipoly].faceinds[iface][ifv];
     }
 
+    // Eliminate degeneracies that r3d has potentially introduced: vertices
+    // within dst_tol from each other are replaced by a single vertex,
+    // hanging nodes are identified and removed, degenerate faces with
+    // less than three vertices are eliminated.
     MatPoly<3> fit_poly = natural_selection(curpoly_vrts, curpoly_faces, 
                                             dst_tol, reference_pts);
     // We do not store polyhedra with less than four faces, 
@@ -168,6 +172,9 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
   int iempty_subpoly = -1;
   for (int isp = 0; isp < 2; isp++) {
     //Check if the subpoly is empty
+    //Note that if one of the subpoly's is empty, then the other is the
+    //original MatPoly, so we just need the ID (0 or 1) of the empty subpoly
+    //to get the result    
     if (r3d_subpolys[isp].nverts == 0) {
       subpoly_ptrs[isp]->clear();
       subpoly_moments_ptrs[isp]->assign(4, 0.0);
@@ -188,6 +195,9 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
     subpoly_moments_ptrs[isp]->assign(r3d_moments, r3d_moments + 4);
   }
 
+  //If there are no empty subpolys, we return two resulting pieces.
+  //If one of the subpolys is empty, we return the original MatPoly to
+  //ensure consistency and prevent unnecessary changes
   if (iempty_subpoly == -1) {
     for (int isp = 0; isp < 2; isp++) {
       //Get a MatPoly for a subpoly

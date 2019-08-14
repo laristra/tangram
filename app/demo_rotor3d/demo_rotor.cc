@@ -97,7 +97,11 @@ int main(int argc, char** argv) {
 
   std::vector<std::string> IR_names = {"VOF", "MOF"};
 
-   // Volume and angle tolerances
+  // Volume and angle tolerances
+  // The choice of the distance tolerance below ensures that all non-identical points
+  // have at least one coordinate that is machine epsilon apart. Because distance
+  // tolerance corresponds to a geometrical distance, point-equivalence checks have
+  // no geometrical bias.  
   double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
   double vol_tol = std::numeric_limits<double>::epsilon();
   //double vol_tol = 1.0e-24;
@@ -134,15 +138,23 @@ int main(int argc, char** argv) {
 
   int max_cell_nref_mats = *std::max_element(cell_num_mats.begin(), cell_num_mats.end());
   int nmmcells = 0;
-  std::vector<int> ncells_with_nmats(max_cell_nref_mats, 0);
+  // Number of cells containing a certain number of materials ([0] for the # of single-material,
+  // [1] for the # of two-material, etc.), used for stats output.
+  std::vector<int> ncells_with_xmats(max_cell_nref_mats, 0);
+  // For every material in the mesh, its volume contained in multi-material cells only.
+  // Used to compute per-material errors over all multi-material cells.
   std::vector<double> mmcells_material_volumes(nmesh_material_IDs, 0.0);
+  // For every material in the mesh, its volume contained in multi-material cells with
+  // a certain number of materials ([0] for volume contained in two-material cell, etc.).
+  // Used to compute per-material errors over multi-material cells with a specific number
+  // of contained materials.
   std::vector < std::vector<double> > xmat_cells_material_volumes(nmesh_material_IDs);
   for (int imat = 0; imat < nmesh_material_IDs; imat++)
       xmat_cells_material_volumes[imat].resize(max_cell_nref_mats - 1, 0.0);
 
   for (int icell = 0; icell < ncells; icell++) {
     int ncmats = cell_num_mats[icell];
-    ncells_with_nmats[ncmats - 1]++;
+    ncells_with_xmats[ncmats - 1]++;
     if (ncmats > 1) {
       double cell_volume = mesh_wrapper.cell_volume(icell);
       for (int icmat = 0; icmat < ncmats; icmat++) {
@@ -166,11 +178,11 @@ int main(int argc, char** argv) {
 
   std::cout << ":" << std::endl << "  " << ncells << " cells," <<
     std::endl << "  " << nmesh_material_IDs << " materials," <<
-    std::endl << "  " << ncells_with_nmats[0] << " single-material cells," <<
+    std::endl << "  " << ncells_with_xmats[0] << " single-material cells," <<
     std::endl << "  " << nmmcells << " multi-material cells:" << std::endl;
-  for (int inm = 0; inm < ncells_with_nmats.size() - 1; inm++)
+  for (int inm = 0; inm < ncells_with_xmats.size() - 1; inm++)
     std::cout << "    Number of cells with " << inm + 2 << " materials -> " <<
-      ncells_with_nmats[inm + 1] << std::endl;
+      ncells_with_xmats[inm + 1] << std::endl;
 
   int nreconstructors = static_cast<int>(IR_names.size());
   std::vector< std::vector< std::shared_ptr< Tangram::CellMatPoly<3> > > >
@@ -277,7 +289,7 @@ int main(int argc, char** argv) {
           total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat]; 
       std::cout << std::endl;
 
-      for (int mc = 0; mc < ncells_with_nmats.size() - 1; mc++)
+      for (int mc = 0; mc < ncells_with_xmats.size() - 1; mc++)
         if (xmat_cells_material_volumes[imat][mc] != 0.0) {
           std::cout << "    over all " << mc + 2 << "-material cells:" << std::endl << 
           "      Aggregate vol = " << xmat_cells_material_volumes[imat][mc] << "," << std::endl <<

@@ -173,6 +173,10 @@ int main(int argc, char** argv) {
                 cell_mat_volfracs, cell_mat_centroids);
 
   // Volume and angle tolerances
+  // The choice of the distance tolerance below ensures that all non-identical points
+  // have at least one coordinate that is machine epsilon apart. Because distance
+  // tolerance corresponds to a geometrical distance, point-equivalence checks have
+  // no geometrical bias.  
   double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
   double vol_tol = std::numeric_limits<double>::epsilon();
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
