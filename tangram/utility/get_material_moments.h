@@ -656,7 +656,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   std::vector<int> cur_polys_cellID;
   for (int icell = 0; icell < ncells; icell++) {
     Tangram::MatPoly<2> mat_poly;
-    Tangram::cell_get_matpoly(mesh, icell, &mat_poly);
+    Tangram::cell_get_matpoly(mesh, icell, &mat_poly, dst_tol);
 
     if (decompose_cells) {
       mat_poly.decompose(cells_polys[icell]);
