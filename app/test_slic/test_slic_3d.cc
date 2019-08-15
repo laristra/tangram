@@ -136,6 +136,12 @@ int main(int argc, char** argv) {
 
   int ncells = mesh_wrapper.num_owned_cells();
 
+  // Volume and distance tolerance
+  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
+  double vol_tol = std::numeric_limits<double>::epsilon();
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(1);
+  ims_tols[0] = {1000, dst_tol, vol_tol}; 
+
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
   std::vector<double> cell_mat_volfracs;
@@ -145,11 +151,11 @@ int main(int argc, char** argv) {
 #if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
   get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    decompose_cells, &reference_mat_polys);
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #else
   get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    decompose_cells, &reference_mat_polys);
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #endif
 
   std::vector<int> offsets(ncells, 0);
@@ -181,7 +187,8 @@ int main(int argc, char** argv) {
       int nmp = static_cast<int>(reference_mat_polys[icell][icmat].size());
       for (int imp = 0; imp < nmp; imp++) {
         std::vector< Tangram::MatPoly<3> > cur_matpoly;
-        Tangram::r3dpoly_to_matpolys(reference_mat_polys[icell][icmat][imp], cur_matpoly);
+        Tangram::r3dpoly_to_matpolys(reference_mat_polys[icell][icmat][imp], 
+                                     cur_matpoly, dst_tol);
         assert(cur_matpoly.size() == 1);
 
         cur_matpoly[0].set_mat_id(cell_mat_ids[offsets[icell] + icmat]);
@@ -192,11 +199,6 @@ int main(int argc, char** argv) {
 
   write_to_gmv(ref_matpoly_list, ref_gmv_fname);
 #endif
-
-  // Volume fraction and angles tolerance
-  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(1);
-  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15,
-                 .fun_eps = std::numeric_limits<double>::epsilon()};
 
   // Build the driver
 #if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
@@ -242,7 +244,7 @@ int main(int argc, char** argv) {
     std::vector<double> cell_mat_sym_diff_vol;
     get_mat_sym_diff_vol(reference_mat_polys[icell], cell_ref_mat_ids,
                          cell_ref_mat_vols, cellmatpoly_list[icell],
-                         cell_mat_sym_diff_vol, true);
+                         cell_mat_sym_diff_vol, !decompose_cells);
 
     for (int icmat = 0; icmat < ncmats; icmat++) {
       int material_id = cell_ref_mat_ids[icmat];
@@ -305,7 +307,7 @@ std::cout << std::endl << "Stats for ";
     std::cout << "  Material ID " << mesh_materials[imat] << " -> " << std::endl <<
       "    Aggregate vol = " << mmcells_material_volumes[imat] << "," << std::endl <<
       "    aggregate sym.diff.vol = " << total_mat_sym_diff_vol[imat];
-    if (total_mat_sym_diff_vol[imat] > std::numeric_limits<double>::epsilon())
+    if (total_mat_sym_diff_vol[imat] >= vol_tol)
       std::cout << "," << std::endl << "    relative sym.diff.vol = " <<
         total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat];
     std::cout << std::endl;
@@ -324,8 +326,9 @@ std::cout << std::endl << "Stats for ";
       assert(cellmatpoly_list[icell] == nullptr);
       std::shared_ptr< Tangram::CellMatPoly<3> >
         cmp_ptr(new Tangram::CellMatPoly<3>(icell));
+      // Create a MatPoly with the same geometry as the current cell        
       Tangram::MatPoly<3> cell_matpoly;
-      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
+      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly, dst_tol);
       cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
       cmp_ptr->add_matpoly(cell_matpoly);
       cellmatpoly_list[icell] = cmp_ptr;

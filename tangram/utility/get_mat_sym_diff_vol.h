@@ -31,7 +31,7 @@ void get_mat_sym_diff_vol(const std::vector< std::vector<r3d_poly> >& reference_
                           const std::vector<double>& ref_mat_vol,
                           const std::shared_ptr< Tangram::CellMatPoly<3> >& result_ptr,
                           std::vector<double>& mat_sym_diff_vol,
-                          bool convex_matpolys = false) {
+                          bool convex_matpolys) {
   int nref_mats = ref_mat_ids.size();
   mat_sym_diff_vol.resize(nref_mats);
 
@@ -79,7 +79,7 @@ void get_mat_sym_diff_vol(const std::vector< std::vector<r2d_poly> >& reference_
                           const std::vector<double>& ref_mat_vol,
                           const std::shared_ptr< Tangram::CellMatPoly<2> >& result_ptr,
                           std::vector<double>& mat_sym_diff_vol,
-                          bool convex_matpolys = false) {
+                          bool convex_matpolys) {
   int nref_mats = ref_mat_ids.size();
   mat_sym_diff_vol.resize(nref_mats);
 

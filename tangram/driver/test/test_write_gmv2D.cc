@@ -34,6 +34,9 @@ TEST(WriteCellMatPoly, Mesh2D) {
   std::shared_ptr<Jali::Mesh> mesh = mf(0.0, 0.0, 2.0, 2.0, 2, 2);
   Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh);
 
+  // Distance tolerance
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+
   // Make a 2-material CellMatPoly object for cell 0
 
   Tangram::CellMatPoly<2> cellmatpoly;
@@ -74,7 +77,7 @@ TEST(WriteCellMatPoly, Mesh2D) {
   vparentkind0[3] = Tangram::Entity_kind::NODE;
   vparentid0[3] = 3;                            // parent is node 3
 
-  cellmatpoly.add_matpoly(0, 4, &(points0[0]), &(vparentkind0[0]),
+  cellmatpoly.add_matpoly(0, 4, &(points0[0]), dst_tol, &(vparentkind0[0]),
                           &(vparentid0[0]), nullptr, nullptr);
 
 
@@ -94,7 +97,7 @@ TEST(WriteCellMatPoly, Mesh2D) {
   vparentkind1[2] = Tangram::Entity_kind::NODE;
   vparentid1[2] = 4;                            // parent is node 2
 
-  cellmatpoly.add_matpoly(1, 3, &(points1[0]), &(vparentkind1[0]),
+  cellmatpoly.add_matpoly(1, 3, &(points1[0]), dst_tol, &(vparentkind1[0]),
                           &(vparentid1[0]), nullptr, nullptr);
 
   // Most cells have 1 material

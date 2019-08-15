@@ -45,7 +45,7 @@ namespace Tangram {
      */
     XMOF2D_Wrapper(const Mesh_Wrapper& Mesh,
                    const std::vector<IterativeMethodTolerances_t>& ims_tols,
-                   bool all_convex = true) :
+                   bool all_convex) :
                    mesh_(Mesh), ims_tols_(ims_tols) {
       assert(Dim == 2);
       assert(all_convex);
@@ -74,8 +74,6 @@ namespace Tangram {
 
       XMOF2D::IRTolerances ir_tol;
       ir_tol.dist_eps = ims_tols[0].fun_eps;
-      ir_tol.div_eps = 1.0e-6;
-      ir_tol.ddot_eps = ims_tols[1].fun_eps;
       ir_tol.area_eps = ims_tols[0].fun_eps;
       ir_tol.ang_eps = ims_tols[1].arg_eps;
       ir_tol.mof_max_iter = ims_tols[1].max_num_iter;
@@ -159,6 +157,8 @@ namespace Tangram {
     std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
       assert(Dim == 2);
       assert(cell_op_ID < icells_to_reconstruct.size());
+
+      double dst_tol = ims_tols_[0].arg_eps;
       int cellID = icells_to_reconstruct[cell_op_ID];
 
       CellMatPoly<Dim>* cell_mat_poly = new CellMatPoly<Dim>(cellID);
@@ -188,7 +188,7 @@ namespace Tangram {
 
           }
           (*cell_mat_poly).add_matpoly(subcell.get_material_index(), nvrts,
-                                       &subcell_vrts[0],
+                                       &subcell_vrts[0], dst_tol,
                                        &vrts_parentkind[0], &vrts_iparent[0],
                                        &sides_parentkind[0], &sides_iparent[0]);
         }
@@ -201,7 +201,7 @@ namespace Tangram {
           cell_vrts[ivrt] = Tangram::Point<Dim>(ccell.get_node_crd(ivrt).x,
                                                 ccell.get_node_crd(ivrt).y);
         (*cell_mat_poly).add_matpoly(xmof_ir->get_cell_materials(cellID)[0],
-                                     nvrts, &cell_vrts[0],
+                                     nvrts, &cell_vrts[0], dst_tol, 
                                      NULL, NULL, NULL, NULL);
       }
 

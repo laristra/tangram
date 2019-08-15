@@ -65,7 +65,8 @@ public:
     of the MatPoly's components below the plane
    */
   std::vector<double> operator() () const {
-    double vol_eps = tolerances_.fun_eps;
+    double vol_tol = tolerances_.fun_eps;
+    double dst_tol = tolerances_.arg_eps;
 
     double dst_bnd[2] = { -DBL_MAX, DBL_MAX };
     // Find the cutting distance corresponding to the planes passing through
@@ -83,7 +84,7 @@ public:
       }
     }
 
-    if (target_vol_ < vol_eps) {
+    if (target_vol_ < vol_tol) {
       // Size of the clipped polys is zero: we return the distance corresponding 
       // to the nearest vertex and zero moments
       std::vector<double> empty(D + 2, 0.0);
@@ -91,12 +92,12 @@ public:
       return empty;
     }
 
-    MatPoly_Clipper clip_matpolys;
+    MatPoly_Clipper clip_matpolys(vol_tol);
     clip_matpolys.set_matpolys(matpolys_, planar_faces_);
     // Get aggregate moments of the cut MatPoly's
     std::vector<double> full_moments = clip_matpolys.aggregated_moments();
 
-    if (target_vol_ > full_moments[0] - vol_eps) {
+    if (target_vol_ > full_moments[0] - vol_tol) {
       // All the poly's are below the plane: we return the distance corresponding
       // to the farthest vertex and aggregate moments
       full_moments.insert(full_moments.begin(), dst_bnd[1]);
@@ -121,14 +122,14 @@ public:
     // below the cutting plane. By default, the secant method is used.
     // If the secant method fails, we discard its results, fall back to the initial guess 
     // and bounds, then use the bisection algorithm instead.
-    while (vol_err > vol_eps) {
+    while (vol_err > vol_tol) {
       double sec_coef;
       if (use_secant) {
         // Both the change in volume on the previous step and the max possible change
         // in volume on this step should be above volume tolerance to keep using 
         // the secant method
-        use_secant = (std::fabs(dvol) > vol_eps) &&
-                     (std::fabs(vol_bnd[1] - vol_bnd[0]) > vol_eps);
+        use_secant = (std::fabs(dvol) > vol_tol) &&
+                     (std::fabs(vol_bnd[1] - vol_bnd[0]) > vol_tol);
         if (use_secant) {
           sec_coef = (cur_dst_bnd[1] - cur_dst_bnd[0])/(vol_bnd[1] - vol_bnd[0]);
           d2orgn = cur_dst_bnd[1] + sec_coef*(target_vol_ - vol_bnd[1]);
@@ -154,7 +155,7 @@ public:
       else
         d2orgn = 0.5*(cur_dst_bnd[0] + cur_dst_bnd[1]);
 
-      if (std::fabs(cur_dst_bnd[1] - cur_dst_bnd[0]) <= tolerances_.arg_eps) {
+      if (std::fabs(cur_dst_bnd[1] - cur_dst_bnd[0]) < dst_tol) {
         // The currently used method is valid and possible change in 
         // cutting distance is negligible, we can terminate
         cur_moments.insert(cur_moments.begin(), cutting_plane.dist2origin);
@@ -190,7 +191,7 @@ public:
         vol_bnd[1] = cur_moments[0];
       }
     }
-    
+
     cur_moments.insert(cur_moments.begin(), d2orgn);
     return cur_moments;
   }

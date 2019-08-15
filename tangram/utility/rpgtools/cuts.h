@@ -46,7 +46,8 @@ struct RefPolyData_t {
 /*!
  @brief Breaks an r3d_poly into a vector of disjoint r3d_poly's.
 */
-void r3d_poly_components(const r3d_poly& r3dpoly, std::vector<r3d_poly>& poly_components) {
+void r3d_poly_components(const r3d_poly& r3dpoly, std::vector<r3d_poly>& poly_components,
+                         const double vol_tol) {
   poly_components.clear();
 
   int total_nvrts = static_cast<int>(r3dpoly.nverts);
@@ -113,7 +114,7 @@ void r3d_poly_components(const r3d_poly& r3dpoly, std::vector<r3d_poly>& poly_co
 
     //Confirm that the component is not empty
     r3d_reduce(&cur_cmp, cmp_moments, R3D_POLY_ORDER);
-    if (cmp_moments[0] > std::numeric_limits<double>::epsilon())
+    if (cmp_moments[0] >= vol_tol)
       poly_components.push_back(cur_cmp);
 
     //Find the first vertex of the next component
@@ -139,9 +140,10 @@ public:
   */
   r3d_poly_intersect_check(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                            const std::vector<int>& IDs_to_check,
+                           const double dst_tol,
                            const Tangram::MatPoly<3>& convex_matpoly) :
                            polys_data_(polys_data), IDs_to_check_(IDs_to_check),
-                           convex_matpoly_(convex_matpoly) {
+                           dst_tol_(dst_tol), convex_matpoly_(convex_matpoly) {
     std::vector< Tangram::Plane_t<3> > fplanes;
     convex_matpoly_.face_planes(fplanes);
 
@@ -173,7 +175,7 @@ public:
       for (int ixyz = 0; ixyz < 3; ixyz++)
         cur_vrt[ixyz] = r3dpoly.verts[ivrt].pos.xyz[ixyz];
 
-      if (Tangram::point_inside_matpoly(convex_matpoly_, cur_vrt, true)) {
+      if (Tangram::point_inside_matpoly(convex_matpoly_, cur_vrt, dst_tol_, true)) {
         if (!intersects && (ivrt > 0)) return R3DPOLY::Position::INTERSECTS;
         intersects = true;
       }
@@ -198,6 +200,7 @@ private:
   const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data_;
   const std::vector<int>& IDs_to_check_;
   const Tangram::MatPoly<3>& convex_matpoly_;
+  const double dst_tol_;
   std::vector<r3d_plane> face_planes_;
 };
 
@@ -218,10 +221,13 @@ public:
 
   @param[in] polys_data Data on polyhedra to split
   @param[in] cutting_plane Cutting plane with respect to which half-spaces are defined
+  @param[in] vol_tol Volume tolerance
   */
   r3d_split_operator(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
-                     const r3d_plane& cutting_plane) :
-                     polys_data_(polys_data), cutting_plane_(cutting_plane) {}
+                     const r3d_plane& cutting_plane,
+                     const double vol_tol) :
+                     polys_data_(polys_data), cutting_plane_(cutting_plane),
+                     vol_tol_(vol_tol) {}
 
   /*!
   @brief Splits a polyhedron with the cutting plane and returns data on its parts
@@ -246,7 +252,7 @@ public:
     for (int ihs = 0; ihs < 2; ihs++) {
       if (hs_data_ptrs[ihs]->r3dpoly.nverts > 0) {
         std::vector<r3d_poly> poly_components;
-        r3d_poly_components(hs_data_ptrs[ihs]->r3dpoly, poly_components);
+        r3d_poly_components(hs_data_ptrs[ihs]->r3dpoly, poly_components, vol_tol_);
         if (poly_components.empty())
           hs_data_ptrs[ihs]->r3dpoly.nverts = 0;
         else {
@@ -261,7 +267,7 @@ public:
     bool nnz_cutoff = false;
     if (hs_data.lower->r3dpoly.nverts > 0) {
       r3d_reduce(&hs_data.lower->r3dpoly, hs_data.lower->moments, R3D_POLY_ORDER);
-      if (hs_data.lower->moments[0] > std::numeric_limits<double>::epsilon()) {
+      if (hs_data.lower->moments[0] >= vol_tol) {
         hs_data.lower->cellID = cellID;
         nnz_cutoff = true;
       }
@@ -279,7 +285,7 @@ public:
         for (int im = 0; im < R3D_NUM_MOMENTS(R3D_POLY_ORDER); im++)
           hs_data.upper->moments[im] = poly_moments[im];
       }
-      if (hs_data.upper->moments[0] > std::numeric_limits<double>::epsilon())
+      if (hs_data.upper->moments[0] >= vol_tol)
         hs_data.upper->cellID = cellID;
       else  
         hs_data.upper->r3dpoly.nverts = 0;
@@ -291,6 +297,7 @@ public:
 private:
   const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data_;
   const r3d_plane& cutting_plane_;
+  double vol_tol_;
 };
 
 /*!
@@ -307,14 +314,15 @@ private:
 template <class Mesh_Wrapper>
 void mesh_to_r3d_polys(const Mesh_Wrapper& mesh,
                        std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
-                       bool decompose_cells = true) {
+                       const double dst_tol,
+                       const bool decompose_cells) {
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
 
   polys_data.clear();
 
   for (int icell = 0; icell < ncells; icell++) {
     Tangram::MatPoly<3> mat_poly;
-    Tangram::cell_get_matpoly(mesh, icell, &mat_poly);
+    Tangram::cell_get_matpoly(mesh, icell, &mat_poly, dst_tol);
 
     std::vector< Tangram::MatPoly<3> > cell_polys;
     if (decompose_cells)
@@ -347,11 +355,13 @@ void mesh_to_r3d_polys(const Mesh_Wrapper& mesh,
  @param[in] planar_interface Cutting plane defining the half-spaces
  @param[out] lower_hs_data Data on polyhedra in the lower half-space
  @param[out] upper_hs_data Data on polyhedra in the upper half-space
+ @param[in] vol_tol Volume tolerance
 */
 void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                  const Tangram::Plane_t<3>& planar_interface,
                  std::vector< std::shared_ptr<RefPolyData_t> >& lower_hs_data,
-                 std::vector< std::shared_ptr<RefPolyData_t> >& upper_hs_data) {
+                 std::vector< std::shared_ptr<RefPolyData_t> >& upper_hs_data,
+                 const double vol_tol) {
   lower_hs_data.clear();
   upper_hs_data.clear();
   
@@ -363,7 +373,7 @@ void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data
     r3d_planar_iface.n.xyz[ixyz] = planar_interface.normal[ixyz];
   r3d_planar_iface.d = planar_interface.dist2origin;
 
-  r3d_split_operator r3d_split_op(polys_data, r3d_planar_iface);
+  r3d_split_operator r3d_split_op(polys_data, r3d_planar_iface, vol_tol);
   Tangram::vector< PolyHalfspaceData_t > hs_data(num_polys);
 
   Tangram::transform(Tangram::make_counting_iterator(0), 
@@ -394,7 +404,8 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
                           const Tangram::MatPoly<3>& convex_matpoly,
                           std::vector<int>& iinterior_polys,
                           std::vector<int>& iinstersecting_polys,
-                          std::vector<int>& iexterior_polys ) {
+                          std::vector<int>& iexterior_polys,
+                          const double dst_tol) {
   std::vector< Tangram::Plane_t<3> > face_planes;
   convex_matpoly.face_planes(face_planes);
   Tangram::BoundingBox_t<3> poly_bbox = convex_matpoly.bounding_box();
@@ -407,7 +418,8 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
   for (int ipoly = 0; ipoly < npolys; ipoly++) {
     Tangram::BoundingBox_t<3> cur_bbox = 
       Tangram::r3d_poly_bounding_box(polys_data[ipoly]->r3dpoly);
-    if(overlapping_boxes(cur_bbox, poly_bbox))
+
+    if(overlapping_boxes(cur_bbox, poly_bbox, dst_tol))
       iin_box_polys.push_back(ipoly);
     else
       iexterior_polys.push_back(ipoly);
@@ -416,7 +428,8 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
   //Sort out the polys inside the box
   int num_in_box = static_cast<int>(iin_box_polys.size());
 
-  r3d_poly_intersect_check r3d_isect_check(polys_data, iin_box_polys, convex_matpoly);
+  r3d_poly_intersect_check r3d_isect_check(polys_data, iin_box_polys, 
+                                           dst_tol, convex_matpoly);
   Tangram::vector<R3DPOLY::Position> check_result(num_in_box);
 
   Tangram::transform(Tangram::make_counting_iterator(0), 
@@ -474,13 +487,15 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                 const Tangram::MatPoly<3>& mat_poly,
                 std::vector< std::shared_ptr<RefPolyData_t> >& interior_data,
                 std::vector< std::shared_ptr<RefPolyData_t> >& exterior_data,
-                bool convex_matpoly = false) {
+                const double vol_tol,
+                const double dst_tol,
+                const bool convex_matpoly) {
   if (convex_matpoly) {
     //We need to make sure that we only split r3d_polys that actually
     //intersect the MatPoly
     std::vector<int> iexterior_polys, iinstersecting_polys, iinterior_polys;
     sort_wrt_convex_poly(polys_data, mat_poly, iinterior_polys, 
-                         iinstersecting_polys, iexterior_polys);
+                         iinstersecting_polys, iexterior_polys, dst_tol);
 
     extract_data(polys_data, iinterior_polys, interior_data);
     extract_data(polys_data, iexterior_polys, exterior_data);
@@ -500,7 +515,7 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                                                   
       //Face normal is pointing outward
       apply_plane(intersection_data, face_planes[iface], 
-                  upd_intersection_data, new_exterior_data);
+                  upd_intersection_data, new_exterior_data, vol_tol);
 
       intersection_data = upd_intersection_data;
       exterior_data.reserve(exterior_data.size() + new_exterior_data.size());
@@ -526,7 +541,7 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
       //intersect the tets of MatPoly
       std::vector<int> iexterior_polys, iinstersecting_polys, iinterior_polys;
       sort_wrt_convex_poly(remaining_data, matpoly_tets[itet], iinterior_polys,
-                           iinstersecting_polys, iexterior_polys);
+                           iinstersecting_polys, iexterior_polys, dst_tol);
       
       std::vector< std::shared_ptr<RefPolyData_t> > tet_interior_data, 
                                                     intersection_data;
@@ -548,7 +563,7 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
                                                       new_exterior_data;
         //Face normal is pointing outward
         apply_plane(intersection_data, face_planes[iface], 
-                    upd_intersection_data, new_exterior_data);
+                    upd_intersection_data, new_exterior_data, vol_tol);
 
         intersection_data = upd_intersection_data;
         exterior_data.reserve(exterior_data.size() + new_exterior_data.size());
@@ -579,7 +594,10 @@ unsigned int factorial(unsigned int n)
 /*!
  @brief For a given collections of single-material reference polyhedra sets
  generates data compatible with Tangram's driver. 
+ @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
+                      implementation that provides required functionality
 
+ @param[in] mesh Mesh wrapper
  @param[in] ref_sets_data Collection of data for single-material polyhedra sets
  @param[in] sets_material_IDs Material IDs for every set in the collection
  @param[out] cell_num_mats Number of material in each mesh cell, vector of length cell_num
@@ -592,13 +610,17 @@ unsigned int factorial(unsigned int n)
  @param[out] reference_mat_polys For every mesh cell and every material inside that cell, 
  a pointer to the collection of single-material polyhedra containing that material                 
 */
-void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyData_t> > >& 
+template <class Mesh_Wrapper>
+void finalize_ref_data(const Mesh_Wrapper& mesh,
+                       const std::vector< std::vector< std::shared_ptr<RefPolyData_t> > >& 
                          ref_sets_data,
                        const std::vector<int>& sets_material_IDs,
                        std::vector<int>& cell_num_mats,
                        std::vector<int>& cell_mat_ids,
                        std::vector<double>& cell_mat_volfracs,
                        std::vector< Tangram::Point<3> >& cell_mat_centroids,
+                       const double dst_tol,
+                       const bool decompose_cells,
                        std::vector< std::vector< std::vector<r3d_poly> > >*
                          reference_mat_polys = nullptr) {                     
   int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
@@ -660,13 +682,40 @@ void finalize_ref_data(const std::vector< std::vector< std::shared_ptr<RefPolyDa
     cell_mat_ids.insert(cell_mat_ids.end(), cells_mat_ids[icell].begin(), 
                         cells_mat_ids[icell].end());
 
-    double cell_mats_vol = 0.0;
-    for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++)
-      cell_mats_vol += cells_mat_moments[icell][icmat][0];
-
     int offset = cell_mat_volfracs.size();
     cell_mat_volfracs.resize(offset + cell_num_mats[icell]);
     cell_mat_centroids.resize(offset + cell_num_mats[icell]);
+
+    if (cell_num_mats[icell] == 1) {
+      // Single-material cell
+      cell_mat_volfracs[offset] = 1.0;
+
+      // We discard reference poly's for the cell and create a single new one
+      Tangram::MatPoly<3> cell_mat_poly;
+      r3d_poly cell_r3d_poly;
+      Tangram::cell_get_matpoly(mesh, icell, &cell_mat_poly, dst_tol);
+      if (decompose_cells) {
+        Tangram::MatPoly<3> flat_face_matpoly;
+        cell_mat_poly.faceted_matpoly(&flat_face_matpoly);
+        Tangram::matpoly_to_r3dpoly(flat_face_matpoly, cell_r3d_poly);
+      }
+      else
+        Tangram::matpoly_to_r3dpoly(cell_mat_poly, cell_r3d_poly);
+
+      if (reference_mat_polys != nullptr)
+        (*reference_mat_polys)[icell][0] = {cell_r3d_poly};
+
+      r3d_real cell_moments[R3D_NUM_MOMENTS(R3D_POLY_ORDER)];
+      r3d_reduce(&cell_r3d_poly, cell_moments, R3D_POLY_ORDER);
+      for (int idim = 0; idim < 3; idim++)
+        cell_mat_centroids[offset][idim] = cell_moments[idim + 1]/cell_moments[0];
+
+      continue;
+    }
+
+    double cell_mats_vol = 0.0;
+    for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++)
+      cell_mats_vol += cells_mat_moments[icell][icmat][0];
 
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
       cell_mat_volfracs[offset + icmat] = 

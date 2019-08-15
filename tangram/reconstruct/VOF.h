@@ -47,7 +47,7 @@ public:
   */
   explicit VOF(const Mesh_Wrapper& Mesh,
                const std::vector<IterativeMethodTolerances_t>& ims_tols,
-               const bool all_convex = false) :
+               const bool all_convex) :
                mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.empty())
       throw std::runtime_error(
@@ -128,7 +128,7 @@ public:
                           const int matID,
                           const std::vector< MatPoly<Dim> >& mixed_polys,
                           Plane_t<Dim>& cutting_plane,
-                          const bool planar_faces = true) const {
+                          const bool planar_faces) const {
     double vol_tol = ims_tols_[0].fun_eps;
 
     std::vector<int> istencil_cells;
@@ -142,6 +142,13 @@ public:
     std::vector< Point<Dim> > stencil_centroids(nsc);
     for (int isc = 0; isc < nsc; isc++) {
       const std::vector<int>& cur_mat_ids = cell_mat_ids_[istencil_cells[isc]];
+      if (cur_mat_ids.empty()) {
+        std::string err_msg = "VOF requires material data in the cells "; 
+        err_msg += "neighboring the multi-material cells!\n";
+        err_msg += "No material data is provided for cell " + std::to_string(istencil_cells[isc]);
+        err_msg += " when reconstruction is requested for cell " + std::to_string(cellID) + "!\n";
+        throw std::runtime_error(err_msg);
+      }
       int local_id = std::distance(cur_mat_ids.begin(),
         std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
 
@@ -176,7 +183,7 @@ public:
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol)
-      std::cerr << "VOF for cell " << cellID << ": after " << ims_tols_[0].max_num_iter <<
+      std::cerr << "VOF for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
         " iteration(s) achieved error in volume for material " <<
         matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
 #endif
@@ -190,11 +197,12 @@ public:
   std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
     int cellID = icells_to_reconstruct[cell_op_ID];
 
+    double dst_tol = ims_tols_[0].arg_eps;
     // Check if the cell is single-material
     if (cell_mat_ids_[cellID].size() == 1) {
       std::shared_ptr< CellMatPoly<Dim> > cmp_ptr(new CellMatPoly<Dim>(cellID));
       MatPoly<Dim> cell_matpoly;
-      cell_get_matpoly(mesh_, cellID, &cell_matpoly);
+      cell_get_matpoly(mesh_, cellID, &cell_matpoly, dst_tol);
       cell_matpoly.set_mat_id(cell_mat_ids_[cellID][0]);
       cmp_ptr->add_matpoly(cell_matpoly);
 
@@ -232,7 +240,8 @@ public:
   */
   MatPoly<Dim> cell_matpoly(const int cellID) const {
     MatPoly<Dim> mat_poly;
-    cell_get_matpoly(mesh_, cellID, &mat_poly);
+    double dst_tol = ims_tols_[0].arg_eps;
+    cell_get_matpoly(mesh_, cellID, &mat_poly, dst_tol);
 
     return mat_poly;
   }

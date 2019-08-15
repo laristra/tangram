@@ -129,11 +129,15 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   read_material_data<Wonton::Jali_Mesh_Wrapper, dim>(mesh_wrapper, in_data_fname,
     cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids);
 
-  // Volume fraction and angles tolerance
-  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(1) ;
-  ims_tols[0].max_num_iter = 1000;
-  ims_tols[0].arg_eps = 1.0e-15;
-  ims_tols[0].fun_eps = 1.0e-15;
+  // Volume and distance tolerances
+  // The choice of the distance tolerance below ensures that all non-identical points
+  // have at least one coordinate that is machine epsilon apart. Because distance
+  // tolerance corresponds to a geometrical distance, point-equivalence checks have
+  // no geometrical bias.  
+  double dst_tol = sqrt(dim)*std::numeric_limits<double>::epsilon();
+  double vol_tol = std::numeric_limits<double>::epsilon();
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(1);
+  ims_tols[0] = {1000, dst_tol, vol_tol};
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>>
   cellmatpoly_list = run_driver<dim>(mesh_wrapper, ims_tols, isconvex, cell_num_mats,
@@ -149,8 +153,9 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
       assert(cellmatpoly_list[icell] == nullptr);
       std::shared_ptr< Tangram::CellMatPoly<dim> >
         cmp_ptr(new Tangram::CellMatPoly<dim>(icell));
+      // Create a MatPoly with the same geometry as the current cell
       Tangram::MatPoly<dim> cell_matpoly;
-      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
+      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly, dst_tol);
       cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
       cmp_ptr->add_matpoly(cell_matpoly);
       cellmatpoly_list[icell] = cmp_ptr;

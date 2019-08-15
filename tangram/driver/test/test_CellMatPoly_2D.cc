@@ -28,6 +28,9 @@ TEST(CellMatPoly, Mesh2D) {
   // Make a 1-cell two-dimensional mesh
   std::shared_ptr<Jali::Mesh> mesh = mf(0.0, 0.0, 1.0, 1.0, 1, 1);
 
+  // Distance tolerance
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+  
   // Make a 2-material CellMatPoly object for the cell
 
   Tangram::CellMatPoly<2> cellmatpoly;
@@ -95,7 +98,7 @@ TEST(CellMatPoly, Mesh2D) {
   fmatpolys0.push_back({0, -1});
   fmatpolys0.push_back({0, -1});
 
-  cellmatpoly.add_matpoly(0, 4, &(points0[0]), &(vparentkind0[0]),
+  cellmatpoly.add_matpoly(0, 4, &(points0[0]), dst_tol, &(vparentkind0[0]),
                           &(vparentid0[0]), &(fparentkind0[0]),
                           &(fparentid0[0]));
 
@@ -131,7 +134,7 @@ TEST(CellMatPoly, Mesh2D) {
   fmatpolys1.push_back({1, -1});
   fmatpolys1.push_back({1, -1});
 
-  cellmatpoly.add_matpoly(1, 3, &(points1[0]), &(vparentkind1[0]),
+  cellmatpoly.add_matpoly(1, 3, &(points1[0]), dst_tol, &(vparentkind1[0]),
                           &(vparentid1[0]), nullptr, nullptr);
 
 

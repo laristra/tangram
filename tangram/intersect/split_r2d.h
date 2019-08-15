@@ -39,11 +39,15 @@ namespace Tangram {
   clock-wise. 
   @param[in] r2dpoly Corresponding R2D polygon
   @param[out] mat_poly MatPoly object to convert
+  @param[in] dst_tol Distance tolerance
+  @param[in] reference_pts Preferred points to snap vertices to
 */
-void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
+void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly,
+                        const double dst_tol,
+                        const std::vector< Point<2> >* reference_pts = nullptr)
 {
     int nvrts = r2dpoly.nverts;
-    std::vector<Point2> r2d_poly_vrts(nvrts);
+    std::vector< Point<2> > r2d_poly_vrts(nvrts);
 
     // Walk the r2d graph to collect vertices in the ccw order
     int icur_node = 0;
@@ -54,26 +58,9 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
       icur_node = r2dpoly.verts[icur_node].pnbrs[0];
     }
 
-    // We only store non-degenerate edges
-    std::vector<Point2> matpoly_vrts;
-    matpoly_vrts.reserve(nvrts);
-
-    for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-      // Check if this point is coincident with the next one,
-      // i.e. if the respective edge is degenerate: points 
-      // are considered coincident if all their respective 
-      // coordinates are within machine epsilon from each other
-      if (!(r2d_poly_vrts[ivrt] == r2d_poly_vrts[(ivrt + 1)%nvrts]))
-        matpoly_vrts.push_back(r2d_poly_vrts[ivrt]);
-    }
-    matpoly_vrts.shrink_to_fit();
-
-    // We do not store polygons with less than three faces,
-    // as they are clearly degenerate
-    if (matpoly_vrts.size() > 2)
-      mat_poly.initialize(matpoly_vrts);
-    else
-      mat_poly.clear();
+    // Eliminate degeneracies that r2d has potentially introduced: adjacent
+    // vertices within dst_tol from each other are replaced by a single vertex
+    mat_poly = natural_selection(r2d_poly_vrts, dst_tol, reference_pts);
 }
 
 /*!
@@ -82,7 +69,7 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
   @param[out] r2dpoly Corresponding R2D polygon
 */
  void matpoly_to_r2dpoly(const MatPoly<2>& mat_poly,
-                   r2d_poly& r2dpoly) {
+                         r2d_poly& r2dpoly) {
 
   //Translate coordinates of vertices to R2D format
   const std::vector<Point2>& matpoly_vrts = mat_poly.points();
@@ -115,9 +102,9 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
 */
 
   void get_intersection_moments(const MatPoly<2>& mat_poly,
-                              const r2d_poly& r2dpoly,
-                              std::vector<double>& intersection_moments,
-                              bool convex_matpoly = false) {   
+                                const r2d_poly& r2dpoly,
+                                std::vector<double>& intersection_moments,
+                                bool convex_matpoly) {   
   const int POLY_ORDER = 1;
   int nmoments = R2D_NUM_MOMENTS(POLY_ORDER);
   r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
@@ -183,11 +170,12 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly)
   @param[out] upper_halfspace_moments Moments of MatPoly above the plane
 */
 void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
-                         const Plane_t<2>& cutting_plane,
-                         MatPoly<2>& lower_halfspace_poly,
-                         MatPoly<2>& upper_halfspace_poly,
-                         std::vector<double>& lower_halfspace_moments,
-                         std::vector<double>& upper_halfspace_moments) {
+                              const Plane_t<2>& cutting_plane,
+                              MatPoly<2>& lower_halfspace_poly,
+                              MatPoly<2>& upper_halfspace_poly,
+                              std::vector<double>& lower_halfspace_moments,
+                              std::vector<double>& upper_halfspace_moments,
+                              double vol_tol, double dst_tol) {
 
   //Translate the cutting plane to R2D format
   //Here the direction of the cutting plane normal
@@ -212,32 +200,54 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
   //Compute moments for subpoly's 
   const int POLY_ORDER = 1;
   r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
+  int iempty_subpoly = -1;
   for (int isp = 0; isp < 2; isp++) {
-      int nverts = r2d_subpolys[isp].nverts;
+    int nverts = r2d_subpolys[isp].nverts;
 
-      //Check if the subpoly is empty
-      if (nverts == 0) {
-	subpoly_ptrs[isp]->clear();
-	subpoly_moments_ptrs[isp]->clear();
-	continue;
-      }
+    //Check if the subpoly is empty
+    //Note that if one of the subpoly's is empty, then the other is the
+    //original MatPoly, so we just need the ID (0 or 1) of the empty subpoly
+    //to get the result
+    if (nverts == 0) {
+	    subpoly_ptrs[isp]->clear();
+	    subpoly_moments_ptrs[isp]->assign(3, 0.0);
+      iempty_subpoly = isp;
+	    break;
+    }
 
-      //Find the moments for a subpoly
-      r2d_reduce(&r2d_subpolys[isp], r2d_moments, POLY_ORDER);
+    //Find the moments for a subpoly
+    r2d_reduce(&r2d_subpolys[isp], r2d_moments, POLY_ORDER);
 
-      if (r2d_moments[0] <= std::numeric_limits<double>::epsilon()) {
-	subpoly_ptrs[isp]->clear();
-	subpoly_moments_ptrs[isp]->clear();
-	continue;
-      }
+    if (r2d_moments[0] < vol_tol) {
+	    subpoly_ptrs[isp]->clear();
+	    subpoly_moments_ptrs[isp]->assign(3, 0.0);
+      iempty_subpoly = isp;
+	    break;
+    }
 
-      subpoly_moments_ptrs[isp]->assign(r2d_moments, r2d_moments + 3);
+    subpoly_moments_ptrs[isp]->assign(r2d_moments, r2d_moments + 3);
+  }
 
+  //If there are no empty subpolys, we return two resulting pieces.
+  //If one of the subpolys is empty, we return the original MatPoly to
+  //ensure consistency and prevent unnecessary changes
+  if (iempty_subpoly == -1) {
+    for (int isp = 0; isp < 2; isp++) {
       //Get a MatPoly for a r2d subpoly
+      //We snap vertices to original positions if they are close enough
       MatPoly<2> sub_matpoly; 
-      r2dpoly_to_matpoly(r2d_subpolys[isp], sub_matpoly);
+      r2dpoly_to_matpoly(r2d_subpolys[isp], sub_matpoly, dst_tol, &mat_poly.points());
       
       *subpoly_ptrs[isp] = sub_matpoly; 
+    }
+  }
+  else {
+    int ifull_poly = (iempty_subpoly + 1)%2;
+    matpoly_to_r2dpoly(mat_poly, r2d_subpolys[ifull_poly]);
+    r2d_reduce(&r2d_subpolys[ifull_poly], r2d_moments, POLY_ORDER);
+    subpoly_moments_ptrs[ifull_poly]->assign(r2d_moments, r2d_moments + 3);
+
+    *subpoly_ptrs[ifull_poly] = mat_poly;
   }
 } //split_convex_matpoly_r2d
 
@@ -259,10 +269,14 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
 class SplitR2D {
  public:
   SplitR2D(const std::vector< MatPoly<2> >& matpolys,
-           const Plane_t<2>& cutting_plane, 
-           const bool all_convex = false) : 
+           const Plane_t<2>& cutting_plane,
+           const double vol_tol,
+           const double dst_tol, 
+           const bool all_convex) : 
            matpolys_(matpolys), 
            cutting_plane_(cutting_plane),
+           vol_tol_(vol_tol),
+           dst_tol_(dst_tol),
            all_convex_(all_convex) {}
 
   /*! 
@@ -301,10 +315,11 @@ class SplitR2D {
       std::vector<double> cur_moments[2];
       split_convex_matpoly_r2d((*convex_polys)[icp], cutting_plane_,
                                cur_subpolys[0], cur_subpolys[1],
-                               cur_moments[0], cur_moments[1]);
+                               cur_moments[0], cur_moments[1],
+                               vol_tol_, dst_tol_);
 
       for (int ihs = 0; ihs < 2; ihs++)
-        if (!cur_moments[ihs].empty()) {
+        if (cur_subpolys[ihs].num_vertices() != 0) {
           hs_subpolys_ptrs[ihs]->emplace_back(cur_subpolys[ihs]);
           for (int im = 0; im < 3; im++)
             (*hs_moments_ptrs[ihs])[im] += cur_moments[ihs][im];
@@ -314,7 +329,7 @@ class SplitR2D {
 
     for (int ihs = 0; ihs < 2; ihs++)
       if (hs_poly_count[ihs] == 0)
-        hs_moments_ptrs[ihs]->clear();
+        hs_moments_ptrs[ihs]->assign(3, 0.0);
 
     return hs_sets;
   }
@@ -328,6 +343,8 @@ class SplitR2D {
  private:
   const std::vector< MatPoly<2> >& matpolys_;
   const Plane_t<2>& cutting_plane_;
+  double vol_tol_;
+  double dst_tol_;
   bool all_convex_;
 };
 
@@ -349,7 +366,8 @@ class SplitR2D {
 
 class ClipR2D {
  public:
-  ClipR2D() {}
+  ClipR2D(double vol_tol) : 
+          vol_tol_(vol_tol) {}
 
   /*! 
     @brief Set the cutting line used by the functor. 
@@ -391,11 +409,13 @@ class ClipR2D {
       for(int ipoly = 0; ipoly < r2d_polys_.size(); ipoly++)
         if (r2d_polys_[ipoly].nverts != 0) {
           r2d_reduce(&r2d_polys_[ipoly], r2d_moments, POLY_ORDER);
-          if (r2d_moments[0] > std::numeric_limits<double>::epsilon())
-            for (int im = 0; im < 3; im++)
-              agg_moments[im] += r2d_moments[im];
+          for (int im = 0; im < 3; im++)
+            agg_moments[im] += r2d_moments[im];
         }
     }
+
+    if (agg_moments[0] < vol_tol_)
+      agg_moments.assign(3, 0.0);
 
     return agg_moments;
   }
@@ -409,7 +429,6 @@ class ClipR2D {
   std::vector<double> operator() () const {
     std::vector<double> below_plane_moments(3, 0.0);
 
-    int poly_counter = 0;
     const int POLY_ORDER = 1;
     r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
 
@@ -423,17 +442,14 @@ class ClipR2D {
         if (clipped_poly.nverts != 0) {
           //Find the moments for the part in the lower halfspace
           r2d_reduce(&clipped_poly, r2d_moments, POLY_ORDER);
-          if (r2d_moments[0] > std::numeric_limits<double>::epsilon()) {
-            for (int im = 0; im < 3; im++)
-              below_plane_moments[im] += r2d_moments[im];
-            poly_counter++;
-          }
+          for (int im = 0; im < 3; im++)
+            below_plane_moments[im] += r2d_moments[im];
         }
       }
     }
 
-    if (poly_counter == 0)
-      below_plane_moments.clear();
+    if (below_plane_moments[0] < vol_tol_)
+      below_plane_moments.assign(3, 0.0);
       
     return below_plane_moments;
   }
@@ -444,6 +460,7 @@ class ClipR2D {
  private:
   std::vector<r2d_poly> r2d_polys_;
   r2d_plane r2d_cut_line_;
+  double vol_tol_;
 };
 
 } // namespace Tangram

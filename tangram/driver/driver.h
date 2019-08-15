@@ -59,7 +59,7 @@ class Driver {
   */
   explicit Driver(Mesh_Wrapper const& Mesh,
                   const std::vector<IterativeMethodTolerances_t>& ims_tols,
-                  const bool all_convex = false)
+                  const bool all_convex)
       : mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) { }
 
   /// Copy constructor (disabled)
@@ -116,7 +116,7 @@ class Driver {
 
       for (int icmat = 0; icmat < ncmats; icmat++) {
         double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
-        if (mat_volume > volume_tol) {
+        if (mat_volume >= volume_tol) {
           cell_mat_ids_.push_back(cell_mat_ids[offset + icmat]);
           cell_mat_volfracs_.push_back(cell_mat_volfracs[offset + icmat]);
           if (!cell_mat_centroids.empty())
@@ -124,8 +124,7 @@ class Driver {
 
           // If specified volume tolerance is not too small, ensure that the volume
           // of the reconstructed material poly will not drop below the tolerance
-          if ( (volume_tol > 2*std::numeric_limits<double>::epsilon()) &&
-               (mat_volume < 2*volume_tol + std::numeric_limits<double>::epsilon()) )
+          if (mat_volume <= 2*volume_tol)
             insufficient_vol_tol = true;
         }
         else
@@ -194,7 +193,7 @@ class Driver {
       std::vector<std::vector<int>> iMMCs;
       for (int icell = 0; icell < ncells; icell++) {
         int nmats = cell_num_mats_[icell];
-        if (nmats == 1)
+        if (nmats < 2)
           continue;
         else if (nmats - 1 > iMMCs.size()) 
           iMMCs.resize(nmats - 1);

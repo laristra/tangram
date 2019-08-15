@@ -13,6 +13,9 @@
 // Test the method for finding the cutting distance in cutting_distance_solver.h
 
 TEST(cutting_distance_solver, Mesh3D) {
+  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
+  double vol_tol = pow(dst_tol, 3);
+
   //Non-convex polyhedron with flat faces
   std::vector<Tangram::Point3> ncv_poly_points = {
     Tangram::Point3(0.0, 0.0, 0.0), Tangram::Point3(1.0, 0.0, 0.0),
@@ -41,12 +44,11 @@ TEST(cutting_distance_solver, Mesh3D) {
 
   double target_volume = 701.0/1500.0;
 
-  Tangram::IterativeMethodTolerances_t tols = {
-    .max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};  
+  Tangram::IterativeMethodTolerances_t tols = {1000, dst_tol, vol_tol};  
 
   std::vector< Tangram::MatPoly<3> > ncv_matpolys(1);
   //Initialize non-convex MatPoly
-  ncv_matpolys[0].initialize(ncv_poly_points, ncv_poly_faces);
+  ncv_matpolys[0].initialize(ncv_poly_points, ncv_poly_faces, dst_tol);
   double ncv_poly_volume = ncv_matpolys[0].moments()[0];
 
   //Decomposition into convex subpolys

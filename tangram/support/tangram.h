@@ -217,6 +217,10 @@ struct HalfSpaceSets_t {
    is the closest to the given reference centroid. arg_eps will correspond
    to a negligible change in the orientation, and fun_eps will correspond to a
    negligible distance between centroids.
+   Note that distance and volume tolerances for the cutting distance calculation
+   algorithm, which is used by all the implemented interface reconstruction methods,
+   are also used to eliminate degenerate vertices (i.e. vertices with distance below
+   distance tolerance) and materials (i.e. materials with volume below volume tolerance).
 */   
 struct IterativeMethodTolerances_t {
   int max_num_iter;   // Max number of iterations
@@ -239,10 +243,10 @@ struct BoundingBox_t {
 template <int D>
 inline bool overlapping_boxes(const BoundingBox_t<D>& bb1, 
                               const BoundingBox_t<D>& bb2,
-                              double eps = std::numeric_limits<double>::epsilon()) {
+                              double dst_eps) {
   for (int idim = 0; idim < D; idim++)
-    if ((bb1.min[idim] > bb2.max[idim] - eps) || 
-        (bb1.max[idim] < bb2.min[idim] + eps))
+    if ((bb1.min[idim] > bb2.max[idim] - dst_eps) || 
+        (bb1.max[idim] < bb2.min[idim] + dst_eps))
       return false;
 
   return true;

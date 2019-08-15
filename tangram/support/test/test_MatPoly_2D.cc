@@ -13,6 +13,7 @@
 
 TEST(MatPoly, Mesh2D) {
   int mat_id = 1;
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
   
   //Test for a unit square
   std::vector<Tangram::Point2> square_points = {
@@ -33,7 +34,7 @@ TEST(MatPoly, Mesh2D) {
   ASSERT_EQ(-1, square_matpoly.mat_id());
   
   //Initialization from ccw ordered vertices
-  square_matpoly.initialize(square_points);
+  square_matpoly.initialize(square_points, dst_tol);
   
   //Verify coordinates
   const std::vector<Tangram::Point2>& matpoly_points = square_matpoly.points();
@@ -62,7 +63,7 @@ TEST(MatPoly, Mesh2D) {
     Tangram::Point2(0.0, 1.0) };
   std::vector<double> ncv_poly_moments = {0.75, 0.375, 21.0/72.0};
   Tangram::MatPoly<2> ncv_matpoly(mat_id);
-  ncv_matpoly.initialize(ncv_poly_points);
+  ncv_matpoly.initialize(ncv_poly_points, dst_tol);
 
   //Verify moments
   std::vector<double> matpoly_moments = ncv_matpoly.moments();

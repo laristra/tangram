@@ -80,10 +80,14 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
   @param[out] mat_polys Corresponding vector of MatPoly's: 
   will contain as many MatPoly's as there are components 
   in the R3D polyhedron
+  @param[in] dst_tol Distance tolerance
+  @param[in] reference_pts Preferred points to snap vertices to
 */
 void
 r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
-                    std::vector< MatPoly<3> >& mat_polys) {
+                    std::vector< MatPoly<3> >& mat_polys,
+                    const double dst_tol,
+                    const std::vector< Point<3> >* reference_pts = nullptr) {
   r3d_brep* poly_brep;
   r3d_int ncomponents;
   r3d_poly poly_copy = r3dpoly;
@@ -98,133 +102,31 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
   mat_polys.reserve(ncomponents);
   for (int ipoly = 0; ipoly < ncomponents; ipoly++) {
     int nvrts = poly_brep[ipoly].numvertices;
-    std::vector<Point3> curpoly_vrts;
-    curpoly_vrts.reserve(nvrts);
-    // We only store unique vertices, so we need a map from r3d node indices
-    // to MatPoly node indices for when we process faces
-    std::vector<int> r3d2matpoly_vrt_ids(nvrts, -1);
-    for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-      Point3 cur_vrt;
+    std::vector< Point<3> > curpoly_vrts(nvrts);
+    for (int ivrt = 0; ivrt < nvrts; ivrt++)
       for (int ixyz = 0; ixyz < 3; ixyz++)
-        cur_vrt[ixyz] = poly_brep[ipoly].vertices[ivrt].xyz[ixyz];
-      // Check if this point is already stored
-      for (int i = 0; i < curpoly_vrts.size(); i++)
-        //Points are considered equivalent if all their respective coordinates 
-        //are within machine epsilon from each other
-        if (cur_vrt == curpoly_vrts[i]) {
-          r3d2matpoly_vrt_ids[ivrt] = i;
-          break;
-        }
-      // If the point is unique, we store it
-      if (r3d2matpoly_vrt_ids[ivrt] == -1) {
-        r3d2matpoly_vrt_ids[ivrt] = curpoly_vrts.size();
-        curpoly_vrts.push_back(cur_vrt);
-      }
-    }
-    curpoly_vrts.shrink_to_fit();
-
-    if (curpoly_vrts.size() < 4) continue;
+        curpoly_vrts[ivrt][ixyz] = poly_brep[ipoly].vertices[ivrt].xyz[ixyz];
 
     int nfaces = poly_brep[ipoly].numfaces;
     std::vector< std::vector<int> > curpoly_faces(nfaces);
     for (int iface = 0; iface < nfaces; iface++) {
       int face_nverts = poly_brep[ipoly].numvertsperface[iface];
-      for (int ifv = 0; ifv < face_nverts; ifv++) {
-        int cur_vrt_id = r3d2matpoly_vrt_ids[poly_brep[ipoly].faceinds[iface][ifv]];
-        // We only add unique node indices to the list of face's nodes
-        if (std::find(curpoly_faces[iface].begin(), curpoly_faces[iface].end(), 
-                      cur_vrt_id) == curpoly_faces[iface].end())
-          curpoly_faces[iface].push_back(cur_vrt_id);
-      }
+      curpoly_faces[iface].resize(face_nverts);
+      for (int ifv = 0; ifv < face_nverts; ifv++)
+        curpoly_faces[iface][ifv] = poly_brep[ipoly].faceinds[iface][ifv];
     }
 
-    std::vector<int> hanging_nodes;
-    bool removed_nodes = true;
-    while (removed_nodes) {
-      //Removing nodes can result in new degenerate faces, so keep removing
-      //such faces until no hanging nodes are left
-      removed_nodes = false;
-      // Filter out degenerate faces
-      int ind_face = 0;
-      while (ind_face < curpoly_faces.size())
-        if (curpoly_faces[ind_face].size() > 2) ind_face++;
-        else {
-          //A degenerate face can collapse into a hanging point on an edge, i.e.
-          //a node that is connected to less than three other nodes.
-          //We eliminate such nodes from faces: converting a polyhedron that has
-          //hanging nodes using r3d_init_poly can result in an r3d_poly
-          //with no vertices
-          for (int ifn = 0; ifn < curpoly_faces[ind_face].size(); ifn++) {
-            int inode = curpoly_faces[ind_face][ifn];
-            std::vector<int> iconnected_nodes;
-            std::vector<std::pair<int,int>> node_in_faces;
-            for (int iface = 0; iface < curpoly_faces.size(); iface++) {
-              int in_face_id = std::distance(curpoly_faces[iface].begin(),
-                                             std::find(curpoly_faces[iface].begin(),
-                                                       curpoly_faces[iface].end(), inode));
-              int nface_vrts = curpoly_faces[iface].size();
-              if (in_face_id != nface_vrts) {
-                //Node of a degenerate face is also a node of the current face
-                node_in_faces.push_back(std::pair<int,int>(iface, in_face_id));
-                //We look for unique adjacent nodes in the current face
-                for (int p0n1 = 0; p0n1 < 2; p0n1++) {
-                  int adj_node_face_id = (nface_vrts + in_face_id + 2*p0n1 - 1)%nface_vrts;
-                  if (std::find(iconnected_nodes.begin(), iconnected_nodes.end(),
-                                curpoly_faces[iface][adj_node_face_id]) == iconnected_nodes.end())
-                    iconnected_nodes.push_back(curpoly_faces[iface][adj_node_face_id]);
-                }
-              }
-            }  
-            //Check if the current face node is a hanging node, if so, remove it
-            if (iconnected_nodes.size() < 3) {
-              removed_nodes = true;
-              hanging_nodes.push_back(inode);
-              for (int icf = 0; icf < node_in_faces.size(); icf++) {
-                int iface = node_in_faces[icf].first;
-                curpoly_faces[iface].erase(curpoly_faces[iface].begin() + 
-                                           node_in_faces[icf].second);
-              }
-            }
-          }
-          //Now, remove the degenerate face
-          curpoly_faces.erase(curpoly_faces.begin() + ind_face);  
-        }
-    }
-
-    //We remove nodes no longer present in the poly: passing to r3d_init_poly
-    //vertices that are not used by any faces can result in an empty r3d_poly
-    if (!hanging_nodes.empty()) {
-      nvrts = static_cast<int>(curpoly_vrts.size());
-      std::vector<int> old2new_vrt_ids(nvrts, -1);
-      std::vector<Point3> shrunk_vrts;
-      shrunk_vrts.reserve(nvrts - hanging_nodes.size());
-      for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-        // Check if this point was removed
-        if (std::find(hanging_nodes.begin(), hanging_nodes.end(), ivrt) ==
-            hanging_nodes.end()) {
-            old2new_vrt_ids[ivrt] = shrunk_vrts.size();
-            shrunk_vrts.push_back(curpoly_vrts[ivrt]);
-        }
-      }
-      curpoly_vrts = shrunk_vrts;  
-
-      nfaces = static_cast<int>(curpoly_faces.size());
-      std::vector< std::vector<int> > updated_faces(nfaces);
-      for (int iface = 0; iface < nfaces; iface++) {
-        int face_nverts = static_cast<int>(curpoly_faces[iface].size());
-        updated_faces[iface].resize(face_nverts);
-        for (int ifv = 0; ifv < face_nverts; ifv++) 
-          updated_faces[iface][ifv] = old2new_vrt_ids[curpoly_faces[iface][ifv]];
-      }
-      curpoly_faces = updated_faces;
-    }
-
+    // Eliminate degeneracies that r3d has potentially introduced: vertices
+    // within dst_tol from each other are replaced by a single vertex,
+    // hanging nodes are identified and removed, degenerate faces with
+    // less than three vertices are eliminated.
+    MatPoly<3> fit_poly = natural_selection(curpoly_vrts, curpoly_faces, 
+                                            dst_tol, reference_pts);
     // We do not store polyhedra with less than four faces, 
     // as they are clearly degenerate
-    if (curpoly_faces.size() > 3) {
+    if (!fit_poly.points().empty()) {
       int inew_poly = static_cast<int>(mat_polys.size());
-      mat_polys.push_back(MatPoly<3>());
-      mat_polys[inew_poly].initialize(curpoly_vrts, curpoly_faces);
+      mat_polys.push_back(fit_poly);
     }
   }
   mat_polys.shrink_to_fit();
@@ -248,7 +150,8 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
                          MatPoly<3>& lower_halfspace_poly,
                          MatPoly<3>& upper_halfspace_poly,
                          std::vector<double>& lower_halfspace_moments,
-                         std::vector<double>& upper_halfspace_moments) {
+                         std::vector<double>& upper_halfspace_moments,
+                         double vol_tol, double dst_tol) {
   //Translate the cutting plane to R3D format
   r3d_plane r3d_cut_plane;
   for (int ixyz = 0; ixyz < 3; ixyz++)
@@ -266,43 +169,63 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
 
   const int POLY_ORDER = 1;
   r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
+  int iempty_subpoly = -1;
   for (int isp = 0; isp < 2; isp++) {
     //Check if the subpoly is empty
+    //Note that if one of the subpoly's is empty, then the other is the
+    //original MatPoly, so we just need the ID (0 or 1) of the empty subpoly
+    //to get the result    
     if (r3d_subpolys[isp].nverts == 0) {
       subpoly_ptrs[isp]->clear();
-      subpoly_moments_ptrs[isp]->clear();
-      continue;
+      subpoly_moments_ptrs[isp]->assign(4, 0.0);
+      iempty_subpoly = isp;
+      break;
     }
 
     //Find the moments for a subpoly
     r3d_reduce(&r3d_subpolys[isp], r3d_moments, POLY_ORDER);
 
-    if (r3d_moments[0] <= std::numeric_limits<double>::epsilon()) {
+    if (r3d_moments[0] < vol_tol) {
       subpoly_ptrs[isp]->clear();
-      subpoly_moments_ptrs[isp]->clear();
-      continue;
+      subpoly_moments_ptrs[isp]->assign(4, 0.0);
+      iempty_subpoly = isp;
+      break;
     }    
 
     subpoly_moments_ptrs[isp]->assign(r3d_moments, r3d_moments + 4);
+  }
 
-    //Get a MatPoly for a subpoly
-    std::vector< MatPoly<3> > sub_matpoly;
-    r3dpoly_to_matpolys(r3d_subpolys[isp], sub_matpoly);
-    int ncomponents = static_cast<int>(sub_matpoly.size());
-    if (ncomponents > 1) {
-      // Filter out degenerate components
-      int ind_subpoly = 0;
-      while (ind_subpoly < sub_matpoly.size())
-        if (sub_matpoly[ind_subpoly].moments()[0] > 
-            std::numeric_limits<double>::epsilon()) ind_subpoly++;
-        else sub_matpoly.erase(sub_matpoly.begin() + ind_subpoly);  
+  //If there are no empty subpolys, we return two resulting pieces.
+  //If one of the subpolys is empty, we return the original MatPoly to
+  //ensure consistency and prevent unnecessary changes
+  if (iempty_subpoly == -1) {
+    for (int isp = 0; isp < 2; isp++) {
+      //Get a MatPoly for a subpoly
+      std::vector< MatPoly<3> > sub_matpoly;
+      r3dpoly_to_matpolys(r3d_subpolys[isp], sub_matpoly, dst_tol, &mat_poly.points());
+      int ncomponents = static_cast<int>(sub_matpoly.size());
+      if (ncomponents > 1) {
+        // Filter out degenerate components
+        int subpoly_id = 0;
+        while (subpoly_id < sub_matpoly.size())
+          if (sub_matpoly[subpoly_id].moments()[0] >= vol_tol) subpoly_id++;
+          else sub_matpoly.erase(sub_matpoly.begin() + subpoly_id);  
+      }
+        
+      if (ncomponents == 1) 
+        *subpoly_ptrs[isp] = sub_matpoly[0];
+      else
+        throw std::runtime_error("Non-convex MatPoly is split using the method for convex MatPoly's!");
     }
-      
-    if (ncomponents == 1) 
-      *subpoly_ptrs[isp] = sub_matpoly[0];
-    else
-      throw std::runtime_error("Non-convex MatPoly is split using the method for convex MatPoly's!");
-  }  
+  }
+  else {
+    int ifull_poly = (iempty_subpoly + 1)%2;
+    matpoly_to_r3dpoly(mat_poly, r3d_subpolys[ifull_poly]);
+    r3d_reduce(&r3d_subpolys[ifull_poly], r3d_moments, POLY_ORDER);
+    subpoly_moments_ptrs[ifull_poly]->assign(r3d_moments, r3d_moments + 4);
+
+    *subpoly_ptrs[ifull_poly] = mat_poly;
+  }
 }
 
 /*!
@@ -323,9 +246,13 @@ class SplitR3D {
  public:
   SplitR3D(const std::vector< MatPoly<3> >& matpolys,
            const Plane_t<3>& cutting_plane, 
-           const bool all_convex = false) : 
+           const double vol_tol,
+           const double dst_tol, 
+           const bool all_convex) : 
            matpolys_(matpolys), 
            cutting_plane_(cutting_plane),
+           vol_tol_(vol_tol),
+           dst_tol_(dst_tol),
            all_convex_(all_convex) {}
 
   /*! 
@@ -364,10 +291,10 @@ class SplitR3D {
       std::vector<double> cur_moments[2];
       split_convex_matpoly_r3d((*convex_polys)[icp], cutting_plane_,
                                cur_subpolys[0], cur_subpolys[1],
-                               cur_moments[0], cur_moments[1]);
+                               cur_moments[0], cur_moments[1], vol_tol_, dst_tol_);
 
       for (int ihs = 0; ihs < 2; ihs++)
-        if (!cur_moments[ihs].empty()) {
+        if (cur_subpolys[ihs].num_vertices() != 0) {
           hs_subpolys_ptrs[ihs]->emplace_back(cur_subpolys[ihs]);
           for (int im = 0; im < 4; im++)
             (*hs_moments_ptrs[ihs])[im] += cur_moments[ihs][im];
@@ -377,7 +304,7 @@ class SplitR3D {
 
     for (int ihs = 0; ihs < 2; ihs++)
       if (hs_poly_count[ihs] == 0)
-        hs_moments_ptrs[ihs]->clear();
+        hs_moments_ptrs[ihs]->assign(4, 0.0);
 
     return hs_sets;
   }
@@ -391,6 +318,8 @@ class SplitR3D {
  private:
   const std::vector< MatPoly<3> >& matpolys_;
   const Plane_t<3>& cutting_plane_;
+  double vol_tol_;
+  double dst_tol_;  
   bool all_convex_;
 };
 
@@ -413,7 +342,8 @@ class SplitR3D {
 
 class ClipR3D {
  public:
-  ClipR3D() {}
+  ClipR3D(double vol_tol) : 
+          vol_tol_(vol_tol) {}
 
   /*! 
     @brief Set the cutting plane used by the functor. 
@@ -432,7 +362,7 @@ class ClipR3D {
     material polyhedra are planar: if not, they are facetized.
   */
   void set_matpolys(const std::vector< MatPoly<3> >& matpolys,
-                    const bool planar_faces = false) {
+                    const bool planar_faces) {
     int npolys = static_cast<int>(matpolys.size());
     r3d_polys_.resize(npolys);
     if (planar_faces) {
@@ -463,12 +393,14 @@ class ClipR3D {
       for(int ipoly = 0; ipoly < r3d_polys_.size(); ipoly++) {
         if (r3d_polys_[ipoly].nverts != 0) {
           r3d_reduce(&r3d_polys_[ipoly], r3d_moments, POLY_ORDER);
-          if (r3d_moments[0] > std::numeric_limits<double>::epsilon())
-            for (int im = 0; im < 4; im++)
-              agg_moments[im] += r3d_moments[im];
+          for (int im = 0; im < 4; im++)
+            agg_moments[im] += r3d_moments[im];
         }
       }
     }
+
+    if (agg_moments[0] < vol_tol_)
+      agg_moments.assign(4, 0.0);
 
     return agg_moments;
   }
@@ -482,7 +414,6 @@ class ClipR3D {
   std::vector<double> operator() () const {
     std::vector<double> below_plane_moments(4, 0.0);
 
-    int poly_counter = 0;
     const int POLY_ORDER = 1;
     r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
 
@@ -496,17 +427,14 @@ class ClipR3D {
         if (clipped_poly.nverts != 0) {
           //Find the moments for the part in the lower halfspace
           r3d_reduce(&clipped_poly, r3d_moments, POLY_ORDER);
-          if (r3d_moments[0] > std::numeric_limits<double>::epsilon()) {
-            for (int im = 0; im < 4; im++)
-              below_plane_moments[im] += r3d_moments[im];
-            poly_counter++;
-          }
+          for (int im = 0; im < 4; im++)
+            below_plane_moments[im] += r3d_moments[im];
         }
       }
     }
     
-    if (poly_counter == 0)
-      below_plane_moments.clear();
+    if (below_plane_moments[0] < vol_tol_)
+      below_plane_moments.assign(4, 0.0);
       
     return below_plane_moments;
   }
@@ -517,6 +445,7 @@ class ClipR3D {
  private:
   std::vector<r3d_poly> r3d_polys_;
   r3d_plane r3d_cut_plane_;
+  double vol_tol_;  
 };
 
 /*!
@@ -545,7 +474,7 @@ class ClipR3D {
 void get_intersection_moments(const MatPoly<3>& mat_poly,
                               const r3d_poly& r3dpoly,
                               std::vector<double>& intersection_moments,
-                              bool convex_matpoly = false) {   
+                              bool convex_matpoly) {   
   const int POLY_ORDER = 1;
   r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
 
