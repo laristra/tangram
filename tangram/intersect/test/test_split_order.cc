@@ -171,8 +171,8 @@ TEST(split_order, ConvexPoly3D) {
 
   //Get a MatPoly for a r2d subpoly
   std::vector<Tangram::MatPoly<3>> cube_low, cube_up;
-  Tangram::r3dpoly_to_matpolys(r3d_subpolys[0], cube_low, dst_tol);
-  Tangram::r3dpoly_to_matpolys(r3d_subpolys[1], cube_up, dst_tol);
+  Tangram::r3dpoly_to_matpolys(r3d_subpolys[0], cube_low, vol_tol, dst_tol);
+  Tangram::r3dpoly_to_matpolys(r3d_subpolys[1], cube_up, vol_tol, dst_tol);
 
   ASSERT_EQ(cube_low.size(), 1);
   ASSERT_EQ(cube_up.size(), 1);

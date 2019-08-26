@@ -44,87 +44,6 @@ struct RefPolyData_t {
 };
 
 /*!
- @brief Breaks an r3d_poly into a vector of disjoint r3d_poly's.
-*/
-void r3d_poly_components(const r3d_poly& r3dpoly, std::vector<r3d_poly>& poly_components,
-                         const double vol_tol) {
-  poly_components.clear();
-
-  int total_nvrts = static_cast<int>(r3dpoly.nverts);
-  std::vector<int> vrt_marks(total_nvrts, 0);
-  std::vector< std::vector<bool> > walked_edge(total_nvrts);
-  for (int ivrt = 0; ivrt < total_nvrts; ivrt++)
-    walked_edge[ivrt].assign(3, false);
-
-  std::vector<bool> vrt_in_cmp(total_nvrts, false);
-  std::vector<int> poly_irvt2cmp_ivrt(total_nvrts, -1);
-
-  int icmp_first_vrt = 0;
-  r3d_real cmp_moments[R3D_NUM_MOMENTS(R3D_POLY_ORDER)];
-
-  while(icmp_first_vrt < total_nvrts) {
-    r3d_poly cur_cmp;
-    cur_cmp.nverts = 0;
-
-    //Walk all faces of the current components
-    int iface_first_vrt = icmp_first_vrt;
-    int iedge = 0;
-    while (iface_first_vrt < total_nvrts) {
-      int icur_vrt = iface_first_vrt;
-
-      for (iedge = 0; iedge < 3; iedge++)
-        if (!walked_edge[iface_first_vrt][iedge])
-          break;
-
-      //Walk the current face
-      do {
-        vrt_marks[icur_vrt]++;
-        
-        if (!vrt_in_cmp[icur_vrt]) {
-          poly_irvt2cmp_ivrt[icur_vrt] = cur_cmp.nverts;
-          cur_cmp.nverts++;
-          cur_cmp.verts[poly_irvt2cmp_ivrt[icur_vrt]] = r3dpoly.verts[icur_vrt];
-          vrt_in_cmp[icur_vrt] = true;
-        }
-
-        int inext_vrt = r3dpoly.verts[icur_vrt].pnbrs[iedge];
-        walked_edge[icur_vrt][iedge] = true;
-
-        int ireturn_edge;
-        for (ireturn_edge = 0; ireturn_edge < 3; ireturn_edge++)
-          if (r3dpoly.verts[inext_vrt].pnbrs[ireturn_edge] == icur_vrt)
-            break;
-
-        iedge = (ireturn_edge + 2)%3;
-        icur_vrt = inext_vrt;
-
-      } while (icur_vrt != iface_first_vrt);
-
-      for (iface_first_vrt = 0; iface_first_vrt < total_nvrts; iface_first_vrt++)
-        if( (vrt_marks[iface_first_vrt] > 0) && (vrt_marks[iface_first_vrt] < 3) )
-          break;
-    }
-
-    //Neighbors data still uses r3dpoly indices
-    for (int icmp_vrt = 0; icmp_vrt < cur_cmp.nverts; icmp_vrt++)
-      for (int iedge = 0; iedge < 3; iedge++) {
-        int old_id = cur_cmp.verts[icmp_vrt].pnbrs[iedge];
-        cur_cmp.verts[icmp_vrt].pnbrs[iedge] = poly_irvt2cmp_ivrt[old_id];
-      }
-
-    //Confirm that the component is not empty
-    r3d_reduce(&cur_cmp, cmp_moments, R3D_POLY_ORDER);
-    if (cmp_moments[0] >= vol_tol)
-      poly_components.push_back(cur_cmp);
-
-    //Find the first vertex of the next component
-    for (icmp_first_vrt = 0; icmp_first_vrt < total_nvrts; icmp_first_vrt++)
-      if (vrt_marks[icmp_first_vrt] == 0)
-        break;
-  }
-}
-
-/*!
  @brief For a given data on a collection of polyhedra find their positions with
  respect to a convex shape given by a MatPoly object.
 */
@@ -252,7 +171,7 @@ public:
     for (int ihs = 0; ihs < 2; ihs++) {
       if (hs_data_ptrs[ihs]->r3dpoly.nverts > 0) {
         std::vector<r3d_poly> poly_components;
-        r3d_poly_components(hs_data_ptrs[ihs]->r3dpoly, poly_components, vol_tol_);
+        Tangram::r3d_poly_components(hs_data_ptrs[ihs]->r3dpoly, poly_components, vol_tol_);
         if (poly_components.empty())
           hs_data_ptrs[ihs]->r3dpoly.nverts = 0;
         else {

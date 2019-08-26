@@ -18,7 +18,6 @@ extern "C" {
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 
-
 /*!
  @file split_r3d.h
  @brief Routines for splitting convex or non-convex MatPoly's
@@ -75,6 +74,92 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
 }
 
 /*!
+ @brief Breaks an r3d_poly into a vector of disjoint components.
+ @param[in] r3dpoly Original r3dpoly that can have disjoint components
+ @param[out] poly_components Vector of r3dpoly's, one for each components
+ @param[in] vol_tol Volume tolerance, only components with volumes above it
+ will be included in the output vector
+*/
+void r3d_poly_components(const r3d_poly& r3dpoly, std::vector<r3d_poly>& poly_components,
+                         const double vol_tol) {
+  const int R3D_POLY_ORDER = 1;
+  poly_components.clear();
+
+  int total_nvrts = static_cast<int>(r3dpoly.nverts);
+  std::vector<int> vrt_marks(total_nvrts, 0);
+  std::vector< std::vector<bool> > walked_edge(total_nvrts);
+  for (int ivrt = 0; ivrt < total_nvrts; ivrt++)
+    walked_edge[ivrt].assign(3, false);
+
+  std::vector<bool> vrt_in_cmp(total_nvrts, false);
+  std::vector<int> poly_irvt2cmp_ivrt(total_nvrts, -1);
+
+  int icmp_first_vrt = 0;
+  r3d_real cmp_moments[R3D_NUM_MOMENTS(R3D_POLY_ORDER)];
+
+  while(icmp_first_vrt < total_nvrts) {
+    r3d_poly cur_cmp;
+    cur_cmp.nverts = 0;
+
+    //Walk all faces of the current components
+    int iface_first_vrt = icmp_first_vrt;
+    int iedge = 0;
+    while (iface_first_vrt < total_nvrts) {
+      int icur_vrt = iface_first_vrt;
+
+      for (iedge = 0; iedge < 3; iedge++)
+        if (!walked_edge[iface_first_vrt][iedge])
+          break;
+
+      //Walk the current face
+      do {
+        vrt_marks[icur_vrt]++;
+        
+        if (!vrt_in_cmp[icur_vrt]) {
+          poly_irvt2cmp_ivrt[icur_vrt] = cur_cmp.nverts;
+          cur_cmp.nverts++;
+          cur_cmp.verts[poly_irvt2cmp_ivrt[icur_vrt]] = r3dpoly.verts[icur_vrt];
+          vrt_in_cmp[icur_vrt] = true;
+        }
+
+        int inext_vrt = r3dpoly.verts[icur_vrt].pnbrs[iedge];
+        walked_edge[icur_vrt][iedge] = true;
+
+        int ireturn_edge;
+        for (ireturn_edge = 0; ireturn_edge < 3; ireturn_edge++)
+          if (r3dpoly.verts[inext_vrt].pnbrs[ireturn_edge] == icur_vrt)
+            break;
+
+        iedge = (ireturn_edge + 2)%3;
+        icur_vrt = inext_vrt;
+
+      } while (icur_vrt != iface_first_vrt);
+
+      for (iface_first_vrt = 0; iface_first_vrt < total_nvrts; iface_first_vrt++)
+        if( (vrt_marks[iface_first_vrt] > 0) && (vrt_marks[iface_first_vrt] < 3) )
+          break;
+    }
+
+    //Neighbors data still uses r3dpoly indices
+    for (int icmp_vrt = 0; icmp_vrt < cur_cmp.nverts; icmp_vrt++)
+      for (int iedge = 0; iedge < 3; iedge++) {
+        int old_id = cur_cmp.verts[icmp_vrt].pnbrs[iedge];
+        cur_cmp.verts[icmp_vrt].pnbrs[iedge] = poly_irvt2cmp_ivrt[old_id];
+      }
+
+    //Confirm that the component is not empty
+    r3d_reduce(&cur_cmp, cmp_moments, R3D_POLY_ORDER);
+    if (cmp_moments[0] >= vol_tol)
+      poly_components.push_back(cur_cmp);
+
+    //Find the first vertex of the next component
+    for (icmp_first_vrt = 0; icmp_first_vrt < total_nvrts; icmp_first_vrt++)
+      if (vrt_marks[icmp_first_vrt] == 0)
+        break;
+  }
+}
+
+/*!
   @brief Converts a polyhedron in R3D format to MatPoly's.
   @param[in] r3dpoly R3D polyhedron to convert
   @param[out] mat_polys Corresponding vector of MatPoly's: 
@@ -86,34 +171,41 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
 void
 r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                     std::vector< MatPoly<3> >& mat_polys,
+                    const double vol_tol,
                     const double dst_tol,
                     const std::vector< Point<3> >* reference_pts = nullptr) {
-  r3d_brep* poly_brep;
-  r3d_int ncomponents;
-  r3d_poly poly_copy = r3dpoly;
-  r3d_init_brep(&poly_copy, &poly_brep, &ncomponents);
-
   mat_polys.clear();
-  if (ncomponents == 0) {
-    r3d_free_brep(&poly_brep, 0);
-    return;
-  }
+  std::vector<r3d_poly> poly_components; 
+  r3d_poly_components(r3dpoly, poly_components, vol_tol);
+  if (poly_components.empty()) return;
 
-  mat_polys.reserve(ncomponents);
-  for (int ipoly = 0; ipoly < ncomponents; ipoly++) {
-    int nvrts = poly_brep[ipoly].numvertices;
+  mat_polys.reserve(poly_components.size());
+  for (int ir3dpoly = 0; ir3dpoly < poly_components.size(); ir3dpoly++) {
+    r3d_brep* poly_brep;
+    r3d_int ncomponents;
+    r3d_poly poly_copy = poly_components[ir3dpoly];
+    r3d_init_brep(&poly_copy, &poly_brep, &ncomponents);
+
+    if (ncomponents == 0) {
+      r3d_free_brep(&poly_brep, 0);
+      continue;
+    }
+
+    assert(ncomponents == 1);
+    
+    int nvrts = poly_brep[0].numvertices;
     std::vector< Point<3> > curpoly_vrts(nvrts);
     for (int ivrt = 0; ivrt < nvrts; ivrt++)
       for (int ixyz = 0; ixyz < 3; ixyz++)
-        curpoly_vrts[ivrt][ixyz] = poly_brep[ipoly].vertices[ivrt].xyz[ixyz];
+        curpoly_vrts[ivrt][ixyz] = poly_brep[0].vertices[ivrt].xyz[ixyz];
 
-    int nfaces = poly_brep[ipoly].numfaces;
+    int nfaces = poly_brep[0].numfaces;
     std::vector< std::vector<int> > curpoly_faces(nfaces);
     for (int iface = 0; iface < nfaces; iface++) {
-      int face_nverts = poly_brep[ipoly].numvertsperface[iface];
+      int face_nverts = poly_brep[0].numvertsperface[iface];
       curpoly_faces[iface].resize(face_nverts);
       for (int ifv = 0; ifv < face_nverts; ifv++)
-        curpoly_faces[iface][ifv] = poly_brep[ipoly].faceinds[iface][ifv];
+        curpoly_faces[iface][ifv] = poly_brep[0].faceinds[iface][ifv];
     }
 
     // Eliminate degeneracies that r3d has potentially introduced: vertices
@@ -128,10 +220,10 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
       int inew_poly = static_cast<int>(mat_polys.size());
       mat_polys.push_back(fit_poly);
     }
-  }
-  mat_polys.shrink_to_fit();
 
-  r3d_free_brep(&poly_brep, ncomponents);
+    mat_polys.shrink_to_fit();
+    r3d_free_brep(&poly_brep, ncomponents);
+  }
 }
 
 /*!
@@ -202,7 +294,8 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
     for (int isp = 0; isp < 2; isp++) {
       //Get a MatPoly for a subpoly
       std::vector< MatPoly<3> > sub_matpoly;
-      r3dpoly_to_matpolys(r3d_subpolys[isp], sub_matpoly, dst_tol, &mat_poly.points());
+      r3dpoly_to_matpolys(r3d_subpolys[isp], sub_matpoly, vol_tol, dst_tol, 
+                          &mat_poly.points());
       int ncomponents = static_cast<int>(sub_matpoly.size());
       if (ncomponents > 1) {
         // Filter out degenerate components

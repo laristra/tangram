@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
       for (int imp = 0; imp < nmp; imp++) {
         std::vector< Tangram::MatPoly<3> > cur_matpoly;
         Tangram::r3dpoly_to_matpolys(reference_mat_polys[icell][icmat][imp], 
-                                     cur_matpoly, dst_tol);
+                                     cur_matpoly, vol_tol, dst_tol);
         assert(cur_matpoly.size() == 1);
 
         cur_matpoly[0].set_mat_id(cell_mat_ids[offsets[icell] + icmat]);
