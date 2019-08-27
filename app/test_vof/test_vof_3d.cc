@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 
   // Volume and distance tolerance
   double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
-  double vol_tol = std::numeric_limits<double>::epsilon();
+  double vol_tol = pow2(std::numeric_limits<double>::epsilon());
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(1);
   ims_tols[0] = {1000, dst_tol, vol_tol}; 
 
