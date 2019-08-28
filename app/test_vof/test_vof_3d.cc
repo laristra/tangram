@@ -139,7 +139,8 @@ int main(int argc, char** argv) {
 
   // Volume and distance tolerance
   double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
-  double vol_tol = 1.0e-17;
+  double vol_tol = pow2(std::numeric_limits<double>::epsilon());
+  double rmdg_vol_tol = 1.0e-15;
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(1);
   ims_tols[0] = {1000, dst_tol, vol_tol}; 
 
@@ -152,11 +153,11 @@ int main(int argc, char** argv) {
 #if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
   get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
+    rmdg_vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #else
   get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
+    rmdg_vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #endif
 
   std::vector<int> offsets(ncells, 0);
