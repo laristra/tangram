@@ -169,18 +169,30 @@ TEST(split_order, ConvexPoly3D) {
     Tangram::Point3(0.5, 0.0, 0.0), Tangram::Point3(0.5, 1.0, 0.0),
     Tangram::Point3(0.5, 0.0, 1.0), Tangram::Point3(0.5, 1.0, 1.0)};
 
-  //Get a MatPoly for a r2d subpoly
+  //Get a MatPoly for a r3d subpoly
   std::vector<Tangram::MatPoly<3>> cube_low, cube_up;
-  Tangram::r3dpoly_to_matpolys(r3d_subpolys[0], cube_low, dst_tol);
-  Tangram::r3dpoly_to_matpolys(r3d_subpolys[1], cube_up, dst_tol);
+  Tangram::r3dpoly_to_matpolys(r3d_subpolys[0], cube_low, vol_tol, dst_tol);
+  Tangram::r3dpoly_to_matpolys(r3d_subpolys[1], cube_up, vol_tol, dst_tol);
 
   ASSERT_EQ(cube_low.size(), 1);
   ASSERT_EQ(cube_up.size(), 1);
 
   ///Check lower and upper subpolys
-  for (int i = 0; i < cube_low[0].num_vertices(); i++)
-    ASSERT_TRUE(approxEq(cube_low[0].vertex_point(i), cube_ref_low[i], 1.0e-15));
+  ASSERT_EQ(cube_ref_low.size(), cube_low[0].num_vertices());
+  std::vector<int> ref2res_vrt(cube_ref_low.size(), -1);
+  for (int i = 0; i < cube_ref_low.size(); i++)
+    for (int j = 0; j < cube_low[0].num_vertices(); j++)
+      if (Wonton::approxEq(cube_ref_low[i], cube_low[0].vertex_point(j), dst_tol))
+        ref2res_vrt[i] = j;
+  for (int ivrt = 0; ivrt < cube_ref_low.size(); ivrt++)
+    ASSERT_NE(ref2res_vrt[ivrt], -1);
 
-  for (int i = 0; i < cube_up[0].num_vertices(); i++)
-    ASSERT_TRUE(approxEq(cube_up[0].vertex_point(i), cube_ref_up[i], 1.0e-15));
+  ASSERT_EQ(cube_ref_up.size(), cube_up[0].num_vertices());
+  ref2res_vrt.assign(cube_ref_up.size(), -1);
+  for (int i = 0; i < cube_ref_up.size(); i++)
+    for (int j = 0; j < cube_up[0].num_vertices(); j++)
+      if (Wonton::approxEq(cube_ref_up[i], cube_up[0].vertex_point(j), dst_tol))
+        ref2res_vrt[i] = j;
+  for (int ivrt = 0; ivrt < cube_ref_up.size(); ivrt++)
+    ASSERT_NE(ref2res_vrt[ivrt], -1);
 }

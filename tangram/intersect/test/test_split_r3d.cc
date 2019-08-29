@@ -67,16 +67,37 @@ TEST(split_r3d, Mesh3D) {
   //Check that vertices and faces of polygons below and above the plane match
   for (int ihs = 0; ihs < 2; ihs++) {
     ASSERT_EQ(ref_cp_points[ihs].size(), convex_polys[ihs].num_vertices());
+    std::vector<int> ref2res_vrt(ref_cp_points[ihs].size(), -1);
+    for (int i = 0; i < ref_cp_points[ihs].size(); i++)
+      for (int j = 0; j < convex_polys[ihs].num_vertices(); j++)
+        if (Wonton::approxEq(ref_cp_points[ihs][i], convex_polys[ihs].vertex_point(j), dst_tol))
+          ref2res_vrt[i] = j;
     for (int ivrt = 0; ivrt < ref_cp_points[ihs].size(); ivrt++)
-      ASSERT_TRUE(approxEq(ref_cp_points[ihs][ivrt], 
-                           convex_polys[ihs].vertex_point(ivrt), 1.0e-15));
-    ASSERT_EQ(ref_cp_faces[ihs].size(), convex_polys[ihs].num_faces()); 
-    for (int iface = 0; iface < ref_cp_faces[ihs].size(); iface++) {
-      const std::vector<int>& face_vrts = convex_polys[ihs].face_vertices(iface);
-      ASSERT_EQ(ref_cp_faces[ihs][iface].size(), face_vrts.size());
-      for (int ivrt = 0; ivrt < ref_cp_faces[ihs][iface].size(); ivrt++)
-        ASSERT_EQ(ref_cp_faces[ihs][iface][ivrt], face_vrts[ivrt]); 
-    }
+      ASSERT_NE(ref2res_vrt[ivrt], -1);
+
+    std::vector<int> ref2res_face(ref_cp_faces[ihs].size(), -1);
+    ASSERT_EQ(ref_cp_faces[ihs].size(), convex_polys[ihs].num_faces());
+    for (int i = 0; i < ref_cp_faces[ihs].size(); i++)
+      for (int j = 0; j < convex_polys[ihs].num_faces(); j++) {
+        const std::vector<int>& face_vrts = convex_polys[ihs].face_vertices(j);
+        int nfvrts = static_cast<int>(face_vrts.size());
+        if (ref_cp_faces[ihs][i].size() != nfvrts) continue;
+        int iref_start = std::distance(face_vrts.begin(), 
+          std::find(face_vrts.begin(), face_vrts.end(), ref2res_vrt[ref_cp_faces[ihs][i][0]]));
+        if (iref_start == nfvrts) continue;
+
+        bool matching_face = true;
+        for (int iv = 0; iv < nfvrts; iv++)
+          if (face_vrts[(iref_start + iv)%nfvrts] != ref2res_vrt[ref_cp_faces[ihs][i][iv]]) {
+            matching_face = false;
+            break;
+          }
+
+        if (matching_face) ref2res_face[i] = j;
+      }
+    
+    for (int iface = 0; iface < ref_cp_faces[ihs].size(); iface++)
+      ASSERT_NE(ref2res_face[iface], -1);
   }
 
   //Use the class instead
@@ -89,19 +110,40 @@ TEST(split_r3d, Mesh3D) {
   Tangram::MatPoly<3>* hs_poly_ptrs[2] = {&hs_poly_sets.lower_halfspace_set.matpolys[0],
                                           &hs_poly_sets.upper_halfspace_set.matpolys[0]};
   //Check that we obtained the same MatPoly's as before                                        
-  for (int ihs = 0; ihs < 2; ihs++) {                                        
+  for (int ihs = 0; ihs < 2; ihs++) {
     ASSERT_EQ(ref_cp_points[ihs].size(), hs_poly_ptrs[ihs]->num_vertices());
+    std::vector<int> ref2res_vrt(ref_cp_points[ihs].size(), -1);
+    for (int i = 0; i < ref_cp_points[ihs].size(); i++)
+      for (int j = 0; j < hs_poly_ptrs[ihs]->num_vertices(); j++)
+        if (Wonton::approxEq(ref_cp_points[ihs][i], hs_poly_ptrs[ihs]->vertex_point(j), dst_tol))
+          ref2res_vrt[i] = j;
     for (int ivrt = 0; ivrt < ref_cp_points[ihs].size(); ivrt++)
-      ASSERT_TRUE(approxEq(ref_cp_points[ihs][ivrt], 
-                           hs_poly_ptrs[ihs]->vertex_point(ivrt), 1.0e-15));
-    ASSERT_EQ(ref_cp_faces[ihs].size(), hs_poly_ptrs[ihs]->num_faces()); 
-    for (int iface = 0; iface < ref_cp_faces[ihs].size(); iface++) {
-      const std::vector<int>& face_vrts = hs_poly_ptrs[ihs]->face_vertices(iface);
-      ASSERT_EQ(ref_cp_faces[ihs][iface].size(), face_vrts.size());
-      for (int ivrt = 0; ivrt < ref_cp_faces[ihs][iface].size(); ivrt++)
-        ASSERT_EQ(ref_cp_faces[ihs][iface][ivrt], face_vrts[ivrt]); 
-    }
-  }
+      ASSERT_NE(ref2res_vrt[ivrt], -1);
+
+    std::vector<int> ref2res_face(ref_cp_faces[ihs].size(), -1);
+    ASSERT_EQ(ref_cp_faces[ihs].size(), hs_poly_ptrs[ihs]->num_faces());
+    for (int i = 0; i < ref_cp_faces[ihs].size(); i++)
+      for (int j = 0; j < hs_poly_ptrs[ihs]->num_faces(); j++) {
+        const std::vector<int>& face_vrts = hs_poly_ptrs[ihs]->face_vertices(j);
+        int nfvrts = static_cast<int>(face_vrts.size());
+        if (ref_cp_faces[ihs][i].size() != nfvrts) continue;
+        int iref_start = std::distance(face_vrts.begin(), 
+          std::find(face_vrts.begin(), face_vrts.end(), ref2res_vrt[ref_cp_faces[ihs][i][0]]));
+        if (iref_start == nfvrts) continue;
+
+        bool matching_face = true;
+        for (int iv = 0; iv < nfvrts; iv++)
+          if (face_vrts[(iref_start + iv)%nfvrts] != ref2res_vrt[ref_cp_faces[ihs][i][iv]]) {
+            matching_face = false;
+            break;
+          }
+
+        if (matching_face) ref2res_face[i] = j;
+      }
+    
+    for (int iface = 0; iface < ref_cp_faces[ihs].size(); iface++)
+      ASSERT_NE(ref2res_face[iface], -1);
+  }  
 
 #ifdef OUTPUT_TO_GMV
   std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list;
