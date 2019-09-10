@@ -164,10 +164,17 @@ int main(int argc, char** argv) {
   std::vector<Tangram::Point2> cell_mat_centroids;
   read_mat_data(mesh_wrapper, in_data_fname, cell_num_mats, cell_mat_ids,
                 cell_mat_volfracs, cell_mat_centroids);
-  // Distance(angle) and volume tolerances
-  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(2);
-  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
-  ims_tols[1] = {.max_num_iter = 1000, .arg_eps = 1.0e-14, .fun_eps = 1.0e-14};
+
+  // Volume and angle tolerances
+  // The choice of the distance tolerance below ensures that all non-identical points
+  // have at least one coordinate that is machine epsilon apart. Because distance
+  // tolerance corresponds to a geometrical distance, point-equivalence checks have
+  // no geometrical bias.  
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+  double vol_tol = std::numeric_limits<double>::epsilon();
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {1000, dst_tol, vol_tol};
+  ims_tols[1] = {100, 1.0e-15, 1.0e-15};
 
   Tangram::Driver<Tangram::XMOF2D_Wrapper, 2,
     Wonton::Jali_Mesh_Wrapper> xmof_driver(mesh_wrapper, ims_tols, true);

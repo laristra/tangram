@@ -176,6 +176,12 @@ class CellMatPoly {
   }
 
   /*!
+    @brief Distance tolerance of CellMatPoly
+    @return Distance tolerance for all contained MatPoly's
+  */
+  double dst_tol() {return dst_tol_;}  
+
+  /*!
     @brief Faces of the material polygon in cell
     @param matpoly_id    Local polygon ID in the cell
     @return              Local IDs of matpoly faces (unique within cell)
@@ -325,6 +331,7 @@ class CellMatPoly {
   */
   void add_matpoly(int const matid,
                    double const matpoly_point0, double const matpoly_point1,
+                   double dst_tol,
                    Entity_kind const point0_parentkind,
                    Entity_kind const point1_parentkind,
                    int const point0_parentid, int const point1_parentid);
@@ -340,6 +347,7 @@ class CellMatPoly {
   */
   void add_matpoly(int const matid,
                    int const numverts, Point<2> const * const matpoly_points,
+                   double dst_tol,
                    Entity_kind const * const points_parentkind,
                    int const * const points_parentid,
                    Entity_kind const * const faces_parentkind,
@@ -360,6 +368,7 @@ class CellMatPoly {
   */
   void add_matpoly(int const matid,
                    int const numverts, Point<3> const * const matpoly_points,
+                   double dst_tol,
                    Entity_kind const * const points_parentkind,
                    int const * const points_parentid,
                    int const numfaces, int const * const numfaceverts,
@@ -489,6 +498,7 @@ class CellMatPoly {
   std::vector<Point<D>> matvertex_points_;  // coordinates of vertices
   std::vector<double> matpoly_volumes_;  // precomputed volumes of matpolys
   std::vector<Point<D>> matpoly_centroids_;  // precomputed centroids of matpolys
+  double dst_tol_ = 0.0;
 };  // class CellMatPoly
 
 
@@ -506,12 +516,18 @@ template<int D>
 void CellMatPoly<D>::add_matpoly(int const matid,
                                  double const matpoly_point0,
                                  double const matpoly_point1,
+                                 double dst_tol,
                                  Entity_kind const point0_parentkind,
                                  Entity_kind const point1_parentkind,
                                  int const point0_parentid,
                                  int const point1_parentid) {
 
   assert(D == 1);
+  if (num_matpolys_ == 0)
+    dst_tol_ = dst_tol;
+  else {
+    assert(dst_tol_ == dst_tol);
+  }
 
   int new_matpoly_id = num_matpolys_;
   if (std::find(cell_materialids_.begin(), cell_materialids_.end(), matid) == 
@@ -529,7 +545,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   int nv_ini = num_matverts_;
   for (int i = 0; i < nv_ini; i++) {
     Point<1>& p = matvertex_points_[i];
-    if (p[0] == matpoly_point0) {
+    if (std::fabs(p[0] - matpoly_point0) < dst_tol_) {
       found = true;  // This point is already in CellMatPoly
       matpoly_faces_[new_matpoly_id].push_back(i);
       matpoly_facedirs_[new_matpoly_id].push_back(0);
@@ -564,7 +580,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   found = false;
   for (int i = 0; i < nv_ini; i++) {
     Point<1>& p = matvertex_points_[i];
-    if (p[0] == matpoly_point1) {
+    if (std::fabs(p[0] - matpoly_point1) < dst_tol_) {
       found = true;  // This point is already in CellMatPoly
       matpoly_faces_[new_matpoly_id].push_back(i);
       matpoly_facedirs_[new_matpoly_id].push_back(1);
@@ -620,11 +636,17 @@ template<int D>
 void CellMatPoly<D>::add_matpoly(int const matid,
                                  int const numverts,
                                  Point<2> const * const matpoly_points,
+                                 double dst_tol,
                                  Entity_kind const * const points_parentkind,
                                  int const * const points_parentid,
                                  Entity_kind const * const faces_parentkind,
                                  int const * const faces_parentid) {
   assert(D == 2);
+  if (num_matpolys_ == 0)
+    dst_tol_ = dst_tol;
+  else {
+    assert(dst_tol_ == dst_tol);
+  }  
 
   int new_matpoly_id = num_matpolys_;
   if (std::find(cell_materialids_.begin(), cell_materialids_.end(), matid) == 
@@ -645,11 +667,8 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     bool found = false;
     for (int i = 0; i < nv_ini; i++) {  // Note, nv remains number of original pnts
       Point<D>& p = matvertex_points_[i];
-      // We use exact equality criterium to identify coincident nodes.
-      // The use of distance tolerances can result in material poly's with 
-      // degeneracies depending on the intersector employed (e.g. r2d) and is
-      // therefore not recommended.
-      if (p == pmat) {
+      // We use the provided distance tolerance to identify coincident nodes.
+      if ((p - pmat).norm() < dst_tol_) {
         found = true;  // This point is already in CellMatPoly
         matverts[j] = i;
         break;
@@ -762,6 +781,7 @@ template<int D>
 void CellMatPoly<D>::add_matpoly(int matid,
                                  int numverts,
                                  Point<3> const * const matpoly_points,
+                                 double dst_tol,
                                  Entity_kind const * const points_parentkind,
                                  int const * const points_parentid,
                                  int numfaces, int const * const numfaceverts,
@@ -770,7 +790,12 @@ void CellMatPoly<D>::add_matpoly(int matid,
                                  int const * const faces_parentid) {
 
   assert(D == 3);
-
+  if (num_matpolys_ == 0)
+    dst_tol_ = dst_tol;
+  else {
+    assert(dst_tol_ == dst_tol);
+  }
+  
   int new_matpoly_id = num_matpolys_;
   if (std::find(cell_materialids_.begin(), cell_materialids_.end(), matid) == 
       cell_materialids_.end())
@@ -792,11 +817,8 @@ void CellMatPoly<D>::add_matpoly(int matid,
     
     for (int i = 0; i < nv_ini; i++) {
       Point<D>& p = matvertex_points_[i];
-      // We use exact equality criterium to identify coincident nodes.
-      // The use of distance tolerances can result in material poly's with 
-      // degeneracies depending on the intersector employed (e.g. r3d) and is
-      // therefore not recommended.
-      if (p == pmat) {
+      // We use the provided distance tolerance to identify coincident nodes.
+      if ((p - pmat).norm() < dst_tol_) {
         found = true;  // This point is already in CellMatPoly
         matverts[j] = i;
         break;
@@ -957,7 +979,7 @@ void CellMatPoly<D>::add_matpoly(int matid,
 template <>
 void CellMatPoly<2>::add_matpoly(const MatPoly<2>& mat_poly) {
   add_matpoly(mat_poly.mat_id(), mat_poly.num_vertices(), 
-              &mat_poly.points()[0], nullptr, nullptr,
+              &mat_poly.points()[0], mat_poly.dst_tol(), nullptr, nullptr,
               nullptr, nullptr);
 }
 
@@ -978,9 +1000,8 @@ void CellMatPoly<3>::add_matpoly(const MatPoly<3>& mat_poly) {
   }
 
   add_matpoly(mat_poly.mat_id(), mat_poly.num_vertices(), 
-              &mat_poly.points()[0], nullptr, nullptr,
-              nfaces, &nface_vrts[0], &faces_vrts[0],
-              nullptr, nullptr);
+              &mat_poly.points()[0], mat_poly.dst_tol(), nullptr, nullptr,
+              nfaces, &nface_vrts[0], &faces_vrts[0], nullptr, nullptr);
 }
 
 /*!
@@ -995,7 +1016,7 @@ MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
 #endif
   std::vector<Point<2>> mp_pts = matpoly_points(matpoly_id);
   MatPoly<2> matpoly(matpoly_matid(matpoly_id));
-  matpoly.initialize(mp_pts);
+  matpoly.initialize(mp_pts, dst_tol_);
   
   return matpoly;
 }
@@ -1034,7 +1055,7 @@ MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
   }
 
   MatPoly<3> matpoly(matpoly_matid(matpoly_id));
-  matpoly.initialize(mp_pts, mf_vrts);
+  matpoly.initialize(mp_pts, mf_vrts, dst_tol_);
   
   return matpoly;
 }

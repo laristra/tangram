@@ -51,7 +51,7 @@
 
 const std::vector<int> mesh_materials = {5, 0, 3};
 const std::vector< Tangram::Vector2 > material_interface_normals = {
-  Tangram::Vector2(0.5, 0.5), Tangram::Vector2(0.5, -0.375)
+  Tangram::Vector2(-0.5, -0.5), Tangram::Vector2(-0.5, 0.375)
 };
 const std::vector< Tangram::Point2 > material_interface_points = {
   Tangram::Point2(0.5, 0.5), Tangram::Point2(0.5, 0.5)
@@ -129,12 +129,19 @@ int main(int argc, char** argv) {
   Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, false, false);
 #else
   Wonton::Simple_Mesh mesh(0.0, 0.0,
-                            1.0, 1.0,
-                            nx, ny);
+                           1.0, 1.0,
+                           nx, ny);
   Wonton::Simple_Mesh_Wrapper mesh_wrapper(mesh);
 #endif
 
   int ncells = mesh_wrapper.num_owned_cells();
+
+  // Volume and angle tolerances
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+  double vol_tol = std::numeric_limits<double>::epsilon();
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {1000, dst_tol, vol_tol};
+  ims_tols[1] = {100, 1.0e-15, 1.0e-15};
 
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
@@ -145,11 +152,11 @@ int main(int argc, char** argv) {
 #if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
   get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    reference_mat_polys, decompose_cells);
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #else
   get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    reference_mat_polys, decompose_cells);
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #endif
 
   std::vector<int> offsets(ncells, 0);
@@ -188,7 +195,7 @@ int main(int argc, char** argv) {
         }
 
         Tangram::MatPoly<2> cur_matpoly(cell_mat_ids[offsets[icell] + icmat]);
-        cur_matpoly.initialize(poly_vrts);
+        cur_matpoly.initialize(poly_vrts, dst_tol);
 
         ref_matpoly_list[icell]->add_matpoly(cur_matpoly);
       }
@@ -197,11 +204,6 @@ int main(int argc, char** argv) {
 
   write_to_gmv(ref_matpoly_list, ref_gmv_fname);
 #endif
-
-  // Volume and angles tolerance
-  std::vector<Tangram::IterativeMethodTolerances_t> ims_tols(2);
-  ims_tols[0] = {.max_num_iter = 1000, .arg_eps = 1.0e-15, .fun_eps = 1.0e-15};
-  ims_tols[1] = {.max_num_iter = 1000, .arg_eps = 1.0e-14, .fun_eps = 1.0e-15};
 
   // Build the driver
 #if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
@@ -290,8 +292,9 @@ int main(int argc, char** argv) {
       assert(cellmatpoly_list[icell] == nullptr);
       std::shared_ptr< Tangram::CellMatPoly<2> >
         cmp_ptr(new Tangram::CellMatPoly<2>(icell));
+      // Create a MatPoly with the same geometry as the current cell        
       Tangram::MatPoly<2> cell_matpoly;
-      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly);
+      cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly, dst_tol);
       cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
       cmp_ptr->add_matpoly(cell_matpoly);
       cellmatpoly_list[icell] = cmp_ptr;

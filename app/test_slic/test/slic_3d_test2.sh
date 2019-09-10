@@ -18,4 +18,4 @@ set -x
 ${RUN_COMMAND} ${TESTAPPDIR}/test_slic_3d 0 cubic27.exo
 
 # Compare the values for the field
-${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold2_3d.txt cell_sym_diff_3d_cubic27.txt 1e-12
+${CMPAPPDIR}/apptest_cmp cell_sym_diff_gold2_3d.txt cell_sym_diff_3d_cubic27.txt 1e-08
