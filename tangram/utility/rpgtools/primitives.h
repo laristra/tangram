@@ -70,21 +70,22 @@ Tangram::Matrix rotation_matrix(const Tangram::Vector3& axis,
 std::vector<Tangram::Point3> circle3d(const Tangram::Point3& center,
                                       double radius,
                                       const Tangram::Vector3& normal,
-                                      int nsamples) {
-  //By default, we start with the i vector aligned with the x-axis
-  Tangram::Vector<3> start_vec(1.0, 0.0, 0.0);
-  //Then we project that vector on the circle's plane
-  start_vec = start_vec - Wonton::dot(start_vec, normal)*normal;
-  double vnorm = start_vec.norm();
-  //If we projection is too small, we restart with the j vector
-  //aligned with the y-axis
-  if (vnorm < sqrt(std::numeric_limits<double>::epsilon())) {
-    start_vec.axis(1);
-    start_vec = start_vec - Wonton::dot(start_vec, normal)*normal;
-    vnorm = start_vec.norm();
+                                      int nsamples,
+                                      double dst_tol) {
+  //We start with the i vector aligned with the x-axis and
+  //the j vector aligned with the x-axis, then pick the one with 
+  //the larger projection
+  Tangram::Vector<3> test_vec[2];
+  for (int iv = 0; iv < 2; iv++) {
+    test_vec[iv].axis(iv);
+    //We project the current vector on the circle's plane
+    test_vec[iv] = test_vec[iv] - Wonton::dot(test_vec[iv], normal)*normal;
   }
+  Tangram::Vector<3> start_vec = (test_vec[0].norm() >= test_vec[1].norm()) ?
+    test_vec[0] : test_vec[1];
+
   //Scale to radius length
-  start_vec *= (radius/vnorm);
+  start_vec *= (radius/start_vec.norm());
 
   std::vector<Tangram::Point3> circle_pts;
   circle_pts.reserve(nsamples);
@@ -116,21 +117,23 @@ std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
                                    double inner_radius,
                                    double outer_radius,
                                    const Tangram::Vector3& normal,
-                                   int nteeth) {
+                                   int nteeth,
+                                   double dst_tol) {
   assert(nteeth > 2);
 
-  //By default, we start with the i vector aligned with the x-axis
-  Tangram::Vector<3> outer_start_vec(1.0, 0.0, 0.0);
-  //Then we project that vector on the circle's plane
-  outer_start_vec = outer_start_vec - Wonton::dot(outer_start_vec, normal)*normal;
-  double vnorm = outer_start_vec.norm();
-  //If we projection is too small, we restart with the j vector
-  //aligned with the y-axis
-  if (pow2(vnorm) < std::numeric_limits<double>::epsilon()) {
-    outer_start_vec.axis(1);
-    outer_start_vec = outer_start_vec - Wonton::dot(outer_start_vec, normal)*normal;
-    vnorm = outer_start_vec.norm();
+  //We start with the i vector aligned with the x-axis and
+  //the j vector aligned with the x-axis, then pick the one with
+  //the larger projection
+  Tangram::Vector<3> test_vec[2];
+  for (int iv = 0; iv < 2; iv++) {
+    test_vec[iv].axis(iv);
+    //We project the current vector on the circle's plane
+    test_vec[iv] = test_vec[iv] - Wonton::dot(test_vec[iv], normal)*normal;
   }
+  Tangram::Vector<3> outer_start_vec = (test_vec[0].norm() >= test_vec[1].norm()) ?
+    test_vec[0] : test_vec[1];
+
+  double vnorm = outer_start_vec.norm();
   Tangram::Vector<3> inner_start_vec = outer_start_vec;
   //Scale to the espective radius length
   outer_start_vec *= (outer_radius/vnorm);
@@ -179,10 +182,9 @@ std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
 Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
                           double height,
                           double base_scaling,
+                          double dst_tol,
                           const Tangram::Vector3& base_normal =
                             Tangram::Vector3(0.0, 0.0, 0.0)) {
-  assert(base_scaling > std::numeric_limits<double>::epsilon());
-
   int nbase_vrts = (int) base_pts.size();
   std::vector< std::vector<int> > ifaces_vrts(nbase_vrts + 2);
   ifaces_vrts[0].resize(nbase_vrts);
@@ -193,8 +195,8 @@ Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
   prism_pts.insert(prism_pts.begin(), base_pts.begin(), base_pts.end());
 
   Tangram::Vector3 base_shift;
-  if (base_normal.is_zero())
-   base_shift = Tangram::polygon3d_normal(prism_pts, ifaces_vrts[0]);
+  if (base_normal.is_zero(dst_tol))
+   base_shift = Tangram::polygon3d_normal(prism_pts, ifaces_vrts[0], dst_tol);
   else
    base_shift = base_normal;
 
@@ -218,7 +220,7 @@ Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
   if (base_scaling != 1.0) {
     std::vector<double> new_base_moments;
     Tangram::polygon3d_moments(prism_pts, ifaces_vrts[nbase_vrts + 1],
-                               new_base_moments);
+                               new_base_moments, dst_tol);
 
     Tangram::Point3 new_base_cen;
     for (int idim = 0; idim < 3; idim++)
@@ -232,7 +234,7 @@ Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
   }
 
   Tangram::MatPoly<3> mat_poly;
-  mat_poly.initialize(prism_pts, ifaces_vrts);
+  mat_poly.initialize(prism_pts, ifaces_vrts, dst_tol);
 
   return mat_poly;
 }
@@ -254,10 +256,9 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
                                  const Tangram::Vector3& opp_base_normal,
                                  const Tangram::Point3& opp_base_centroid,
                                  double base_scaling,
+                                 double dst_tol,
                                  const Tangram::Vector3& base_normal =
                                     Tangram::Vector3(0.0, 0.0, 0.0)) {
-  assert(base_scaling > sqrt(std::numeric_limits<double>::epsilon()));
-
   int nbase_vrts = (int) base_pts.size();
   std::vector< std::vector<int> > ifaces_vrts(nbase_vrts + 2);
   ifaces_vrts[0].resize(nbase_vrts);
@@ -268,7 +269,7 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
   prism_pts.insert(prism_pts.begin(), base_pts.begin(), base_pts.end());
 
   std::vector<double> base_moments;
-  Tangram::polygon3d_moments(prism_pts, ifaces_vrts[0], base_moments);
+  Tangram::polygon3d_moments(prism_pts, ifaces_vrts[0], base_moments, dst_tol);
 
   Tangram::Point3 base_centroid;
   for (int idim = 0; idim < 3; idim++)
@@ -276,30 +277,30 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
 
   Tangram::Vector3 base_start_vec = prism_pts[0] - base_centroid;
   double vnorm = base_start_vec.norm();
-  assert(vnorm > sqrt(std::numeric_limits<double>::epsilon()));
+  assert(vnorm >= dst_tol);
   base_start_vec /= vnorm;
 
   //We find the starting point on the opposite plane by intersecing it
   //with the line parallel to the line conneting centroids
   Tangram::Vector3 line_dvec = opp_base_centroid - base_centroid;
   vnorm = line_dvec.norm();
-  assert(vnorm > sqrt(std::numeric_limits<double>::epsilon()));
+  assert(vnorm >= dst_tol);
   line_dvec /= vnorm;
 
   double denom = Wonton::dot(line_dvec, opp_base_normal);
-  assert(denom > sqrt(std::numeric_limits<double>::epsilon()));
+  assert(denom >= dst_tol);
 
   Tangram::Vector3 opp_base_start_vec = prism_pts[0] - opp_base_centroid +
     (Wonton::dot(opp_base_centroid - prism_pts[0], opp_base_normal)/denom)*line_dvec;
 
   vnorm = opp_base_start_vec.norm();
-  assert(vnorm > sqrt(std::numeric_limits<double>::epsilon()));
+  assert(vnorm >= dst_tol);
   opp_base_start_vec /= vnorm;
 
   //Base normal to check the rotation angle sign
   Tangram::Vector3 base_normal_vec;
-  if (base_normal.is_zero())
-    base_normal_vec = Tangram::polygon3d_normal(prism_pts, ifaces_vrts[0]);
+  if (base_normal.is_zero(dst_tol))
+    base_normal_vec = Tangram::polygon3d_normal(prism_pts, ifaces_vrts[0], dst_tol);
   else
     base_normal_vec = base_normal;
 
@@ -343,10 +344,10 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
 
   std::vector<double> prj_poly_moments;
   Tangram::polygon3d_moments(prism_pts, ifaces_vrts[nbase_vrts + 1],
-                              prj_poly_moments);
+                              prj_poly_moments, dst_tol);
 
   Tangram::MatPoly<3> mat_poly;
-  mat_poly.initialize(prism_pts, ifaces_vrts);
+  mat_poly.initialize(prism_pts, ifaces_vrts, dst_tol);
 
   return mat_poly;
 }
@@ -363,7 +364,8 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
 */
 Tangram::MatPoly<3> sphere(const Tangram::Point3& center,
                            double radius,
-                           int nquadrant_samples) {
+                           int nquadrant_samples,
+                           double dst_tol) {
   std::vector<Tangram::Point3> sphere_pts;
   int ncircle_samples = 4*nquadrant_samples;
   sphere_pts.reserve((2*nquadrant_samples - 1)*ncircle_samples + 2);
@@ -408,7 +410,7 @@ Tangram::MatPoly<3> sphere(const Tangram::Point3& center,
       offset - ncircle_samples + 1 + iaz };
 
   Tangram::MatPoly<3> mat_poly;
-  mat_poly.initialize(sphere_pts, ifaces_vrts);
+  mat_poly.initialize(sphere_pts, ifaces_vrts, dst_tol);
 
   return mat_poly;
 }

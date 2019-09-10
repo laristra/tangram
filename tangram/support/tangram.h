@@ -17,8 +17,9 @@
 #include <algorithm>
 #include <memory>
 #include <limits>
+#include <numeric>
 
-#ifdef THRUST
+#ifdef TANGRAM_ENABLE_THRUST
 
 #include "thrust/device_vector.h"
 #include "thrust/iterator/counting_iterator.h"
@@ -97,7 +98,7 @@ namespace Tangram {
 
   using Wonton::Weights_t;
 
-#ifdef THRUST
+#ifdef TANGRAM_ENABLE_THRUST
 
 template<typename T>
     using vector = thrust::device_vector<T>;
@@ -216,6 +217,10 @@ struct HalfSpaceSets_t {
    is the closest to the given reference centroid. arg_eps will correspond
    to a negligible change in the orientation, and fun_eps will correspond to a
    negligible distance between centroids.
+   Note that distance and volume tolerances for the cutting distance calculation
+   algorithm, which is used by all the implemented interface reconstruction methods,
+   are also used to eliminate degenerate vertices (i.e. vertices with distance below
+   distance tolerance) and materials (i.e. materials with volume below volume tolerance).
 */   
 struct IterativeMethodTolerances_t {
   int max_num_iter;   // Max number of iterations
@@ -238,10 +243,10 @@ struct BoundingBox_t {
 template <int D>
 inline bool overlapping_boxes(const BoundingBox_t<D>& bb1, 
                               const BoundingBox_t<D>& bb2,
-                              double eps = std::numeric_limits<double>::epsilon()) {
+                              double dst_eps) {
   for (int idim = 0; idim < D; idim++)
-    if ((bb1.min[idim] > bb2.max[idim] - eps) || 
-        (bb1.max[idim] < bb2.min[idim] + eps))
+    if ((bb1.min[idim] > bb2.max[idim] - dst_eps) || 
+        (bb1.max[idim] < bb2.min[idim] + dst_eps))
       return false;
 
   return true;
@@ -250,6 +255,33 @@ inline bool overlapping_boxes(const BoundingBox_t<D>& bb1,
 // Check if two floating point values are equal up to the machine precision
 inline bool is_equal(const double fp1, const double fp2) {
   return ( std::fabs(fp1 - fp2) < std::numeric_limits<double>::epsilon() );
+}
+
+/*!
+ @brief Get the sequence of indices corresponding to the ascending or descending
+ order of vector's values
+ @tparam T Type of the vector's values
+
+ @param[in] v Vector of type T
+ @param[in] ascending If true, values are to be ascending, otherwise descending
+ @return Vector of indices in the order corresponding to the ascending/descending
+ values of v
+*/
+template <typename T>
+std::vector<int> sorted_indices(const std::vector<T> &v,
+                                bool ascending = true) {
+  std::vector<int> ids(v.size());
+  std::iota(ids.begin(), ids.end(), 0);
+
+  // Sort indices based on values of v
+  if (ascending)
+    std::sort(ids.begin(), ids.end(),
+              [&v](int i1, int i2) { return v[i1] < v[i2]; });
+  else
+    std::sort(ids.begin(), ids.end(),
+              [&v](int i1, int i2) { return v[i1] > v[i2]; });
+
+  return ids;
 }
 
 }  // namespace Tangram

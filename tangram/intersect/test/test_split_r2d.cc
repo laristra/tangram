@@ -28,8 +28,8 @@ enum ptype {
   NONCONVEX_SINGLEPOLY
 };
 
-
-void matpoly_cases(ptype POLYTYPE, std::vector<Tangram::MatPoly<2>>& matpolys)
+void matpoly_cases(ptype POLYTYPE, std::vector<Tangram::MatPoly<2>>& matpolys,
+                   double dst_tol)
 {
   matpolys.clear();
 
@@ -43,7 +43,7 @@ void matpoly_cases(ptype POLYTYPE, std::vector<Tangram::MatPoly<2>>& matpolys)
           Tangram::Point2(1.0, 2.0), Tangram::Point2(0.0, 1.0) };
 
         Tangram::MatPoly<2> hexagon_matpoly;
-        hexagon_matpoly.initialize(hexagon_pnts);
+        hexagon_matpoly.initialize(hexagon_pnts, dst_tol);
         matpolys.emplace_back(hexagon_matpoly);
 
 	break;
@@ -56,7 +56,7 @@ void matpoly_cases(ptype POLYTYPE, std::vector<Tangram::MatPoly<2>>& matpolys)
           Tangram::Point2(1.0, 4.0)};
 
         Tangram::MatPoly<2> cat_matpoly;
-        cat_matpoly.initialize(cat_pnts);
+        cat_matpoly.initialize(cat_pnts, dst_tol);
         matpolys.emplace_back(cat_matpoly);
 
 	break;
@@ -149,9 +149,12 @@ void reference_matpolys(ptype POLYTYPE,
 // will be written to a gmv file.
 
 TEST(split_r2d, ConvexPoly) {
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+  double vol_tol = pow(dst_tol, 2);
+
   //Create a single convex polygon
   std::vector<Tangram::MatPoly<2>> convex_singlepoly;
-  matpoly_cases(CONVEX_SINGLEPOLY, convex_singlepoly);
+  matpoly_cases(CONVEX_SINGLEPOLY, convex_singlepoly, dst_tol);
 
   //Cutting plane
   Tangram::Point2 plane_pt(1.5,0.0);
@@ -164,7 +167,7 @@ TEST(split_r2d, ConvexPoly) {
   reference_matpolys(CONVEX_SINGLEPOLY, ref_cp_pnts_lower, ref_cp_pnts_upper);
 
   //Split using SplitR2D class
-  Tangram::SplitR2D split(convex_singlepoly, cutting_plane, true);
+  Tangram::SplitR2D split(convex_singlepoly, cutting_plane, vol_tol, dst_tol, true);
   Tangram::HalfSpaceSets_t<2> hsp_sets = split();
 
   //Check
@@ -191,7 +194,7 @@ TEST(split_r2d, ConvexPoly) {
     int nverts = hsp_lower_matpolys[ihs].num_vertices();
     std::vector<Tangram::Point2> vertices = hsp_lower_matpolys[ihs].points();
 
-    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(),
+    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(), dst_tol,
                                      nullptr, nullptr,
                                      nullptr, nullptr);
   }
@@ -202,7 +205,7 @@ TEST(split_r2d, ConvexPoly) {
     int nverts = hsp_upper_matpolys[ihs].num_vertices();
     std::vector<Tangram::Point2> vertices = hsp_upper_matpolys[ihs].points();
 
-    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(),
+    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(), dst_tol,
                                      nullptr, nullptr,
                                      nullptr, nullptr);
   }
@@ -212,9 +215,12 @@ TEST(split_r2d, ConvexPoly) {
 }
 
 TEST(split_r2d, NonConvexPoly) {
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+  double vol_tol = pow(dst_tol, 2);
+
   //Create a single convex polygon
   std::vector<Tangram::MatPoly<2>> cpmatpolys;
-  matpoly_cases(NONCONVEX_SINGLEPOLY, cpmatpolys);
+  matpoly_cases(NONCONVEX_SINGLEPOLY, cpmatpolys, dst_tol);
 
   //Cutting plane
   Tangram::Point2 plane_pt(3.5,0.0);
@@ -227,7 +233,7 @@ TEST(split_r2d, NonConvexPoly) {
   reference_matpolys(NONCONVEX_SINGLEPOLY, ref_ncp_pnts_lower, ref_ncp_pnts_upper);
 
   //Split using SplitR2D class
-  Tangram::SplitR2D split(cpmatpolys, cutting_plane, false);
+  Tangram::SplitR2D split(cpmatpolys, cutting_plane, vol_tol, dst_tol, false);
   Tangram::HalfSpaceSets_t<2> hsp_sets = split();
 
   //Check
@@ -260,7 +266,7 @@ TEST(split_r2d, NonConvexPoly) {
     int nverts = hsp_lower_matpolys[ihs].num_vertices();
     std::vector<Tangram::Point2> vertices = hsp_lower_matpolys[ihs].points();
 
-    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(),
+    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(), dst_tol,
                                      nullptr, nullptr,
                                      nullptr, nullptr);
   }
@@ -271,7 +277,7 @@ TEST(split_r2d, NonConvexPoly) {
     int nverts = hsp_upper_matpolys[ihs].num_vertices();
     std::vector<Tangram::Point2> vertices = hsp_upper_matpolys[ihs].points();
 
-    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(),
+    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(), dst_tol,
                                      nullptr, nullptr,
                                      nullptr, nullptr);
   }
@@ -280,9 +286,11 @@ TEST(split_r2d, NonConvexPoly) {
 }
 
 TEST(clip_r2d, ConvexPoly) {
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+
   //Create a single convex polygon
   std::vector<Tangram::MatPoly<2>> cpmatpolys;
-  matpoly_cases(CONVEX_SINGLEPOLY, cpmatpolys);
+  matpoly_cases(CONVEX_SINGLEPOLY, cpmatpolys, dst_tol);
 
   //Cutting plane
   Tangram::Point2 plane_pt(1.5,0.0);
@@ -293,7 +301,7 @@ TEST(clip_r2d, ConvexPoly) {
   std::vector<double> ref_moments = {0.875, 0.625, 0.604166666666666667};
 
   //Clip using ClipR2D class
-  Tangram::ClipR2D clip;
+  Tangram::ClipR2D clip(dst_tol);
   clip.set_matpolys(cpmatpolys, true);
   clip.set_plane(cutting_plane);
 
@@ -306,9 +314,11 @@ TEST(clip_r2d, ConvexPoly) {
 }
 
 TEST(clip_r2d, NonConvexPoly) {
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+
   //Create a single convex polygon
   std::vector<Tangram::MatPoly<2>> cpmatpolys;
-  matpoly_cases(NONCONVEX_SINGLEPOLY, cpmatpolys);
+  matpoly_cases(NONCONVEX_SINGLEPOLY, cpmatpolys, dst_tol);
 
   //Cutting plane
   Tangram::Point2 plane_pt(3.5,0.0);
@@ -319,7 +329,7 @@ TEST(clip_r2d, NonConvexPoly) {
   std::vector<double> ref_moments = {0.5, 1.83333333333333333, 1.0};
 
   //Clip using ClipR2D class
-  Tangram::ClipR2D clip;
+  Tangram::ClipR2D clip(dst_tol);
   clip.set_matpolys(cpmatpolys, true);
   clip.set_plane(cutting_plane);
 

@@ -45,7 +45,7 @@ public:
   */
   explicit NestedDissections(const Reconstructor& rec,
                              const int& cellID,
-                             const bool convex_cell = false) : 
+                             const bool convex_cell) : 
                              reconstructor_(rec), cell_id_(cellID),
                              convex_cell_(convex_cell) {}
 
@@ -66,7 +66,7 @@ public:
     are to be used. If enabled, ID of the permutation can be used as the parameter
     of the operator
   */
-  void set_cell_materials_order(const bool enable_permutations = false) {
+  void set_cell_materials_order(const bool enable_permutations) {
     int nmats = static_cast<int>(reconstructor_.cell_materials(cell_id_).size());
     cell_materials_order_.resize(1);
     cell_materials_order_[0].resize(nmats);
@@ -111,6 +111,7 @@ public:
       reconstructor_.cell_matpoly(cell_id_).faceted_matpoly(&cell_matpoly);
     
     double vol_tol = reconstructor_.iterative_methods_tolerances()[0].fun_eps;
+    double dst_tol = reconstructor_.iterative_methods_tolerances()[0].arg_eps;
 
     Plane_t<Dim> cutting_plane;
     HalfSpaceSets_t<Dim> hs_sets; // Structure containing vectors of MatPoly's and their
@@ -121,7 +122,7 @@ public:
 
     //Create Splitter instance: assumes split MatPoly's are convex
     MatPoly_Splitter split_matpolys(hs_sets.upper_halfspace_set.matpolys, 
-                                    cutting_plane, true);
+                                    cutting_plane, vol_tol, dst_tol, true);
 
     for (int imat = 0; imat < nmats; imat++) {
       int matid = mat_ids[cell_materials_order_[permutation_ID][imat]];
@@ -159,14 +160,12 @@ public:
         // Filter out MatPoly's with volumes below tolerance
         int ismp = 0;
         while (ismp < single_mat_set_ptr->matpolys.size())
-          if (single_mat_set_ptr->matpolys[ismp].moments()[0] > vol_tol) 
+          if (single_mat_set_ptr->matpolys[ismp].moments()[0] >= vol_tol) 
             ismp++;
           else {
-            if (single_mat_set_ptr->matpolys[ismp].moments()[0] > 
-                std::numeric_limits<double>::epsilon())
-              for (int im = 0; im < Dim + 1; im++)
-                single_mat_set_ptr->moments[im] -= 
-                  single_mat_set_ptr->matpolys[ismp].moments()[im];
+            for (int im = 0; im < Dim + 1; im++)
+              single_mat_set_ptr->moments[im] -= 
+                single_mat_set_ptr->matpolys[ismp].moments()[im];
 
             single_mat_set_ptr->matpolys.erase(
               single_mat_set_ptr->matpolys.begin() + ismp);                  

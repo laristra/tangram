@@ -14,8 +14,11 @@ set(utility_HEADERS
     read_material_data.h
     get_material_moments.h
     get_mat_sym_diff_vol.h
+    advance_moments.h
+    rk4.h
     rpgtools/primitives.h
     rpgtools/cuts.h
+    rpgtools/examples/matdata_rotor3d.h
     PARENT_SCOPE
 )
 

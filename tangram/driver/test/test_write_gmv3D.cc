@@ -34,6 +34,9 @@ TEST(WriteCellMatPoly, Mesh3D) {
   std::shared_ptr<Jali::Mesh> mesh = mf(0.0, 0.0, 0.0, 2.0, 2.0, 2.0, 2, 2, 2);
   Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh);
 
+  // Distance tolerance
+  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
+
   // Make a 2-material CellMatPoly object for cell 0
 
   Tangram::CellMatPoly<3> cellmatpoly;
@@ -111,7 +114,7 @@ TEST(WriteCellMatPoly, Mesh3D) {
     for (int j = 0; j < nfv0[i]; j++)
        fverts0_flat.push_back(fverts0_in[i][j]);
 
-  cellmatpoly.add_matpoly(0, 8, &(points0[0]), &(vparentkind0[0]),
+  cellmatpoly.add_matpoly(0, 8, &(points0[0]), dst_tol, &(vparentkind0[0]),
                           &(vparentid0[0]), 6, &(nfv0[0]), &(fverts0_flat[0]),
                           nullptr, nullptr);
 
@@ -160,7 +163,7 @@ TEST(WriteCellMatPoly, Mesh3D) {
        fverts1_flat.push_back(fverts1_in[i][j]);
 
 
-  cellmatpoly.add_matpoly(1, 6, &(points1[0]), &(vparentkind1[0]),
+  cellmatpoly.add_matpoly(1, 6, &(points1[0]), dst_tol, &(vparentkind1[0]),
                           &(vparentid1[0]), 5, &(nfv1[0]), &(fverts1_flat[0]),
                           nullptr, nullptr);
 
