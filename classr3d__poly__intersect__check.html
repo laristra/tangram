@@ -85,9 +85,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:acda97b920929b32af10612d304eea4c6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classr3d__poly__intersect__check.html#acda97b920929b32af10612d304eea4c6">r3d_poly_intersect_check</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structRefPolyData__t.html">RefPolyData_t</a> &gt; &gt; &amp;polys_data, const std::vector&lt; int &gt; &amp;IDs_to_check, const <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt; &amp;convex_matpoly)</td></tr>
-<tr class="memdesc:acda97b920929b32af10612d304eea4c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#acda97b920929b32af10612d304eea4c6">More...</a><br /></td></tr>
-<tr class="separator:acda97b920929b32af10612d304eea4c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acea1efdd03e3a84b7140af6efe3bd586"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classr3d__poly__intersect__check.html#acea1efdd03e3a84b7140af6efe3bd586">r3d_poly_intersect_check</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structRefPolyData__t.html">RefPolyData_t</a> &gt; &gt; &amp;polys_data, const std::vector&lt; int &gt; &amp;IDs_to_check, const double dst_tol, const <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt; &amp;convex_matpoly)</td></tr>
+<tr class="memdesc:acea1efdd03e3a84b7140af6efe3bd586"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#acea1efdd03e3a84b7140af6efe3bd586">More...</a><br /></td></tr>
+<tr class="separator:acea1efdd03e3a84b7140af6efe3bd586"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a538e0681f2ed2a0b15c5d0eadce69391"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceR3DPOLY.html#ae900fb35bd45f210fcc3cf379902b476">R3DPOLY::Position</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classr3d__poly__intersect__check.html#a538e0681f2ed2a0b15c5d0eadce69391">operator()</a> (const int checkID) const</td></tr>
 <tr class="memdesc:a538e0681f2ed2a0b15c5d0eadce69391"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the position of a polyhedron with respect to the shape given by convex_matpoly_.  <a href="#a538e0681f2ed2a0b15c5d0eadce69391">More...</a><br /></td></tr>
 <tr class="separator:a538e0681f2ed2a0b15c5d0eadce69391"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -95,8 +95,8 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>For a given data on a collection of polyhedra find their positions with respect to a convex shape given by a MatPoly object. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="acda97b920929b32af10612d304eea4c6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acda97b920929b32af10612d304eea4c6">&#9670;&nbsp;</a></span>r3d_poly_intersect_check()</h2>
+<a id="acea1efdd03e3a84b7140af6efe3bd586"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acea1efdd03e3a84b7140af6efe3bd586">&#9670;&nbsp;</a></span>r3d_poly_intersect_check()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -115,6 +115,12 @@ Public Member Functions</h2></td></tr>
           <td></td>
           <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
           <td class="paramname"><em>IDs_to_check</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>

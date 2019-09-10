@@ -86,14 +86,14 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a81795b3025d7cd0861e1b219195f8826"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1ClipR3D.html#a81795b3025d7cd0861e1b219195f8826">ClipR3D</a> ()</td></tr>
-<tr class="separator:a81795b3025d7cd0861e1b219195f8826"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8196a38b5774237f303274b95fcb6df9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1ClipR3D.html#a8196a38b5774237f303274b95fcb6df9">ClipR3D</a> (double vol_tol)</td></tr>
+<tr class="separator:a8196a38b5774237f303274b95fcb6df9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eb95743fffdde2e24493f7086a25c06"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1ClipR3D.html#a7eb95743fffdde2e24493f7086a25c06">set_plane</a> (const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 3 &gt; &amp;cutting_plane)</td></tr>
 <tr class="memdesc:a7eb95743fffdde2e24493f7086a25c06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the cutting plane used by the functor.  <a href="#a7eb95743fffdde2e24493f7086a25c06">More...</a><br /></td></tr>
 <tr class="separator:a7eb95743fffdde2e24493f7086a25c06"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03f40eaf0c37b20926cd90923efe93ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1ClipR3D.html#a03f40eaf0c37b20926cd90923efe93ac">set_matpolys</a> (const std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &gt; &amp;matpolys, const bool planar_faces=false)</td></tr>
-<tr class="memdesc:a03f40eaf0c37b20926cd90923efe93ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the material polyhedra to be used by the functor.  <a href="#a03f40eaf0c37b20926cd90923efe93ac">More...</a><br /></td></tr>
-<tr class="separator:a03f40eaf0c37b20926cd90923efe93ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61e6327b2eb14c1bccf1b3ca046cf992"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1ClipR3D.html#a61e6327b2eb14c1bccf1b3ca046cf992">set_matpolys</a> (const std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &gt; &amp;matpolys, const bool planar_faces)</td></tr>
+<tr class="memdesc:a61e6327b2eb14c1bccf1b3ca046cf992"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the material polyhedra to be used by the functor.  <a href="#a61e6327b2eb14c1bccf1b3ca046cf992">More...</a><br /></td></tr>
+<tr class="separator:a61e6327b2eb14c1bccf1b3ca046cf992"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a889c4f4815e82cf3d668249c9f58c025"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1ClipR3D.html#a889c4f4815e82cf3d668249c9f58c025">aggregated_moments</a> ()</td></tr>
 <tr class="memdesc:a889c4f4815e82cf3d668249c9f58c025"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes moments of provided material polyhedra.  <a href="#a889c4f4815e82cf3d668249c9f58c025">More...</a><br /></td></tr>
 <tr class="separator:a889c4f4815e82cf3d668249c9f58c025"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -110,8 +110,8 @@ Public Member Functions</h2></td></tr>
 <p>In this routine, we utilize the fact that R3D can clip a non-convex polyhedron with a plane.</p>
 <p>By default, the faces of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s are assumed to be non-planar and are facetized. If planar_faces is set to true, faces of all <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s are assumed to be planar and are NOT facetized. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a81795b3025d7cd0861e1b219195f8826"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a81795b3025d7cd0861e1b219195f8826">&#9670;&nbsp;</a></span>ClipR3D()</h2>
+<a id="a8196a38b5774237f303274b95fcb6df9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8196a38b5774237f303274b95fcb6df9">&#9670;&nbsp;</a></span>ClipR3D()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -122,7 +122,8 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">Tangram::ClipR3D::ClipR3D </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>vol_tol</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -220,8 +221,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a03f40eaf0c37b20926cd90923efe93ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a03f40eaf0c37b20926cd90923efe93ac">&#9670;&nbsp;</a></span>set_matpolys()</h2>
+<a id="a61e6327b2eb14c1bccf1b3ca046cf992"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61e6327b2eb14c1bccf1b3ca046cf992">&#9670;&nbsp;</a></span>set_matpolys()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -239,7 +240,7 @@ Public Member Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>planar_faces</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>planar_faces</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

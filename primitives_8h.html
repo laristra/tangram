@@ -100,21 +100,21 @@ Functions</h2></td></tr>
 <tr class="memitem:ab83a491778e83e7349e339a0503eb9f4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Matrix.html">Tangram::Matrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#ab83a491778e83e7349e339a0503eb9f4">rotation_matrix</a> (const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;axis, double rotation_angle)</td></tr>
 <tr class="memdesc:ab83a491778e83e7349e339a0503eb9f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix for rotating a point around axis centered at the origin by a given angle.  <a href="#ab83a491778e83e7349e339a0503eb9f4">More...</a><br /></td></tr>
 <tr class="separator:ab83a491778e83e7349e339a0503eb9f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7410d52dd661e04676d2b3b806b0f249"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#a7410d52dd661e04676d2b3b806b0f249">circle3d</a> (const <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &amp;center, double radius, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;normal, int nsamples)</td></tr>
-<tr class="memdesc:a7410d52dd661e04676d2b3b806b0f249"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a circle with a given center and of a given radius in a plane defined by the center and the normal.  <a href="#a7410d52dd661e04676d2b3b806b0f249">More...</a><br /></td></tr>
-<tr class="separator:a7410d52dd661e04676d2b3b806b0f249"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab9c24e4bef78453f49365925f1b9e5dd"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#ab9c24e4bef78453f49365925f1b9e5dd">cog3d</a> (const <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &amp;center, double inner_radius, double outer_radius, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;normal, int nteeth)</td></tr>
-<tr class="memdesc:ab9c24e4bef78453f49365925f1b9e5dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a cog with a given center and of a given radius in a plane defined by the center and the normal.  <a href="#ab9c24e4bef78453f49365925f1b9e5dd">More...</a><br /></td></tr>
-<tr class="separator:ab9c24e4bef78453f49365925f1b9e5dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aebabc69029bc9d8673fb7e2c997cff53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#aebabc69029bc9d8673fb7e2c997cff53">prism</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &gt; &amp;base_pts, double height, double base_scaling, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;base_normal=<a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a>(0.0, 0.0, 0.0))</td></tr>
-<tr class="memdesc:aebabc69029bc9d8673fb7e2c997cff53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a prism given one of its bases. The prism is extruded in the direction opposite to the base's normal.  <a href="#aebabc69029bc9d8673fb7e2c997cff53">More...</a><br /></td></tr>
-<tr class="separator:aebabc69029bc9d8673fb7e2c997cff53"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6162dd032b3f260fb9dfff3830c1362"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#ae6162dd032b3f260fb9dfff3830c1362">skewed_prism</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &gt; &amp;base_pts, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;opp_base_normal, const <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &amp;opp_base_centroid, double base_scaling, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;base_normal=<a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a>(0.0, 0.0, 0.0))</td></tr>
-<tr class="memdesc:ae6162dd032b3f260fb9dfff3830c1362"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a prism with non-parallel bases. The prism can become self-intersecting if overly twisted.  <a href="#ae6162dd032b3f260fb9dfff3830c1362">More...</a><br /></td></tr>
-<tr class="separator:ae6162dd032b3f260fb9dfff3830c1362"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf587045b6bc84ce1eaa4526cf73c6d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#adf587045b6bc84ce1eaa4526cf73c6d1">sphere</a> (const <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &amp;center, double radius, int nquadrant_samples)</td></tr>
-<tr class="memdesc:adf587045b6bc84ce1eaa4526cf73c6d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a faceted sphere.  <a href="#adf587045b6bc84ce1eaa4526cf73c6d1">More...</a><br /></td></tr>
-<tr class="separator:adf587045b6bc84ce1eaa4526cf73c6d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95372e45ecb754f3d1587ae6f21f2efc"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#a95372e45ecb754f3d1587ae6f21f2efc">circle3d</a> (const <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &amp;center, double radius, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;normal, int nsamples, double dst_tol)</td></tr>
+<tr class="memdesc:a95372e45ecb754f3d1587ae6f21f2efc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a circle with a given center and of a given radius in a plane defined by the center and the normal.  <a href="#a95372e45ecb754f3d1587ae6f21f2efc">More...</a><br /></td></tr>
+<tr class="separator:a95372e45ecb754f3d1587ae6f21f2efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac49349c3cd16ad3266b087db6e2a60a8"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#ac49349c3cd16ad3266b087db6e2a60a8">cog3d</a> (const <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &amp;center, double inner_radius, double outer_radius, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;normal, int nteeth, double dst_tol)</td></tr>
+<tr class="memdesc:ac49349c3cd16ad3266b087db6e2a60a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a cog with a given center and of a given radius in a plane defined by the center and the normal.  <a href="#ac49349c3cd16ad3266b087db6e2a60a8">More...</a><br /></td></tr>
+<tr class="separator:ac49349c3cd16ad3266b087db6e2a60a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb81ae2abd6d87ec9a7b6efa399c09d4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#afb81ae2abd6d87ec9a7b6efa399c09d4">prism</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &gt; &amp;base_pts, double height, double base_scaling, double dst_tol, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;base_normal=<a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a>(0.0, 0.0, 0.0))</td></tr>
+<tr class="memdesc:afb81ae2abd6d87ec9a7b6efa399c09d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a prism given one of its bases. The prism is extruded in the direction opposite to the base's normal.  <a href="#afb81ae2abd6d87ec9a7b6efa399c09d4">More...</a><br /></td></tr>
+<tr class="separator:afb81ae2abd6d87ec9a7b6efa399c09d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bc5c7bb8099d90389c63892ebc58178"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#a7bc5c7bb8099d90389c63892ebc58178">skewed_prism</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &gt; &amp;base_pts, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;opp_base_normal, const <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &amp;opp_base_centroid, double base_scaling, double dst_tol, const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;base_normal=<a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a>(0.0, 0.0, 0.0))</td></tr>
+<tr class="memdesc:a7bc5c7bb8099d90389c63892ebc58178"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a prism with non-parallel bases. The prism can become self-intersecting if overly twisted.  <a href="#a7bc5c7bb8099d90389c63892ebc58178">More...</a><br /></td></tr>
+<tr class="separator:a7bc5c7bb8099d90389c63892ebc58178"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39487a4df0863383e76a5cfae81bff5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="primitives_8h.html#a39487a4df0863383e76a5cfae81bff5e">sphere</a> (const <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Tangram::Point3</a> &amp;center, double radius, int nquadrant_samples, double dst_tol)</td></tr>
+<tr class="memdesc:a39487a4df0863383e76a5cfae81bff5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a faceted sphere.  <a href="#a39487a4df0863383e76a5cfae81bff5e">More...</a><br /></td></tr>
+<tr class="separator:a39487a4df0863383e76a5cfae81bff5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -122,8 +122,8 @@ Variables</h2></td></tr>
 <tr class="separator:a299aabc5fc8285cbf99025330a3d0d0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a7410d52dd661e04676d2b3b806b0f249"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7410d52dd661e04676d2b3b806b0f249">&#9670;&nbsp;</a></span>circle3d()</h2>
+<a id="a95372e45ecb754f3d1587ae6f21f2efc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95372e45ecb754f3d1587ae6f21f2efc">&#9670;&nbsp;</a></span>circle3d()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -150,7 +150,13 @@ Variables</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nsamples</em>&#160;</td>
+          <td class="paramname"><em>nsamples</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -174,8 +180,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ab9c24e4bef78453f49365925f1b9e5dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab9c24e4bef78453f49365925f1b9e5dd">&#9670;&nbsp;</a></span>cog3d()</h2>
+<a id="ac49349c3cd16ad3266b087db6e2a60a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac49349c3cd16ad3266b087db6e2a60a8">&#9670;&nbsp;</a></span>cog3d()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -208,7 +214,13 @@ Variables</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nteeth</em>&#160;</td>
+          <td class="paramname"><em>nteeth</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -259,8 +271,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="aebabc69029bc9d8673fb7e2c997cff53"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aebabc69029bc9d8673fb7e2c997cff53">&#9670;&nbsp;</a></span>prism()</h2>
+<a id="afb81ae2abd6d87ec9a7b6efa399c09d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb81ae2abd6d87ec9a7b6efa399c09d4">&#9670;&nbsp;</a></span>prism()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -282,6 +294,12 @@ Variables</h2></td></tr>
           <td></td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>base_scaling</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -349,8 +367,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ae6162dd032b3f260fb9dfff3830c1362"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6162dd032b3f260fb9dfff3830c1362">&#9670;&nbsp;</a></span>skewed_prism()</h2>
+<a id="a7bc5c7bb8099d90389c63892ebc58178"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7bc5c7bb8099d90389c63892ebc58178">&#9670;&nbsp;</a></span>skewed_prism()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -382,6 +400,12 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const <a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a> &amp;&#160;</td>
           <td class="paramname"><em>base_normal</em> = <code><a class="el" href="namespaceTangram.html#a283ae03606aa1f9e34f6f87d7cbb287e">Tangram::Vector3</a>(0.0,&#160;0.0,&#160;0.0)</code>&#160;</td>
         </tr>
@@ -408,8 +432,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="adf587045b6bc84ce1eaa4526cf73c6d1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adf587045b6bc84ce1eaa4526cf73c6d1">&#9670;&nbsp;</a></span>sphere()</h2>
+<a id="a39487a4df0863383e76a5cfae81bff5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39487a4df0863383e76a5cfae81bff5e">&#9670;&nbsp;</a></span>sphere()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -430,7 +454,13 @@ Variables</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nquadrant_samples</em>&#160;</td>
+          <td class="paramname"><em>nquadrant_samples</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

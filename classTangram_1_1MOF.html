@@ -86,9 +86,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af38877375df8ad7e88c5e6a19a14459f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MOF.html#af38877375df8ad7e88c5e6a19a14459f">MOF</a> (const Mesh_Wrapper &amp;Mesh, const std::vector&lt; <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &gt; &amp;ims_tols, const bool all_convex=false)</td></tr>
-<tr class="memdesc:af38877375df8ad7e88c5e6a19a14459f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for a <a class="el" href="classTangram_1_1MOF.html">MOF</a> interface reconstruction algorithm.  <a href="#af38877375df8ad7e88c5e6a19a14459f">More...</a><br /></td></tr>
-<tr class="separator:af38877375df8ad7e88c5e6a19a14459f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30b558a6b614b8b8f03b86819160af11"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MOF.html#a30b558a6b614b8b8f03b86819160af11">MOF</a> (const Mesh_Wrapper &amp;Mesh, const std::vector&lt; <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &gt; &amp;ims_tols, const bool all_convex)</td></tr>
+<tr class="memdesc:a30b558a6b614b8b8f03b86819160af11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for a <a class="el" href="classTangram_1_1MOF.html">MOF</a> interface reconstruction algorithm.  <a href="#a30b558a6b614b8b8f03b86819160af11">More...</a><br /></td></tr>
+<tr class="separator:a30b558a6b614b8b8f03b86819160af11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11029c5cdca38be7ae2a794c01fb35c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MOF.html#a11029c5cdca38be7ae2a794c01fb35c1">set_volume_fractions</a> (std::vector&lt; int &gt; const &amp;cell_num_mats, std::vector&lt; int &gt; const &amp;cell_mat_ids, std::vector&lt; double &gt; const &amp;cell_mat_volfracs, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; Dim &gt;&gt; const &amp;cell_mat_centroids)</td></tr>
 <tr class="memdesc:a11029c5cdca38be7ae2a794c01fb35c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pass in the volume fraction data for use in the reconstruction.  <a href="#a11029c5cdca38be7ae2a794c01fb35c1">More...</a><br /></td></tr>
 <tr class="separator:a11029c5cdca38be7ae2a794c01fb35c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -98,9 +98,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a16dd922d2966f3fe641f1cbe118bc64c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MOF.html#a16dd922d2966f3fe641f1cbe118bc64c">set_cell_indices_to_operate_on</a> (std::vector&lt; int &gt; const &amp;cellIDs_to_op_on)</td></tr>
 <tr class="memdesc:a16dd922d2966f3fe641f1cbe118bc64c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pass in indices of cells for which <a class="el" href="classTangram_1_1CellMatPoly.html">CellMatPoly</a> objects are to be constructed. If the index is in the list, a <a class="el" href="classTangram_1_1CellMatPoly.html">CellMatPoly</a> object will be created even for a single-material cell.  <a href="#a16dd922d2966f3fe641f1cbe118bc64c">More...</a><br /></td></tr>
 <tr class="separator:a16dd922d2966f3fe641f1cbe118bc64c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac66fe2b8b89d6c716a45edbf91e636a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MOF.html#ac66fe2b8b89d6c716a45edbf91e636a5">get_plane_position</a> (const int cellID, const int matID, const std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; Dim &gt; &gt; &amp;mixed_polys, <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; Dim &gt; &amp;cutting_plane, const bool planar_faces=true) const</td></tr>
-<tr class="memdesc:ac66fe2b8b89d6c716a45edbf91e636a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate the position of a plane that clips off a particular material. This method is used on every step of the nested dissections algorithm. Note that if MatPoly_Clipper can handle non-convex cells, this method does not require decomposion into tetrahedrons.  <a href="#ac66fe2b8b89d6c716a45edbf91e636a5">More...</a><br /></td></tr>
-<tr class="separator:ac66fe2b8b89d6c716a45edbf91e636a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad10f7b2736fd816cdfc3e156ad997f63"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MOF.html#ad10f7b2736fd816cdfc3e156ad997f63">get_plane_position</a> (const int cellID, const int matID, const std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; Dim &gt; &gt; &amp;mixed_polys, <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; Dim &gt; &amp;cutting_plane, const bool planar_faces) const</td></tr>
+<tr class="memdesc:ad10f7b2736fd816cdfc3e156ad997f63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate the position of a plane that clips off a particular material. This method is used on every step of the nested dissections algorithm. Note that if MatPoly_Clipper can handle non-convex cells, this method does not require decomposion into tetrahedrons.  <a href="#ad10f7b2736fd816cdfc3e156ad997f63">More...</a><br /></td></tr>
+<tr class="separator:ad10f7b2736fd816cdfc3e156ad997f63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a255b4430444fc7fabc3e24eb771ee72f"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classTangram_1_1CellMatPoly.html">CellMatPoly</a>&lt; Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MOF.html#a255b4430444fc7fabc3e24eb771ee72f">operator()</a> (const int cell_op_ID) const</td></tr>
 <tr class="memdesc:a255b4430444fc7fabc3e24eb771ee72f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a cell index, calculate the <a class="el" href="classTangram_1_1CellMatPoly.html">CellMatPoly</a> using the <a class="el" href="classTangram_1_1MOF.html">MOF</a> interface reconstruction method. Uses nested dissections algorithm.  <a href="#a255b4430444fc7fabc3e24eb771ee72f">More...</a><br /></td></tr>
 <tr class="separator:a255b4430444fc7fabc3e24eb771ee72f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -112,8 +112,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:acb19fc7794fa3bff0a12a2b614db0ad9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="af38877375df8ad7e88c5e6a19a14459f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af38877375df8ad7e88c5e6a19a14459f">&#9670;&nbsp;</a></span>MOF()</h2>
+<a id="a30b558a6b614b8b8f03b86819160af11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30b558a6b614b8b8f03b86819160af11">&#9670;&nbsp;</a></span>MOF()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -139,7 +139,7 @@ template&lt;class Mesh_Wrapper , int Dim, class MatPoly_Splitter , class MatPoly
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>all_convex</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>all_convex</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -241,8 +241,8 @@ template&lt;class Mesh_Wrapper , int Dim, class MatPoly_Splitter , class MatPoly
 
 </div>
 </div>
-<a id="ac66fe2b8b89d6c716a45edbf91e636a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac66fe2b8b89d6c716a45edbf91e636a5">&#9670;&nbsp;</a></span>get_plane_position()</h2>
+<a id="ad10f7b2736fd816cdfc3e156ad997f63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad10f7b2736fd816cdfc3e156ad997f63">&#9670;&nbsp;</a></span>get_plane_position()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -280,7 +280,7 @@ template&lt;class Mesh_Wrapper , int Dim, class MatPoly_Splitter , class MatPoly
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>planar_faces</em> = <code>true</code>&#160;</td>
+          <td class="paramname"><em>planar_faces</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

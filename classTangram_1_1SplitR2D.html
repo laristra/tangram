@@ -86,8 +86,8 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab7a897c722b6296dd9252d34278b99ba"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1SplitR2D.html#ab7a897c722b6296dd9252d34278b99ba">SplitR2D</a> (const std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &gt; &amp;matpolys, const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 2 &gt; &amp;cutting_plane, const bool all_convex=false)</td></tr>
-<tr class="separator:ab7a897c722b6296dd9252d34278b99ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ba63910b026077fc0fb82bb91663f59"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1SplitR2D.html#a4ba63910b026077fc0fb82bb91663f59">SplitR2D</a> (const std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &gt; &amp;matpolys, const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 2 &gt; &amp;cutting_plane, const double vol_tol, const double dst_tol, const bool all_convex)</td></tr>
+<tr class="separator:a4ba63910b026077fc0fb82bb91663f59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a850078fc3ec9a64c5c6d550326605aca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTangram_1_1HalfSpaceSets__t.html">HalfSpaceSets_t</a>&lt; 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1SplitR2D.html#a850078fc3ec9a64c5c6d550326605aca">operator()</a> () const</td></tr>
 <tr class="memdesc:a850078fc3ec9a64c5c6d550326605aca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into two sets of convex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s.  <a href="#a850078fc3ec9a64c5c6d550326605aca">More...</a><br /></td></tr>
 <tr class="separator:a850078fc3ec9a64c5c6d550326605aca"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -103,8 +103,8 @@ Public Member Functions</h2></td></tr>
 <p>Splits a vector of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s with a cutting plane. The result is <a class="el" href="structTangram_1_1HalfSpaceSets__t.html">HalfSpaceSets_t</a> structure that contains two sets of convex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s: one corresponds to components below, and the other to components above the plane. Each set has associated moments, which are aggregated moments of all components in the set.</p>
 <p>Important: input <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s are assumed to have planar faces. By default, input <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s are assumed to be non-covex and are decomposed into convex components. If all_convex is set to true in the constructor, all input <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s are assumed to be convex and will NOT be decomposed. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ab7a897c722b6296dd9252d34278b99ba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab7a897c722b6296dd9252d34278b99ba">&#9670;&nbsp;</a></span>SplitR2D() <span class="overload">[1/2]</span></h2>
+<a id="a4ba63910b026077fc0fb82bb91663f59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ba63910b026077fc0fb82bb91663f59">&#9670;&nbsp;</a></span>SplitR2D() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -127,8 +127,20 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>all_convex</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>all_convex</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

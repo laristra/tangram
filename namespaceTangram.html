@@ -166,7 +166,6 @@ Typedefs</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:acbc93a9c17403e5d2e10e53fb002d1b3"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#acbc93a9c17403e5d2e10e53fb002d1b3">BFGS_ALG</a> { <a class="el" href="namespaceTangram.html#acbc93a9c17403e5d2e10e53fb002d1b3a69c8d5b5c7c91d37e9c7e05fae6d0f86">BFGS</a>, 
-<a class="el" href="namespaceTangram.html#acbc93a9c17403e5d2e10e53fb002d1b3adb9f9f1d0b1333c648d3ceccd7539bdd">BFGS_MWWP</a>, 
 <a class="el" href="namespaceTangram.html#acbc93a9c17403e5d2e10e53fb002d1b3a31463a1a03f66e2d5728a58df0c91305">DBFGS</a>
  }</td></tr>
 <tr class="separator:acbc93a9c17403e5d2e10e53fb002d1b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,30 +178,33 @@ Functions</h2></td></tr>
 <tr class="memitem:a08829fb30da7bfef5b1d182ce2e6c820"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
 <tr class="memitem:a08829fb30da7bfef5b1d182ce2e6c820"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a08829fb30da7bfef5b1d182ce2e6c820">write_to_gmv</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="classTangram_1_1CellMatPoly.html">CellMatPoly</a>&lt; D &gt;&gt;&gt; &amp;cellmatpoly_list, const std::string &amp;filename)</td></tr>
 <tr class="separator:a08829fb30da7bfef5b1d182ce2e6c820"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b4a80068dc8561da97cc8607e1ec696"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a8b4a80068dc8561da97cc8607e1ec696">r2dpoly_to_matpoly</a> (const <a class="el" href="structr2d__poly.html">r2d_poly</a> &amp;r2dpoly, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;mat_poly)</td></tr>
-<tr class="memdesc:a8b4a80068dc8561da97cc8607e1ec696"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a R2D poly to a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> where the vertices in the Matpoly are ordered counter clock-wise.  <a href="#a8b4a80068dc8561da97cc8607e1ec696">More...</a><br /></td></tr>
-<tr class="separator:a8b4a80068dc8561da97cc8607e1ec696"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7012e7bb1d6b908e25f8426430e11de2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a7012e7bb1d6b908e25f8426430e11de2">r2dpoly_to_matpoly</a> (const <a class="el" href="structr2d__poly.html">r2d_poly</a> &amp;r2dpoly, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;mat_poly, const double dst_tol, const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 2 &gt; &gt; *reference_pts=nullptr)</td></tr>
+<tr class="memdesc:a7012e7bb1d6b908e25f8426430e11de2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a R2D poly to a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> where the vertices in the Matpoly are ordered counter clock-wise.  <a href="#a7012e7bb1d6b908e25f8426430e11de2">More...</a><br /></td></tr>
+<tr class="separator:a7012e7bb1d6b908e25f8426430e11de2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae282114f99c97df0c59c6006bc065e0b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ae282114f99c97df0c59c6006bc065e0b">matpoly_to_r2dpoly</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;mat_poly, <a class="el" href="structr2d__poly.html">r2d_poly</a> &amp;r2dpoly)</td></tr>
 <tr class="memdesc:ae282114f99c97df0c59c6006bc065e0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> to a polygon in R2D format.  <a href="#ae282114f99c97df0c59c6006bc065e0b">More...</a><br /></td></tr>
 <tr class="separator:ae282114f99c97df0c59c6006bc065e0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af02fba4de7b9b6cdae6e0f7b655d96b9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#af02fba4de7b9b6cdae6e0f7b655d96b9">get_intersection_moments</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;mat_poly, const <a class="el" href="structr2d__poly.html">r2d_poly</a> &amp;r2dpoly, std::vector&lt; double &gt; &amp;intersection_moments, bool convex_matpoly=false)</td></tr>
-<tr class="memdesc:af02fba4de7b9b6cdae6e0f7b655d96b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes moments of the intersection of a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> and an <a class="el" href="structr2d__poly.html" title="A polygon. Can be convex, nonconvex, even multiply-connected. ">r2d_poly</a>. If <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> is convex, <a class="el" href="structr2d__poly.html" title="A polygon. Can be convex, nonconvex, even multiply-connected. ">r2d_poly</a> will be clipped with lines containing the faces of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>. Otherwise, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> will be decomposed into triangular MatPolys, each of which will be intersected with <a class="el" href="structr2d__poly.html" title="A polygon. Can be convex, nonconvex, even multiply-connected. ">r2d_poly</a>. Note that <a class="el" href="structr2d__poly.html" title="A polygon. Can be convex, nonconvex, even multiply-connected. ">r2d_poly</a> does not need to be convex.  <a href="#af02fba4de7b9b6cdae6e0f7b655d96b9">More...</a><br /></td></tr>
-<tr class="separator:af02fba4de7b9b6cdae6e0f7b655d96b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abfcab80195ecc59c7d07264deb5582a9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#abfcab80195ecc59c7d07264deb5582a9">split_convex_matpoly_r2d</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;mat_poly, const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 2 &gt; &amp;cutting_plane, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;lower_halfspace_poly, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;upper_halfspace_poly, std::vector&lt; double &gt; &amp;lower_halfspace_moments, std::vector&lt; double &gt; &amp;upper_halfspace_moments)</td></tr>
-<tr class="memdesc:abfcab80195ecc59c7d07264deb5582a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a convex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into two (convex) <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s with a cutting plane.  <a href="#abfcab80195ecc59c7d07264deb5582a9">More...</a><br /></td></tr>
-<tr class="separator:abfcab80195ecc59c7d07264deb5582a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76c203c6b6098cf8d1a6aaa44f6129c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a76c203c6b6098cf8d1a6aaa44f6129c1">get_intersection_moments</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;mat_poly, const <a class="el" href="structr2d__poly.html">r2d_poly</a> &amp;r2dpoly, std::vector&lt; double &gt; &amp;intersection_moments, bool convex_matpoly)</td></tr>
+<tr class="memdesc:a76c203c6b6098cf8d1a6aaa44f6129c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes moments of the intersection of a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> and an <a class="el" href="structr2d__poly.html" title="A polygon. Can be convex, nonconvex, even multiply-connected. ">r2d_poly</a>. If <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> is convex, <a class="el" href="structr2d__poly.html" title="A polygon. Can be convex, nonconvex, even multiply-connected. ">r2d_poly</a> will be clipped with lines containing the faces of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>. Otherwise, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> will be decomposed into triangular MatPolys, each of which will be intersected with <a class="el" href="structr2d__poly.html" title="A polygon. Can be convex, nonconvex, even multiply-connected. ">r2d_poly</a>. Note that <a class="el" href="structr2d__poly.html" title="A polygon. Can be convex, nonconvex, even multiply-connected. ">r2d_poly</a> does not need to be convex.  <a href="#a76c203c6b6098cf8d1a6aaa44f6129c1">More...</a><br /></td></tr>
+<tr class="separator:a76c203c6b6098cf8d1a6aaa44f6129c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5551f71f2e6bd3082c4f9756d55d9f33"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a5551f71f2e6bd3082c4f9756d55d9f33">split_convex_matpoly_r2d</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;mat_poly, const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 2 &gt; &amp;cutting_plane, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;lower_halfspace_poly, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;upper_halfspace_poly, std::vector&lt; double &gt; &amp;lower_halfspace_moments, std::vector&lt; double &gt; &amp;upper_halfspace_moments, double vol_tol, double dst_tol)</td></tr>
+<tr class="memdesc:a5551f71f2e6bd3082c4f9756d55d9f33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a convex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into two (convex) <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s with a cutting plane.  <a href="#a5551f71f2e6bd3082c4f9756d55d9f33">More...</a><br /></td></tr>
+<tr class="separator:a5551f71f2e6bd3082c4f9756d55d9f33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2364ea47380698d6b380574978c068da"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a2364ea47380698d6b380574978c068da">matpoly_to_r3dpoly</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;mat_poly, <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly)</td></tr>
 <tr class="memdesc:a2364ea47380698d6b380574978c068da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> to a polyhedron in R3D format.  <a href="#a2364ea47380698d6b380574978c068da">More...</a><br /></td></tr>
 <tr class="separator:a2364ea47380698d6b380574978c068da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad21544d74adf6c81745e56cb8a2d4a41"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ad21544d74adf6c81745e56cb8a2d4a41">r3dpoly_to_matpolys</a> (const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly, std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &gt; &amp;mat_polys)</td></tr>
-<tr class="memdesc:ad21544d74adf6c81745e56cb8a2d4a41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a polyhedron in R3D format to <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s.  <a href="#ad21544d74adf6c81745e56cb8a2d4a41">More...</a><br /></td></tr>
-<tr class="separator:ad21544d74adf6c81745e56cb8a2d4a41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b33cbabca7f3d25bf3a39d72909f1be"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a3b33cbabca7f3d25bf3a39d72909f1be">split_convex_matpoly_r3d</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;mat_poly, const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 3 &gt; &amp;cutting_plane, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;lower_halfspace_poly, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;upper_halfspace_poly, std::vector&lt; double &gt; &amp;lower_halfspace_moments, std::vector&lt; double &gt; &amp;upper_halfspace_moments)</td></tr>
-<tr class="memdesc:a3b33cbabca7f3d25bf3a39d72909f1be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a convex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into two (convex) <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s with a cutting plane.  <a href="#a3b33cbabca7f3d25bf3a39d72909f1be">More...</a><br /></td></tr>
-<tr class="separator:a3b33cbabca7f3d25bf3a39d72909f1be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad580bc2bc65a62b3650d30447117732a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ad580bc2bc65a62b3650d30447117732a">get_intersection_moments</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;mat_poly, const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly, std::vector&lt; double &gt; &amp;intersection_moments, bool convex_matpoly=false)</td></tr>
-<tr class="memdesc:ad580bc2bc65a62b3650d30447117732a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes moments of the intersection of a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> and an <a class="el" href="structr3d__poly.html">r3d_poly</a>. If <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> is convex, <a class="el" href="structr3d__poly.html">r3d_poly</a> will be clipped with planes containing the faces of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>. Otherwise, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> will be decomposed into tetrahedral MatPolys, each of which will be intersected with <a class="el" href="structr3d__poly.html">r3d_poly</a>. Note that <a class="el" href="structr3d__poly.html">r3d_poly</a> does not need to be convex.  <a href="#ad580bc2bc65a62b3650d30447117732a">More...</a><br /></td></tr>
-<tr class="separator:ad580bc2bc65a62b3650d30447117732a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43906bb61091453a4fc320c983f9c733"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a43906bb61091453a4fc320c983f9c733">r3d_poly_components</a> (const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly, std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &amp;poly_components, const double vol_tol)</td></tr>
+<tr class="memdesc:a43906bb61091453a4fc320c983f9c733"><td class="mdescLeft">&#160;</td><td class="mdescRight">Breaks an <a class="el" href="structr3d__poly.html">r3d_poly</a> into a vector of disjoint components.  <a href="#a43906bb61091453a4fc320c983f9c733">More...</a><br /></td></tr>
+<tr class="separator:a43906bb61091453a4fc320c983f9c733"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8da5e3ebb9e36f354b8d4351050c246"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ac8da5e3ebb9e36f354b8d4351050c246">r3dpoly_to_matpolys</a> (const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly, std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &gt; &amp;mat_polys, const double vol_tol, const double dst_tol, const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 3 &gt; &gt; *reference_pts=nullptr)</td></tr>
+<tr class="memdesc:ac8da5e3ebb9e36f354b8d4351050c246"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a polyhedron in R3D format to <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s.  <a href="#ac8da5e3ebb9e36f354b8d4351050c246">More...</a><br /></td></tr>
+<tr class="separator:ac8da5e3ebb9e36f354b8d4351050c246"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d36b5dbc71670d73c1b6d326fa81a85"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a8d36b5dbc71670d73c1b6d326fa81a85">split_convex_matpoly_r3d</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;mat_poly, const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 3 &gt; &amp;cutting_plane, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;lower_halfspace_poly, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;upper_halfspace_poly, std::vector&lt; double &gt; &amp;lower_halfspace_moments, std::vector&lt; double &gt; &amp;upper_halfspace_moments, double vol_tol, double dst_tol)</td></tr>
+<tr class="memdesc:a8d36b5dbc71670d73c1b6d326fa81a85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a convex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into two (convex) <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s with a cutting plane.  <a href="#a8d36b5dbc71670d73c1b6d326fa81a85">More...</a><br /></td></tr>
+<tr class="separator:a8d36b5dbc71670d73c1b6d326fa81a85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04f943054dc7440e73891fa687911b14"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a04f943054dc7440e73891fa687911b14">get_intersection_moments</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &amp;mat_poly, const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly, std::vector&lt; double &gt; &amp;intersection_moments, bool convex_matpoly)</td></tr>
+<tr class="memdesc:a04f943054dc7440e73891fa687911b14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes moments of the intersection of a <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> and an <a class="el" href="structr3d__poly.html">r3d_poly</a>. If <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> is convex, <a class="el" href="structr3d__poly.html">r3d_poly</a> will be clipped with planes containing the faces of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>. Otherwise, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> will be decomposed into tetrahedral MatPolys, each of which will be intersected with <a class="el" href="structr3d__poly.html">r3d_poly</a>. Note that <a class="el" href="structr3d__poly.html">r3d_poly</a> does not need to be convex.  <a href="#a04f943054dc7440e73891fa687911b14">More...</a><br /></td></tr>
+<tr class="separator:a04f943054dc7440e73891fa687911b14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76a989a601d36db6dab4fcec22ed85fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTangram_1_1BoundingBox__t.html">BoundingBox_t</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a76a989a601d36db6dab4fcec22ed85fe">r3d_poly_bounding_box</a> (const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;r3dpoly)</td></tr>
 <tr class="separator:a76a989a601d36db6dab4fcec22ed85fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89fb672bd64174fd73fc2854ab52e0c3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; 1 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a89fb672bd64174fd73fc2854ab52e0c3">cartesian_to_polar</a> (const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; 2 &gt; cartesian_vec)</td></tr>
@@ -220,23 +222,22 @@ Functions</h2></td></tr>
 <tr class="memitem:ad19d39ec7ebae38d35674f4e3630ddaa"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ad19d39ec7ebae38d35674f4e3630ddaa">fwd_diff_grad</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;fun, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;arg_val, const double &amp;fun_val, <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;approx_grad, double &amp;fdiff_h)</td></tr>
 <tr class="memdesc:ad19d39ec7ebae38d35674f4e3630ddaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forward finite difference approximation of a gradient.  <a href="#ad19d39ec7ebae38d35674f4e3630ddaa">More...</a><br /></td></tr>
 <tr class="separator:ad19d39ec7ebae38d35674f4e3630ddaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4f274fb0b40e21402e8a4e4462ea9ad"><td class="memTemplParams" colspan="2">template&lt;int arg_dim&gt; </td></tr>
-<tr class="memitem:ad4f274fb0b40e21402e8a4e4462ea9ad"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ad4f274fb0b40e21402e8a4e4462ea9ad">linesearch</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;obj_fun, const double &amp;obj_fun_lbnd, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;arg, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;dir, const double &amp;initial_guess, const double &amp;c1, const double &amp;c2, const <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &amp;im_tols, double &amp;cur_fval, <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;cur_grad)</td></tr>
-<tr class="memdesc:ad4f274fb0b40e21402e8a4e4462ea9ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Linesearch algorithm: finds the argument satisfying the strong Wolfe conditions.  <a href="#ad4f274fb0b40e21402e8a4e4462ea9ad">More...</a><br /></td></tr>
-<tr class="separator:ad4f274fb0b40e21402e8a4e4462ea9ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a84e465c8dac381dbf8c8ae38acf4b7e5"><td class="memTemplParams" colspan="2">template&lt;int arg_dim&gt; </td></tr>
-<tr class="memitem:a84e465c8dac381dbf8c8ae38acf4b7e5"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a84e465c8dac381dbf8c8ae38acf4b7e5">mwwp_linesearch</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;obj_fun, const double &amp;obj_fun_lbnd, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;arg, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;dir, const double initial_guess, const double delta, const double delta1, const <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &amp;im_tols, double &amp;cur_fval, <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;cur_grad)</td></tr>
-<tr class="memdesc:a84e465c8dac381dbf8c8ae38acf4b7e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Linesearch algorithm, based on MWWP algorithm from "Global convergence of BFGS and PRP methods under
-a modified weak Wolfe–Powell line search" by Gonglin Yuana, Zengxin Weia, Xiwen Lu, Applied Mathematical Modelling 47 (2017) 811–825.  <a href="#a84e465c8dac381dbf8c8ae38acf4b7e5">More...</a><br /></td></tr>
-<tr class="separator:a84e465c8dac381dbf8c8ae38acf4b7e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc8686bea4d2f435f2546c28f8996b58"><td class="memTemplParams" colspan="2">template&lt;int arg_dim&gt; </td></tr>
+<tr class="memitem:acc8686bea4d2f435f2546c28f8996b58"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#acc8686bea4d2f435f2546c28f8996b58">cen_diff_grad</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;fun, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;arg_val, <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;approx_grad, double &amp;fdiff_h)</td></tr>
+<tr class="memdesc:acc8686bea4d2f435f2546c28f8996b58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Central finite difference approximation of a gradient.  <a href="#acc8686bea4d2f435f2546c28f8996b58">More...</a><br /></td></tr>
+<tr class="separator:acc8686bea4d2f435f2546c28f8996b58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0b5db50aff69e0d2ff71bf6c6d79aa7"><td class="memTemplParams" colspan="2">template&lt;int arg_dim&gt; </td></tr>
+<tr class="memitem:ac0b5db50aff69e0d2ff71bf6c6d79aa7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ac0b5db50aff69e0d2ff71bf6c6d79aa7">finite_diff_grad</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;fun, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;arg_val, const double &amp;fun_val, const double rel_err_bnd, <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;approx_grad)</td></tr>
+<tr class="memdesc:ac0b5db50aff69e0d2ff71bf6c6d79aa7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finite difference approximation of a gradient. Switches from forward to central finite differences if the value of the gradient is not significant relative to the method's error.  <a href="#ac0b5db50aff69e0d2ff71bf6c6d79aa7">More...</a><br /></td></tr>
+<tr class="separator:ac0b5db50aff69e0d2ff71bf6c6d79aa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89f74efa496fa4e1c06b3e39a788ee78"><td class="memTemplParams" colspan="2">template&lt;int arg_dim&gt; </td></tr>
+<tr class="memitem:a89f74efa496fa4e1c06b3e39a788ee78"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a89f74efa496fa4e1c06b3e39a788ee78">linesearch</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;obj_fun, const double &amp;obj_fun_lbnd, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;arg, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;dir, const double &amp;initial_guess, const double &amp;c1, const double &amp;c2, const <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &amp;im_tols, const double rel_err_bnd, double &amp;cur_fval, <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;cur_grad)</td></tr>
+<tr class="memdesc:a89f74efa496fa4e1c06b3e39a788ee78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Linesearch algorithm: finds the argument satisfying the strong Wolfe conditions.  <a href="#a89f74efa496fa4e1c06b3e39a788ee78">More...</a><br /></td></tr>
+<tr class="separator:a89f74efa496fa4e1c06b3e39a788ee78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ed879b10eb7c556f505cdaa29bcf0b3"><td class="memTemplParams" colspan="2">template&lt;int arg_dim&gt; </td></tr>
 <tr class="memitem:a0ed879b10eb7c556f505cdaa29bcf0b3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a0ed879b10eb7c556f505cdaa29bcf0b3">bfgs</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;obj_fun, const double &amp;obj_fun_lbnd, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;init_guess, const <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &amp;im_tols)</td></tr>
 <tr class="memdesc:a0ed879b10eb7c556f505cdaa29bcf0b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">BFGS algorithm: finds the minimizer of the objective function.  <a href="#a0ed879b10eb7c556f505cdaa29bcf0b3">More...</a><br /></td></tr>
 <tr class="separator:a0ed879b10eb7c556f505cdaa29bcf0b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3628266f4e5ce04f20d16dc76a8ff011"><td class="memTemplParams" colspan="2">template&lt;int arg_dim&gt; </td></tr>
-<tr class="memitem:a3628266f4e5ce04f20d16dc76a8ff011"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a3628266f4e5ce04f20d16dc76a8ff011">bfgs_mwwp</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;obj_fun, const double &amp;obj_fun_lbnd, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;init_guess, const <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &amp;im_tols)</td></tr>
-<tr class="memdesc:a3628266f4e5ce04f20d16dc76a8ff011"><td class="mdescLeft">&#160;</td><td class="mdescRight">BFGS algorithm: finds the minimizer of the objective function. Uses MWP linesearch.  <a href="#a3628266f4e5ce04f20d16dc76a8ff011">More...</a><br /></td></tr>
-<tr class="separator:a3628266f4e5ce04f20d16dc76a8ff011"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22b16d21c00e552fb22347aec9c972a6"><td class="memTemplParams" colspan="2">template&lt;int arg_dim&gt; </td></tr>
 <tr class="memitem:a22b16d21c00e552fb22347aec9c972a6"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a22b16d21c00e552fb22347aec9c972a6">dbfgs</a> (const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;obj_fun, const double &amp;obj_fun_lbnd, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;init_guess, const <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &amp;im_tols)</td></tr>
 <tr class="memdesc:a22b16d21c00e552fb22347aec9c972a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">D-BFGS algorithm: finds the minimizer of the objective function Based on "Improved Damped Quasi-Newton Methods for Unconstrained Optimization" by Mehiddin Al-Baali and Lucio Grandinetti, Pacific Journal of Optimization (to appear).  <a href="#a22b16d21c00e552fb22347aec9c972a6">More...</a><br /></td></tr>
@@ -245,21 +246,29 @@ a modified weak Wolfe–Powell line search" by Gonglin Yuana, Zengxin Weia, Xiwe
 <tr class="memitem:afef97752fc2daf4936063c41dbbc9abd"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; D &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#afef97752fc2daf4936063c41dbbc9abd">ls_gradient</a> (std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; D &gt;&gt; const &amp;coords, std::vector&lt; double &gt; const &amp;vals)</td></tr>
 <tr class="memdesc:afef97752fc2daf4936063c41dbbc9abd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute least squares gradient from set of values.  <a href="#afef97752fc2daf4936063c41dbbc9abd">More...</a><br /></td></tr>
 <tr class="separator:afef97752fc2daf4936063c41dbbc9abd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4184eb3e83186cdabf000f3129adca24"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a4184eb3e83186cdabf000f3129adca24">polygon3d_area</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;points, const std::vector&lt; int &gt; &amp;poly_vertices)</td></tr>
-<tr class="separator:a4184eb3e83186cdabf000f3129adca24"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addba9ffa7e87ee10c307576b5cfbc2ae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#addba9ffa7e87ee10c307576b5cfbc2ae">polygon3d_moments</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;points, const std::vector&lt; int &gt; &amp;poly_vertices, std::vector&lt; double &gt; &amp;poly_moments)</td></tr>
-<tr class="separator:addba9ffa7e87ee10c307576b5cfbc2ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afddb4621ade732fd64b8523a9475054b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#afddb4621ade732fd64b8523a9475054b">polygon3d_normal</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;points, const std::vector&lt; int &gt; &amp;poly_vertices)</td></tr>
-<tr class="separator:afddb4621ade732fd64b8523a9475054b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56993fc630a4a4f0e007615959915181"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
-<tr class="memitem:a56993fc630a4a4f0e007615959915181"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a56993fc630a4a4f0e007615959915181">cell_get_matpoly</a> (const Mesh_Wrapper &amp;Mesh, int const cellid, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; *mat_poly)</td></tr>
-<tr class="separator:a56993fc630a4a4f0e007615959915181"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c6ee97014f69104b4fb5396419174fe"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
-<tr class="memitem:a3c6ee97014f69104b4fb5396419174fe"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a3c6ee97014f69104b4fb5396419174fe">cell_get_matpoly</a> (const Mesh_Wrapper &amp;Mesh, int const cellid, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; *mat_poly)</td></tr>
-<tr class="separator:a3c6ee97014f69104b4fb5396419174fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a316439a55e37de20974405fc9729d16a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a316439a55e37de20974405fc9729d16a">point_inside_matpoly</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; mat_poly, const <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 3 &gt; &amp;pt, bool convex_poly=false)</td></tr>
-<tr class="memdesc:a316439a55e37de20974405fc9729d16a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if a given point is interior wrt to a given polyhedron. Note: boundary points are no considered to be interior.  <a href="#a316439a55e37de20974405fc9729d16a">More...</a><br /></td></tr>
-<tr class="separator:a316439a55e37de20974405fc9729d16a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add95776fd9a423b220c590e28f32fd22"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#add95776fd9a423b220c590e28f32fd22">polygon3d_area</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;points, const std::vector&lt; int &gt; &amp;poly_vertices, double dst_tol)</td></tr>
+<tr class="separator:add95776fd9a423b220c590e28f32fd22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0379ce04695d2beacee8173ab40f62b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#aa0379ce04695d2beacee8173ab40f62b">polygon3d_moments</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;points, const std::vector&lt; int &gt; &amp;poly_vertices, std::vector&lt; double &gt; &amp;poly_moments, double dst_tol)</td></tr>
+<tr class="separator:aa0379ce04695d2beacee8173ab40f62b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a498a02ba72d13092913c9ac3d5a7f8b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a498a02ba72d13092913c9ac3d5a7f8b2">polygon3d_normal</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;points, const std::vector&lt; int &gt; &amp;poly_vertices, double dst_tol)</td></tr>
+<tr class="separator:a498a02ba72d13092913c9ac3d5a7f8b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a082d6df64712201cc18e4a3228eecc"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
+<tr class="memitem:a4a082d6df64712201cc18e4a3228eecc"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a4a082d6df64712201cc18e4a3228eecc">cell_get_matpoly</a> (const Mesh_Wrapper &amp;Mesh, const int cellid, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; *mat_poly, const double dst_tol)</td></tr>
+<tr class="memdesc:a4a082d6df64712201cc18e4a3228eecc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a material polygon that corresponds to (i.e. has the same geometry as) a given mesh cell.  <a href="#a4a082d6df64712201cc18e4a3228eecc">More...</a><br /></td></tr>
+<tr class="separator:a4a082d6df64712201cc18e4a3228eecc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e78b490c82464a056ec64a36ee2e387"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
+<tr class="memitem:a0e78b490c82464a056ec64a36ee2e387"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a0e78b490c82464a056ec64a36ee2e387">cell_get_matpoly</a> (const Mesh_Wrapper &amp;Mesh, const int cellid, <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; *mat_poly, const double dst_tol)</td></tr>
+<tr class="memdesc:a0e78b490c82464a056ec64a36ee2e387"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a material polyhedron that corresponds to (i.e. has the same geometry as) a given mesh cell.  <a href="#a0e78b490c82464a056ec64a36ee2e387">More...</a><br /></td></tr>
+<tr class="separator:a0e78b490c82464a056ec64a36ee2e387"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69297ec3a4d9448be375b217d7297fe9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a69297ec3a4d9448be375b217d7297fe9">natural_selection</a> (const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 2 &gt; &gt; &amp;poly_points, const double dst_tol, const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 2 &gt; &gt; *reference_pts=nullptr)</td></tr>
+<tr class="memdesc:a69297ec3a4d9448be375b217d7297fe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Eliminates degenerate faces from a polygon given by a sequence of vertices.  <a href="#a69297ec3a4d9448be375b217d7297fe9">More...</a><br /></td></tr>
+<tr class="separator:a69297ec3a4d9448be375b217d7297fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9cf0201d875a729c2ab615434bf540e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a9cf0201d875a729c2ab615434bf540e5">natural_selection</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;vertex_points, const std::vector&lt; std::vector&lt; int &gt; &gt; &amp;face_vertices, const double dst_tol, const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 3 &gt; &gt; *reference_pts=nullptr)</td></tr>
+<tr class="memdesc:a9cf0201d875a729c2ab615434bf540e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Eliminates degeneracies from the boundary representation, which includes vertices within distance tolerance from other vertices, hanging nodes, and degenerate faces with less than three vertices.  <a href="#a9cf0201d875a729c2ab615434bf540e5">More...</a><br /></td></tr>
+<tr class="separator:a9cf0201d875a729c2ab615434bf540e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06e9c97f69aeca40afb983ab4c229059"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a06e9c97f69aeca40afb983ab4c229059">point_inside_matpoly</a> (const <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; mat_poly, const <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 3 &gt; &amp;pt, double dst_tol, bool convex_poly)</td></tr>
+<tr class="memdesc:a06e9c97f69aeca40afb983ab4c229059"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if a given point is interior wrt to a given polyhedron. Note: boundary points are no considered to be interior.  <a href="#a06e9c97f69aeca40afb983ab4c229059">More...</a><br /></td></tr>
+<tr class="separator:a06e9c97f69aeca40afb983ab4c229059"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad01579d0f4681395bfdee1613d047b55"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classTangram_1_1Matrix.html">Matrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#ad01579d0f4681395bfdee1613d047b55">operator+</a> (const <a class="el" href="classTangram_1_1Matrix.html">Matrix</a> &amp;A, const <a class="el" href="classTangram_1_1Matrix.html">Matrix</a> &amp;B)</td></tr>
 <tr class="separator:ad01579d0f4681395bfdee1613d047b55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38482a96ce72f503485a3955808503a0"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classTangram_1_1Matrix.html">Matrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a38482a96ce72f503485a3955808503a0">operator-</a> (const <a class="el" href="classTangram_1_1Matrix.html">Matrix</a> &amp;A, const <a class="el" href="classTangram_1_1Matrix.html">Matrix</a> &amp;B)</td></tr>
@@ -338,11 +347,15 @@ a modified weak Wolfe–Powell line search" by Gonglin Yuana, Zengxin Weia, Xiwe
 <tr class="memitem:a2873216e483d671cc6fb4ea26100c1b6"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
 <tr class="memitem:a2873216e483d671cc6fb4ea26100c1b6"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; D &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a2873216e483d671cc6fb4ea26100c1b6">operator-</a> (const <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; D &gt; &amp;plane)</td></tr>
 <tr class="separator:a2873216e483d671cc6fb4ea26100c1b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d8945a4a890e0321a569ee5fae69bd2"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
-<tr class="memitem:a7d8945a4a890e0321a569ee5fae69bd2"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a7d8945a4a890e0321a569ee5fae69bd2">overlapping_boxes</a> (const <a class="el" href="structTangram_1_1BoundingBox__t.html">BoundingBox_t</a>&lt; D &gt; &amp;bb1, const <a class="el" href="structTangram_1_1BoundingBox__t.html">BoundingBox_t</a>&lt; D &gt; &amp;bb2, double eps=std::numeric_limits&lt; double &gt;::epsilon())</td></tr>
-<tr class="separator:a7d8945a4a890e0321a569ee5fae69bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a470a7322feda68737ae68a53d47d2418"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
+<tr class="memitem:a470a7322feda68737ae68a53d47d2418"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a470a7322feda68737ae68a53d47d2418">overlapping_boxes</a> (const <a class="el" href="structTangram_1_1BoundingBox__t.html">BoundingBox_t</a>&lt; D &gt; &amp;bb1, const <a class="el" href="structTangram_1_1BoundingBox__t.html">BoundingBox_t</a>&lt; D &gt; &amp;bb2, double dst_eps)</td></tr>
+<tr class="separator:a470a7322feda68737ae68a53d47d2418"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c08fbbe360adcfed853df8e4027d1d2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a8c08fbbe360adcfed853df8e4027d1d2">is_equal</a> (const double fp1, const double fp2)</td></tr>
 <tr class="separator:a8c08fbbe360adcfed853df8e4027d1d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a780072ae7843b354b1ae6b59c3bd3320"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a780072ae7843b354b1ae6b59c3bd3320"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; int &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a780072ae7843b354b1ae6b59c3bd3320">sorted_indices</a> (const std::vector&lt; T &gt; &amp;v, bool ascending=true)</td></tr>
+<tr class="memdesc:a780072ae7843b354b1ae6b59c3bd3320"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the sequence of indices corresponding to the ascending or descending order of vector's values.  <a href="#a780072ae7843b354b1ae6b59c3bd3320">More...</a><br /></td></tr>
+<tr class="separator:a780072ae7843b354b1ae6b59c3bd3320"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f3b5ab00373f6e544350802fc83ba88"><td class="memTemplParams" colspan="2">template&lt;long D&gt; </td></tr>
 <tr class="memitem:a3f3b5ab00373f6e544350802fc83ba88"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a3f3b5ab00373f6e544350802fc83ba88">dot</a> (const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; D &gt; &amp;a, const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; D &gt; &amp;b)</td></tr>
 <tr class="memdesc:a3f3b5ab00373f6e544350802fc83ba88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dot product of two vectors, \(\vec{a} \cdot \vec{b}\).  <a href="#a3f3b5ab00373f6e544350802fc83ba88">More...</a><br /></td></tr>
@@ -385,6 +398,10 @@ a modified weak Wolfe–Powell line search" by Gonglin Yuana, Zengxin Weia, Xiwe
 <tr class="memitem:acbb1e4675e88e2f9fc5721337322c37c"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#acbb1e4675e88e2f9fc5721337322c37c">MaxComponent</a> (const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; D &gt; &amp;v, long &amp;icomp)</td></tr>
 <tr class="memdesc:acbb1e4675e88e2f9fc5721337322c37c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the value and index of the maximum component of a <a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a>.  <a href="#acbb1e4675e88e2f9fc5721337322c37c">More...</a><br /></td></tr>
 <tr class="separator:acbb1e4675e88e2f9fc5721337322c37c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd1792d7f4e45f90caeb5ff2a3e775cf"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
+<tr class="memitem:abd1792d7f4e45f90caeb5ff2a3e775cf"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classTangram_1_1Point.html">Point</a>&lt; D &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#abd1792d7f4e45f90caeb5ff2a3e775cf">runge_kutta_4</a> (const std::function&lt; <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; D &gt;(double, const <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; D &gt; &amp;)&gt; &amp;roc_f, const <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; D &gt; &amp;x_cur, double t_cur, double dt)</td></tr>
+<tr class="memdesc:abd1792d7f4e45f90caeb5ff2a3e775cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fourth order Runge–Kutta method for initial value problems.  <a href="#abd1792d7f4e45f90caeb5ff2a3e775cf">More...</a><br /></td></tr>
+<tr class="separator:abd1792d7f4e45f90caeb5ff2a3e775cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -570,7 +587,6 @@ template&lt;typename T &gt; </div>
 </div><div class="memdoc">
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="acbc93a9c17403e5d2e10e53fb002d1b3a69c8d5b5c7c91d37e9c7e05fae6d0f86"></a>BFGS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="acbc93a9c17403e5d2e10e53fb002d1b3adb9f9f1d0b1333c648d3ceccd7539bdd"></a>BFGS_MWWP&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="acbc93a9c17403e5d2e10e53fb002d1b3a31463a1a03f66e2d5728a58df0c91305"></a>DBFGS&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
@@ -675,60 +691,6 @@ template&lt;int arg_dim&gt; </div>
 
 </div>
 </div>
-<a id="a3628266f4e5ce04f20d16dc76a8ff011"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3628266f4e5ce04f20d16dc76a8ff011">&#9670;&nbsp;</a></span>bfgs_mwwp()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;int arg_dim&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt;arg_dim&gt; Tangram::bfgs_mwwp </td>
-          <td>(</td>
-          <td class="paramtype">const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;&#160;</td>
-          <td class="paramname"><em>obj_fun</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const double &amp;&#160;</td>
-          <td class="paramname"><em>obj_fun_lbnd</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;&#160;</td>
-          <td class="paramname"><em>init_guess</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &amp;&#160;</td>
-          <td class="paramname"><em>im_tols</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>BFGS algorithm: finds the minimizer of the objective function. Uses MWP linesearch. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">obj_fun</td><td>Objective function </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">init_guess</td><td>Initial value of the argument </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">max_num_iter</td><td>Maximum number of iterations </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">im_tols</td><td>Tolerances </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Value of the minimizer </dd></dl>
-
-</div>
-</div>
 <a id="a89fb672bd64174fd73fc2854ab52e0c3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a89fb672bd64174fd73fc2854ab52e0c3">&#9670;&nbsp;</a></span>cartesian_to_polar() <span class="overload">[1/2]</span></h2>
 
@@ -765,8 +727,8 @@ template&lt;int arg_dim&gt; </div>
 
 </div>
 </div>
-<a id="a56993fc630a4a4f0e007615959915181"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56993fc630a4a4f0e007615959915181">&#9670;&nbsp;</a></span>cell_get_matpoly() <span class="overload">[1/2]</span></h2>
+<a id="a4a082d6df64712201cc18e4a3228eecc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a082d6df64712201cc18e4a3228eecc">&#9670;&nbsp;</a></span>cell_get_matpoly() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -782,14 +744,20 @@ template&lt;class Mesh_Wrapper &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int const&#160;</td>
+          <td class="paramtype">const int&#160;</td>
           <td class="paramname"><em>cellid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; *&#160;</td>
-          <td class="paramname"><em>mat_poly</em>&#160;</td>
+          <td class="paramname"><em>mat_poly</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -799,10 +767,27 @@ template&lt;class Mesh_Wrapper &gt; </div>
       </table>
 </div><div class="memdoc">
 
+<p>Initializes a material polygon that corresponds to (i.e. has the same geometry as) a given mesh cell. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Mesh_Wrapper</td><td>A lightweight wrapper to a specific input mesh implementation that provides certain functionality</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Mesh</td><td>Mesh wrapper </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cellid</td><td>Index of a cell </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">mat_poly</td><td>Pointer to the material polygon to initialize </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance to be used by that material polygon </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
-<a id="a3c6ee97014f69104b4fb5396419174fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c6ee97014f69104b4fb5396419174fe">&#9670;&nbsp;</a></span>cell_get_matpoly() <span class="overload">[2/2]</span></h2>
+<a id="a0e78b490c82464a056ec64a36ee2e387"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e78b490c82464a056ec64a36ee2e387">&#9670;&nbsp;</a></span>cell_get_matpoly() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -818,14 +803,20 @@ template&lt;class Mesh_Wrapper &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int const&#160;</td>
+          <td class="paramtype">const int&#160;</td>
           <td class="paramname"><em>cellid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; *&#160;</td>
-          <td class="paramname"><em>mat_poly</em>&#160;</td>
+          <td class="paramname"><em>mat_poly</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -834,6 +825,76 @@ template&lt;class Mesh_Wrapper &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Initializes a material polyhedron that corresponds to (i.e. has the same geometry as) a given mesh cell. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Mesh_Wrapper</td><td>A lightweight wrapper to a specific input mesh implementation that provides certain functionality</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Mesh</td><td>Mesh wrapper </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cellid</td><td>Index of a cell </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">mat_poly</td><td>Pointer to the material polyhedron to initialize </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance to be used by that material polyhedron </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="acc8686bea4d2f435f2546c28f8996b58"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc8686bea4d2f435f2546c28f8996b58">&#9670;&nbsp;</a></span>cen_diff_grad()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int arg_dim&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Tangram::cen_diff_grad </td>
+          <td>(</td>
+          <td class="paramtype">const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;&#160;</td>
+          <td class="paramname"><em>fun</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>arg_val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>approx_grad</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double &amp;&#160;</td>
+          <td class="paramname"><em>fdiff_h</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Central finite difference approximation of a gradient. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fun</td><td>Function for which we compute the gradient </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">arg_val</td><td>We approximate the gradient for this value of the argument </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">approx_grad</td><td>Computed approximation of the gradient at arg_val </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">fdiff_h</td><td>Finite difference step </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1111,6 +1172,66 @@ template&lt;long D&gt; </div>
 
 </div>
 </div>
+<a id="ac0b5db50aff69e0d2ff71bf6c6d79aa7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0b5db50aff69e0d2ff71bf6c6d79aa7">&#9670;&nbsp;</a></span>finite_diff_grad()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int arg_dim&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Tangram::finite_diff_grad </td>
+          <td>(</td>
+          <td class="paramtype">const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;&#160;</td>
+          <td class="paramname"><em>fun</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>arg_val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double &amp;&#160;</td>
+          <td class="paramname"><em>fun_val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>rel_err_bnd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>approx_grad</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Finite difference approximation of a gradient. Switches from forward to central finite differences if the value of the gradient is not significant relative to the method's error. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fun</td><td>Function for which we compute the gradient </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">arg_val</td><td>We approximate the gradient for this value of the argument </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fun_val</td><td>Value of function at arg_val </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rel_err_bnd</td><td>If the estimate of relative error in gradient is above this, we switch from forward to central finite differences </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">approx_grad</td><td>Computed approximation of the gradient at arg_val </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="aaa6e4f10705156214e1c923210583834"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaa6e4f10705156214e1c923210583834">&#9670;&nbsp;</a></span>for_each()</h2>
 
@@ -1215,8 +1336,8 @@ template&lt;int arg_dim&gt; </div>
 
 </div>
 </div>
-<a id="af02fba4de7b9b6cdae6e0f7b655d96b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af02fba4de7b9b6cdae6e0f7b655d96b9">&#9670;&nbsp;</a></span>get_intersection_moments() <span class="overload">[1/2]</span></h2>
+<a id="a76c203c6b6098cf8d1a6aaa44f6129c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76c203c6b6098cf8d1a6aaa44f6129c1">&#9670;&nbsp;</a></span>get_intersection_moments() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1243,7 +1364,7 @@ template&lt;int arg_dim&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>convex_matpoly</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>convex_matpoly</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1266,8 +1387,8 @@ template&lt;int arg_dim&gt; </div>
 
 </div>
 </div>
-<a id="ad580bc2bc65a62b3650d30447117732a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad580bc2bc65a62b3650d30447117732a">&#9670;&nbsp;</a></span>get_intersection_moments() <span class="overload">[2/2]</span></h2>
+<a id="a04f943054dc7440e73891fa687911b14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04f943054dc7440e73891fa687911b14">&#9670;&nbsp;</a></span>get_intersection_moments() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1294,7 +1415,7 @@ template&lt;int arg_dim&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>convex_matpoly</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>convex_matpoly</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1362,8 +1483,8 @@ template&lt;int arg_dim&gt; </div>
 
 </div>
 </div>
-<a id="ad4f274fb0b40e21402e8a4e4462ea9ad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad4f274fb0b40e21402e8a4e4462ea9ad">&#9670;&nbsp;</a></span>linesearch()</h2>
+<a id="a89f74efa496fa4e1c06b3e39a788ee78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89f74efa496fa4e1c06b3e39a788ee78">&#9670;&nbsp;</a></span>linesearch()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1421,6 +1542,12 @@ template&lt;int arg_dim&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>rel_err_bnd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">double &amp;&#160;</td>
           <td class="paramname"><em>cur_fval</em>, </td>
         </tr>
@@ -1448,6 +1575,7 @@ template&lt;int arg_dim&gt; </div>
     <tr><td class="paramdir">[in]</td><td class="paramname">c1</td><td>Value of c1 parameter in Wolfe conditions </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">c2</td><td>Value of c2 parameter in Wolfe conditions </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">im_tols</td><td>Tolerances </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rel_err_bnd</td><td>If the estimate of relative error in gradient is above this, we switch from forward to central finite differences </td></tr>
     <tr><td class="paramdir"></td><td class="paramname"></td><td></td></tr>
   </table>
   </dd>
@@ -1644,73 +1772,29 @@ template&lt;long D&gt; </div>
 
 </div>
 </div>
-<a id="a84e465c8dac381dbf8c8ae38acf4b7e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a84e465c8dac381dbf8c8ae38acf4b7e5">&#9670;&nbsp;</a></span>mwwp_linesearch()</h2>
+<a id="a69297ec3a4d9448be375b217d7297fe9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69297ec3a4d9448be375b217d7297fe9">&#9670;&nbsp;</a></span>natural_selection() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int arg_dim&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">double Tangram::mwwp_linesearch </td>
+          <td class="memname"><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt;2&gt; Tangram::natural_selection </td>
           <td>(</td>
-          <td class="paramtype">const std::function&lt; double(const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;)&gt; &amp;&#160;</td>
-          <td class="paramname"><em>obj_fun</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const double &amp;&#160;</td>
-          <td class="paramname"><em>obj_fun_lbnd</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;&#160;</td>
-          <td class="paramname"><em>arg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;&#160;</td>
-          <td class="paramname"><em>dir</em>, </td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 2 &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>poly_points</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const double&#160;</td>
-          <td class="paramname"><em>initial_guess</em>, </td>
+          <td class="paramname"><em>dst_tol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const double&#160;</td>
-          <td class="paramname"><em>delta</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const double&#160;</td>
-          <td class="paramname"><em>delta1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structTangram_1_1IterativeMethodTolerances__t.html">IterativeMethodTolerances_t</a> &amp;&#160;</td>
-          <td class="paramname"><em>im_tols</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double &amp;&#160;</td>
-          <td class="paramname"><em>cur_fval</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; arg_dim &gt; &amp;&#160;</td>
-          <td class="paramname"><em>cur_grad</em>&#160;</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 2 &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_pts</em> = <code>nullptr</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1720,21 +1804,68 @@ template&lt;int arg_dim&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Linesearch algorithm, based on MWWP algorithm from "Global convergence of BFGS and PRP methods under
-a modified weak Wolfe–Powell line search" by Gonglin Yuana, Zengxin Weia, Xiwen Lu, Applied Mathematical Modelling 47 (2017) 811–825. </p>
+<p>Eliminates degenerate faces from a polygon given by a sequence of vertices. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">obj_fun</td><td>Objective function </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">arg</td><td>Current argument </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dir</td><td>Linesearch direction </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">initial_guess</td><td>Starting value of the argument </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">delta</td><td>Value of delta parameter in MWWP conditions </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">delta1</td><td>Value of delta_1 parameter in MWWP conditions </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">im_tols</td><td>Tolerances </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname"></td><td></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">poly_points</td><td>Vertices of the polygon in the counter-clockwise order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reference_pts</td><td>Preferred points to snap vertices to </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> with no degeneracies </dd></dl>
+
+</div>
+</div>
+<a id="a9cf0201d875a729c2ab615434bf540e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9cf0201d875a729c2ab615434bf540e5">&#9670;&nbsp;</a></span>natural_selection() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt;3&gt; Tangram::natural_selection </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vertex_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; std::vector&lt; int &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>face_vertices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 3 &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_pts</em> = <code>nullptr</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Eliminates degeneracies from the boundary representation, which includes vertices within distance tolerance from other vertices, hanging nodes, and degenerate faces with less than three vertices. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">vertex_points</td><td>Vertices of the polyhedron </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">face_vertices</td><td>Faces of the polyhedron, every face is given by IDs of its vertices in counter-clockwise order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reference_pts</td><td>Preferred points to snap vertices to </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> with no degeneracies </dd></dl>
 
 </div>
 </div>
@@ -2580,8 +2711,8 @@ template&lt;long D&gt; </div>
 
 </div>
 </div>
-<a id="a7d8945a4a890e0321a569ee5fae69bd2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d8945a4a890e0321a569ee5fae69bd2">&#9670;&nbsp;</a></span>overlapping_boxes()</h2>
+<a id="a470a7322feda68737ae68a53d47d2418"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a470a7322feda68737ae68a53d47d2418">&#9670;&nbsp;</a></span>overlapping_boxes()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2607,7 +2738,7 @@ template&lt;int D&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>eps</em> = <code>std::numeric_limits&lt;double&gt;::epsilon()</code>&#160;</td>
+          <td class="paramname"><em>dst_eps</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2624,8 +2755,8 @@ template&lt;int D&gt; </div>
 
 </div>
 </div>
-<a id="a316439a55e37de20974405fc9729d16a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a316439a55e37de20974405fc9729d16a">&#9670;&nbsp;</a></span>point_inside_matpoly()</h2>
+<a id="a06e9c97f69aeca40afb983ab4c229059"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06e9c97f69aeca40afb983ab4c229059">&#9670;&nbsp;</a></span>point_inside_matpoly()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2645,8 +2776,14 @@ template&lt;int D&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>convex_poly</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>convex_poly</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2705,8 +2842,8 @@ template&lt;int D&gt; </div>
 
 </div>
 </div>
-<a id="a4184eb3e83186cdabf000f3129adca24"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4184eb3e83186cdabf000f3129adca24">&#9670;&nbsp;</a></span>polygon3d_area()</h2>
+<a id="add95776fd9a423b220c590e28f32fd22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add95776fd9a423b220c590e28f32fd22">&#9670;&nbsp;</a></span>polygon3d_area()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2721,7 +2858,13 @@ template&lt;int D&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
-          <td class="paramname"><em>poly_vertices</em>&#160;</td>
+          <td class="paramname"><em>poly_vertices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2733,8 +2876,8 @@ template&lt;int D&gt; </div>
 
 </div>
 </div>
-<a id="addba9ffa7e87ee10c307576b5cfbc2ae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#addba9ffa7e87ee10c307576b5cfbc2ae">&#9670;&nbsp;</a></span>polygon3d_moments()</h2>
+<a id="aa0379ce04695d2beacee8173ab40f62b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa0379ce04695d2beacee8173ab40f62b">&#9670;&nbsp;</a></span>polygon3d_moments()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2755,7 +2898,13 @@ template&lt;int D&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::vector&lt; double &gt; &amp;&#160;</td>
-          <td class="paramname"><em>poly_moments</em>&#160;</td>
+          <td class="paramname"><em>poly_moments</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2767,8 +2916,8 @@ template&lt;int D&gt; </div>
 
 </div>
 </div>
-<a id="afddb4621ade732fd64b8523a9475054b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afddb4621ade732fd64b8523a9475054b">&#9670;&nbsp;</a></span>polygon3d_normal()</h2>
+<a id="a498a02ba72d13092913c9ac3d5a7f8b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a498a02ba72d13092913c9ac3d5a7f8b2">&#9670;&nbsp;</a></span>polygon3d_normal()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2783,7 +2932,13 @@ template&lt;int D&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
-          <td class="paramname"><em>poly_vertices</em>&#160;</td>
+          <td class="paramname"><em>poly_vertices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2861,8 +3016,8 @@ template&lt;int D&gt; </div>
 
 </div>
 </div>
-<a id="a8b4a80068dc8561da97cc8607e1ec696"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8b4a80068dc8561da97cc8607e1ec696">&#9670;&nbsp;</a></span>r2dpoly_to_matpoly()</h2>
+<a id="a7012e7bb1d6b908e25f8426430e11de2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7012e7bb1d6b908e25f8426430e11de2">&#9670;&nbsp;</a></span>r2dpoly_to_matpoly()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2877,7 +3032,19 @@ template&lt;int D&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 2 &gt; &amp;&#160;</td>
-          <td class="paramname"><em>mat_poly</em>&#160;</td>
+          <td class="paramname"><em>mat_poly</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 2 &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_pts</em> = <code>nullptr</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2892,6 +3059,8 @@ template&lt;int D&gt; </div>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">r2dpoly</td><td>Corresponding R2D polygon </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">mat_poly</td><td><a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> object to convert </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reference_pts</td><td>Preferred points to snap vertices to </td></tr>
   </table>
   </dd>
 </dl>
@@ -2916,8 +3085,52 @@ template&lt;int D&gt; </div>
 
 </div>
 </div>
-<a id="ad21544d74adf6c81745e56cb8a2d4a41"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad21544d74adf6c81745e56cb8a2d4a41">&#9670;&nbsp;</a></span>r3dpoly_to_matpolys()</h2>
+<a id="a43906bb61091453a4fc320c983f9c733"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43906bb61091453a4fc320c983f9c733">&#9670;&nbsp;</a></span>r3d_poly_components()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Tangram::r3d_poly_components </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structr3d__poly.html">r3d_poly</a> &amp;&#160;</td>
+          <td class="paramname"><em>r3dpoly</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>poly_components</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Breaks an <a class="el" href="structr3d__poly.html">r3d_poly</a> into a vector of disjoint components. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">r3dpoly</td><td>Original r3dpoly that can have disjoint components </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">poly_components</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of r3dpoly's, one for each components </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vol_tol</td><td>Volume tolerance, only components with volumes above it will be included in the output vector </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac8da5e3ebb9e36f354b8d4351050c246"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8da5e3ebb9e36f354b8d4351050c246">&#9670;&nbsp;</a></span>r3dpoly_to_matpolys()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2932,7 +3145,25 @@ template&lt;int D&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::vector&lt; <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>&lt; 3 &gt; &gt; &amp;&#160;</td>
-          <td class="paramname"><em>mat_polys</em>&#160;</td>
+          <td class="paramname"><em>mat_polys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; 3 &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_pts</em> = <code>nullptr</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2947,9 +3178,65 @@ template&lt;int D&gt; </div>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">r3dpoly</td><td>R3D polyhedron to convert </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">mat_polys</td><td>Corresponding vector of <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s: will contain as many <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s as there are components in the R3D polyhedron </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reference_pts</td><td>Preferred points to snap vertices to </td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="abd1792d7f4e45f90caeb5ff2a3e775cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd1792d7f4e45f90caeb5ff2a3e775cf">&#9670;&nbsp;</a></span>runge_kutta_4()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int D&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTangram_1_1Point.html">Point</a>&lt;D&gt; Tangram::runge_kutta_4 </td>
+          <td>(</td>
+          <td class="paramtype">const std::function&lt; <a class="el" href="classTangram_1_1Vector.html">Vector</a>&lt; D &gt;(double, const <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; D &gt; &amp;)&gt; &amp;&#160;</td>
+          <td class="paramname"><em>roc_f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; D &gt; &amp;&#160;</td>
+          <td class="paramname"><em>x_cur</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>t_cur</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dt</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Fourth order Runge–Kutta method for initial value problems. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">roc_f</td><td>Rate of change function for x, dx/dt=roc_f(t, x) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x_cur</td><td>Current value of x </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t_cur</td><td>Current time </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>Time step </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Value of x after the time step </dd></dl>
 
 </div>
 </div>
@@ -3097,8 +3384,54 @@ template&lt;&gt; </div>
 
 </div>
 </div>
-<a id="abfcab80195ecc59c7d07264deb5582a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abfcab80195ecc59c7d07264deb5582a9">&#9670;&nbsp;</a></span>split_convex_matpoly_r2d()</h2>
+<a id="a780072ae7843b354b1ae6b59c3bd3320"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a780072ae7843b354b1ae6b59c3bd3320">&#9670;&nbsp;</a></span>sorted_indices()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;int&gt; Tangram::sorted_indices </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; T &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>ascending</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the sequence of indices corresponding to the ascending or descending order of vector's values. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Type of the vector's values</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">v</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of type T </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ascending</td><td>If true, values are to be ascending, otherwise descending </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of indices in the order corresponding to the ascending/descending values of v </dd></dl>
+
+</div>
+</div>
+<a id="a5551f71f2e6bd3082c4f9756d55d9f33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5551f71f2e6bd3082c4f9756d55d9f33">&#9670;&nbsp;</a></span>split_convex_matpoly_r2d()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -3137,7 +3470,19 @@ template&lt;&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::vector&lt; double &gt; &amp;&#160;</td>
-          <td class="paramname"><em>upper_halfspace_moments</em>&#160;</td>
+          <td class="paramname"><em>upper_halfspace_moments</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -3162,8 +3507,8 @@ template&lt;&gt; </div>
 
 </div>
 </div>
-<a id="a3b33cbabca7f3d25bf3a39d72909f1be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3b33cbabca7f3d25bf3a39d72909f1be">&#9670;&nbsp;</a></span>split_convex_matpoly_r3d()</h2>
+<a id="a8d36b5dbc71670d73c1b6d326fa81a85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d36b5dbc71670d73c1b6d326fa81a85">&#9670;&nbsp;</a></span>split_convex_matpoly_r3d()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -3202,7 +3547,19 @@ template&lt;&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::vector&lt; double &gt; &amp;&#160;</td>
-          <td class="paramname"><em>upper_halfspace_moments</em>&#160;</td>
+          <td class="paramname"><em>upper_halfspace_moments</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

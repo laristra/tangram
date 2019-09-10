@@ -89,6 +89,7 @@ $(function() {
 <code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;limits&gt;</code><br />
+<code>#include &lt;numeric&gt;</code><br />
 <code>#include &lt;boost/iterator/counting_iterator.hpp&gt;</code><br />
 <code>#include &quot;wonton/support/wonton.h&quot;</code><br />
 <code>#include &quot;wonton/support/Point.h&quot;</code><br />
@@ -150,11 +151,15 @@ Functions</h2></td></tr>
 <tr class="memitem:a2873216e483d671cc6fb4ea26100c1b6"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
 <tr class="memitem:a2873216e483d671cc6fb4ea26100c1b6"><td class="memTemplItemLeft" align="right" valign="top">const Plane_t&lt; D &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a2873216e483d671cc6fb4ea26100c1b6">Tangram::operator-</a> (const Plane_t&lt; D &gt; &amp;plane)</td></tr>
 <tr class="separator:a2873216e483d671cc6fb4ea26100c1b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d8945a4a890e0321a569ee5fae69bd2"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
-<tr class="memitem:a7d8945a4a890e0321a569ee5fae69bd2"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a7d8945a4a890e0321a569ee5fae69bd2">Tangram::overlapping_boxes</a> (const BoundingBox_t&lt; D &gt; &amp;bb1, const BoundingBox_t&lt; D &gt; &amp;bb2, double eps=std::numeric_limits&lt; double &gt;::epsilon())</td></tr>
-<tr class="separator:a7d8945a4a890e0321a569ee5fae69bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a470a7322feda68737ae68a53d47d2418"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
+<tr class="memitem:a470a7322feda68737ae68a53d47d2418"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a470a7322feda68737ae68a53d47d2418">Tangram::overlapping_boxes</a> (const BoundingBox_t&lt; D &gt; &amp;bb1, const BoundingBox_t&lt; D &gt; &amp;bb2, double dst_eps)</td></tr>
+<tr class="separator:a470a7322feda68737ae68a53d47d2418"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c08fbbe360adcfed853df8e4027d1d2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a8c08fbbe360adcfed853df8e4027d1d2">Tangram::is_equal</a> (const double fp1, const double fp2)</td></tr>
 <tr class="separator:a8c08fbbe360adcfed853df8e4027d1d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a780072ae7843b354b1ae6b59c3bd3320"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a780072ae7843b354b1ae6b59c3bd3320"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; int &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#a780072ae7843b354b1ae6b59c3bd3320">Tangram::sorted_indices</a> (const std::vector&lt; T &gt; &amp;v, bool ascending=true)</td></tr>
+<tr class="memdesc:a780072ae7843b354b1ae6b59c3bd3320"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the sequence of indices corresponding to the ascending or descending order of vector's values.  <a href="namespaceTangram.html#a780072ae7843b354b1ae6b59c3bd3320">More...</a><br /></td></tr>
+<tr class="separator:a780072ae7843b354b1ae6b59c3bd3320"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!--

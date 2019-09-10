@@ -24,7 +24,7 @@ https://github.com/laristra/tangram/blob/master/LICENSE
 			  crossorigin="anonymous"></script>
       <!-- <script src="//code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
     <script type="text/javascript" src="smartmenu.js"></script>
-    <title>tangram: Class Members</title>
+    <title>tangram: /home/portage/tangram/tangram/utility/rk4.h File Reference</title>
     <link href="tabs.css" rel="stylesheet" type="text/css">
       <!-- this version is too old for bootstrap, but it includes modifications
 	   from standard jquery
@@ -68,34 +68,37 @@ $(function() {
 });
 </script>
 <div id="main-nav"></div>
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_043c38e9c2239d2104f02eee845ed8d8.html">tangram</a></li><li class="navelem"><a class="el" href="dir_8c062d6981e3de3ea58d7a81e2ec1253.html">utility</a></li>  </ul>
+</div>
 </div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">rk4.h File Reference</div>  </div>
+</div><!--header-->
 <div class="contents">
-<div class="textblock">Here is a list of all class members with links to the classes they belong to:</div>
-
-<h3><a id="index_r"></a>- r -</h3><ul>
-<li>r3d_poly_intersect_check()
-: <a class="el" href="classr3d__poly__intersect__check.html#acea1efdd03e3a84b7140af6efe3bd586">r3d_poly_intersect_check</a>
-</li>
-<li>r3d_split_operator()
-: <a class="el" href="classr3d__split__operator.html#afc39655554f0293936377b67ce8bfe87">r3d_split_operator</a>
-</li>
-<li>r3dpoly
-: <a class="el" href="structRefPolyData__t.html#a054cd38944c9548bd7f649655ed50850">RefPolyData_t</a>
-</li>
-<li>readFromStream()
-: <a class="el" href="classTangram_1_1Point.html#ad499e04df8d9131ed7f077e9023792a5">Tangram::Point&lt; D &gt;</a>
-, <a class="el" href="classTangram_1_1Vector.html#a9dcdf905c03d883b9a754c53dac03529">Tangram::Vector&lt; D &gt;</a>
-</li>
-<li>reconstruct()
-: <a class="el" href="classTangram_1_1Driver.html#a15a26d870c6a7c0b775fd623ce21bbfa">Tangram::Driver&lt; CellInterfaceReconstructor, Dim, Mesh_Wrapper, MatPoly_Splitter, MatPoly_Clipper &gt;</a>
-</li>
-<li>reset_mat_id()
-: <a class="el" href="classTangram_1_1MatPoly.html#a4ffd8855a46fd704ce7749d43f8ded4e">Tangram::MatPoly&lt; D &gt;</a>
-</li>
-<li>rows()
-: <a class="el" href="classTangram_1_1Matrix.html#a5c79e431fbca1f0cf9330dfccdd7a09d">Tangram::Matrix</a>
-</li>
-</ul>
+<div class="textblock"><code>#include &lt;functional&gt;</code><br />
+<code>#include &quot;<a class="el" href="tangram_8h_source.html">tangram/support/tangram.h</a>&quot;</code><br />
+<code>#include &quot;wonton/support/wonton.h&quot;</code><br />
+</div>
+<p><a href="rk4_8h_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceTangram"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTangram.html">Tangram</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:abd1792d7f4e45f90caeb5ff2a3e775cf"><td class="memTemplParams" colspan="2">template&lt;int D&gt; </td></tr>
+<tr class="memitem:abd1792d7f4e45f90caeb5ff2a3e775cf"><td class="memTemplItemLeft" align="right" valign="top">Point&lt; D &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceTangram.html#abd1792d7f4e45f90caeb5ff2a3e775cf">Tangram::runge_kutta_4</a> (const std::function&lt; Vector&lt; D &gt;(double, const Point&lt; D &gt; &amp;)&gt; &amp;roc_f, const Point&lt; D &gt; &amp;x_cur, double t_cur, double dt)</td></tr>
+<tr class="memdesc:abd1792d7f4e45f90caeb5ff2a3e775cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fourth order Runge–Kutta method for initial value problems.  <a href="namespaceTangram.html#abd1792d7f4e45f90caeb5ff2a3e775cf">More...</a><br /></td></tr>
+<tr class="separator:abd1792d7f4e45f90caeb5ff2a3e775cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
 </div><!-- contents -->
 <!--
 This file is part of the Ristra tangram project.

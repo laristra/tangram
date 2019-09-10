@@ -85,9 +85,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a729ef03333d21c9860890276d68acb62"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classr3d__split__operator.html#a729ef03333d21c9860890276d68acb62">r3d_split_operator</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structRefPolyData__t.html">RefPolyData_t</a> &gt; &gt; &amp;polys_data, const <a class="el" href="structr3d__plane.html">r3d_plane</a> &amp;cutting_plane)</td></tr>
-<tr class="memdesc:a729ef03333d21c9860890276d68acb62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#a729ef03333d21c9860890276d68acb62">More...</a><br /></td></tr>
-<tr class="separator:a729ef03333d21c9860890276d68acb62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc39655554f0293936377b67ce8bfe87"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classr3d__split__operator.html#afc39655554f0293936377b67ce8bfe87">r3d_split_operator</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structRefPolyData__t.html">RefPolyData_t</a> &gt; &gt; &amp;polys_data, const <a class="el" href="structr3d__plane.html">r3d_plane</a> &amp;cutting_plane, const double vol_tol)</td></tr>
+<tr class="memdesc:afc39655554f0293936377b67ce8bfe87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#afc39655554f0293936377b67ce8bfe87">More...</a><br /></td></tr>
+<tr class="separator:afc39655554f0293936377b67ce8bfe87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0689241058157df7cc44e2866658ca7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPolyHalfspaceData__t.html">PolyHalfspaceData_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classr3d__split__operator.html#aa0689241058157df7cc44e2866658ca7">operator()</a> (const int polyID) const</td></tr>
 <tr class="memdesc:aa0689241058157df7cc44e2866658ca7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a polyhedron with the cutting plane and returns data on its parts in the lower and the upper half-spaces.  <a href="#aa0689241058157df7cc44e2866658ca7">More...</a><br /></td></tr>
 <tr class="separator:aa0689241058157df7cc44e2866658ca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -95,8 +95,8 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>For a given data on a collection of polyhedra and a cutting plane, splits polyhedra with the plane and returns the collections for the lower and the upper half-spaces. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a729ef03333d21c9860890276d68acb62"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a729ef03333d21c9860890276d68acb62">&#9670;&nbsp;</a></span>r3d_split_operator()</h2>
+<a id="afc39655554f0293936377b67ce8bfe87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc39655554f0293936377b67ce8bfe87">&#9670;&nbsp;</a></span>r3d_split_operator()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -114,7 +114,13 @@ Public Member Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structr3d__plane.html">r3d_plane</a> &amp;&#160;</td>
-          <td class="paramname"><em>cutting_plane</em>&#160;</td>
+          <td class="paramname"><em>cutting_plane</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -134,6 +140,7 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">polys_data</td><td>Data on polyhedra to split </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">cutting_plane</td><td>Cutting plane with respect to which half-spaces are defined </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vol_tol</td><td>Volume tolerance </td></tr>
   </table>
   </dd>
 </dl>

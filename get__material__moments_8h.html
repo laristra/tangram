@@ -84,23 +84,37 @@ $(function() {
 <code>#include &quot;<a class="el" href="tangram_8h_source.html">tangram/support/tangram.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="split__r2d_8h_source.html">tangram/intersect/split_r2d.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="split__r3d_8h_source.html">tangram/intersect/split_r3d.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="primitives_8h_source.html">tangram/utility/rpgtools/primitives.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="cuts_8h_source.html">tangram/utility/rpgtools/cuts.h</a>&quot;</code><br />
 </div>
 <p><a href="get__material__moments_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ac0c93b6da04bc9fa07409f5af57631ae"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
-<tr class="memitem:ac0c93b6da04bc9fa07409f5af57631ae"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="get__material__moments_8h.html#ac0c93b6da04bc9fa07409f5af57631ae">get_material_moments</a> (const Mesh_Wrapper &amp;mesh, const std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Tangram::Plane_t</a>&lt; 3 &gt; &gt; &amp;planar_interfaces, const std::vector&lt; int &gt; &amp;material_IDs, std::vector&lt; int &gt; &amp;cell_num_mats, std::vector&lt; int &gt; &amp;cell_mat_ids, std::vector&lt; double &gt; &amp;cell_mat_volfracs, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &gt; &amp;cell_mat_centroids, std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &gt; &gt; &amp;reference_mat_polys, bool decompose_cells=true)</td></tr>
-<tr class="memdesc:ac0c93b6da04bc9fa07409f5af57631ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given mesh and a sequence of planes computes volume fractions and centroids. r3d is used to compute intersection moments. For every plane in the sequence, the remaining parts of the domain in the lower half-space are assigned the corresponding material and excluded from further consideration.  <a href="#ac0c93b6da04bc9fa07409f5af57631ae">More...</a><br /></td></tr>
-<tr class="separator:ac0c93b6da04bc9fa07409f5af57631ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad61a0c14d545ed43df9e1ff8426a1d1b"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
-<tr class="memitem:ad61a0c14d545ed43df9e1ff8426a1d1b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="get__material__moments_8h.html#ad61a0c14d545ed43df9e1ff8426a1d1b">get_material_moments</a> (const Mesh_Wrapper &amp;mesh, const std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Tangram::Plane_t</a>&lt; 2 &gt; &gt; &amp;linear_interfaces, const std::vector&lt; int &gt; &amp;material_IDs, std::vector&lt; int &gt; &amp;cell_num_mats, std::vector&lt; int &gt; &amp;cell_mat_ids, std::vector&lt; double &gt; &amp;cell_mat_volfracs, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 2 &gt; &gt; &amp;cell_mat_centroids, std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr2d__poly.html">r2d_poly</a> &gt; &gt; &gt; &amp;reference_mat_polys, bool decompose_cells=true)</td></tr>
-<tr class="memdesc:ad61a0c14d545ed43df9e1ff8426a1d1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given mesh and a sequence of lines computes volume fractions and centroids. r2d is used to compute intersection moments. For every line in the sequence, the remaining parts of the domain in the lower half-plane are assigned the corresponding material and excluded from further consideration.  <a href="#ad61a0c14d545ed43df9e1ff8426a1d1b">More...</a><br /></td></tr>
-<tr class="separator:ad61a0c14d545ed43df9e1ff8426a1d1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbedb07ff3211a44c8887492cbd3be0e"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
+<tr class="memitem:abbedb07ff3211a44c8887492cbd3be0e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="get__material__moments_8h.html#abbedb07ff3211a44c8887492cbd3be0e">get_material_moments</a> (const Mesh_Wrapper &amp;mesh, const std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Tangram::Plane_t</a>&lt; 3 &gt; &gt; &amp;planar_interfaces, const std::vector&lt; int &gt; &amp;material_IDs, std::vector&lt; int &gt; &amp;cell_num_mats, std::vector&lt; int &gt; &amp;cell_mat_ids, std::vector&lt; double &gt; &amp;cell_mat_volfracs, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &gt; &amp;cell_mat_centroids, const double vol_tol, const double dst_tol, const bool decompose_cells, std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &gt; &gt; *reference_mat_polys=nullptr)</td></tr>
+<tr class="memdesc:abbedb07ff3211a44c8887492cbd3be0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given mesh and a sequence of planes computes volume fractions and centroids. r3d is used to compute intersection moments. For every plane in the sequence, the remaining parts of the domain in the lower half-space are assigned the corresponding material and excluded from further consideration.  <a href="#abbedb07ff3211a44c8887492cbd3be0e">More...</a><br /></td></tr>
+<tr class="separator:abbedb07ff3211a44c8887492cbd3be0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c07aeaba1c55dd83b96c0d4659832da"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
+<tr class="memitem:a6c07aeaba1c55dd83b96c0d4659832da"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="get__material__moments_8h.html#a6c07aeaba1c55dd83b96c0d4659832da">get_material_moments</a> (const Mesh_Wrapper &amp;mesh, const std::vector&lt; int &gt; &amp;material_IDs, const <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &amp;center, const double radius, const int nquadrant_samples, std::vector&lt; int &gt; &amp;cell_num_mats, std::vector&lt; int &gt; &amp;cell_mat_ids, std::vector&lt; double &gt; &amp;cell_mat_volfracs, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &gt; &amp;cell_mat_centroids, const double vol_tol, const double dst_tol, const bool decompose_cells, std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &gt; &gt; *reference_mat_polys=nullptr)</td></tr>
+<tr class="memdesc:a6c07aeaba1c55dd83b96c0d4659832da"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given mesh and a sphere computes volume fractions and centroids of two material: one inside and the other outside of the sphere. r3d is used to compute intersection moments.  <a href="#a6c07aeaba1c55dd83b96c0d4659832da">More...</a><br /></td></tr>
+<tr class="separator:a6c07aeaba1c55dd83b96c0d4659832da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac25bd12e9f40da0f173665fb44e2ba86"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
+<tr class="memitem:ac25bd12e9f40da0f173665fb44e2ba86"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="get__material__moments_8h.html#ac25bd12e9f40da0f173665fb44e2ba86">get_material_moments</a> (const Mesh_Wrapper &amp;mesh, const std::vector&lt; int &gt; &amp;material_IDs, const <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &amp;center, const std::vector&lt; double &gt; &amp;radius, const int nquadrant_samples, std::vector&lt; int &gt; &amp;cell_num_mats, std::vector&lt; int &gt; &amp;cell_mat_ids, std::vector&lt; double &gt; &amp;cell_mat_volfracs, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &gt; &amp;cell_mat_centroids, const double vol_tol, const double dst_tol, const bool decompose_cells, std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &gt; &gt; *reference_mat_polys=nullptr)</td></tr>
+<tr class="memdesc:ac25bd12e9f40da0f173665fb44e2ba86"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given mesh and concentric spheres computes volume fractions and centroids of materials inside and outside of spheres. For each sphere in a sequence, the corresponding material is assigned to the volume inside the sphere that is not contained in any of the spheres preceding it in the sequence. r3d is used to compute intersection moments.  <a href="#ac25bd12e9f40da0f173665fb44e2ba86">More...</a><br /></td></tr>
+<tr class="separator:ac25bd12e9f40da0f173665fb44e2ba86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7030ced19f6cede5aca16f5d242b89be"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
+<tr class="memitem:a7030ced19f6cede5aca16f5d242b89be"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="get__material__moments_8h.html#a7030ced19f6cede5aca16f5d242b89be">get_material_moments</a> (const Mesh_Wrapper &amp;mesh, const std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Tangram::Plane_t</a>&lt; 2 &gt; &gt; &amp;linear_interfaces, const std::vector&lt; int &gt; &amp;material_IDs, std::vector&lt; int &gt; &amp;cell_num_mats, std::vector&lt; int &gt; &amp;cell_mat_ids, std::vector&lt; double &gt; &amp;cell_mat_volfracs, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 2 &gt; &gt; &amp;cell_mat_centroids, const double vol_tol, const double dst_tol, const bool decompose_cells, std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr2d__poly.html">r2d_poly</a> &gt; &gt; &gt; *reference_mat_polys=nullptr)</td></tr>
+<tr class="memdesc:a7030ced19f6cede5aca16f5d242b89be"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given mesh and a sequence of lines computes volume fractions and centroids. r2d is used to compute intersection moments. For every line in the sequence, the remaining parts of the domain in the lower half-plane are assigned the corresponding material and excluded from further consideration.  <a href="#a7030ced19f6cede5aca16f5d242b89be">More...</a><br /></td></tr>
+<tr class="separator:a7030ced19f6cede5aca16f5d242b89be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6ada6b9ca1be7d9b60396d03d3c8efe"><td class="memTemplParams" colspan="2">template&lt;class Mesh_Wrapper &gt; </td></tr>
+<tr class="memitem:af6ada6b9ca1be7d9b60396d03d3c8efe"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="get__material__moments_8h.html#af6ada6b9ca1be7d9b60396d03d3c8efe">get_material_moments</a> (const Mesh_Wrapper &amp;mesh, const std::vector&lt; int &gt; &amp;material_IDs, const <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 2 &gt; &amp;center, const double radius, const int nquadrant_samples, std::vector&lt; int &gt; &amp;cell_num_mats, std::vector&lt; int &gt; &amp;cell_mat_ids, std::vector&lt; double &gt; &amp;cell_mat_volfracs, std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 2 &gt; &gt; &amp;cell_mat_centroids, const double vol_tol, const double dst_tol, const bool decompose_cells, std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr2d__poly.html">r2d_poly</a> &gt; &gt; &gt; *reference_mat_polys=nullptr)</td></tr>
+<tr class="memdesc:af6ada6b9ca1be7d9b60396d03d3c8efe"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given mesh and a circle computes volume fractions and centroids of two material: one inside and the other outside of the circle. r2d is used to compute intersection moments.  <a href="#af6ada6b9ca1be7d9b60396d03d3c8efe">More...</a><br /></td></tr>
+<tr class="separator:af6ada6b9ca1be7d9b60396d03d3c8efe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ac0c93b6da04bc9fa07409f5af57631ae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac0c93b6da04bc9fa07409f5af57631ae">&#9670;&nbsp;</a></span>get_material_moments() <span class="overload">[1/2]</span></h2>
+<a id="abbedb07ff3211a44c8887492cbd3be0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abbedb07ff3211a44c8887492cbd3be0e">&#9670;&nbsp;</a></span>get_material_moments() <span class="overload">[1/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -152,14 +166,26 @@ template&lt;class Mesh_Wrapper &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &gt; &gt; &amp;&#160;</td>
-          <td class="paramname"><em>reference_mat_polys</em>, </td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>decompose_cells</em> = <code>true</code>&#160;</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>decompose_cells</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_mat_polys</em> = <code>nullptr</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -186,6 +212,8 @@ template&lt;class Mesh_Wrapper &gt; </div>
     <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_volfracs</td><td>Volume fractions of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_centroids</td><td>Centroids of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">reference_mat_polys</td><td>For every cell and every material inside that cell, the collection of single-material polyhedra containing that material </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vol_tol</td><td>Volume tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">decompose_cells</td><td>If mesh has non-convex cells, this flag should be set to true in order to decompose cells into tetrahedrons </td></tr>
   </table>
   </dd>
@@ -193,8 +221,252 @@ template&lt;class Mesh_Wrapper &gt; </div>
 
 </div>
 </div>
-<a id="ad61a0c14d545ed43df9e1ff8426a1d1b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad61a0c14d545ed43df9e1ff8426a1d1b">&#9670;&nbsp;</a></span>get_material_moments() <span class="overload">[2/2]</span></h2>
+<a id="a6c07aeaba1c55dd83b96c0d4659832da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c07aeaba1c55dd83b96c0d4659832da">&#9670;&nbsp;</a></span>get_material_moments() <span class="overload">[2/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Mesh_Wrapper &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void get_material_moments </td>
+          <td>(</td>
+          <td class="paramtype">const Mesh_Wrapper &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>material_IDs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>nquadrant_samples</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_num_mats</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_ids</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_volfracs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_centroids</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>decompose_cells</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_mat_polys</em> = <code>nullptr</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>For a given mesh and a sphere computes volume fractions and centroids of two material: one inside and the other outside of the sphere. r3d is used to compute intersection moments. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Mesh_Wrapper</td><td>A lightweight wrapper to a specific input mesh implementation that provides required functionality.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mesh</td><td>Mesh wrapper. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">material_IDs</td><td>First entry is assigned to the material outside the sphere; the second entry is assigned to the material inside the sphere </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">center</td><td>Center of the sphere </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">radius</td><td>Radius of the sphere </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nquadrant_samples</td><td>Discrete representation of the sphere is used, this number determines how many points are sampled per a coordinate plane (xy, xz) quadrant </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_num_mats</td><td>Number of material in each mesh cell, vector of length cell_num </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_ids</td><td>Indices of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_volfracs</td><td>Volume fractions of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_centroids</td><td>Centroids of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vol_tol</td><td>Volume tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">decompose_cells</td><td>If mesh has non-convex cells, this flag should be set to true in order to decompose cells into tetrahedrons </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">reference_mat_polys</td><td>For every mesh cell and every material inside that cell, a pointer to the collection of single-material polyhedra containing that material </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac25bd12e9f40da0f173665fb44e2ba86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac25bd12e9f40da0f173665fb44e2ba86">&#9670;&nbsp;</a></span>get_material_moments() <span class="overload">[3/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Mesh_Wrapper &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void get_material_moments </td>
+          <td>(</td>
+          <td class="paramtype">const Mesh_Wrapper &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>material_IDs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>nquadrant_samples</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_num_mats</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_ids</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_volfracs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 3 &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_centroids</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>decompose_cells</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr3d__poly.html">r3d_poly</a> &gt; &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_mat_polys</em> = <code>nullptr</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>For a given mesh and concentric spheres computes volume fractions and centroids of materials inside and outside of spheres. For each sphere in a sequence, the corresponding material is assigned to the volume inside the sphere that is not contained in any of the spheres preceding it in the sequence. r3d is used to compute intersection moments. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Mesh_Wrapper</td><td>A lightweight wrapper to a specific input mesh implementation that provides required functionality.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mesh</td><td>Mesh wrapper. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">material_IDs</td><td>IDs of materials corresponding to the the interior of each sphere; the last ID is for the material outside of all the spheres </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">center</td><td>Center of the spheres </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">radius</td><td>Radius' of the spheres </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nquadrant_samples</td><td>Discrete representation of the spheres is used, this number determines how many points are sampled per a coordinate plane (xy, xz) quadrant </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_num_mats</td><td>Number of material in each mesh cell, vector of length cell_num </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_ids</td><td>Indices of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_volfracs</td><td>Volume fractions of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_centroids</td><td>Centroids of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vol_tol</td><td>Volume tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">decompose_cells</td><td>If mesh has non-convex cells, this flag should be set to true in order to decompose cells into tetrahedrons </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">reference_mat_polys</td><td>For every mesh cell and every material inside that cell, a pointer to the collection of single-material polyhedra containing that material </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a7030ced19f6cede5aca16f5d242b89be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7030ced19f6cede5aca16f5d242b89be">&#9670;&nbsp;</a></span>get_material_moments() <span class="overload">[4/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -246,14 +518,26 @@ template&lt;class Mesh_Wrapper &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr2d__poly.html">r2d_poly</a> &gt; &gt; &gt; &amp;&#160;</td>
-          <td class="paramname"><em>reference_mat_polys</em>, </td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>decompose_cells</em> = <code>true</code>&#160;</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>decompose_cells</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr2d__poly.html">r2d_poly</a> &gt; &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_mat_polys</em> = <code>nullptr</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -280,7 +564,131 @@ template&lt;class Mesh_Wrapper &gt; </div>
     <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_volfracs</td><td>Volume fractions of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_centroids</td><td>Centroids of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">reference_mat_polys</td><td>For every cell and every material inside that cell, the collection of single-material polygons containing that material </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vol_tol</td><td>Volume tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">decompose_cells</td><td>If mesh has non-convex cells, this flag should be set to true in order to decompose cells into triangles </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af6ada6b9ca1be7d9b60396d03d3c8efe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af6ada6b9ca1be7d9b60396d03d3c8efe">&#9670;&nbsp;</a></span>get_material_moments() <span class="overload">[5/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Mesh_Wrapper &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void get_material_moments </td>
+          <td>(</td>
+          <td class="paramtype">const Mesh_Wrapper &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>material_IDs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>nquadrant_samples</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_num_mats</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_ids</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_volfracs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Tangram::Point</a>&lt; 2 &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cell_mat_centroids</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>vol_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>decompose_cells</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="structr2d__poly.html">r2d_poly</a> &gt; &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>reference_mat_polys</em> = <code>nullptr</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>For a given mesh and a circle computes volume fractions and centroids of two material: one inside and the other outside of the circle. r2d is used to compute intersection moments. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Mesh_Wrapper</td><td>A lightweight wrapper to a specific input mesh implementation that provides required functionality.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mesh</td><td>Mesh wrapper. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">material_IDs</td><td>First entry is assigned to the material outside the circle; the second entry is assigned to the material inside the circle </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">center</td><td>Center of the circle </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">radius</td><td>Radius of the circle </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nquadrant_samples</td><td>Discrete representation of the circle is used, this number determines how many points are sampled per the xy-coordinate plane quadrant </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_num_mats</td><td>Number of material in each mesh cell, vector of length cell_num </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_ids</td><td>Indices of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_volfracs</td><td>Volume fractions of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cell_mat_centroids</td><td>Centroids of materials in each mesh cell, a flat vector, requires computations of offsets </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vol_tol</td><td>Volume tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">decompose_cells</td><td>If mesh has non-convex cells, this flag should be set to true in order to decompose cells into tetrahedrons </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">reference_mat_polys</td><td>For every mesh cell and every material inside that cell, a pointer to the collection of single-material polyhedra containing that material </td></tr>
   </table>
   </dd>
 </dl>

@@ -107,12 +107,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a860f132a1987d539089fc1c80c7404a7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a860f132a1987d539089fc1c80c7404a7">clear</a> ()</td></tr>
 <tr class="memdesc:a860f132a1987d539089fc1c80c7404a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resets the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> data.  <a href="#a860f132a1987d539089fc1c80c7404a7">More...</a><br /></td></tr>
 <tr class="separator:a860f132a1987d539089fc1c80c7404a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fde16656a5d88e5d7574fcd67b3ebcb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a0fde16656a5d88e5d7574fcd67b3ebcb">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7fb85e2d6b6347abfb97f1d8179f50">Point2</a> &gt; &amp;poly_points)</td></tr>
-<tr class="memdesc:a0fde16656a5d88e5d7574fcd67b3ebcb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 2D polygon from its vertices.  <a href="#a0fde16656a5d88e5d7574fcd67b3ebcb">More...</a><br /></td></tr>
-<tr class="separator:a0fde16656a5d88e5d7574fcd67b3ebcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4450ebd99ca0aef6e159365186070b7e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a4450ebd99ca0aef6e159365186070b7e">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;vertex_points, const std::vector&lt; std::vector&lt; int &gt; &gt; &amp;<a class="el" href="classTangram_1_1MatPoly.html#aab5cfa3fff9b96d2cbf96415fe7704af">face_vertices</a>)</td></tr>
-<tr class="memdesc:a4450ebd99ca0aef6e159365186070b7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 3D polyhedron.  <a href="#a4450ebd99ca0aef6e159365186070b7e">More...</a><br /></td></tr>
-<tr class="separator:a4450ebd99ca0aef6e159365186070b7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f2c01d5edefa8331e146b12d0cc2f4e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a5f2c01d5edefa8331e146b12d0cc2f4e">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7fb85e2d6b6347abfb97f1d8179f50">Point2</a> &gt; &amp;poly_points, const double <a class="el" href="classTangram_1_1MatPoly.html#afc22b40e580e13e26e8aeec7f089c354">dst_tol</a>)</td></tr>
+<tr class="memdesc:a5f2c01d5edefa8331e146b12d0cc2f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 2D polygon from its vertices.  <a href="#a5f2c01d5edefa8331e146b12d0cc2f4e">More...</a><br /></td></tr>
+<tr class="separator:a5f2c01d5edefa8331e146b12d0cc2f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0cfafcd0328ff06e6f395b2f3b650c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#aa0cfafcd0328ff06e6f395b2f3b650c6">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;vertex_points, const std::vector&lt; std::vector&lt; int &gt; &gt; &amp;<a class="el" href="classTangram_1_1MatPoly.html#aab5cfa3fff9b96d2cbf96415fe7704af">face_vertices</a>, const double <a class="el" href="classTangram_1_1MatPoly.html#afc22b40e580e13e26e8aeec7f089c354">dst_tol</a>)</td></tr>
+<tr class="memdesc:aa0cfafcd0328ff06e6f395b2f3b650c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 3D polyhedron.  <a href="#aa0cfafcd0328ff06e6f395b2f3b650c6">More...</a><br /></td></tr>
+<tr class="separator:aa0cfafcd0328ff06e6f395b2f3b650c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc22b40e580e13e26e8aeec7f089c354"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#afc22b40e580e13e26e8aeec7f089c354">dst_tol</a> () const</td></tr>
+<tr class="memdesc:afc22b40e580e13e26e8aeec7f089c354"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distance tolerance used by this poly.  <a href="#afc22b40e580e13e26e8aeec7f089c354">More...</a><br /></td></tr>
+<tr class="separator:afc22b40e580e13e26e8aeec7f089c354"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa756cca3df1a498d170bc3a86e6bae7b"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; <a class="el" href="classTangram_1_1Point.html">Point</a>&lt; D &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#aa756cca3df1a498d170bc3a86e6bae7b">points</a> () const</td></tr>
 <tr class="memdesc:aa756cca3df1a498d170bc3a86e6bae7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Points for all the vertices of the material poly.  <a href="#aa756cca3df1a498d170bc3a86e6bae7b">More...</a><br /></td></tr>
 <tr class="separator:aa756cca3df1a498d170bc3a86e6bae7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -156,18 +159,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a8e814a40956aee6c5ade0c20abefe920"><td class="mdescLeft">&#160;</td><td class="mdescRight">Facetizes and decomposes this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> into simplex <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a>'s using its centroid.  <a href="#a8e814a40956aee6c5ade0c20abefe920">More...</a><br /></td></tr>
 <tr class="separator:a8e814a40956aee6c5ade0c20abefe920"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba885f75525c109661a08cb41a413a5b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#aba885f75525c109661a08cb41a413a5b">face_planes</a> (std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; D &gt; &gt; &amp;fplanes) const</td></tr>
-<tr class="memdesc:aba885f75525c109661a08cb41a413a5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with area below machine epsilon will be omitted. If the number of valid planes is less than four, empty vector will be returned.  <a href="#aba885f75525c109661a08cb41a413a5b">More...</a><br /></td></tr>
+<tr class="memdesc:aba885f75525c109661a08cb41a413a5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. In 2D, faces of size below the distance tolerance will be omitted. In 3D, faces should have at least three edges of size above the distance tolerance. If the number of valid planes is less than four, empty vector will be returned.  <a href="#aba885f75525c109661a08cb41a413a5b">More...</a><br /></td></tr>
 <tr class="separator:aba885f75525c109661a08cb41a413a5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff224788989415116c567aabc00f578b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTangram_1_1BoundingBox__t.html">BoundingBox_t</a>&lt; D &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#aff224788989415116c567aabc00f578b">bounding_box</a> () const</td></tr>
 <tr class="separator:aff224788989415116c567aabc00f578b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a96e1e58356a2fc9ddc311d041b99e0"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
-<tr class="memitem:a0a96e1e58356a2fc9ddc311d041b99e0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a0a96e1e58356a2fc9ddc311d041b99e0">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7fb85e2d6b6347abfb97f1d8179f50">Point2</a> &gt; &amp;poly_points)</td></tr>
-<tr class="memdesc:a0a96e1e58356a2fc9ddc311d041b99e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 2D polygon from its vertices.  <a href="#a0a96e1e58356a2fc9ddc311d041b99e0">More...</a><br /></td></tr>
-<tr class="separator:a0a96e1e58356a2fc9ddc311d041b99e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad49e58a6498dd66b410e0ddeee0e92ad"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
-<tr class="memitem:ad49e58a6498dd66b410e0ddeee0e92ad"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#ad49e58a6498dd66b410e0ddeee0e92ad">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;vertex_points, const std::vector&lt; std::vector&lt; int &gt; &gt; &amp;<a class="el" href="classTangram_1_1MatPoly.html#aab5cfa3fff9b96d2cbf96415fe7704af">face_vertices</a>)</td></tr>
-<tr class="memdesc:ad49e58a6498dd66b410e0ddeee0e92ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 3D polyhedron.  <a href="#ad49e58a6498dd66b410e0ddeee0e92ad">More...</a><br /></td></tr>
-<tr class="separator:ad49e58a6498dd66b410e0ddeee0e92ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21be391f3de4842652d4145fbe74bdbb"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
+<tr class="memitem:a21be391f3de4842652d4145fbe74bdbb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a21be391f3de4842652d4145fbe74bdbb">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7fb85e2d6b6347abfb97f1d8179f50">Point2</a> &gt; &amp;poly_points, double <a class="el" href="classTangram_1_1MatPoly.html#afc22b40e580e13e26e8aeec7f089c354">dst_tol</a>)</td></tr>
+<tr class="memdesc:a21be391f3de4842652d4145fbe74bdbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 2D polygon from its vertices.  <a href="#a21be391f3de4842652d4145fbe74bdbb">More...</a><br /></td></tr>
+<tr class="separator:a21be391f3de4842652d4145fbe74bdbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20c897a6444c35eaefa99b683720ec82"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
+<tr class="memitem:a20c897a6444c35eaefa99b683720ec82"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a20c897a6444c35eaefa99b683720ec82">initialize</a> (const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7f6faf100a226eee664d64ef9f725a">Point3</a> &gt; &amp;vertex_points, const std::vector&lt; std::vector&lt; int &gt; &gt; &amp;<a class="el" href="classTangram_1_1MatPoly.html#aab5cfa3fff9b96d2cbf96415fe7704af">face_vertices</a>, double <a class="el" href="classTangram_1_1MatPoly.html#afc22b40e580e13e26e8aeec7f089c354">dst_tol</a>)</td></tr>
+<tr class="memdesc:a20c897a6444c35eaefa99b683720ec82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a 3D polyhedron.  <a href="#a20c897a6444c35eaefa99b683720ec82">More...</a><br /></td></tr>
+<tr class="separator:a20c897a6444c35eaefa99b683720ec82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af4f47fcc06132bad3521868453cf1a2d"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
 <tr class="memitem:af4f47fcc06132bad3521868453cf1a2d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceTangram.html#a0d7fb85e2d6b6347abfb97f1d8179f50">Point2</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#af4f47fcc06132bad3521868453cf1a2d">face_centroid</a> (int const face_id) const</td></tr>
 <tr class="memdesc:af4f47fcc06132bad3521868453cf1a2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Coordinates of the centroid of the material polygon's face.  <a href="#af4f47fcc06132bad3521868453cf1a2d">More...</a><br /></td></tr>
@@ -202,11 +205,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aaf06a4d1872ec40eadeaa264a5b75db7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3b7e4023fdf489773ca52943d41006f"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
 <tr class="memitem:af3b7e4023fdf489773ca52943d41006f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#af3b7e4023fdf489773ca52943d41006f">face_planes</a> (std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 2 &gt; &gt; &amp;flines) const</td></tr>
-<tr class="memdesc:af3b7e4023fdf489773ca52943d41006f"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a line containing that face. Important: faces with length below machine epsilon will be omitted. If the number of valid lines is less than three, empty vector will be returned.  <a href="#af3b7e4023fdf489773ca52943d41006f">More...</a><br /></td></tr>
+<tr class="memdesc:af3b7e4023fdf489773ca52943d41006f"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a line containing that face. Important: faces with length below the distance tolerance will be omitted. If the number of valid lines is less than three, empty vector will be returned.  <a href="#af3b7e4023fdf489773ca52943d41006f">More...</a><br /></td></tr>
 <tr class="separator:af3b7e4023fdf489773ca52943d41006f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3139b7f9d551301f2c70240eb460fa7b"><td class="memTemplParams" colspan="2">template&lt;&gt; </td></tr>
 <tr class="memitem:a3139b7f9d551301f2c70240eb460fa7b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTangram_1_1MatPoly.html#a3139b7f9d551301f2c70240eb460fa7b">face_planes</a> (std::vector&lt; <a class="el" href="structTangram_1_1Plane__t.html">Plane_t</a>&lt; 3 &gt; &gt; &amp;fplanes) const</td></tr>
-<tr class="memdesc:a3139b7f9d551301f2c70240eb460fa7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with area below machine epsilon will be omitted. If the number of valid planes is less than four, empty vector will be returned.  <a href="#a3139b7f9d551301f2c70240eb460fa7b">More...</a><br /></td></tr>
+<tr class="memdesc:a3139b7f9d551301f2c70240eb460fa7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with less that three edges longer than the distance tolerance will be omitted. If the number of valid planes is less than four, empty vector will be returned.  <a href="#a3139b7f9d551301f2c70240eb460fa7b">More...</a><br /></td></tr>
 <tr class="separator:a3139b7f9d551301f2c70240eb460fa7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
@@ -576,6 +579,36 @@ template&lt;&gt; </div>
 
 </div>
 </div>
+<a id="afc22b40e580e13e26e8aeec7f089c354"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc22b40e580e13e26e8aeec7f089c354">&#9670;&nbsp;</a></span>dst_tol()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int D&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; D &gt;::dst_tol </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Distance tolerance used by this poly. </p>
+<dl class="section return"><dt>Returns</dt><dd>Distance tolerance </dd></dl>
+
+</div>
+</div>
 <a id="ab6cf600e68b2ac811f7d53abff3c741f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab6cf600e68b2ac811f7d53abff3c741f">&#9670;&nbsp;</a></span>face_centroid() <span class="overload">[1/3]</span></h2>
 
@@ -681,7 +714,7 @@ template&lt;int D&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with area below machine epsilon will be omitted. If the number of valid planes is less than four, empty vector will be returned. </p>
+<p>For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. In 2D, faces of size below the distance tolerance will be omitted. In 3D, faces should have at least three edges of size above the distance tolerance. If the number of valid planes is less than four, empty vector will be returned. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fplanes</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of planes for all the faces of this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> </td></tr>
@@ -709,7 +742,7 @@ template&lt;&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>For every face, returns a line containing that face. Important: faces with length below machine epsilon will be omitted. If the number of valid lines is less than three, empty vector will be returned. </p>
+<p>For every face, returns a line containing that face. Important: faces with length below the distance tolerance will be omitted. If the number of valid lines is less than three, empty vector will be returned. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">flines</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of lines for all the faces of this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> </td></tr>
@@ -737,7 +770,7 @@ template&lt;&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with area below machine epsilon will be omitted. If the number of valid planes is less than four, empty vector will be returned. </p>
+<p>For every face, returns a plane containing that face. Important: faces should be planar, so you might need to facetize the <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> first. Faces with less that three edges longer than the distance tolerance will be omitted. If the number of valid planes is less than four, empty vector will be returned. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fplanes</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of planes for all the faces of this <a class="el" href="classTangram_1_1MatPoly.html">MatPoly</a> </td></tr>
@@ -1050,8 +1083,8 @@ template&lt;&gt; </div>
 
 </div>
 </div>
-<a id="a0fde16656a5d88e5d7574fcd67b3ebcb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0fde16656a5d88e5d7574fcd67b3ebcb">&#9670;&nbsp;</a></span>initialize() <span class="overload">[1/4]</span></h2>
+<a id="a5f2c01d5edefa8331e146b12d0cc2f4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f2c01d5edefa8331e146b12d0cc2f4e">&#9670;&nbsp;</a></span>initialize() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1062,8 +1095,18 @@ template&lt;int D&gt; </div>
           <td class="memname">void <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; D &gt;::initialize </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7fb85e2d6b6347abfb97f1d8179f50">Point2</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>poly_points</em></td><td>)</td>
+          <td class="paramname"><em>poly_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1072,14 +1115,15 @@ template&lt;int D&gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">poly_points</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of coordinates of material polygon's vertices listed counter-clockwise </td></tr>
+    <tr><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a4450ebd99ca0aef6e159365186070b7e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4450ebd99ca0aef6e159365186070b7e">&#9670;&nbsp;</a></span>initialize() <span class="overload">[2/4]</span></h2>
+<a id="aa0cfafcd0328ff06e6f395b2f3b650c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa0cfafcd0328ff06e6f395b2f3b650c6">&#9670;&nbsp;</a></span>initialize() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1096,7 +1140,13 @@ template&lt;int D&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::vector&lt; std::vector&lt; int &gt; &gt; &amp;&#160;</td>
-          <td class="paramname"><em>face_vertices</em>&#160;</td>
+          <td class="paramname"><em>face_vertices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1111,14 +1161,15 @@ template&lt;int D&gt; </div>
   <table class="params">
     <tr><td class="paramname">vertex_points</td><td><a class="el" href="classTangram_1_1Vector.html" title="Represents a vector in N-dimensional space. ">Vector</a> of coordinates of material polyhedron's vertices </td></tr>
     <tr><td class="paramname">face_vertices</td><td>Faces of the material polyhedron, every face is given by IDs of its vertices in counter-clockwise order </td></tr>
+    <tr><td class="paramname">dst_tol</td><td>Distance tolerance </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a0a96e1e58356a2fc9ddc311d041b99e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0a96e1e58356a2fc9ddc311d041b99e0">&#9670;&nbsp;</a></span>initialize() <span class="overload">[3/4]</span></h2>
+<a id="a21be391f3de4842652d4145fbe74bdbb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21be391f3de4842652d4145fbe74bdbb">&#9670;&nbsp;</a></span>initialize() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1129,8 +1180,18 @@ template&lt;&gt; </div>
           <td class="memname">void <a class="el" href="classTangram_1_1MatPoly.html">Tangram::MatPoly</a>&lt; 2 &gt;::initialize </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; <a class="el" href="namespaceTangram.html#a0d7fb85e2d6b6347abfb97f1d8179f50">Point2</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>poly_points</em></td><td>)</td>
+          <td class="paramname"><em>poly_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1145,8 +1206,8 @@ template&lt;&gt; </div>
 
 </div>
 </div>
-<a id="ad49e58a6498dd66b410e0ddeee0e92ad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad49e58a6498dd66b410e0ddeee0e92ad">&#9670;&nbsp;</a></span>initialize() <span class="overload">[4/4]</span></h2>
+<a id="a20c897a6444c35eaefa99b683720ec82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20c897a6444c35eaefa99b683720ec82">&#9670;&nbsp;</a></span>initialize() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1163,7 +1224,13 @@ template&lt;&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::vector&lt; std::vector&lt; int &gt; &gt; &amp;&#160;</td>
-          <td class="paramname"><em>face_vertices</em>&#160;</td>
+          <td class="paramname"><em>face_vertices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dst_tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
