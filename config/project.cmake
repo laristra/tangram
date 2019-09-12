@@ -340,9 +340,9 @@ set(TANGRAM_LIBRARIES ${TANGRAM_LIBRARY} ${TANGRAM_EXTRA_LIBRARIES} CACHE STRING
 # TANGRAM was built and which TPLs it used
 #############################################################################
 
-configure_file(${PROJECT_SOURCE_DIR}/cmake/tangram_config.cmake.in 
-               ${PROJECT_BINARY_DIR}/tangram_config.cmake @ONLY)
-install(FILES ${PROJECT_BINARY_DIR}/tangram_config.cmake 
+configure_file(${PROJECT_SOURCE_DIR}/cmake/tangram-config.cmake.in 
+               ${PROJECT_BINARY_DIR}/tangram-config.cmake @ONLY)
+install(FILES ${PROJECT_BINARY_DIR}/tangram-config.cmake 
         DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/)
 
 configure_file(${PROJECT_SOURCE_DIR}/config/tangram-config.h.in
