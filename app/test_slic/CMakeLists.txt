@@ -8,14 +8,14 @@
 # test_slic_2d - uses 2D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_slic_2d test_slic_2d.cc)
-target_link_libraries(test_slic_2d tangram wonton ${Jali_TPL_LIBRARIES})
+target_link_libraries(test_slic_2d wonton ${Jali_TPL_LIBRARIES})
 
 if(Jali_DIR)
-  target_link_libraries(test_slic_2d tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES})
+  target_link_libraries(test_slic_2d wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES})
 endif(Jali_DIR)
 
 if(ENABLE_MPI)
-  target_link_libraries(test_slic_2d tangram wonton ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+  target_link_libraries(test_slic_2d wonton ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
   if(MPI_CXX_COMPILE_FLAGS)
     set_target_properties(test_slic_2d PROPERTIES
       COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
@@ -38,14 +38,14 @@ endif(ENABLE_TCMALLOC)
 # test_slic_3d - uses 3D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_slic_3d test_slic_3d.cc)
-target_link_libraries(test_slic_3d tangram wonton ${Jali_TPL_LIBRARIES})
+target_link_libraries(test_slic_3d wonton ${Jali_TPL_LIBRARIES})
 
 if(Jali_DIR)
-  target_link_libraries(test_slic_3d tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES})
+  target_link_libraries(test_slic_3d wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES})
 endif(Jali_DIR)
 
 if(ENABLE_MPI)
-  target_link_libraries(test_slic_3d tangram wonton ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+  target_link_libraries(test_slic_3d wonton ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
   if(MPI_CXX_COMPILE_FLAGS)
     set_target_properties(test_slic_3d PROPERTIES
       COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")

@@ -8,7 +8,7 @@
 # test_mof_3d - uses 3D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_mof_3d test_mof_3d.cc)
-target_link_libraries(test_mof_3d tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+target_link_libraries(test_mof_3d wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
                                   ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)
@@ -34,7 +34,7 @@ endif(ENABLE_TCMALLOC)
 # test_mof_2d - uses 2D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_mof_2d test_mof_2d.cc)
-target_link_libraries(test_mof_2d tangram wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+target_link_libraries(test_mof_2d wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
                                   ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)
