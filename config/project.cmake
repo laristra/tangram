@@ -309,8 +309,9 @@ endif(ENABLE_THRUST)
 
 include_directories(${CMAKE_BINARY_DIRECTORY})
 
-# Apps and Libraries (tangram is header only - no need of a library)
+# Apps and Libraries 
 cinch_add_application_directory(app)
+cinch_add_library_target(tangram tangram)
 
 # Add application tests
 # May pull this logic into cinch at some future point
