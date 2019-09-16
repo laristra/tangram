@@ -16,6 +16,7 @@
 
 namespace Tangram {
 
+inline
 double polygon3d_area(const std::vector<Point3>& points,
                       const std::vector<int>& poly_vertices,
                       double dst_tol) {
@@ -59,6 +60,7 @@ double polygon3d_area(const std::vector<Point3>& points,
   return poly_area;
 }
 
+inline
 void polygon3d_moments(const std::vector<Point3>& points,
                        const std::vector<int>& poly_vertices,
                        std::vector<double>& poly_moments,
@@ -112,6 +114,7 @@ void polygon3d_moments(const std::vector<Point3>& points,
     poly_moments.assign(4, 0.0);
 }
 
+inline
 Vector<3> polygon3d_normal(const std::vector<Point3>& points,
                            const std::vector<int>& poly_vertices,
                            double dst_tol) {
@@ -422,6 +425,7 @@ class MatPoly {
                      listed counter-clockwise
 */
 template<>
+inline
 void MatPoly<2>::initialize(const std::vector<Point2>& poly_points, 
                             double dst_tol) {
   dst_tol_ = dst_tol;
@@ -444,6 +448,7 @@ void MatPoly<2>::initialize(const std::vector<Point2>& poly_points,
                        IDs of its vertices in counter-clockwise order
  */
 template<>
+inline
 void MatPoly<3>::initialize(const std::vector<Point3>& vertex_points,
                             const std::vector< std::vector<int> >& face_vertices,
                             double dst_tol) {
@@ -464,7 +469,8 @@ void MatPoly<3>::initialize(const std::vector<Point3>& vertex_points,
   @param face_id  ID of the face of the material polygon
   @return  Coordinates of the centroid of that face
 */
-template<>  
+template<>
+inline
 Point2 MatPoly<2>::face_centroid(int const face_id) const {
 #ifdef DEBUG
   assert((face_id >= 0) && (face_id < nfaces_));
@@ -477,7 +483,8 @@ Point2 MatPoly<2>::face_centroid(int const face_id) const {
   @param face_id  ID of the face of the material polyhedron
   @return  Coordinates of the centroid of that face
 */
-template<>  
+template<>
+inline
 Point3 MatPoly<3>::face_centroid(int const face_id) const {
 #ifdef DEBUG
   assert((face_id >= 0) && (face_id < nfaces_));
@@ -505,6 +512,7 @@ Point3 MatPoly<3>::face_centroid(int const face_id) const {
                       this polygon is copied to
 */
 template<>
+inline
 void MatPoly<2>::faceted_matpoly(MatPoly<2>* faceted_poly) const {
   *faceted_poly = *this;
 }
@@ -516,6 +524,7 @@ void MatPoly<2>::faceted_matpoly(MatPoly<2>* faceted_poly) const {
                       the faceted version of this polyhedron is written to
 */
 template<>
+inline
 void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
   if (material_id_ >= 0)
     faceted_poly->set_mat_id(material_id_);
@@ -549,6 +558,7 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
   moments[i+1]/moments[0] is i-th coordinate of the centroid, i=1,2
 */ 
 template<>
+inline
 void MatPoly<2>::compute_moments(std::vector<double>& moments) const {
   moments.assign(3, 0.0);
 
@@ -571,6 +581,7 @@ void MatPoly<2>::compute_moments(std::vector<double>& moments) const {
   moments[i+1]/moments[0] is i-th coordinate of the centroid, i=1,2,3
 */  
 template<>
+inline
 void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
   moments.assign(4, 0.0); 
 
@@ -619,6 +630,7 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
   as many MatPoly's as mat_poly has faces will be appended to it.
 */
 template <>
+inline
 void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys) const {
   std::vector<double> moments;
   if (moments_.empty()) 
@@ -646,6 +658,7 @@ void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys) const {
   as many MatPoly's as mat_poly has faces will be appended to it.
 */
 template <>
+inline
 void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys) const {
   if (moments_.empty()) 
     compute_moments(moments_);
@@ -683,6 +696,7 @@ void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys) const {
   as many MatPoly's as mat_poly has faces will be appended to it.
 */
 template <>
+inline
 void MatPoly<2>::facetize_decompose(std::vector< MatPoly<2> >& sub_polys) const {
   decompose(sub_polys);
 }
@@ -695,6 +709,7 @@ void MatPoly<2>::facetize_decompose(std::vector< MatPoly<2> >& sub_polys) const 
   as many MatPoly's as mat_poly has facets will be appended to it.
 */
 template <>
+inline
 void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys) const {
   std::vector< std::vector<int> > tet_faces(4);
   for (int ivrt = 0; ivrt < 3; ivrt++)
@@ -743,6 +758,7 @@ void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys) const 
   @param[in] dst_tol Distance tolerance to be used by that material polygon
 */
 template <class Mesh_Wrapper>
+inline
 void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       const int cellid,
                       MatPoly<2>* mat_poly,
@@ -770,6 +786,7 @@ void cell_get_matpoly(const Mesh_Wrapper& Mesh,
   @param[in] dst_tol Distance tolerance to be used by that material polyhedron
 */
 template <class Mesh_Wrapper>
+inline
 void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       const int cellid,
                       MatPoly<3>* mat_poly,
@@ -823,6 +840,7 @@ void cell_get_matpoly(const Mesh_Wrapper& Mesh,
   @param flines  Vector of lines for all the faces of this MatPoly
 */
 template <>
+inline
 void MatPoly<2>::face_planes(std::vector< Plane_t<2> >& flines) const {
   flines.clear();
 
@@ -856,6 +874,7 @@ void MatPoly<2>::face_planes(std::vector< Plane_t<2> >& flines) const {
   @param fplanes  Vector of planes for all the faces of this MatPoly
 */
 template <>
+inline
 void MatPoly<3>::face_planes(std::vector< Plane_t<3> >& fplanes) const {
   fplanes.clear();
 
@@ -883,6 +902,7 @@ void MatPoly<3>::face_planes(std::vector< Plane_t<3> >& fplanes) const {
   @param[in] reference_pts Preferred points to snap vertices to
   @return MatPoly with no degeneracies
 */
+inline
 MatPoly<2> natural_selection(const std::vector< Point<2> >& poly_points,
                              const double dst_tol,
                              const std::vector< Point<2> >* reference_pts = nullptr) {
@@ -931,6 +951,7 @@ MatPoly<2> natural_selection(const std::vector< Point<2> >& poly_points,
   @param[in] reference_pts Preferred points to snap vertices to
   @return MatPoly with no degeneracies
 */
+inline
 MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
                              const std::vector< std::vector<int> >& face_vertices,
                              const double dst_tol,
@@ -1133,6 +1154,7 @@ Note: boundary points are no considered to be interior.
 if set to false, it will be decomposed into tetrahedrons
 @return True if the point is in the interior of MatPoly
 */
+inline
 bool point_inside_matpoly(const MatPoly<3> mat_poly,
                           const Point<3>& pt, 
                           double dst_tol,
