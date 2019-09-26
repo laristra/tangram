@@ -299,11 +299,14 @@ std::cout << std::endl << "Stats for ";
     "For each material over all multi-material cells:" << std::endl;
 
   for (int imat = 0; imat < nmesh_materials; imat++) {
-    int imaxcell;
-    double max_sym_diff_mat_vol;
+
+    int imaxcell = 0;
+    double max_sym_diff_mat_vol = 0.;
+
     if (max_mat_sym_diff_icell[imat] != -1) {
       imaxcell = max_mat_sym_diff_icell[imat];
-      int cell_matid = std::distance(cell_mat_ids.begin() + offsets[imaxcell],
+      int cell_matid =
+        std::distance(cell_mat_ids.begin() + offsets[imaxcell],
           std::find(cell_mat_ids.begin() + offsets[imaxcell],
                     cell_mat_ids.begin() + offsets[imaxcell] + cell_num_mats[imaxcell],
                     mesh_materials[imat]));
@@ -311,13 +314,17 @@ std::cout << std::endl << "Stats for ";
       max_sym_diff_mat_vol = cell_mat_volfracs[offsets[imaxcell] + cell_matid]*
         mesh_wrapper.cell_volume(imaxcell);
     }
+
     std::cout << "  Material ID " << mesh_materials[imat] << " -> " << std::endl <<
       "    Aggregate vol = " << mmcells_material_volumes[imat] << "," << std::endl <<
       "    aggregate sym.diff.vol = " << total_mat_sym_diff_vol[imat];
+
     if (total_mat_sym_diff_vol[imat] >= vol_tol)
       std::cout << "," << std::endl << "    relative sym.diff.vol = " <<
         total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat];
+
     std::cout << std::endl;
+
     if (max_mat_sym_diff_icell[imat] != -1)
       std::cout << "    Max sym.diff.vol in cell " << imaxcell << ":" << std::endl <<
       "      cell material vol = " << max_sym_diff_mat_vol << "," << std::endl <<
