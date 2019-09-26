@@ -106,7 +106,7 @@ public:
     //Instead of checking if MatPoly vertices are inside the r3d_poly,
     //we look at the volume of the actual intersection
     r3d_poly intersection = r3dpoly;
-    for (int iplane = 0; iplane < face_planes_.size(); iplane++) {
+    for (unsigned iplane = 0; iplane < face_planes_.size(); iplane++) {
       r3d_plane cur_plane = face_planes_[iplane];
       r3d_clip(&intersection, &cur_plane, 1);
       if (intersection.nverts == 0) return R3DPOLY::Position::OUTSIDE;
@@ -545,7 +545,7 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
   int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
   for (int iset = 0; iset < nsets; iset++) {
     int set_max_cellID = -1;
-    for (int ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++)
+    for (unsigned ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++)
       if (ref_sets_data[iset][ipoly]->cellID > set_max_cellID)
         set_max_cellID = ref_sets_data[iset][ipoly]->cellID;
     
@@ -565,13 +565,13 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
   for (int iset = 0; iset < nsets; iset++) {
     int cur_mat_id = sets_material_IDs[iset];
 
-    for (int ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++) {
+    for (unsigned ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++) {
       int icell = ref_sets_data[iset][ipoly]->cellID;
 
       int cell_mat_id = std::distance(cells_mat_ids[icell].begin(), 
         std::find(cells_mat_ids[icell].begin(), cells_mat_ids[icell].end(), cur_mat_id));
 
-      if (cell_mat_id == cells_mat_ids[icell].size()) {
+      if (cell_mat_id == (int) cells_mat_ids[icell].size()) {
         cells_mat_ids[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);

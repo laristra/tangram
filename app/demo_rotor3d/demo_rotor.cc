@@ -289,7 +289,7 @@ int main(int argc, char** argv) {
           total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat]; 
       std::cout << std::endl;
 
-      for (int mc = 0; mc < ncells_with_xmats.size() - 1; mc++)
+      for (unsigned mc = 0; mc < ncells_with_xmats.size() - 1; mc++)
         if (xmat_cells_material_volumes[imat][mc] != 0.0) {
           std::cout << "    over all " << mc + 2 << "-material cells:" << std::endl << 
           "      Aggregate vol = " << xmat_cells_material_volumes[imat][mc] << "," << std::endl <<

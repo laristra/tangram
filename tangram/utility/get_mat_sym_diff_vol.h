@@ -45,8 +45,8 @@ void get_mat_sym_diff_vol(const std::vector< std::vector<r3d_poly> >& reference_
     else {
       mat_sym_diff_vol[icmat] = result_ptr->material_moments(material_id)[0] +
                                 ref_mat_vol[icmat]; 
-      for (int iref_poly = 0; iref_poly < reference_mat_polys[icmat].size(); iref_poly++) {
-        for (int ires_mpoly = 0; ires_mpoly < res_mat_polys.size(); ires_mpoly++) {
+      for (unsigned iref_poly = 0; iref_poly < reference_mat_polys[icmat].size(); iref_poly++) {
+        for (unsigned ires_mpoly = 0; ires_mpoly < res_mat_polys.size(); ires_mpoly++) {
           std::vector<double> intersection_moments;
           Tangram::get_intersection_moments(res_mat_polys[ires_mpoly], 
                                             reference_mat_polys[icmat][iref_poly],
@@ -93,8 +93,8 @@ void get_mat_sym_diff_vol(const std::vector< std::vector<r2d_poly> >& reference_
     else {
       mat_sym_diff_vol[icmat] = result_ptr->material_moments(material_id)[0] +
                                 ref_mat_vol[icmat]; 
-      for (int iref_poly = 0; iref_poly < reference_mat_polys[icmat].size(); iref_poly++) {
-        for (int ires_mpoly = 0; ires_mpoly < res_mat_polys.size(); ires_mpoly++) {
+      for (unsigned iref_poly = 0; iref_poly < reference_mat_polys[icmat].size(); iref_poly++) {
+        for (unsigned ires_mpoly = 0; ires_mpoly < res_mat_polys.size(); ires_mpoly++) {
           std::vector<double> intersection_moments;
           Tangram::get_intersection_moments(res_mat_polys[ires_mpoly], 
                                             reference_mat_polys[icmat][iref_poly],

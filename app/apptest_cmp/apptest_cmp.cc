@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     throw std::runtime_error("The field sizes do not match.");
   }
   double delta, maxval;
-  for (int i=0; i < gid1.size(); i++) {
+  for (unsigned i=0; i < gid1.size(); i++) {
     if (gid1[i] != gid2[i]) {
       std::cout << i << " " << gid1[i] << " " << gid2[i] << std::endl;
       throw std::runtime_error("The field global IDs do not match.");

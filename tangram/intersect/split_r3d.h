@@ -183,7 +183,7 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
   if (poly_components.empty()) return;
 
   mat_polys.reserve(poly_components.size());
-  for (int ir3dpoly = 0; ir3dpoly < poly_components.size(); ir3dpoly++) {
+  for (unsigned ir3dpoly = 0; ir3dpoly < poly_components.size(); ir3dpoly++) {
     r3d_brep* poly_brep;
     r3d_int ncomponents;
     r3d_poly poly_copy = poly_components[ir3dpoly];
@@ -219,7 +219,7 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                                             dst_tol, reference_pts);
     // We do not store polyhedra with less than four faces, 
     // as they are clearly degenerate
-    if (!fit_poly.points().empty()) {
+    if (not fit_poly.points().empty()) {
       int inew_poly = static_cast<int>(mat_polys.size());
       mat_polys.push_back(fit_poly);
     }
@@ -303,7 +303,7 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
       int ncomponents = static_cast<int>(sub_matpoly.size());
       if (ncomponents > 1) {
         // Filter out degenerate components
-        int subpoly_id = 0;
+        unsigned subpoly_id = 0;
         while (subpoly_id < sub_matpoly.size())
           if (sub_matpoly[subpoly_id].moments()[0] >= vol_tol) subpoly_id++;
           else sub_matpoly.erase(sub_matpoly.begin() + subpoly_id);  
@@ -487,7 +487,7 @@ class ClipR3D {
 
       const int POLY_ORDER = 1;
       r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
-      for(int ipoly = 0; ipoly < r3d_polys_.size(); ipoly++) {
+      for(unsigned ipoly = 0; ipoly < r3d_polys_.size(); ipoly++) {
         if (r3d_polys_[ipoly].nverts != 0) {
           r3d_reduce(&r3d_polys_[ipoly], r3d_moments, POLY_ORDER);
           for (int im = 0; im < 4; im++)
@@ -514,7 +514,7 @@ class ClipR3D {
     const int POLY_ORDER = 1;
     r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
 
-    for (int ipoly = 0; ipoly < r3d_polys_.size(); ipoly++) {
+    for (unsigned ipoly = 0; ipoly < r3d_polys_.size(); ipoly++) {
       if (r3d_polys_[ipoly].nverts != 0) {
         //r3d does in-place clipping and does not have the const modifier
         //for the plane: we need to make copies

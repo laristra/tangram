@@ -410,7 +410,7 @@ class ClipR2D {
 
       const int POLY_ORDER = 1;
       r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
-      for(int ipoly = 0; ipoly < r2d_polys_.size(); ipoly++)
+      for(unsigned ipoly = 0; ipoly < r2d_polys_.size(); ipoly++)
         if (r2d_polys_[ipoly].nverts != 0) {
           r2d_reduce(&r2d_polys_[ipoly], r2d_moments, POLY_ORDER);
           for (int im = 0; im < 3; im++)
@@ -436,7 +436,7 @@ class ClipR2D {
     const int POLY_ORDER = 1;
     r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
 
-    for (int ipoly = 0; ipoly < r2d_polys_.size(); ipoly++) {
+    for (unsigned ipoly = 0; ipoly < r2d_polys_.size(); ipoly++) {
       if (r2d_polys_[ipoly].nverts != 0) {
         //r2d does in-place clipping and does not have the const modifier
         //for the line: we need to make copies

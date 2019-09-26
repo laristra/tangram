@@ -192,7 +192,7 @@ class Driver {
       //materials, the size of iMMCs vector is therefore (n_max-1).
       std::vector<std::vector<int>> iMMCs;
       for (int icell = 0; icell < ncells; icell++) {
-        int nmats = cell_num_mats_[icell];
+        unsigned nmats = cell_num_mats_[icell];
         if (nmats < 2)
           continue;
         else if (nmats - 1 > iMMCs.size()) 
@@ -204,7 +204,7 @@ class Driver {
       //Reconstructor is set to operate on multi-material cells only.
       //To improve load balancing, we operate on the cells with the same
       //number of materials at a time
-      for (int inm = 0; inm < iMMCs.size(); inm++) {    
+      for (unsigned inm = 0; inm < iMMCs.size(); inm++) {
         int nMMCs = iMMCs[inm].size();
         if (nMMCs == 0)
           continue;

@@ -158,7 +158,7 @@ public:
         single_mat_set_ptr = &hs_sets.lower_halfspace_set;
 
         // Filter out MatPoly's with volumes below tolerance
-        int ismp = 0;
+        unsigned ismp = 0;
         while (ismp < single_mat_set_ptr->matpolys.size())
           if (single_mat_set_ptr->matpolys[ismp].moments()[0] >= vol_tol) 
             ismp++;
@@ -173,7 +173,7 @@ public:
       }
 
       // Add single-material poly's below the plane to CellMatPoly
-      for (int ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
+      for (unsigned ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
         MatPoly<Dim>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
         cur_matpoly.set_mat_id(matid);
         cmp_ptr->add_matpoly(cur_matpoly);

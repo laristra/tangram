@@ -607,7 +607,7 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
         itri_pts.push_back({nvrts, ivrt, (ivrt + 1)%nvrts});
     }
 
-    for (int itri = 0; itri < itri_pts.size(); itri++) {
+    for (unsigned itri = 0; itri < itri_pts.size(); itri++) {
       Vector3 vcp = cross(face_pts[itri_pts[itri][1]] - face_pts[itri_pts[itri][0]], 
                           face_pts[itri_pts[itri][2]] - face_pts[itri_pts[itri][0]]);
 
@@ -920,7 +920,7 @@ MatPoly<2> natural_selection(const std::vector< Point<2> >& poly_points,
     if ((poly_points[ivrt] - poly_points[(ivrt + 1)%nvrts]).norm() >= dst_tol) {
       bool reference_match = false;
       if (reference_pts != nullptr) {
-        for (int irp = 0; irp < reference_pts->size(); irp++)
+        for (unsigned irp = 0; irp < reference_pts->size(); irp++)
           if ((poly_points[ivrt] - (*reference_pts)[irp]).norm() < dst_tol) {
             unique_points.push_back((*reference_pts)[irp]);
             reference_match = true;
@@ -965,7 +965,7 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   // to unique node indices for when we process faces
   std::vector<int> orig2unique_vrt_ids(nvrts, -1);
   for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-    for (int i = 0; i < unique_vrts.size(); i++) {
+    for (unsigned i = 0; i < unique_vrts.size(); i++) {
       // Check if this point is coincident with a stored one: points 
       // are considered coincident if the distance between them is below
       // the distance tolerance
@@ -980,7 +980,7 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
       bool reference_match = false;
       if (reference_pts != nullptr) {
         // We check if this point matches any of the reference ones
-        for (int irp = 0; irp < reference_pts->size(); irp++) {
+        for (unsigned irp = 0; irp < reference_pts->size(); irp++) {
           const Point<3>& cur_ref_pt = (*reference_pts)[irp];
           if ((vertex_points[ivrt] - cur_ref_pt).norm() < dst_tol) {            
             unique_vrts.push_back(cur_ref_pt);            
@@ -1018,7 +1018,7 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   std::vector< std::vector<int> > connected_vrt_ids(nvrts);
   std::vector< std::vector< std::pair<int, int> > > vrt_in_faces(nvrts);
   for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-    for (int iface = 0; iface < face_unique_vrts.size(); iface++) {
+    for (unsigned iface = 0; iface < face_unique_vrts.size(); iface++) {
       const std::vector<int>& cur_face_vrts = face_unique_vrts[iface];
       int nface_vrts = static_cast<int>(cur_face_vrts.size());
       int id_in_face = std::distance(cur_face_vrts.begin(),
@@ -1061,7 +1061,7 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
         if (ncv == 1) dropped_connections = true;
 
         bool third_wheel = false;
-        for (int icf = 0; icf < vrt_in_faces[ivrt].size(); icf++) {
+        for (unsigned icf = 0; icf < vrt_in_faces[ivrt].size(); icf++) {
           int iface = vrt_in_faces[ivrt][icf].first;
           int hvrt_fid = vrt_in_faces[ivrt][icf].second;
           // Check if the two others can connect by themselves
@@ -1085,10 +1085,10 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
           face_unique_vrts[iface].erase(face_unique_vrts[iface].begin() + 
                                         vrt_in_faces[ivrt][icf].second);
           // Tell the following face vertices about their change of address
-          for (int ifv = vrt_in_faces[ivrt][icf].second; 
+          for (unsigned ifv = vrt_in_faces[ivrt][icf].second;
                    ifv < face_unique_vrts[iface].size(); ifv++) {
             int icur_vrt = face_unique_vrts[iface][ifv];
-            for (int i = 0; i < vrt_in_faces[icur_vrt].size(); i++)
+            for (unsigned i = 0; i < vrt_in_faces[icur_vrt].size(); i++)
               if (vrt_in_faces[icur_vrt][i].first == iface) {
                 vrt_in_faces[icur_vrt][i].second--;
                 break;
@@ -1102,7 +1102,7 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   } while (dropped_connections);
 
   // Filter out degenerate faces
-  int face_id = 0;
+  unsigned face_id = 0;
   while (face_id < face_unique_vrts.size()) {
     // Check if this face is still at least a triangle
     if (face_unique_vrts[face_id].size() > 2) face_id++;
@@ -1166,7 +1166,7 @@ bool point_inside_matpoly(const MatPoly<3> mat_poly,
   else 
     mat_poly.facetize_decompose(convex_polys);
 
-  for (int icp = 0; icp < convex_polys.size(); icp++) {
+  for (unsigned icp = 0; icp < convex_polys.size(); icp++) {
     const std::vector< Point<3> >& poly_pts = convex_polys[icp].points();
 
     bool pt_inside_cur_poly = true;
@@ -1175,7 +1175,7 @@ bool point_inside_matpoly(const MatPoly<3> mat_poly,
       Vector3 pt2vrt_vec;
       double pt2vrt_dst = 0.0;
       //Find a face vertex that is the farthest from the given point
-      for (int ifvrt = 0; ifvrt < iface_vrts.size(); ifvrt++) {
+      for (unsigned ifvrt = 0; ifvrt < iface_vrts.size(); ifvrt++) {
         Vector3 cur_pt2vrt_vec = 
           convex_polys[icp].vertex_point(iface_vrts[ifvrt]) - pt;
         double cur_vec_norm = cur_pt2vrt_vec.norm();

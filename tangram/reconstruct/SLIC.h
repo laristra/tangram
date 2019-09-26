@@ -169,7 +169,7 @@ namespace Tangram {
           single_mat_set_ptr = &hs_sets.lower_halfspace_set;
         }
         //Add single-material MatPoly's to CellMatPoly
-        for (int ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
+        for (unsigned ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
           MatPoly<Dim>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
           cur_matpoly.set_mat_id(cell_mat_ids_[iStart+iMat]);
           cellpoly->add_matpoly(cur_matpoly);

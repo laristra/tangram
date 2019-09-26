@@ -86,7 +86,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   int ir3d_poly = 0;
   std::vector< std::vector<double> > cur_polys_moments(ncur_polys);
   for (int icell = 0; icell < ncells; icell++)
-    for (int ipoly = 0; ipoly < cells_polys[icell].size(); ipoly++) {
+    for (unsigned ipoly = 0; ipoly < cells_polys[icell].size(); ipoly++) {
       Tangram::matpoly_to_r3dpoly(cells_polys[icell][ipoly], cur_r3d_polys[ir3d_poly]);
 
       r3d_reduce(&cur_r3d_polys[ir3d_poly], r3d_moments, POLY_ORDER);
@@ -132,7 +132,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
             std::find(cells_mat_ids[icell].begin(), 
                       cells_mat_ids[icell].end(), cur_mat_id));
 
-          if (cell_mat_id == cells_mat_ids[icell].size()) {
+          if (cell_mat_id == (int) cells_mat_ids[icell].size()) {
             cells_mat_ids[icell].resize(cell_mat_id + 1);
             cells_mat_moments[icell].resize(cell_mat_id + 1);
             cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
@@ -192,7 +192,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
       std::find(cells_mat_ids[icell].begin(), 
                 cells_mat_ids[icell].end(), cur_mat_id));
 
-    if (cell_mat_id == cells_mat_ids[icell].size()) {
+    if (cell_mat_id == (int) cells_mat_ids[icell].size()) {
       cells_mat_ids[icell].resize(cell_mat_id + 1);
       cells_mat_moments[icell].resize(cell_mat_id + 1);
       cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
@@ -438,7 +438,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   int ir2d_poly = 0;
   std::vector< std::vector<double> > cur_polys_moments(ncur_polys);
   for (int icell = 0; icell < ncells; icell++)
-    for (int ipoly = 0; ipoly < cells_polys[icell].size(); ipoly++) {
+    for (unsigned ipoly = 0; ipoly < cells_polys[icell].size(); ipoly++) {
       Tangram::matpoly_to_r2dpoly(cells_polys[icell][ipoly], cur_r2d_polys[ir2d_poly]);
 
       r2d_reduce(&cur_r2d_polys[ir2d_poly], r2d_moments, POLY_ORDER);
@@ -484,7 +484,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
             std::find(cells_mat_ids[icell].begin(), 
                       cells_mat_ids[icell].end(), cur_mat_id));
 
-          if (cell_mat_id == cells_mat_ids[icell].size()) {
+          if (cell_mat_id == (int) cells_mat_ids[icell].size()) {
             cells_mat_ids[icell].resize(cell_mat_id + 1);
             cells_mat_moments[icell].resize(cell_mat_id + 1);
             cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
@@ -544,7 +544,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
       std::find(cells_mat_ids[icell].begin(), 
                 cells_mat_ids[icell].end(), cur_mat_id));
 
-    if (cell_mat_id == cells_mat_ids[icell].size()) {
+    if (cell_mat_id == (int) cells_mat_ids[icell].size()) {
       cells_mat_ids[icell].resize(cell_mat_id + 1);
       cells_mat_moments[icell].resize(cell_mat_id + 1);
       cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);

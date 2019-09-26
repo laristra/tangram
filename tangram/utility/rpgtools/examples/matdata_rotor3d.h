@@ -155,7 +155,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     double rot_angle = sign_rot_angle*std::acos(cos_ang);
     Tangram::Matrix rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (int ivrt = 0; ivrt < planet_pts.size(); ivrt++)
+    for (unsigned ivrt = 0; ivrt < planet_pts.size(); ivrt++)
       planet_pts[ivrt] = planet_centers[iplanet] + 
         rot_matrix*(planet_pts[ivrt] - planet_centers[iplanet]);
 
@@ -172,21 +172,21 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     rot_angle = sign_rot_angle*std::acos(cos_ang);
     rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (int ivrt = 0; ivrt < planet_shaft_pts.size(); ivrt++)
+    for (unsigned ivrt = 0; ivrt < planet_shaft_pts.size(); ivrt++)
       planet_shaft_pts[ivrt] = planet_shaft_center + 
         rot_matrix*(planet_shaft_pts[ivrt] - planet_shaft_center);  
 
     planet_shafts[iplanet] = prism(planet_shaft_pts, 
       gears_depth + 2*(carrier_clearance + carrier_depth), 1.0, dst_tol, normal);
 
-    for (int ivrt = 0; ivrt < planet_shaft_gasket_pts.size(); ivrt++)
+    for (unsigned ivrt = 0; ivrt < planet_shaft_gasket_pts.size(); ivrt++)
       planet_shaft_gasket_pts[ivrt] = planet_centers[iplanet] + 
         rot_matrix*(planet_shaft_gasket_pts[ivrt] - planet_centers[iplanet]);  
 
     planet_shaft_gaskets[iplanet] = prism(planet_shaft_gasket_pts, gears_depth, 1.0, 
                                           dst_tol, normal);
 
-    for (int ivrt = 0; ivrt < planet_hole_pts.size(); ivrt++)
+    for (unsigned ivrt = 0; ivrt < planet_hole_pts.size(); ivrt++)
       planet_hole_pts[ivrt] = planet_centers[iplanet] + 
         rot_matrix*(planet_hole_pts[ivrt] - planet_centers[iplanet]);  
 
@@ -216,7 +216,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     Tangram::Matrix rot_matrix = rotation_matrix(normal, rot_angle);
 
     for (int icarrier = 0; icarrier < 2; icarrier++)
-      for (int ivrt = 0; ivrt < carrier_pts[icarrier].size(); ivrt++)
+      for (unsigned ivrt = 0; ivrt < carrier_pts[icarrier].size(); ivrt++)
         carrier_pts[icarrier][ivrt] = carrier_centers[icarrier] + 
           rot_matrix*(carrier_pts[icarrier][ivrt] - carrier_centers[icarrier]); 
 
@@ -244,7 +244,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     double rot_angle = sign_rot_angle*std::acos(cos_ang);
     Tangram::Matrix rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (int ivrt = 0; ivrt < carrier_cen_pts.size(); ivrt++)
+    for (unsigned ivrt = 0; ivrt < carrier_cen_pts.size(); ivrt++)
       carrier_cen_pts[ivrt] = carrier_centers[0] + 
         rot_matrix*(carrier_cen_pts[ivrt] - carrier_centers[0]);  
 
@@ -252,7 +252,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
 
     carrier_cen_pts = circle3d(carrier_centers[1], sun_shaft_rad, normal, 
                                shaft_nsides, dst_tol);
-    for (int ivrt = 0; ivrt < carrier_cen_pts.size(); ivrt++)
+    for (unsigned ivrt = 0; ivrt < carrier_cen_pts.size(); ivrt++)
       carrier_cen_pts[ivrt] = carrier_centers[1] + 
         rot_matrix*(carrier_cen_pts[ivrt] - carrier_centers[1]); 
 
@@ -279,7 +279,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     double rot_angle = sign_rot_angle*std::acos(cos_ang);
     Tangram::Matrix rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (int ivrt = 0; ivrt < ring_pts.size(); ivrt++)
+    for (unsigned ivrt = 0; ivrt < ring_pts.size(); ivrt++)
       ring_pts[ivrt] = gears_center + rot_matrix*(ring_pts[ivrt] - gears_center);  
 
     ring_poly = prism(ring_pts, gears_depth, 1.0, dst_tol, normal);

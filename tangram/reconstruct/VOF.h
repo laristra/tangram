@@ -152,7 +152,7 @@ public:
       int local_id = std::distance(cur_mat_ids.begin(),
         std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
 
-      if (local_id != cur_mat_ids.size())
+      if (local_id != (int) cur_mat_ids.size())
         stencil_vfracs[isc] = cell_mat_vfracs_[istencil_cells[isc]][local_id];
 
       mesh_.cell_centroid(istencil_cells[isc], &stencil_centroids[isc]);
