@@ -56,3 +56,4 @@ install-Release
 
 # Editor backup files
 *~
+.idea
