@@ -8,7 +8,7 @@
 # Rotor demo for SimpleMesh
 #-------------------------------------------------------------------------------
 add_executable(demo_rotor demo_rotor.cc)
-target_link_libraries(demo_rotor tangram wonton ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+target_link_libraries(demo_rotor wonton ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
 if(ENABLE_MPI)
   if(MPI_CXX_COMPILE_FLAGS)

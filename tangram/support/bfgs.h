@@ -30,6 +30,7 @@ namespace Tangram {
   from the boundaries of the domain
   @return Value of the minimizer
 */
+inline
 double quad_interpolant_minimizer(const double arg0,
                                   const double arg1,
                                   const double fval0,

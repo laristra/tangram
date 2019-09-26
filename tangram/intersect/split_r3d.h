@@ -37,6 +37,7 @@ namespace Tangram {
   @param[in] mat_poly MatPoly object to convert
   @param[out] r3dpoly Corresponding R3D polyhedron
 */
+inline
 void
 matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
                    r3d_poly& r3dpoly) {
@@ -80,6 +81,7 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly,
  @param[in] vol_tol Volume tolerance, only components with volumes above it
  will be included in the output vector
 */
+inline
 void r3d_poly_components(const r3d_poly& r3dpoly, std::vector<r3d_poly>& poly_components,
                          const double vol_tol) {
   const int R3D_POLY_ORDER = 1;
@@ -168,6 +170,7 @@ void r3d_poly_components(const r3d_poly& r3dpoly, std::vector<r3d_poly>& poly_co
   @param[in] dst_tol Distance tolerance
   @param[in] reference_pts Preferred points to snap vertices to
 */
+inline
 void
 r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
                     std::vector< MatPoly<3> >& mat_polys,
@@ -236,6 +239,7 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
   @param[out] lower_halfspace_moments Moments of MatPoly below the plane
   @param[out] upper_halfspace_moments Moments of MatPoly above the plane
 */
+inline
 void
 split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
                          const Plane_t<3>& cutting_plane,
@@ -564,6 +568,7 @@ class ClipR3D {
   @param[in] convex_matpoly flag indicating if MatPoly is convex: if not
   it will be decomposed into tetrahedra
 */
+inline
 void get_intersection_moments(const MatPoly<3>& mat_poly,
                               const r3d_poly& r3dpoly,
                               std::vector<double>& intersection_moments,
@@ -622,6 +627,7 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
   }
 }
 
+inline
 BoundingBox_t<3> r3d_poly_bounding_box(const r3d_poly& r3dpoly) {
   BoundingBox_t<3> bbox;
   for (int ivrt = 0; ivrt < r3dpoly.nverts; ivrt++)

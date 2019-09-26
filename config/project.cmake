@@ -15,7 +15,7 @@ cinch_minimum_required(VERSION 1.0)
 
 set(TANGRAM_VERSION_MAJOR 0)
 set(TANGRAM_VERSION_MINOR 9)
-set(TANGRAM_VERSION_PATCH 6)
+set(TANGRAM_VERSION_PATCH 7)
 
 
 # If a C++14 compiler is available, then set the appropriate flags
@@ -47,10 +47,13 @@ set(CINCH_HEADER_SUFFIXES "\\.h")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
+<<<<<<< HEAD
 # set the name of the Portage library
 
 set(TANGRAM_LIBRARY "tangram" CACHE STRING "Name of the tangram library")
 
+=======
+>>>>>>> v0.9.7
 
 #-----------------------------------------------------------------------------
 # Gather all the third party libraries needed for Tangram
@@ -313,7 +316,11 @@ endif(ENABLE_THRUST)
 
 include_directories(${CMAKE_BINARY_DIRECTORY})
 
+<<<<<<< HEAD
 # Apps and Libraries
+=======
+# Apps and Libraries 
+>>>>>>> v0.9.7
 cinch_add_application_directory(app)
 cinch_add_library_target(tangram tangram)
 
@@ -332,7 +339,11 @@ endif()
 get_directory_property(TANGRAM_COMPILE_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
 
 # build the TANGRAM_LIBRARIES variable
+<<<<<<< HEAD
 set(TANGRAM_LIBRARIES ${TANGRAM_LIBRARY} ${TANGRAM_EXTRA_LIBRARIES} CACHE STRING "List of libraries to link with tangram")
+=======
+set(TANGRAM_LIBRARIES ${TANGRAM_EXTRA_LIBRARIES} CACHE STRING "List of libraries to link with tangram")
+>>>>>>> v0.9.7
 
 ############################################################################## 
 # Write a configuration file from template replacing only variables enclosed
@@ -340,6 +351,7 @@ set(TANGRAM_LIBRARIES ${TANGRAM_LIBRARY} ${TANGRAM_EXTRA_LIBRARIES} CACHE STRING
 # TANGRAM was built and which TPLs it used
 #############################################################################
 
+<<<<<<< HEAD
 configure_file(${PROJECT_SOURCE_DIR}/cmake/tangram_config.cmake.in 
                ${PROJECT_BINARY_DIR}/tangram_config.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/tangram_config.cmake 
@@ -350,3 +362,15 @@ configure_file(${PROJECT_SOURCE_DIR}/config/tangram-config.h.in
 install(FILES ${PROJECT_BINARY_DIR}/tangram-config.h
         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/)
 
+=======
+configure_file(${PROJECT_SOURCE_DIR}/config/tangram-config.h.in
+  ${PROJECT_BINARY_DIR}/tangram-config.h @ONLY)
+install(FILES ${PROJECT_BINARY_DIR}/tangram-config.h
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/)
+
+
+configure_file(${PROJECT_SOURCE_DIR}/cmake/tangram-config.cmake.in 
+  ${PROJECT_BINARY_DIR}/tangram-config.cmake @ONLY)
+install(FILES ${PROJECT_BINARY_DIR}/tangram-config.cmake 
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/)
+>>>>>>> v0.9.7
