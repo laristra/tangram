@@ -62,7 +62,7 @@ public:
                            const double dst_tol,
                            const Tangram::MatPoly<3>& convex_matpoly) :
                            polys_data_(polys_data), IDs_to_check_(IDs_to_check),
-                           dst_tol_(dst_tol), convex_matpoly_(convex_matpoly) {
+                           convex_matpoly_(convex_matpoly), dst_tol_(dst_tol) {
     std::vector< Tangram::Plane_t<3> > fplanes;
     convex_matpoly_.face_planes(fplanes);
 
