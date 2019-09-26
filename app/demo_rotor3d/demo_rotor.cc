@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
     std::endl << "  " << nmesh_material_IDs << " materials," <<
     std::endl << "  " << ncells_with_xmats[0] << " single-material cells," <<
     std::endl << "  " << nmmcells << " multi-material cells:" << std::endl;
-  for (int inm = 0; inm < ncells_with_xmats.size() - 1; inm++)
+  for (unsigned inm = 0; inm < ncells_with_xmats.size() - 1; inm++)
     std::cout << "    Number of cells with " << inm + 2 << " materials -> " <<
       ncells_with_xmats[inm + 1] << std::endl;
 

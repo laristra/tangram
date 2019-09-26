@@ -134,8 +134,7 @@ class Driver {
     }
 
     if (insufficient_vol_tol) {
-      std::vector<IterativeMethodTolerances_t>& ims_tols_r = 
-        const_cast <std::vector<IterativeMethodTolerances_t>&> (ims_tols_);
+      auto& ims_tols_r = const_cast<std::vector<IterativeMethodTolerances_t>&>(ims_tols_);
       ims_tols_r[0].fun_eps /= 2;
     }
   }
@@ -144,20 +143,17 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct(Wonton::Executor_type const *executor = nullptr) {
-
-    bool distributed = false;
     int comm_rank = 0;
     int world_size = 1;
 
 #ifdef TANGRAM_ENABLE_MPI
+
     MPI_Comm mycomm = MPI_COMM_NULL;
     auto mpiexecutor = dynamic_cast<Wonton::MPIExecutor_type const *>(executor);
     if (mpiexecutor && mpiexecutor->mpicomm != MPI_COMM_NULL) {
       mycomm = mpiexecutor->mpicomm;
       MPI_Comm_rank(mycomm, &comm_rank);
       MPI_Comm_size(mycomm, &world_size);
-      if (world_size > 1)
-        distributed = true;
     }
 #endif
 

@@ -160,7 +160,9 @@ public:
                                    .upper = std::make_shared<RefPolyData_t>() };
 
     const r3d_poly& r3dpoly = polys_data_[polyID]->r3dpoly;
+#if !BUGS_IN_R3D
     const r3d_real* poly_moments = polys_data_[polyID]->moments;
+#endif
     int cellID = polys_data_[polyID]->cellID;
 
     r3d_poly split_poly = r3dpoly;
@@ -285,7 +287,6 @@ void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data
   upper_hs_data.clear();
   
   int num_polys = static_cast<int>(polys_data.size());
-  int nmoments = R3D_NUM_MOMENTS(R3D_POLY_ORDER);
 
   r3d_plane r3d_planar_iface;
   for (int ixyz = 0; ixyz < 3; ixyz++)
@@ -329,7 +330,6 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
   convex_matpoly.face_planes(face_planes);
   Tangram::BoundingBox_t<3> poly_bbox = convex_matpoly.bounding_box();
 
-  int nfaces = static_cast<int>(face_planes.size());
   int npolys = static_cast<int>(polys_data.size()); 
 
   iexterior_polys.clear();

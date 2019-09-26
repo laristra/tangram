@@ -220,7 +220,6 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
     // We do not store polyhedra with less than four faces, 
     // as they are clearly degenerate
     if (not fit_poly.points().empty()) {
-      int inew_poly = static_cast<int>(mat_polys.size());
       mat_polys.push_back(fit_poly);
     }
 

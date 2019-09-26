@@ -129,7 +129,6 @@ public:
                           const std::vector< MatPoly<Dim> >& mixed_polys,
                           Plane_t<Dim>& cutting_plane,
                           const bool planar_faces) const {
-    double vol_tol = ims_tols_[0].fun_eps;
 
     std::vector<int> istencil_cells;
     mesh_.cell_get_node_adj_cells(cellID, Entity_type::ALL, &istencil_cells);
