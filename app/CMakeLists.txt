@@ -4,6 +4,7 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 ]]
 
+add_subdirectory(multidef)
 add_subdirectory(apptest_cmp)
 add_subdirectory(tangramapp)
 add_subdirectory(test_mof)

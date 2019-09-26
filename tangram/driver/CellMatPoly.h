@@ -977,6 +977,7 @@ void CellMatPoly<D>::add_matpoly(int matid,
   @param mat_poly  2D MatPoly to add
 */
 template <>
+inline
 void CellMatPoly<2>::add_matpoly(const MatPoly<2>& mat_poly) {
   add_matpoly(mat_poly.mat_id(), mat_poly.num_vertices(), 
               &mat_poly.points()[0], mat_poly.dst_tol(), nullptr, nullptr,
@@ -988,6 +989,7 @@ void CellMatPoly<2>::add_matpoly(const MatPoly<2>& mat_poly) {
   @param mat_poly  3D MatPoly to add
 */
 template <>
+inline
 void CellMatPoly<3>::add_matpoly(const MatPoly<3>& mat_poly) {
   // Flatten the face vertices
   int nfaces = mat_poly.num_faces();
@@ -1010,6 +1012,7 @@ void CellMatPoly<3>::add_matpoly(const MatPoly<3>& mat_poly) {
   @return  Corresponding MatPoly object
 */
 template<>
+inline
 MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
 #ifdef DEBUG
   assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
@@ -1027,6 +1030,7 @@ MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
   @return  Corresponding MatPoly object
 */
 template<>
+inline
 MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
 #ifdef DEBUG
   assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));

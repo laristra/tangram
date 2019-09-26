@@ -42,6 +42,7 @@ namespace Tangram {
   @param[in] dst_tol Distance tolerance
   @param[in] reference_pts Preferred points to snap vertices to
 */
+inline
 void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly,
                         const double dst_tol,
                         const std::vector< Point<2> >* reference_pts = nullptr)
@@ -68,6 +69,7 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly,
   @param[in] mat_poly MatPoly object to convert
   @param[out] r2dpoly Corresponding R2D polygon
 */
+inline
  void matpoly_to_r2dpoly(const MatPoly<2>& mat_poly,
                          r2d_poly& r2dpoly) {
 
@@ -101,7 +103,8 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly,
   it will be decomposed into triangles
 */
 
-  void get_intersection_moments(const MatPoly<2>& mat_poly,
+inline
+void get_intersection_moments(const MatPoly<2>& mat_poly,
                                 const r2d_poly& r2dpoly,
                                 std::vector<double>& intersection_moments,
                                 bool convex_matpoly) {   
@@ -169,6 +172,7 @@ void r2dpoly_to_matpoly(const r2d_poly& r2dpoly, MatPoly<2>& mat_poly,
   @param[out] lower_halfspace_moments Moments of MatPoly below the plane
   @param[out] upper_halfspace_moments Moments of MatPoly above the plane
 */
+inline
 void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
                               const Plane_t<2>& cutting_plane,
                               MatPoly<2>& lower_halfspace_poly,
