@@ -183,6 +183,7 @@ class MatPoly {
     nvertices_ = source_poly.nvertices_;
     nfaces_ = source_poly.nfaces_;
     moments_ = source_poly.moments_;
+    return *this;
   }
   
   /*!
