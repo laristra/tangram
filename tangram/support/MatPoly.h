@@ -166,10 +166,10 @@ class MatPoly {
     @brief Constructor, undefined material ID corresponds to -1 value
     @param material_id  ID of the material this poly contains
   */
-  MatPoly(int const material_id = -1) : material_id_(material_id) {}
+  explicit MatPoly(int const material_id = -1) : material_id_(material_id) {}
 
   /*! Destructor */
-  ~MatPoly() {}
+  ~MatPoly() = default;
 
   /*!
    @brief Assignment operator
@@ -413,7 +413,7 @@ class MatPoly {
   int material_id_;  // material ID of this matpoly
   std::vector< Point<D> > vertex_points_;  // coordinates of vertices
   std::vector< std::vector<int> > face_vertices_;  // vertices of faces
-  double dst_tol_; // distance tolerance
+  double dst_tol_ = 0.; // distance tolerance
   
   int nvertices_ = 0;  // number of vertices
   int nfaces_ = 0;  //number of faces
