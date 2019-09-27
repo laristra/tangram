@@ -571,7 +571,7 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
       int cell_mat_id = std::distance(cells_mat_ids[icell].begin(), 
         std::find(cells_mat_ids[icell].begin(), cells_mat_ids[icell].end(), cur_mat_id));
 
-      if (cell_mat_id == (int) cells_mat_ids[icell].size()) {
+      if (static_cast<unsigned>(cell_mat_id) == cells_mat_ids[icell].size()) {
         cells_mat_ids[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);

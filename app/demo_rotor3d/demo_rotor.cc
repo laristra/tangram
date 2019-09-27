@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
   std::cout << "Time taken to generate reference material polyhedra and their moments -> " << 
     seconds_taken << " (s)" << std::endl;
 
-  int nmesh_material_IDs = (int) mesh_material_IDs.size();   
+  int nmesh_material_IDs = mesh_material_IDs.size();
   std::vector<int> offsets(ncells, 0);  
   for (int icell = 0; icell < ncells - 1; icell++)
     offsets[icell + 1] = offsets[icell] + cell_num_mats[icell];
@@ -333,7 +333,7 @@ int main(int argc, char** argv) {
     ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<3> >(icell);
 
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
-      int nmp = (int) reference_mat_polys[icell][icmat].size();
+      int nmp = reference_mat_polys[icell][icmat].size();
       for (int imp = 0; imp < nmp; imp++) {
         std::vector< Tangram::MatPoly<3> > cur_matpoly;
         Tangram::r3dpoly_to_matpolys(reference_mat_polys[icell][icmat][imp], 

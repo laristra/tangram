@@ -419,7 +419,7 @@ class CellMatPoly {
                                              cell_materialids_.end(), mat_id));
     assert(cmp_mat_id < num_materials());
 
-    if (cmp_mat_id >= (int) material_moments_.size())
+    if (static_cast<unsigned>(cmp_mat_id) >= material_moments_.size())
       material_moments_.resize(cmp_mat_id + 1);
 
     material_moments_[cmp_mat_id] = moments;
@@ -437,7 +437,7 @@ class CellMatPoly {
                                              cell_materialids_.end(), mat_id));
     assert(cmp_mat_id < num_materials());
 
-    if (cmp_mat_id >= (int) material_moments_.size()) {
+    if (static_cast<unsigned>(cmp_mat_id) >= material_moments_.size()) {
       material_moments_.resize(cmp_mat_id + 1);
       compute_material_moments(cmp_mat_id);
     }

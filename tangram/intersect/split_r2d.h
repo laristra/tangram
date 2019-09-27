@@ -301,8 +301,8 @@ class SplitR2D {
     if (all_convex_)
       convex_polys = &matpolys_;
     else {
-      int nncpolys = (int) matpolys_.size();
-      for (int incp = 0; incp < nncpolys; incp++)
+      unsigned nncpolys = matpolys_.size();
+      for (unsigned incp = 0; incp < nncpolys; incp++)
         matpolys_[incp].decompose(convex_components);
 
       convex_polys = &convex_components;
@@ -312,9 +312,9 @@ class SplitR2D {
       hs_moments_ptrs[ihs]->assign(3, 0.0);
 
     int hs_poly_count[2] = {0, 0};
-    int npolys = (int) convex_polys->size();
+    unsigned npolys = convex_polys->size();
 
-    for (int icp = 0; icp < npolys; icp++) {
+    for (unsigned icp = 0; icp < npolys; icp++) {
       MatPoly<2> cur_subpolys[2];
       std::vector<double> cur_moments[2];
       split_convex_matpoly_r2d((*convex_polys)[icp], cutting_plane_,
