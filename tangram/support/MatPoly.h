@@ -1041,7 +1041,7 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
       
       if (id_in_face != nface_vrts) {
         // Vertex is in the current face
-        vrt_in_faces[ivrt].push_back(std::pair<int, int>(iface++, id_in_face));
+        vrt_in_faces[ivrt].push_back(std::pair<int, int>(iface, id_in_face));
         // We check if it has unknown connections with vertices of the current face
         for (int p0n1 = 0; p0n1 < 2; p0n1++) {
           int adj_vrt_face_id = (nface_vrts + id_in_face + 2*p0n1 - 1)%nface_vrts;
@@ -1051,6 +1051,7 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
             list.push_back(adj_vrt_id);
         }
       }
+      iface++;
     }      
   }
 
@@ -1066,23 +1067,13 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
       int ncv = static_cast<int>(connected_vrt_ids[ivrt].size());
       if (ncv < 3) {
         hanging_vrts_ids.push_back(ivrt);
+
         // Others break connections first
-        /*for (int icv = 0; icv < ncv; icv++) {
-
-          auto& connected_vertices = connected_vrt_ids[ivrt];
-          auto& current_vertex = connected_vertices[icv];
-
-          int icvrt = connected_vrt_ids[ivrt][icv];
-          connected_vrt_ids[icvrt].erase(
-            std::find(connected_vrt_ids[icvrt].begin(), 
-                      connected_vrt_ids[icvrt].end(), ivrt));
-        }*/
-
-        auto& connected_vertices = connected_vrt_ids[ivrt];
-        for (auto&& vertex : connected_vertices) {
-          connected_vrt_ids[vertex].erase(
-            std::find(connected_vertices.begin(), connected_vertices.end(), ivrt)
-          );
+        for (int icv = 0; icv < ncv; icv++) {
+          int index = connected_vrt_ids[ivrt][icv];
+          connected_vrt_ids[index].erase(
+            std::find(connected_vrt_ids[index].begin(),
+                      connected_vrt_ids[index].end(), ivrt));
         }
 
         if (ncv == 1) dropped_connections = true;

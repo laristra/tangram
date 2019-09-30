@@ -181,10 +181,11 @@ r3dpoly_to_matpolys(const r3d_poly& r3dpoly,
   mat_polys.clear();
   std::vector<r3d_poly> poly_components; 
   r3d_poly_components(r3dpoly, poly_components, vol_tol);
-  int nb_poly_components = poly_components.size();
 
-  if (not nb_poly_components)
+  if (poly_components.empty())
     return;
+
+  int nb_poly_components = poly_components.size();
 
   mat_polys.reserve(nb_poly_components);
   for (int ir3dpoly = 0; ir3dpoly < nb_poly_components; ir3dpoly++) {
