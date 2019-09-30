@@ -106,9 +106,7 @@ namespace Tangram {
 
       int cellID = icells_to_reconstruct[cell_op_ID];
       auto numMats = cell_num_mats_[cellID];
-
-      CellMatPoly<Dim>* cellpoly = new CellMatPoly<Dim>(cellID);
-
+      auto* cellpoly = new CellMatPoly<Dim>(cellID);
       auto iStart = cell_mat_offsets_[cellID];
 
       //Sets of MatPoly's on two sides of the cutting plane
@@ -143,8 +141,8 @@ namespace Tangram {
         if (target_vol < vol_tol) continue;
 
         MatPolySet_t<Dim>* single_mat_set_ptr;
-        
-	//On the last iteration the remaining part is single-material,
+
+        //On the last iteration the remaining part is single-material,
         //so we don't need to split it
         if (iMat == numMats - 1)
           single_mat_set_ptr = &hs_sets.upper_halfspace_set;
@@ -168,12 +166,12 @@ namespace Tangram {
           //Chopped off single-material MatPoly's are below the plane
           single_mat_set_ptr = &hs_sets.lower_halfspace_set;
         }
-        //Add single-material MatPoly's to CellMatPoly
-        for (unsigned ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
-          MatPoly<Dim>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
-          cur_matpoly.set_mat_id(cell_mat_ids_[iStart+iMat]);
-          cellpoly->add_matpoly(cur_matpoly);
-    	}
+
+        // Add single-material MatPoly's to CellMatPoly
+        for (auto&& single_mat_poly : single_mat_set_ptr->matpolys) {
+          single_mat_poly.set_mat_id(cell_mat_ids_[iStart+iMat]);
+          cellpoly->add_matpoly(single_mat_poly);
+        }
       }
 
       return std::shared_ptr<CellMatPoly<Dim>>(cellpoly);

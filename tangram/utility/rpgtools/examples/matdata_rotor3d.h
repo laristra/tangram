@@ -150,14 +150,14 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     double cos_ang = -Wonton::dot(planet_tooth_dir, sun2planet);
     if (cos_ang > 1.0 - std::numeric_limits<double>::epsilon()) cos_ang = 1.0;
     if (cos_ang < -1.0 + std::numeric_limits<double>::epsilon()) cos_ang = -1.0;
-    int sign_rot_angle = Wonton::dot(Wonton::cross(planet_tooth_dir, -sun2planet), 
-                                      normal) > 0.0 ? 1 : -1;
+    int sign_rot_angle =
+      Wonton::dot(Wonton::cross(planet_tooth_dir, -sun2planet), normal) > 0.0 ? 1 : -1;
+
     double rot_angle = sign_rot_angle*std::acos(cos_ang);
     Tangram::Matrix rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (unsigned ivrt = 0; ivrt < planet_pts.size(); ivrt++)
-      planet_pts[ivrt] = planet_centers[iplanet] + 
-        rot_matrix*(planet_pts[ivrt] - planet_centers[iplanet]);
+    for (auto&& point : planet_pts)
+      point = planet_centers[iplanet] + rot_matrix*(point - planet_centers[iplanet]);
 
     planet_polys[iplanet] = prism(planet_pts, gears_depth, 1.0, dst_tol, normal);
 
@@ -167,28 +167,26 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     cos_ang = -Wonton::dot(planet_shaft_dir, sun2planet);
     if (cos_ang > 1.0 - std::numeric_limits<double>::epsilon()) cos_ang = 1.0;
     if (cos_ang < -1.0 + std::numeric_limits<double>::epsilon()) cos_ang = -1.0;
-    sign_rot_angle = Wonton::dot(Wonton::cross(planet_shaft_dir, -sun2planet), 
-                                  normal) > 0.0 ? 1 : -1;
+    sign_rot_angle =
+      Wonton::dot(Wonton::cross(planet_shaft_dir, -sun2planet), normal) > 0.0 ? 1 : -1;
+
     rot_angle = sign_rot_angle*std::acos(cos_ang);
     rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (unsigned ivrt = 0; ivrt < planet_shaft_pts.size(); ivrt++)
-      planet_shaft_pts[ivrt] = planet_shaft_center + 
-        rot_matrix*(planet_shaft_pts[ivrt] - planet_shaft_center);  
+    for (auto&& point : planet_shaft_pts)
+      point = planet_shaft_center + rot_matrix*(point - planet_shaft_center);
 
     planet_shafts[iplanet] = prism(planet_shaft_pts, 
       gears_depth + 2*(carrier_clearance + carrier_depth), 1.0, dst_tol, normal);
 
-    for (unsigned ivrt = 0; ivrt < planet_shaft_gasket_pts.size(); ivrt++)
-      planet_shaft_gasket_pts[ivrt] = planet_centers[iplanet] + 
-        rot_matrix*(planet_shaft_gasket_pts[ivrt] - planet_centers[iplanet]);  
+    for (auto&& point : planet_shaft_gasket_pts)
+      point = planet_centers[iplanet] + rot_matrix*(point - planet_centers[iplanet]);
 
-    planet_shaft_gaskets[iplanet] = prism(planet_shaft_gasket_pts, gears_depth, 1.0, 
-                                          dst_tol, normal);
+    planet_shaft_gaskets[iplanet] =
+      prism(planet_shaft_gasket_pts, gears_depth, 1.0, dst_tol, normal);
 
-    for (unsigned ivrt = 0; ivrt < planet_hole_pts.size(); ivrt++)
-      planet_hole_pts[ivrt] = planet_centers[iplanet] + 
-        rot_matrix*(planet_hole_pts[ivrt] - planet_centers[iplanet]);  
+    for (auto&& point : planet_hole_pts)
+      point = planet_centers[iplanet] + rot_matrix*(point - planet_centers[iplanet]);
 
     planet_holes[iplanet] = prism(planet_hole_pts, gears_depth, 1.0, dst_tol, normal);
   }
@@ -210,19 +208,22 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     double cos_ang = Wonton::dot(carrier_tooth_dir, new_tooth_dir);
     if (cos_ang > 1.0 - std::numeric_limits<double>::epsilon()) cos_ang = 1.0;
     if (cos_ang < -1.0 + std::numeric_limits<double>::epsilon()) cos_ang = -1.0;
-    int sign_rot_angle = Wonton::dot(Wonton::cross(carrier_tooth_dir, new_tooth_dir), 
-                                      normal) > 0.0 ? 1 : -1;
+    int sign_rot_angle =
+      Wonton::dot(Wonton::cross(carrier_tooth_dir, new_tooth_dir), normal) > 0.0 ? 1 : -1;
+
     double rot_angle = sign_rot_angle*std::acos(cos_ang);
     Tangram::Matrix rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (int icarrier = 0; icarrier < 2; icarrier++)
-      for (unsigned ivrt = 0; ivrt < carrier_pts[icarrier].size(); ivrt++)
-        carrier_pts[icarrier][ivrt] = carrier_centers[icarrier] + 
-          rot_matrix*(carrier_pts[icarrier][ivrt] - carrier_centers[icarrier]); 
+    for (int icarrier = 0; icarrier < 2; icarrier++) {
+      auto const& center = carrier_centers[icarrier];
+      for (auto&& point : carrier_pts[icarrier])
+        point = center + rot_matrix*(point - center);
+    }
 
-    for (int icarrier = 0; icarrier < 2; icarrier++)
-      carrier_polys[icarrier] = prism(carrier_pts[icarrier], carrier_depth, 1.0, 
-                                      dst_tol, normal);
+    for (int icarrier = 0; icarrier < 2; icarrier++) {
+      carrier_polys[icarrier] =
+        prism(carrier_pts[icarrier], carrier_depth, 1.0, dst_tol, normal);
+    }
   }
 
   Tangram::MatPoly<3> carrier_cen_polys[2];
@@ -239,22 +240,23 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     double cos_ang = -Wonton::dot(carrier_cen_dir, sun2planet);
     if (cos_ang > 1.0 - std::numeric_limits<double>::epsilon()) cos_ang = 1.0;
     if (cos_ang < -1.0 + std::numeric_limits<double>::epsilon()) cos_ang = -1.0;
-    double sign_rot_angle = Wonton::dot(Wonton::cross(carrier_cen_dir, -sun2planet), 
-                                         normal) > 0.0 ? 1 : -1;
+    double sign_rot_angle =
+      Wonton::dot(Wonton::cross(carrier_cen_dir, -sun2planet), normal) > 0.0 ? 1 : -1;
+
     double rot_angle = sign_rot_angle*std::acos(cos_ang);
     Tangram::Matrix rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (unsigned ivrt = 0; ivrt < carrier_cen_pts.size(); ivrt++)
-      carrier_cen_pts[ivrt] = carrier_centers[0] + 
-        rot_matrix*(carrier_cen_pts[ivrt] - carrier_centers[0]);  
+    for (auto&& point : carrier_cen_pts)
+      point = carrier_centers[0] + rot_matrix*(point - carrier_centers[0]);
 
-    carrier_cen_polys[0] = prism(carrier_cen_pts, carrier_depth, 1.0, dst_tol, normal);
+    carrier_cen_polys[0] =
+      prism(carrier_cen_pts, carrier_depth, 1.0, dst_tol, normal);
 
-    carrier_cen_pts = circle3d(carrier_centers[1], sun_shaft_rad, normal, 
-                               shaft_nsides, dst_tol);
-    for (unsigned ivrt = 0; ivrt < carrier_cen_pts.size(); ivrt++)
-      carrier_cen_pts[ivrt] = carrier_centers[1] + 
-        rot_matrix*(carrier_cen_pts[ivrt] - carrier_centers[1]); 
+    carrier_cen_pts =
+      circle3d(carrier_centers[1], sun_shaft_rad, normal, shaft_nsides, dst_tol);
+
+    for (auto&& point : carrier_cen_pts)
+      point = carrier_centers[1] + rot_matrix*(point - carrier_centers[1]);
 
     carrier_cen_polys[1] = prism(carrier_cen_pts, 
       carrier_depth + carrier_clearance, 1.0, dst_tol, normal);
@@ -266,7 +268,7 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     Tangram::Vector3 new_tooth_dir = 0.5*(sun_pts[2] + sun_pts[3]) - gears_center;
     new_tooth_dir.normalize();
 
-    ring_pts = cog3d(gears_center, ring_out_rad - tooth_depth, ring_out_rad, normal, 
+    ring_pts = cog3d(gears_center, ring_out_rad - tooth_depth, ring_out_rad, normal,
                      ring_nteeth, dst_tol);
     Tangram::Vector3 ring_tooth_dir = 0.5*(ring_pts[0] + ring_pts[1]) - gears_center;
     ring_tooth_dir.normalize();
@@ -274,13 +276,14 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
     double cos_ang = Wonton::dot(ring_tooth_dir, new_tooth_dir);
     if (cos_ang > 1.0 - std::numeric_limits<double>::epsilon()) cos_ang = 1.0;
     if (cos_ang < -1.0 + std::numeric_limits<double>::epsilon()) cos_ang = -1.0;
-    int sign_rot_angle = Wonton::dot(Wonton::cross(ring_tooth_dir, new_tooth_dir), 
-                                      normal) > 0.0 ? 1 : -1;
+    int sign_rot_angle =
+      Wonton::dot(Wonton::cross(ring_tooth_dir, new_tooth_dir), normal) > 0.0 ? 1 : -1;
+
     double rot_angle = sign_rot_angle*std::acos(cos_ang);
     Tangram::Matrix rot_matrix = rotation_matrix(normal, rot_angle);
 
-    for (unsigned ivrt = 0; ivrt < ring_pts.size(); ivrt++)
-      ring_pts[ivrt] = gears_center + rot_matrix*(ring_pts[ivrt] - gears_center);  
+    for (auto&& point : ring_pts)
+      point = gears_center + rot_matrix*(point - gears_center);
 
     ring_poly = prism(ring_pts, gears_depth, 1.0, dst_tol, normal);
   }
@@ -324,7 +327,9 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int iplanet = 0; iplanet < nplanets; iplanet++) {
     //Cutting out shaft gasket of the planet
     apply_poly(mmpolys_data, planet_shaft_gaskets[iplanet], 
-      res_poly_sets_data[nplanets + 2 + iplanet], rem_polys_data, vol_tol, dst_tol, true);
+      res_poly_sets_data[nplanets + 2 + iplanet],
+      rem_polys_data, vol_tol, dst_tol, true);
+
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   } 
@@ -332,7 +337,9 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int iplanet = 0; iplanet < nplanets; iplanet++) {
     //Cutting out center of planet
     apply_poly(mmpolys_data, planet_holes[iplanet], 
-      res_poly_sets_data[2*nplanets + 2 + iplanet], rem_polys_data, vol_tol, dst_tol, true);
+      res_poly_sets_data[2*nplanets + 2 + iplanet],
+      rem_polys_data, vol_tol, dst_tol, true);
+
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   } 
@@ -340,7 +347,9 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int icarrier = 0; icarrier < 2; icarrier++) {
     //Cutting out center of carrier
     apply_poly(mmpolys_data, carrier_cen_polys[icarrier], 
-      res_poly_sets_data[3*nplanets + 2 + icarrier], rem_polys_data, vol_tol, dst_tol, true);
+      res_poly_sets_data[3*nplanets + 2 + icarrier],
+      rem_polys_data, vol_tol, dst_tol, true);
+
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   }     
@@ -348,7 +357,9 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int icarrier = 0; icarrier < 2; icarrier++) {
     //Cutting out carrier
     apply_poly(mmpolys_data, carrier_polys[icarrier], 
-      res_poly_sets_data[3*nplanets + 4 + icarrier], rem_polys_data, vol_tol, dst_tol, false);
+      res_poly_sets_data[3*nplanets + 4 + icarrier],
+      rem_polys_data, vol_tol, dst_tol, false);
+
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
   }      
@@ -386,7 +397,9 @@ planetary_gear(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   for (int iplanet = 0; iplanet < nplanets; iplanet++) {
     //Cutting out planet gear
     apply_poly(mmpolys_data, planet_polys[iplanet], 
-      res_poly_sets_data[3*nplanets + 8 + iplanet], rem_polys_data, vol_tol, dst_tol, false);
+      res_poly_sets_data[3*nplanets + 8 + iplanet],
+      rem_polys_data, vol_tol, dst_tol, false);
+
     mmpolys_data = rem_polys_data;
     rem_polys_data.clear();    
     std::cout << "Center of the planet gear " << iplanet + 1 << " is at (" << 

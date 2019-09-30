@@ -95,10 +95,12 @@ public:
         cur_vrt[ixyz] = r3dpoly.verts[ivrt].pos.xyz[ixyz];
 
       if (Tangram::point_inside_matpoly(convex_matpoly_, cur_vrt, dst_tol_, true)) {
-        if (!intersects && (ivrt > 0)) return R3DPOLY::Position::INTERSECTS;
+        if (not intersects and ivrt > 0)
+          return R3DPOLY::Position::INTERSECTS;
         intersects = true;
       }
-      else if (intersects) return R3DPOLY::Position::INTERSECTS;  
+      else if (intersects)
+        return R3DPOLY::Position::INTERSECTS;
     }
 
     if (intersects) return R3DPOLY::Position::INSIDE;
@@ -106,10 +108,10 @@ public:
     //Instead of checking if MatPoly vertices are inside the r3d_poly,
     //we look at the volume of the actual intersection
     r3d_poly intersection = r3dpoly;
-    for (unsigned iplane = 0; iplane < face_planes_.size(); iplane++) {
-      r3d_plane cur_plane = face_planes_[iplane];
+    for (auto cur_plane : face_planes_) {
       r3d_clip(&intersection, &cur_plane, 1);
-      if (intersection.nverts == 0) return R3DPOLY::Position::OUTSIDE;
+      if (intersection.nverts == 0)
+        return R3DPOLY::Position::OUTSIDE;
     }
     
     return R3DPOLY::Position::INTERSECTS;
@@ -545,11 +547,13 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
   int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
   for (int iset = 0; iset < nsets; iset++) {
     int set_max_cellID = -1;
-    for (unsigned ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++)
-      if (ref_sets_data[iset][ipoly]->cellID > set_max_cellID)
-        set_max_cellID = ref_sets_data[iset][ipoly]->cellID;
-    
-    if (set_max_cellID > ncells) ncells = set_max_cellID;  
+    for (auto&& poly : ref_sets_data[iset]) {
+      if (poly->cellID > set_max_cellID)
+        set_max_cellID = poly->cellID;
+    }
+
+    if (set_max_cellID > ncells)
+      ncells = set_max_cellID;
   }
   ncells++;
 
@@ -565,13 +569,15 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
   for (int iset = 0; iset < nsets; iset++) {
     int cur_mat_id = sets_material_IDs[iset];
 
-    for (unsigned ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++) {
-      int icell = ref_sets_data[iset][ipoly]->cellID;
+    for (auto&& poly : ref_sets_data[iset]) {
+      int icell = poly->cellID;
 
-      int cell_mat_id = std::distance(cells_mat_ids[icell].begin(), 
-        std::find(cells_mat_ids[icell].begin(), cells_mat_ids[icell].end(), cur_mat_id));
+      int cell_mat_id =
+        std::distance(cells_mat_ids[icell].begin(),
+          std::find(cells_mat_ids[icell].begin(),
+            cells_mat_ids[icell].end(), cur_mat_id));
 
-      if (static_cast<unsigned>(cell_mat_id) == cells_mat_ids[icell].size()) {
+      if (static_cast<int>(cells_mat_ids[icell].size()) == cell_mat_id) {
         cells_mat_ids[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
@@ -581,11 +587,10 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
       }
 
       if (reference_mat_polys != nullptr)
-        (*reference_mat_polys)[icell][cell_mat_id].push_back(
-          ref_sets_data[iset][ipoly]->r3dpoly);
+        (*reference_mat_polys)[icell][cell_mat_id].push_back(poly->r3dpoly);
+
       for (int im = 0; im < nmoments; im++)
-        cells_mat_moments[icell][cell_mat_id][im] += 
-          ref_sets_data[iset][ipoly]->moments[im];
+        cells_mat_moments[icell][cell_mat_id][im] += poly->moments[im];
     }
   }
 

@@ -180,7 +180,9 @@ int main(int argc, char** argv) {
     std::endl << "  " << nmesh_material_IDs << " materials," <<
     std::endl << "  " << ncells_with_xmats[0] << " single-material cells," <<
     std::endl << "  " << nmmcells << " multi-material cells:" << std::endl;
-  for (unsigned inm = 0; inm < ncells_with_xmats.size() - 1; inm++)
+
+  int count_cells_with_xmats = ncells_with_xmats.size();
+  for (int inm = 0; inm < count_cells_with_xmats - 1; inm++)
     std::cout << "    Number of cells with " << inm + 2 << " materials -> " <<
       ncells_with_xmats[inm + 1] << std::endl;
 
@@ -289,14 +291,16 @@ int main(int argc, char** argv) {
           total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat]; 
       std::cout << std::endl;
 
-      for (unsigned mc = 0; mc < ncells_with_xmats.size() - 1; mc++)
+      for (int mc = 0; mc < count_cells_with_xmats - 1; mc++) {
         if (xmat_cells_material_volumes[imat][mc] != 0.0) {
-          std::cout << "    over all " << mc + 2 << "-material cells:" << std::endl << 
+          std::cout << "    over all " << mc + 2 << "-material cells:" << std::endl <<
           "      Aggregate vol = " << xmat_cells_material_volumes[imat][mc] << "," << std::endl <<
-          "      aggregate sym.diff.vol = " << xmat_cells_mat_sym_diff_vol[imat][mc] << "," << std::endl << 
-          "      relative sym.diff.vol = " << 
-              xmat_cells_mat_sym_diff_vol[imat][mc]/xmat_cells_material_volumes[imat][mc] << std::endl; 
+          "      aggregate sym.diff.vol = " << xmat_cells_mat_sym_diff_vol[imat][mc] << "," << std::endl <<
+          "      relative sym.diff.vol = " <<
+              xmat_cells_mat_sym_diff_vol[imat][mc]/xmat_cells_material_volumes[imat][mc] << std::endl;
         }
+      }
+
       std::cout << std::endl;      
     }
     std::cout << std::endl;
