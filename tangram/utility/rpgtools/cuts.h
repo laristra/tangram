@@ -504,14 +504,6 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   }
 }
 
-unsigned int factorial(unsigned int n)
-{
-  unsigned int res = 1;
-  for(unsigned int i = 0; i < n; ++i)
-      res *= i + 1;
-  return res;
-}
-
 /*!
  @brief For a given collections of single-material reference polyhedra sets
  generates data compatible with Tangram's driver. 

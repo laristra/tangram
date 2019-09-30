@@ -158,8 +158,9 @@ public:
         single_mat_set_ptr = &hs_sets.lower_halfspace_set;
 
         // Filter out MatPoly's with volumes below tolerance
-        unsigned ismp = 0;
-        while (ismp < single_mat_set_ptr->matpolys.size()) {
+        int ismp = 0;
+        int nb_single_mat_points = single_mat_set_ptr->matpolys.size();
+        while (ismp < nb_single_mat_points) {
           if (single_mat_set_ptr->matpolys[ismp].moments()[0] >= vol_tol) {
             ismp++;
           } else {
@@ -168,8 +169,9 @@ public:
                 single_mat_set_ptr->matpolys[ismp].moments()[im];
             }
 
-            single_mat_set_ptr->matpolys.erase(
-              single_mat_set_ptr->matpolys.begin() + ismp);
+            auto deleted = single_mat_set_ptr->matpolys.begin() + ismp;
+            single_mat_set_ptr->matpolys.erase(deleted);
+            nb_single_mat_points = single_mat_set_ptr->matpolys.size();
           }
         }
       }
