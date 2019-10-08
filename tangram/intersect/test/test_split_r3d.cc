@@ -9,7 +9,7 @@
 #include "gtest/gtest.h"
 #include "tangram/support/tangram.h"
 
-//#define OUTPUT_TO_GMV 
+//#define OUTPUT_TO_GMV
 
 #ifdef OUTPUT_TO_GMV
   #include "tangram/driver/CellMatPoly.h"
@@ -21,129 +21,135 @@
 // will be written to a gmv file.
 
 TEST(split_r3d, Mesh3D) {
-  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
+  double dst_tol = sqrt(3) * std::numeric_limits<double>::epsilon();
   double vol_tol = pow(dst_tol, 3);
 
   //Right triangular prism
   std::vector<Tangram::Point3> prism_points = {
     Tangram::Point3(0.0, 0.0, 0.0), Tangram::Point3(1.0, 0.0, 0.0),
     Tangram::Point3(0.0, 1.0, 0.0), Tangram::Point3(0.0, 0.0, 1.0),
-    Tangram::Point3(1.0, 0.0, 1.0), Tangram::Point3(0.0, 1.0, 1.0) };
+    Tangram::Point3(1.0, 0.0, 1.0), Tangram::Point3(0.0, 1.0, 1.0)
+  };
+
   std::vector< std::vector<int> > prism_faces = {
-    {0, 2, 1}, {0, 1, 4, 3}, {1, 2, 5, 4}, {2, 0, 3, 5}, {3, 4, 5} };
+    {0, 2, 1}, {0, 1, 4, 3}, {1, 2, 5, 4}, {2, 0, 3, 5}, {3, 4, 5}
+  };
 
   Tangram::Plane_t<3> cutting_plane;
   cutting_plane.normal = Tangram::Vector3(0.0, -1.0/sqrt(2.0), 1.0/sqrt(2.0));
   cutting_plane.dist2origin = -0.35355339059327373;    
   
-  std::vector< std::vector<Tangram::Point3> > ref_cp_points(2);
-  std::vector< std::vector< std::vector<int> > > ref_cp_faces(2);
+  std::vector<std::vector<Tangram::Point3>> ref_cp_points(2);
+  std::vector<std::vector<std::vector<int>>> ref_cp_faces(2);
+
   ref_cp_points[0] = {
     Tangram::Point3(0.0, 0.0, 0.0), Tangram::Point3(1.0, 0.0, 0.0),
     Tangram::Point3(0.0, 1.0, 0.0), Tangram::Point3(0.0, 1.0, 1.0),
     Tangram::Point3(0.0, 0.0, 0.5), Tangram::Point3(0.0, 0.5, 1.0),
-    Tangram::Point3(1.0, 0.0, 0.5), Tangram::Point3(0.5, 0.5, 1.0) };
+    Tangram::Point3(1.0, 0.0, 0.5), Tangram::Point3(0.5, 0.5, 1.0)
+  };
+
   ref_cp_faces[0] = {
-    {0, 2, 1}, {0, 1, 6, 4}, {0, 4, 5, 3, 2}, {1, 2, 3, 7, 6}, {3, 5, 7}, {4, 6, 7, 5} };
+    {0, 2, 1}, {0, 1, 6, 4},
+    {0, 4, 5, 3, 2}, {1, 2, 3, 7, 6},
+    {3, 5, 7}, {4, 6, 7, 5}
+  };
 
   ref_cp_points[1] = {
     Tangram::Point3(0.0, 0.0, 1.0), Tangram::Point3(1.0, 0.0, 1.0),
     Tangram::Point3(0.0, 0.0, 0.5), Tangram::Point3(0.0, 0.5, 1.0),
-    Tangram::Point3(1.0, 0.0, 0.5), Tangram::Point3(0.5, 0.5, 1.0) };
-  ref_cp_faces[1] = {
-    {0, 2, 4, 1}, {0, 1, 5, 3}, {0, 3, 2}, {1, 4, 5}, {2, 3, 5, 4} };
+    Tangram::Point3(1.0, 0.0, 0.5), Tangram::Point3(0.5, 0.5, 1.0)
+  };
 
-  //Initialize MatPoly
+  ref_cp_faces[1] = {
+    {0, 2, 4, 1}, {0, 1, 5, 3}, {0, 3, 2}, {1, 4, 5}, {2, 3, 5, 4}
+  };
+
+  // check that vertices/faces of polygons below and above the plane match
+  auto check_polygons_matching = [&](Tangram::MatPoly<3> polys[2]) -> void {
+
+    for (int ihs = 0; ihs < 2; ihs++) {
+      int const nb_ref_cp_points = ref_cp_points[ihs].size();
+      int const nb_ref_cp_faces = ref_cp_faces[ihs].size();
+
+      std::vector<int> ref2res_vrt(nb_ref_cp_points, -1);
+      std::vector<int> ref2res_face(nb_ref_cp_faces, -1);
+
+      ASSERT_EQ(nb_ref_cp_points, polys[ihs].num_vertices());
+      ASSERT_EQ(nb_ref_cp_faces, polys[ihs].num_faces());
+
+      for (int i = 0; i < nb_ref_cp_points; i++) {
+        auto const& ref_point = ref_cp_points[ihs][i];
+        for (int j = 0; j < polys[ihs].num_vertices(); j++) {
+          if (Wonton::approxEq(ref_point, polys[ihs].vertex_point(j), dst_tol))
+            ref2res_vrt[i] = j;
+        }
+      }
+
+      for (int ivrt = 0; ivrt < nb_ref_cp_points; ivrt++)
+        ASSERT_NE(ref2res_vrt[ivrt], -1);
+
+      for (int i = 0; i < nb_ref_cp_faces; i++) {
+        auto const& face_ref = ref_cp_faces[ihs][i];
+        for (int j = 0; j < polys[ihs].num_faces(); j++) {
+          auto const& face_poly = polys[ihs].face_vertices(j);
+
+          if (face_ref.size() != face_poly.size()) continue;
+
+          int const iref_start =
+            std::distance(face_poly.begin(),
+              std::find(face_poly.begin(), face_poly.end(), ref2res_vrt[face_ref[0]]));
+
+          int const nfvrts = face_poly.size();
+          if (iref_start == nfvrts) continue;
+
+          bool matching_face = true;
+          for (int iv = 0; iv < nfvrts; iv++) {
+            int index = (iref_start + iv) % nfvrts;
+            if (face_poly[index] != ref2res_vrt[face_ref[iv]]) {
+              matching_face = false;
+              break;
+            }
+          }
+
+          if (matching_face) ref2res_face[i] = j;
+        }
+      }
+
+      for (int iface = 0; iface < nb_ref_cp_faces; iface++)
+        ASSERT_NE(ref2res_face[iface], -1);
+    }
+  };
+
+  // Initialize MatPoly
   Tangram::MatPoly<3> prism_matpoly;
   prism_matpoly.initialize(prism_points, prism_faces, dst_tol);
 
-  //Split the prism with the cutting plane
+  // Split the prism with the cutting plane
   Tangram::MatPoly<3> convex_polys[2];
   std::vector<double> cp_moments[2];
   split_convex_matpoly_r3d(prism_matpoly, cutting_plane, 
                            convex_polys[0], convex_polys[1], 
                            cp_moments[0], cp_moments[1], vol_tol, dst_tol);
 
-  //Check that vertices and faces of polygons below and above the plane match
-  for (int ihs = 0; ihs < 2; ihs++) {
-    ASSERT_EQ(ref_cp_points[ihs].size(), convex_polys[ihs].num_vertices());
-    std::vector<int> ref2res_vrt(ref_cp_points[ihs].size(), -1);
-    for (int i = 0; i < ref_cp_points[ihs].size(); i++)
-      for (int j = 0; j < convex_polys[ihs].num_vertices(); j++)
-        if (Wonton::approxEq(ref_cp_points[ihs][i], convex_polys[ihs].vertex_point(j), dst_tol))
-          ref2res_vrt[i] = j;
-    for (int ivrt = 0; ivrt < ref_cp_points[ihs].size(); ivrt++)
-      ASSERT_NE(ref2res_vrt[ivrt], -1);
+  // Check that vertices and faces of polygons below and above the plane match
+  check_polygons_matching(convex_polys);
 
-    std::vector<int> ref2res_face(ref_cp_faces[ihs].size(), -1);
-    ASSERT_EQ(ref_cp_faces[ihs].size(), convex_polys[ihs].num_faces());
-    for (int i = 0; i < ref_cp_faces[ihs].size(); i++)
-      for (int j = 0; j < convex_polys[ihs].num_faces(); j++) {
-        const std::vector<int>& face_vrts = convex_polys[ihs].face_vertices(j);
-        int nfvrts = static_cast<int>(face_vrts.size());
-        if (ref_cp_faces[ihs][i].size() != nfvrts) continue;
-        int iref_start = std::distance(face_vrts.begin(), 
-          std::find(face_vrts.begin(), face_vrts.end(), ref2res_vrt[ref_cp_faces[ihs][i][0]]));
-        if (iref_start == nfvrts) continue;
-
-        bool matching_face = true;
-        for (int iv = 0; iv < nfvrts; iv++)
-          if (face_vrts[(iref_start + iv)%nfvrts] != ref2res_vrt[ref_cp_faces[ihs][i][iv]]) {
-            matching_face = false;
-            break;
-          }
-
-        if (matching_face) ref2res_face[i] = j;
-      }
-    
-    for (int iface = 0; iface < ref_cp_faces[ihs].size(); iface++)
-      ASSERT_NE(ref2res_face[iface], -1);
-  }
-
-  //Use the class instead
-  std::vector< Tangram::MatPoly<3> > convex_matpolys = {prism_matpoly};
+  // Use the class instead
+  std::vector< Tangram::MatPoly<3> > convex_matpolys = { prism_matpoly };
   Tangram::SplitR3D split_poly(convex_matpolys, cutting_plane, vol_tol, dst_tol, true);
   Tangram::HalfSpaceSets_t<3> hs_poly_sets = split_poly();
 
-  ASSERT_EQ(hs_poly_sets.lower_halfspace_set.matpolys.size(), 1);
-  ASSERT_EQ(hs_poly_sets.upper_halfspace_set.matpolys.size(), 1);                                          
-  Tangram::MatPoly<3>* hs_poly_ptrs[2] = {&hs_poly_sets.lower_halfspace_set.matpolys[0],
-                                          &hs_poly_sets.upper_halfspace_set.matpolys[0]};
-  //Check that we obtained the same MatPoly's as before                                        
-  for (int ihs = 0; ihs < 2; ihs++) {
-    ASSERT_EQ(ref_cp_points[ihs].size(), hs_poly_ptrs[ihs]->num_vertices());
-    std::vector<int> ref2res_vrt(ref_cp_points[ihs].size(), -1);
-    for (int i = 0; i < ref_cp_points[ihs].size(); i++)
-      for (int j = 0; j < hs_poly_ptrs[ihs]->num_vertices(); j++)
-        if (Wonton::approxEq(ref_cp_points[ihs][i], hs_poly_ptrs[ihs]->vertex_point(j), dst_tol))
-          ref2res_vrt[i] = j;
-    for (int ivrt = 0; ivrt < ref_cp_points[ihs].size(); ivrt++)
-      ASSERT_NE(ref2res_vrt[ivrt], -1);
+  ASSERT_EQ(hs_poly_sets.lower_halfspace_set.matpolys.size(), unsigned(1));
+  ASSERT_EQ(hs_poly_sets.upper_halfspace_set.matpolys.size(), unsigned(1));
 
-    std::vector<int> ref2res_face(ref_cp_faces[ihs].size(), -1);
-    ASSERT_EQ(ref_cp_faces[ihs].size(), hs_poly_ptrs[ihs]->num_faces());
-    for (int i = 0; i < ref_cp_faces[ihs].size(); i++)
-      for (int j = 0; j < hs_poly_ptrs[ihs]->num_faces(); j++) {
-        const std::vector<int>& face_vrts = hs_poly_ptrs[ihs]->face_vertices(j);
-        int nfvrts = static_cast<int>(face_vrts.size());
-        if (ref_cp_faces[ihs][i].size() != nfvrts) continue;
-        int iref_start = std::distance(face_vrts.begin(), 
-          std::find(face_vrts.begin(), face_vrts.end(), ref2res_vrt[ref_cp_faces[ihs][i][0]]));
-        if (iref_start == nfvrts) continue;
+  Tangram::MatPoly<3> hs_poly_ptrs[2] = {
+    hs_poly_sets.lower_halfspace_set.matpolys[0],
+    hs_poly_sets.upper_halfspace_set.matpolys[0]
+  };
 
-        bool matching_face = true;
-        for (int iv = 0; iv < nfvrts; iv++)
-          if (face_vrts[(iref_start + iv)%nfvrts] != ref2res_vrt[ref_cp_faces[ihs][i][iv]]) {
-            matching_face = false;
-            break;
-          }
-
-        if (matching_face) ref2res_face[i] = j;
-      }
-    
-    for (int iface = 0; iface < ref_cp_faces[ihs].size(); iface++)
-      ASSERT_NE(ref2res_face[iface], -1);
-  }  
+  // Check that we obtained the same MatPoly's as before
+  check_polygons_matching(hs_poly_ptrs);
 
 #ifdef OUTPUT_TO_GMV
   std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list;
@@ -176,12 +182,15 @@ TEST(split_r3d, Mesh3D) {
     Tangram::Point3(0.0, 0.0, 1.0), Tangram::Point3(1.0, 0.0, 1.0),
     Tangram::Point3(1.0, 1.0, 1.0), Tangram::Point3(0.0, 1.0, 1.0),
     Tangram::Point3(0.4, 0.4, 0.8), Tangram::Point3(0.6, 0.4, 0.8),
-    Tangram::Point3(0.6, 0.6, 0.8), Tangram::Point3(0.4, 0.6, 0.8) };
+    Tangram::Point3(0.6, 0.6, 0.8), Tangram::Point3(0.4, 0.6, 0.8)
+  };
+
   std::vector< std::vector<int> > ncv_poly_faces = {
     {0, 1, 9, 8}, {1, 2, 10, 9}, {2, 3, 11, 10}, {3, 0, 8, 11},
     {4, 7, 6, 5}, {0, 4, 5, 1}, {1, 5, 6, 2}, {2, 6, 7, 3},
     {3, 7, 4, 0}, {12, 13, 14, 15}, {8, 9, 13, 12}, {9, 10, 14, 13},
-    {10, 11, 15, 14}, {11, 8, 12, 15} };
+    {10, 11, 15, 14}, {11, 8, 12, 15}
+  };
 
   //Tangram::Plane_t cutting_plane;
   cutting_plane.normal = Tangram::Vector3(0.0, 0.0, 1.0);
@@ -198,7 +207,8 @@ TEST(split_r3d, Mesh3D) {
     {0.0039999999999999983, 0.0019999999999999992, 0.00038333333333333307, 0.003741666666666664},
     {0.0039999999999999983, 0.0036166666666666656, 0.0019999999999999987, 0.0037416666666666653},
     {0.0039999999999999983, 0.0019999999999999992, 0.0036166666666666656, 0.0037416666666666653},
-    {0.0039999999999999992, 0.00038333333333333313, 0.0019999999999999996, 0.0037416666666666644} };  
+    {0.0039999999999999992, 0.00038333333333333313, 0.0019999999999999996, 0.0037416666666666644}
+  };
 
   //Initialize non-convex MatPoly
   Tangram::MatPoly<3> ncv_matpoly;
@@ -211,22 +221,25 @@ TEST(split_r3d, Mesh3D) {
 
   std::vector< Tangram::MatPoly<3> >* hs_poly_sets_ptr[2] = {
     &hs_poly_sets.lower_halfspace_set.matpolys,
-    &hs_poly_sets.upper_halfspace_set.matpolys };
+    &hs_poly_sets.upper_halfspace_set.matpolys
+  };
 
   std::vector<double>* hs_moments_ptrs[2] = {
     &hs_poly_sets.lower_halfspace_set.moments, 
-    &hs_poly_sets.upper_halfspace_set.moments }; 
+    &hs_poly_sets.upper_halfspace_set.moments
+  };
 
   //Check the number of MatPoly below and above the plane
-  ASSERT_EQ(hs_poly_sets_ptr[0]->size(), 14);
-  ASSERT_EQ(hs_poly_sets_ptr[1]->size(), 8);
+  ASSERT_EQ(hs_poly_sets_ptr[0]->size(), unsigned(14));
+  ASSERT_EQ(hs_poly_sets_ptr[1]->size(), unsigned(8));
 
   //Check consistency between moments values from r3d and MatPoly
   std::vector< std::vector<double> > acc_moments(2);
   for (int ihs = 0; ihs < 2; ihs++) {
     acc_moments[ihs].resize(4, 0.0);
-    for(int ipoly = 0; ipoly < hs_poly_sets_ptr[ihs]->size(); ipoly++) {
-      std::vector<double> cur_moments = (*hs_poly_sets_ptr[ihs])[ipoly].moments();
+    int const nb_hs_polys = hs_poly_sets_ptr[ihs]->size();
+    for(int ipoly = 0; ipoly < nb_hs_polys; ipoly++) {
+      auto cur_moments = (*hs_poly_sets_ptr[ihs])[ipoly].moments();
       for(int im = 0; im < 4; im++)
         acc_moments[ihs][im] += cur_moments[im];
     }
@@ -238,8 +251,9 @@ TEST(split_r3d, Mesh3D) {
   for(int im = 0; im < 4; im++)
     ASSERT_NEAR((*hs_moments_ptrs[1])[im], above_plane_moments[im], 1.0e-15);
 
-  //Confirm moments values for the components above the plane  
-  for(int ipoly = 0; ipoly < hs_poly_sets_ptr[1]->size(); ipoly++) {
+  //Confirm moments values for the components above the plane
+  int const nb_hs_polys = hs_poly_sets_ptr[1]->size();
+  for(int ipoly = 0; ipoly < nb_hs_polys; ipoly++) {
     std::vector<double> cur_moments = (*hs_poly_sets_ptr[1])[ipoly].moments();
     for(int im = 0; im < 4; im++)
       ASSERT_NEAR(cur_moments[im], above_plane_components_moments[ipoly][im], 1.0e-15);
@@ -252,6 +266,7 @@ TEST(split_r3d, Mesh3D) {
   for (int ihs = 0; ihs < 2; ihs++)
     for(int im = 0; im < 4; im++)
       combined_moments[im] += (*hs_moments_ptrs[ihs])[im];
+
   original_poly.assign_moments(combined_moments);
   for(int im = 0; im < 4; im++)
     ASSERT_NEAR(combined_moments[im], original_poly_copy.moments()[im], 1.0e-15);
@@ -262,29 +277,40 @@ TEST(split_r3d, Mesh3D) {
   Tangram::SplitR3D split_cv_poly(cv_matpolys, cutting_plane, vol_tol, dst_tol, true);
   Tangram::HalfSpaceSets_t<3> alt_hs_poly_sets = split_cv_poly();
 
-  std::vector< Tangram::MatPoly<3> >* alt_hs_poly_sets_ptr[2] = {
+  std::vector<Tangram::MatPoly<3>>* alt_hs_poly_sets_ptr[2] = {
     &alt_hs_poly_sets.lower_halfspace_set.matpolys,
-    &alt_hs_poly_sets.upper_halfspace_set.matpolys };
+    &alt_hs_poly_sets.upper_halfspace_set.matpolys
+  };
 
   //Check that we obtained the same MatPoly's as before                                        
   for (int ihs = 0; ihs < 2; ihs++) {                          
     ASSERT_EQ(hs_poly_sets_ptr[0]->size(), alt_hs_poly_sets_ptr[0]->size());
-    for(int ipoly = 0; ipoly < hs_poly_sets_ptr[ihs]->size(); ipoly++) {
-      ASSERT_EQ((*hs_poly_sets_ptr[ihs])[ipoly].num_vertices(), 
-                (*alt_hs_poly_sets_ptr[ihs])[ipoly].num_vertices());
-      for (int ivrt = 0; ivrt < (*hs_poly_sets_ptr[ihs])[ipoly].num_vertices(); ivrt++)
-        ASSERT_TRUE(approxEq((*hs_poly_sets_ptr[ihs])[ipoly].vertex_point(ivrt),
-                             (*alt_hs_poly_sets_ptr[ihs])[ipoly].vertex_point(ivrt), 1.0e-15));
-      ASSERT_EQ((*hs_poly_sets_ptr[ihs])[ipoly].num_faces(), 
-                (*alt_hs_poly_sets_ptr[ihs])[ipoly].num_faces()); 
-      for (int iface = 0; iface < (*hs_poly_sets_ptr[ihs])[ipoly].num_faces(); iface++) {
-        const std::vector<int>& face_vrts = 
-          (*hs_poly_sets_ptr[ihs])[ipoly].face_vertices(iface);
-        const std::vector<int>& alt_face_vrts = 
-          (*alt_hs_poly_sets_ptr[ihs])[ipoly].face_vertices(iface);
-        ASSERT_EQ(face_vrts.size(), alt_face_vrts.size());
-        for (int ivrt = 0; ivrt < face_vrts.size(); ivrt++)
-          ASSERT_EQ(face_vrts[ivrt], alt_face_vrts[ivrt]); 
+    int const count_hs_polys = hs_poly_sets_ptr[ihs]->size();
+
+    for(int ipoly = 0; ipoly < count_hs_polys; ipoly++) {
+      auto const& nb_ref = (*hs_poly_sets_ptr[ihs])[ipoly].num_vertices();
+      auto const& nb_alt = (*alt_hs_poly_sets_ptr[ihs])[ipoly].num_vertices();
+      ASSERT_EQ(nb_ref, nb_alt);
+
+      for (int ivrt = 0; ivrt < nb_ref; ivrt++) {
+        auto const& pt_ref = (*hs_poly_sets_ptr[ihs])[ipoly].vertex_point(ivrt);
+        auto const& pt_alt = (*alt_hs_poly_sets_ptr[ihs])[ipoly].vertex_point(ivrt);
+        ASSERT_TRUE(approxEq(pt_ref, pt_alt, 1.0e-15));
+      }
+
+      auto const& nb_faces_ref = (*hs_poly_sets_ptr[ihs])[ipoly].num_faces();
+      auto const& nb_faces_alt = (*alt_hs_poly_sets_ptr[ihs])[ipoly].num_faces();
+      ASSERT_EQ(nb_faces_ref, nb_faces_alt);
+
+      for (int iface = 0; iface < nb_faces_ref; iface++) {
+        auto const& face_ref = (*hs_poly_sets_ptr[ihs])[ipoly].face_vertices(iface);
+        auto const& face_alt = (*alt_hs_poly_sets_ptr[ihs])[ipoly].face_vertices(iface);
+        int const nb_points_ref = face_ref.size();
+        int const nb_points_alt = face_alt.size();
+
+        ASSERT_EQ(nb_points_ref, nb_points_alt);
+        for (int ivrt = 0; ivrt < nb_points_ref; ivrt++)
+          ASSERT_EQ(face_ref[ivrt], face_alt[ivrt]);
       }
     }
   }  
@@ -295,7 +321,7 @@ TEST(split_r3d, Mesh3D) {
   clip_poly.set_plane(cutting_plane);
 
   std::vector<double> clipper_moments = clip_poly();
-  ASSERT_EQ(clipper_moments.size(), 4);
+  ASSERT_EQ(clipper_moments.size(), unsigned(4));
 
   //Check that methods return the same values
   for(int im = 0; im < 4; im++)

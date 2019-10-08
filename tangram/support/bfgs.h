@@ -181,7 +181,6 @@ double linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_fun,
   double df0 = dot(cur_grad, dir);
   assert(df0 < 0.0);
   double alpha_tol = im_tols.arg_eps/dir.norm();
-  double fdiff_err;
 
   auto fval = [&obj_fun, &arg, &dir](double alpha) {
     return obj_fun(arg + alpha*dir);

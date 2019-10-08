@@ -134,8 +134,7 @@ class Driver {
     }
 
     if (insufficient_vol_tol) {
-      std::vector<IterativeMethodTolerances_t>& ims_tols_r = 
-        const_cast <std::vector<IterativeMethodTolerances_t>&> (ims_tols_);
+      auto& ims_tols_r = const_cast<std::vector<IterativeMethodTolerances_t>&>(ims_tols_);
       ims_tols_r[0].fun_eps /= 2;
     }
   }
@@ -144,20 +143,17 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct(Wonton::Executor_type const *executor = nullptr) {
-
-    bool distributed = false;
     int comm_rank = 0;
     int world_size = 1;
 
 #ifdef TANGRAM_ENABLE_MPI
+
     MPI_Comm mycomm = MPI_COMM_NULL;
     auto mpiexecutor = dynamic_cast<Wonton::MPIExecutor_type const *>(executor);
     if (mpiexecutor && mpiexecutor->mpicomm != MPI_COMM_NULL) {
       mycomm = mpiexecutor->mpicomm;
       MPI_Comm_rank(mycomm, &comm_rank);
       MPI_Comm_size(mycomm, &world_size);
-      if (world_size > 1)
-        distributed = true;
     }
 #endif
 
@@ -192,33 +188,36 @@ class Driver {
       //materials, the size of iMMCs vector is therefore (n_max-1).
       std::vector<std::vector<int>> iMMCs;
       for (int icell = 0; icell < ncells; icell++) {
-        int nmats = cell_num_mats_[icell];
-        if (nmats < 2)
+        int nb_mats = cell_num_mats_[icell];
+        int nb_mmcs = static_cast<int>(iMMCs.size());
+        if (nb_mats < 2)
           continue;
-        else if (nmats - 1 > iMMCs.size()) 
-          iMMCs.resize(nmats - 1);
-        iMMCs[nmats - 2].push_back(icell);
+        else if (nb_mats - 1 > nb_mmcs) {
+          iMMCs.resize(nb_mats - 1);
+        }
+        iMMCs[nb_mats - 2].push_back(icell);
       }
       cellmatpolys_.resize(ncells);
 
       //Reconstructor is set to operate on multi-material cells only.
       //To improve load balancing, we operate on the cells with the same
       //number of materials at a time
-      for (int inm = 0; inm < iMMCs.size(); inm++) {    
-        int nMMCs = iMMCs[inm].size();
+      int count = 2;
+      for (auto&& mm_cells : iMMCs) {
+        int const nMMCs = mm_cells.size();
         if (nMMCs == 0)
           continue;
 
         if (world_size == 1)
           gettimeofday(&xmat_begin_timeval, 0);
 
-        reconstructor.set_cell_indices_to_operate_on(iMMCs[inm]);
+        reconstructor.set_cell_indices_to_operate_on(mm_cells);
 
         //If reconstruction is performed for a single cell, we do not use transform:
         //this allows to use transform inside the reconstructor (e.g. to run
         //multiple threads for material order permutations in MOF)
         if (nMMCs == 1)
-          cellmatpolys_[iMMCs[inm][0]] = reconstructor(0);
+          cellmatpolys_[mm_cells[0]] = reconstructor(0);
         else {
           Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
 
@@ -226,19 +225,21 @@ class Driver {
                              make_counting_iterator(nMMCs),
                              MMCs_cellmatpolys.begin(), reconstructor);
           for (int immc = 0; immc < nMMCs; immc++)
-            cellmatpolys_[iMMCs[inm][immc]] = MMCs_cellmatpolys[immc];
+            cellmatpolys_[mm_cells[immc]] = MMCs_cellmatpolys[immc];
         }
 
         if (world_size == 1) {
           gettimeofday(&xmat_end_timeval, 0);
           timersub(&xmat_end_timeval, &xmat_begin_timeval, &xmat_diff_timeval);
-          xmat_cells_seconds = xmat_diff_timeval.tv_sec + 1.0E-6*xmat_diff_timeval.tv_usec; 
-          std::cout << "Transform Time for " << nMMCs << " " << 
-            inm + 2 << "-material cells (s): " <<
-            xmat_cells_seconds << ", mean time per cell (s): " << 
-            xmat_cells_seconds/nMMCs << std::endl;       
+          xmat_cells_seconds = xmat_diff_timeval.tv_sec + 1.0E-6*xmat_diff_timeval.tv_usec;
+
+          std::cout << "Transform Time for " << nMMCs << " "
+                    << count++ << "-material cells (s): "
+                    << xmat_cells_seconds << ", mean time per cell (s): "
+                    << xmat_cells_seconds/nMMCs << std::endl;
         }
       }
+
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;

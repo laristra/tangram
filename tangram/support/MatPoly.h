@@ -166,10 +166,10 @@ class MatPoly {
     @brief Constructor, undefined material ID corresponds to -1 value
     @param material_id  ID of the material this poly contains
   */
-  MatPoly(int const material_id = -1) : material_id_(material_id) {}
+  explicit MatPoly(int const material_id = -1) : material_id_(material_id) {}
 
   /*! Destructor */
-  ~MatPoly() {}
+  ~MatPoly() = default;
 
   /*!
    @brief Assignment operator
@@ -183,6 +183,7 @@ class MatPoly {
     nvertices_ = source_poly.nvertices_;
     nfaces_ = source_poly.nfaces_;
     moments_ = source_poly.moments_;
+    return *this;
   }
   
   /*!
@@ -412,7 +413,7 @@ class MatPoly {
   int material_id_;  // material ID of this matpoly
   std::vector< Point<D> > vertex_points_;  // coordinates of vertices
   std::vector< std::vector<int> > face_vertices_;  // vertices of faces
-  double dst_tol_; // distance tolerance
+  double dst_tol_ = 0.; // distance tolerance
   
   int nvertices_ = 0;  // number of vertices
   int nfaces_ = 0;  //number of faces
@@ -600,21 +601,27 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
       itri_pts.push_back({0, 1, 2});
     else {
       itri_pts.reserve(nvrts);
-      face_pts.push_back(Point3(face_moments[1]/face_moments[0],
-        face_moments[2]/face_moments[0], face_moments[3]/face_moments[0]));
+      face_pts.emplace_back(
+        face_moments[1]/face_moments[0],
+        face_moments[2]/face_moments[0],
+        face_moments[3]/face_moments[0]);
+
       for (int ivrt = 0; ivrt < nvrts; ivrt++)
         itri_pts.push_back({nvrts, ivrt, (ivrt + 1)%nvrts});
     }
 
-    for (int itri = 0; itri < itri_pts.size(); itri++) {
-      Vector3 vcp = cross(face_pts[itri_pts[itri][1]] - face_pts[itri_pts[itri][0]], 
-                          face_pts[itri_pts[itri][2]] - face_pts[itri_pts[itri][0]]);
+    for (auto&& point : itri_pts) {
+      Vector3 vcp = cross(face_pts[point[1]] - face_pts[point[0]],
+                          face_pts[point[2]] - face_pts[point[0]]);
 
-      moments[0] += dot(vcp, face_pts[itri_pts[itri][0]].asV());
-      for (int idim = 0; idim < 3; idim++)
-        for (int ivrt = 0; ivrt < 3; ivrt++)
-          moments[idim + 1] += vcp[idim]*pow(face_pts[itri_pts[itri][ivrt]][idim] + 
-                                             face_pts[itri_pts[itri][(ivrt + 1)%3]][idim], 2);
+      moments[0] += dot(vcp, face_pts[point[0]].asV());
+      for (int idim = 0; idim < 3; idim++) {
+        for (int ivrt = 0; ivrt < 3; ivrt++) {
+          int next = (ivrt + 1) % 3;
+          moments[idim + 1] += vcp[idim]*pow(face_pts[point[ivrt]][idim] +
+                                             face_pts[point[next]][idim], 2);
+        }
+      }
     }
   }
 
@@ -916,18 +923,20 @@ MatPoly<2> natural_selection(const std::vector< Point<2> >& poly_points,
     // i.e. if the respective edge is degenerate: points 
     // are considered coincident if the distance between them
     // is below the distance tolerance
-    if ((poly_points[ivrt] - poly_points[(ivrt + 1)%nvrts]).norm() >= dst_tol) {
+    int next = (ivrt + 1) % nvrts;
+    if ((poly_points[ivrt] - poly_points[next]).norm() >= dst_tol) {
       bool reference_match = false;
       if (reference_pts != nullptr) {
-        for (int irp = 0; irp < reference_pts->size(); irp++)
-          if ((poly_points[ivrt] - (*reference_pts)[irp]).norm() < dst_tol) {
-            unique_points.push_back((*reference_pts)[irp]);
+        for (auto&& reference_point : *reference_pts) {
+          if ((poly_points[ivrt] - reference_point).norm() < dst_tol) {
+            unique_points.push_back(reference_point);
             reference_match = true;
-            break;  
+            break;
           }
+        }
       }
 
-      if (!reference_match)
+      if (not reference_match)
         unique_points.push_back(poly_points[ivrt]);
     }
   }
@@ -960,11 +969,15 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   int nvrts = static_cast<int>(vertex_points.size());
   std::vector<Point3> unique_vrts;
   unique_vrts.reserve(nvrts);
+
   // We only store unique vertices, so we need a map from the original node indices
   // to unique node indices for when we process faces
   std::vector<int> orig2unique_vrt_ids(nvrts, -1);
+
+  int nb_unique_vertices = 0;
+
   for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-    for (int i = 0; i < unique_vrts.size(); i++) {
+    for (int i = 0; i < nb_unique_vertices; i++) {
       // Check if this point is coincident with a stored one: points 
       // are considered coincident if the distance between them is below
       // the distance tolerance
@@ -973,16 +986,16 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
         break;
       }
     }
+
     // If the point is unique, we store it
     if (orig2unique_vrt_ids[ivrt] == -1) {
-      orig2unique_vrt_ids[ivrt] = static_cast<int>(unique_vrts.size());
+      orig2unique_vrt_ids[ivrt] = nb_unique_vertices;
       bool reference_match = false;
       if (reference_pts != nullptr) {
         // We check if this point matches any of the reference ones
-        for (int irp = 0; irp < reference_pts->size(); irp++) {
-          const Point<3>& cur_ref_pt = (*reference_pts)[irp];
-          if ((vertex_points[ivrt] - cur_ref_pt).norm() < dst_tol) {            
-            unique_vrts.push_back(cur_ref_pt);            
+        for (auto const& reference_point : *reference_pts) {
+          if ((vertex_points[ivrt] - reference_point).norm() < dst_tol) {
+            unique_vrts.push_back(reference_point);
             reference_match = true;
             break; 
           }
@@ -991,7 +1004,9 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
       if (!reference_match)
         unique_vrts.push_back(vertex_points[ivrt]);
     }
+    nb_unique_vertices = unique_vrts.size();
   }
+
   unique_vrts.shrink_to_fit();
   nvrts = static_cast<int>(unique_vrts.size());
 
@@ -1016,13 +1031,13 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   // connections is in each vertice's network
   std::vector< std::vector<int> > connected_vrt_ids(nvrts);
   std::vector< std::vector< std::pair<int, int> > > vrt_in_faces(nvrts);
+
   for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-    for (int iface = 0; iface < face_unique_vrts.size(); iface++) {
-      const std::vector<int>& cur_face_vrts = face_unique_vrts[iface];
-      int nface_vrts = static_cast<int>(cur_face_vrts.size());
-      int id_in_face = std::distance(cur_face_vrts.begin(),
-                                     std::find(cur_face_vrts.begin(),
-                                               cur_face_vrts.end(), ivrt));
+    int iface = 0;
+    for (auto&& face : face_unique_vrts) {
+      int nface_vrts = static_cast<int>(face.size());
+      int id_in_face =
+        std::distance(face.begin(), std::find(face.begin(), face.end(), ivrt));
       
       if (id_in_face != nface_vrts) {
         // Vertex is in the current face
@@ -1030,12 +1045,13 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
         // We check if it has unknown connections with vertices of the current face
         for (int p0n1 = 0; p0n1 < 2; p0n1++) {
           int adj_vrt_face_id = (nface_vrts + id_in_face + 2*p0n1 - 1)%nface_vrts;
-          int adj_vrt_id = face_unique_vrts[iface][adj_vrt_face_id];
-          if (std::find(connected_vrt_ids[ivrt].begin(), connected_vrt_ids[ivrt].end(),
-                        adj_vrt_id) == connected_vrt_ids[ivrt].end())
-            connected_vrt_ids[ivrt].push_back(adj_vrt_id);
+          auto& adj_vrt_id = face[adj_vrt_face_id];
+          auto& list = connected_vrt_ids[ivrt];
+          if (std::find(list.begin(), list.end(), adj_vrt_id) == list.end())
+            list.push_back(adj_vrt_id);
         }
       }
+      iface++;
     }      
   }
 
@@ -1044,65 +1060,77 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   // so we need to check if those get dragged down the cliff as well
   bool dropped_connections;
   std::vector<int> hanging_vrts_ids;
+
   do {
     dropped_connections = false;
     for (int ivrt = 0; ivrt < nvrts; ivrt++) {
       int ncv = static_cast<int>(connected_vrt_ids[ivrt].size());
       if (ncv < 3) {
         hanging_vrts_ids.push_back(ivrt);
+
         // Others break connections first
         for (int icv = 0; icv < ncv; icv++) {
-          int icvrt = connected_vrt_ids[ivrt][icv];
-          connected_vrt_ids[icvrt].erase(
-            std::find(connected_vrt_ids[icvrt].begin(), 
-                      connected_vrt_ids[icvrt].end(), ivrt));
+          int index = connected_vrt_ids[ivrt][icv];
+          connected_vrt_ids[index].erase(
+            std::find(connected_vrt_ids[index].begin(),
+                      connected_vrt_ids[index].end(), ivrt));
         }
+
         if (ncv == 1) dropped_connections = true;
 
         bool third_wheel = false;
-        for (int icf = 0; icf < vrt_in_faces[ivrt].size(); icf++) {
-          int iface = vrt_in_faces[ivrt][icf].first;
-          int hvrt_fid = vrt_in_faces[ivrt][icf].second;
+
+        for (auto&& face : vrt_in_faces[ivrt]) {
+          int iface = face.first;
+          int hvrt_fid = face.second;
           // Check if the two others can connect by themselves
           if (ncv == 2) {
             int nface_vrts = static_cast<int>(face_unique_vrts[iface].size());
-            for (int icv = 0; icv < 2; icv++)
-              if ( (face_unique_vrts[iface][(hvrt_fid + 1)%nface_vrts] ==
-                    connected_vrt_ids[ivrt][(icv + 1)%2]) &&
-                   (face_unique_vrts[iface][(nface_vrts + hvrt_fid - 1)%nface_vrts] ==
-                    connected_vrt_ids[ivrt][icv]) ) {
+            for (int icv = 0; icv < 2; icv++) {
+              int const i = (hvrt_fid + 1) % nface_vrts;
+              int const j = (nface_vrts + hvrt_fid - 1) % nface_vrts;
+              int const a = (icv + 1) % 2;
+              int const b = icv;
+
+              if (face_unique_vrts[iface][i] == connected_vrt_ids[ivrt][a] and
+                  face_unique_vrts[iface][j] == connected_vrt_ids[ivrt][b]) {
                 third_wheel = true;
-                for (int i = 0; i < 2; i++)
-                  connected_vrt_ids[connected_vrt_ids[ivrt][i]].push_back(
-                    connected_vrt_ids[ivrt][(i + 1)%2]);
+                for (int k = 0; k < 2; k++) {
+                  auto const& cur = connected_vrt_ids[ivrt][k];
+                  auto const& nxt = connected_vrt_ids[ivrt][(k + 1) % 2];
+                  connected_vrt_ids[cur].push_back(nxt);
+                }
                 // And the hanger-on now has no one to cling to
                 connected_vrt_ids[ivrt].clear();
                 ncv = 0;
               }
+            }
           }
           // Gets evicted from the hosting face
-          face_unique_vrts[iface].erase(face_unique_vrts[iface].begin() + 
-                                        vrt_in_faces[ivrt][icf].second);
+          face_unique_vrts[iface].erase(face_unique_vrts[iface].begin() + face.second);
+
           // Tell the following face vertices about their change of address
-          for (int ifv = vrt_in_faces[ivrt][icf].second; 
-                   ifv < face_unique_vrts[iface].size(); ifv++) {
+          int nb_face_unique_verts = face_unique_vrts[iface].size();
+          for (int ifv = face.second; ifv < nb_face_unique_verts; ifv++) {
             int icur_vrt = face_unique_vrts[iface][ifv];
-            for (int i = 0; i < vrt_in_faces[icur_vrt].size(); i++)
-              if (vrt_in_faces[icur_vrt][i].first == iface) {
-                vrt_in_faces[icur_vrt][i].second--;
+            for (auto&& i : vrt_in_faces[icur_vrt]) {
+              if (i.first == iface) {
+                i.second--;
                 break;
               }
+            }
           }
+        }
 
-        }      
-        if (!third_wheel) dropped_connections = true;
+        if (not third_wheel)
+          dropped_connections = true;
       }
     }
   } while (dropped_connections);
 
   // Filter out degenerate faces
   int face_id = 0;
-  while (face_id < face_unique_vrts.size()) {
+  while (face_id < static_cast<int>(face_unique_vrts.size())) {
     // Check if this face is still at least a triangle
     if (face_unique_vrts[face_id].size() > 2) face_id++;
     else {
@@ -1165,18 +1193,16 @@ bool point_inside_matpoly(const MatPoly<3> mat_poly,
   else 
     mat_poly.facetize_decompose(convex_polys);
 
-  for (int icp = 0; icp < convex_polys.size(); icp++) {
-    const std::vector< Point<3> >& poly_pts = convex_polys[icp].points();
-
+  for (auto&& poly : convex_polys) {
+    auto const& poly_pts = poly.points();
     bool pt_inside_cur_poly = true;
-    for (int iface = 0; iface < convex_polys[icp].num_faces(); iface++) {
-      const std::vector<int>& iface_vrts = convex_polys[icp].face_vertices(iface);
+    for (int iface = 0; iface < poly.num_faces(); iface++) {
+      auto const& iface_vrts = poly.face_vertices(iface);
       Vector3 pt2vrt_vec;
       double pt2vrt_dst = 0.0;
       //Find a face vertex that is the farthest from the given point
-      for (int ifvrt = 0; ifvrt < iface_vrts.size(); ifvrt++) {
-        Vector3 cur_pt2vrt_vec = 
-          convex_polys[icp].vertex_point(iface_vrts[ifvrt]) - pt;
+      for (auto&& vertex : iface_vrts) {
+        auto cur_pt2vrt_vec = poly.vertex_point(vertex) - pt;
         double cur_vec_norm = cur_pt2vrt_vec.norm();
         if (cur_vec_norm > pt2vrt_dst) {
           pt2vrt_vec = cur_pt2vrt_vec;

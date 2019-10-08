@@ -419,7 +419,7 @@ class CellMatPoly {
                                              cell_materialids_.end(), mat_id));
     assert(cmp_mat_id < num_materials());
 
-    if (cmp_mat_id >= material_moments_.size())
+    if (static_cast<int>(material_moments_.size()) <= cmp_mat_id)
       material_moments_.resize(cmp_mat_id + 1);
 
     material_moments_[cmp_mat_id] = moments;
@@ -437,7 +437,7 @@ class CellMatPoly {
                                              cell_materialids_.end(), mat_id));
     assert(cmp_mat_id < num_materials());
 
-    if (cmp_mat_id >= material_moments_.size()) {
+    if (static_cast<int>(material_moments_.size()) <= cmp_mat_id) {
       material_moments_.resize(cmp_mat_id + 1);
       compute_material_moments(cmp_mat_id);
     }
@@ -1045,16 +1045,19 @@ MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
   const std::vector<int>& mp_faces = matpoly_faces(matpoly_id);
   int nfaces = static_cast<int>(mp_faces.size());
   std::vector<std::vector<int>> mf_vrts(nfaces);
+
   for (int iface = 0; iface < nfaces; iface++) {
     mf_vrts[iface] = matface_vertices(mp_faces[iface]);
+
     if (matpoly_facedirs_[matpoly_id][iface] == 0)
       std::reverse(mf_vrts[iface].begin(), mf_vrts[iface].end());
-    for (int ivrt = 0; ivrt < mf_vrts[iface].size(); ivrt++) {
-      int local_vrt_id = std::distance(mp_vrt_ids.begin(), 
-        std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(),
-                  mf_vrts[iface][ivrt]));
-                  
-      mf_vrts[iface][ivrt] = local_vrt_id;
+
+    for (auto&& vertex : mf_vrts[iface]) {
+      int local_vrt_id =
+        std::distance(mp_vrt_ids.begin(),
+          std::find(mp_vrt_ids.begin(), mp_vrt_ids.end(), vertex));
+
+      vertex = local_vrt_id;
     }
   }
 

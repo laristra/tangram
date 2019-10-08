@@ -113,12 +113,12 @@ public:
     double vol_tol = reconstructor_.iterative_methods_tolerances()[0].fun_eps;
     double dst_tol = reconstructor_.iterative_methods_tolerances()[0].arg_eps;
 
-    Plane_t<Dim> cutting_plane;
+    Plane_t<Dim> cutting_plane {};
     HalfSpaceSets_t<Dim> hs_sets; // Structure containing vectors of MatPoly's and their
                                   // aggregated moments for the respective half-spaces
 
     //Original vector of mixed MatPoly's consists of the cell's MatPoly
-    hs_sets.upper_halfspace_set.matpolys = {cell_matpoly};
+    hs_sets.upper_halfspace_set.matpolys = { cell_matpoly };
 
     //Create Splitter instance: assumes split MatPoly's are convex
     MatPoly_Splitter split_matpolys(hs_sets.upper_halfspace_set.matpolys, 
@@ -148,7 +148,7 @@ public:
         // finding the position of the cutting plane normally requires 
         // only computation of moments, which we assume to be possible 
         // without decomposing into tetrahedrons (e.g. if r3d is used). 
-        if (!convex_cell_ && (imat == 0)) {
+        if (not convex_cell_ and imat == 0) {
           hs_sets.upper_halfspace_set.matpolys.clear();
           cell_matpoly.decompose(hs_sets.upper_halfspace_set.matpolys);
         }
@@ -159,27 +159,30 @@ public:
 
         // Filter out MatPoly's with volumes below tolerance
         int ismp = 0;
-        while (ismp < single_mat_set_ptr->matpolys.size())
-          if (single_mat_set_ptr->matpolys[ismp].moments()[0] >= vol_tol) 
+        int nb_single_mat_points = single_mat_set_ptr->matpolys.size();
+        while (ismp < nb_single_mat_points) {
+          if (single_mat_set_ptr->matpolys[ismp].moments()[0] >= vol_tol) {
             ismp++;
-          else {
-            for (int im = 0; im < Dim + 1; im++)
-              single_mat_set_ptr->moments[im] -= 
+          } else {
+            for (int im = 0; im < Dim + 1; im++) {
+              single_mat_set_ptr->moments[im] -=
                 single_mat_set_ptr->matpolys[ismp].moments()[im];
+            }
 
-            single_mat_set_ptr->matpolys.erase(
-              single_mat_set_ptr->matpolys.begin() + ismp);                  
+            auto deleted = single_mat_set_ptr->matpolys.begin() + ismp;
+            single_mat_set_ptr->matpolys.erase(deleted);
+            nb_single_mat_points = single_mat_set_ptr->matpolys.size();
           }
+        }
       }
 
       // Add single-material poly's below the plane to CellMatPoly
-      for (int ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
-        MatPoly<Dim>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
-        cur_matpoly.set_mat_id(matid);
-        cmp_ptr->add_matpoly(cur_matpoly);
+      for (auto& cur_mat_poly : single_mat_set_ptr->matpolys) {
+        cur_mat_poly.set_mat_id(matid);
+        cmp_ptr->add_matpoly(cur_mat_poly);
       }
 
-      if (single_mat_set_ptr->matpolys.size() > 0)
+      if (not single_mat_set_ptr->matpolys.empty())
         cmp_ptr->assign_material_moments(matid, single_mat_set_ptr->moments);
     }
 

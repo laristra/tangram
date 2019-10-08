@@ -186,7 +186,7 @@ Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
                           double dst_tol,
                           const Tangram::Vector3& base_normal =
                             Tangram::Vector3(0.0, 0.0, 0.0)) {
-  int nbase_vrts = (int) base_pts.size();
+  int nbase_vrts = base_pts.size();
   std::vector< std::vector<int> > ifaces_vrts(nbase_vrts + 2);
   ifaces_vrts[0].resize(nbase_vrts);
   std::iota(ifaces_vrts[0].begin(), ifaces_vrts[0].end(), 0);
@@ -260,7 +260,7 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
                                  double dst_tol,
                                  const Tangram::Vector3& base_normal =
                                     Tangram::Vector3(0.0, 0.0, 0.0)) {
-  int nbase_vrts = (int) base_pts.size();
+  int nbase_vrts = base_pts.size();
   std::vector< std::vector<int> > ifaces_vrts(nbase_vrts + 2);
   ifaces_vrts[0].resize(nbase_vrts);
   std::iota(ifaces_vrts[0].begin(), ifaces_vrts[0].end(), 0);
