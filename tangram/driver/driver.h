@@ -78,6 +78,26 @@ class Driver {
   unsigned int dim() const {
     return mesh_.space_dimension();
   }
+
+ /*!
+    @brief Used iterative methods tolerances
+    @return  Tolerances for iterative methods,
+    here ims_tols_[0] correspond to methods for volumes
+    and ims_tols_[1] correspond to methods for centroids.
+    In particular, ims_tols_[0].arg_eps is a negligible
+    change in cutting distance, ims_tols_[0].fun_eps is a
+    negligible discrepancy in volume, ims_tols_[1].arg_eps
+    is a negligible change in the cutting plane orientation,
+    and ims_tols_[1].fun_eps is a negligible distance between
+    actual and reference centroids. The change in cutting plane
+    orientation is defined as the norm of change of the cutting
+    plane's normal, which is expressed in polar coordinates (angles).
+  */
+  const std::vector<IterativeMethodTolerances_t>&
+  iterative_methods_tolerances() const {
+    return ims_tols_;
+  }
+
   
   bool is_reconstruction_done() const { return reconstruction_done_; }
 
