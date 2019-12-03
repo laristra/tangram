@@ -5,13 +5,9 @@ sudo: required
 services:
 - docker
 
-python:
-  - "3.6"
+dist: xenial
 
 env:
-  global:
-    # Doctr deploy key for laristra/tangram
-    - secure: "VT6e1jEwGNu+71UYqtj12+dK4L/IBtoKdVgZ6NGb12QFgVzaB8x6sl8PTfS4xMa+Gav9z4x3qYBRHbhlU42TpKr/llFdFQHzTCVMk7Y8PVfF6vCmrqJWamcC6bVWnNEbJm4sdG/HK3XM8jKZdKRJVnUUskGcKiFzOMgl+GJaBTfHWr9XZhPW18k7rRWEeBevEsKPWGhD15ugno5kZYFkb4A1iV1nSap+VO3hSuQ3DqMzKYGyBBzBfSTdgWvqff6dFKgCA4Xr4AeMLppcG4cUyPyeSucF6Wq3PaOhHOksm15yA5a6LLcRD+Byabq4HU5qAYc0auMh3Csc1wqpu/fnCKKVKv9ZBB7EaWQYysa7RhFInYLSFS3RstVShENw2RtezIKNnIW+TaNlpYGMOGfbTngJnpjY54QNc6Gd22N/L4QKCpc+FwQHHukWAcf4fu/YqRhHWfoUaOOAMzedeChGWbxN+GnPy2QxxIKVUyxpS3+AwGv3cDD5vf9j47C7zPrw8L1FxNuFjYAioPAS+RxpYQGnqU+kCSvVtDmXBXPhA/2BZLqxrW1h1tnDx+kgVu2DXC5glv1PPdpUqg2cR9vdn8pmiKqSnED6AxGVwWmtwwKsrlQZGuLTpYSuCggcgqhbQSoZu3L1xSZj5LyFXvnZoGIGW7GzsjCSmKa0Ekkgmb0="
   matrix:
     - MPI=OFF DOCS=true
     - MPI=ON DOCKERHUB=true
@@ -33,6 +29,9 @@ script:
                  --build-arg DOCS=${DOCS}
                  -t ${TRAVIS_REPO_SLUG}:latest ${HOME}/docker/
 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_79204e1bdcac_key -iv $encrypted_79204e1bdcac_iv -in github_deploy_key_laristra_tangram.enc -out github_deploy_key_laristra_tangram -d
+
 after_success:
   - if [[ ${DOCKERHUB} = true && ${DOCKER_USERNAME} && ${DOCKER_PASSWORD} && ${TRAVIS_PULL_REQUEST} == false && ${TRAVIS_BRANCH} == master ]]; then
       docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
@@ -41,7 +40,14 @@ after_success:
   - if [[ ${DOCS} || -n ${TRAVIS_TAG} ]]; then
       cd ${HOME}/docker/tangram;
       CON=$(docker run -d ${TRAVIS_REPO_SLUG}:latest) && docker cp ${CON}:/home/portage/tangram/build/doc . ;
-      pyenv local 3.6;
-      pip install doctr;
-      doctr deploy . --built-docs doc/doxygen/html;
     fi
+
+deploy:
+  provider: pages:git
+  edge: true # opt into version 2 of the dpl
+  deploy_key: github_deploy_key_laristra_tangram
+  local_dir: doc/doxygen/html
+  verbose: true
+  on:
+    tags: true  # only deploy on tagged builds
+    condition:  ${DOCS} && -d doc/doxygen/html
