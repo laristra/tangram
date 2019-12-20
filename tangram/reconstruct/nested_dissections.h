@@ -150,7 +150,8 @@ public:
         // without decomposing into tetrahedrons (e.g. if r3d is used). 
         if (not convex_cell_ and imat == 0) {
           hs_sets.upper_halfspace_set.matpolys.clear();
-          cell_matpoly.decompose(hs_sets.upper_halfspace_set.matpolys);
+          std::vector<int> face_group_ids = reconstructor_.cell_face_group_ids(cell_id_, true);
+          cell_matpoly.decompose(hs_sets.upper_halfspace_set.matpolys, &face_group_ids);
         }
 
         hs_sets = split_matpolys();

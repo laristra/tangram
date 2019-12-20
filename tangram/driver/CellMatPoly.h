@@ -322,6 +322,7 @@ class CellMatPoly {
   /*!
     @brief Add a material "polygon" to 1D cell
     @param matid              ID of material in polygon
+    @param face_group_id      ID of the face group that material polygon is part of
     @param matpoly_point0     First point of material polygon
     @param matpoly_point1     Second point of material polygon
     @param point0_parentkind  Entity_kind of parent entity on which point 0 lies (can be UNKNOWN)
@@ -330,6 +331,7 @@ class CellMatPoly {
     @param point1_parentid    Local ID in cell of parent entity on which point 1 lies (can be -1)
   */
   void add_matpoly(int const matid,
+                   int const face_group_id,
                    double const matpoly_point0, double const matpoly_point1,
                    double dst_tol,
                    Entity_kind const point0_parentkind,
@@ -340,12 +342,14 @@ class CellMatPoly {
   /*!
     @brief Add a material polygon to 2D cell
     @param matid              ID of material in polygon
+    @param face_group_id      ID of the face group that material polygon is part of    
     @param numverts           Number of vertices of material polygon
     @param matpoly_points     List of points of material polygon listed ccw (numverts long)
     @param points_parentkind  Entity_kind of parent entity on which point lies (can be empty or numverts long)
     @param points_parentid    Local ID in cell of parent entity on which point lies (can be empty or numverts long)
   */
   void add_matpoly(int const matid,
+                   int const face_group_id,
                    int const numverts, Point<2> const * const matpoly_points,
                    double dst_tol,
                    Entity_kind const * const points_parentkind,
@@ -356,6 +360,7 @@ class CellMatPoly {
   /*!
     @brief Add a material polyhedron to 3D cell
     @param matid              ID of material in polygon
+    @param face_group_id      ID of the face group that material polygon is part of    
     @param numvertices        Number of vertices of material polygon
     @param matpoly_points     List of points of material polygon listed ccw (numverts long)
     @param points_parentkind  Entity_kind of parent entity on which each point lies (can be empty or numverts long)
@@ -367,6 +372,7 @@ class CellMatPoly {
     @param faces_parentid     Local ID in cell of parent entity on which point lies (can be empty or numfaces long)
   */
   void add_matpoly(int const matid,
+                   int const face_group_id,
                    int const numverts, Point<3> const * const matpoly_points,
                    double dst_tol,
                    Entity_kind const * const points_parentkind,
@@ -400,6 +406,27 @@ class CellMatPoly {
     std::vector<MatPoly<D>> mat_polys;
     for (int ipoly = 0; ipoly < num_matpolys_; ipoly++) {
       if (materialids_[ipoly] == mat_id)
+        mat_polys.push_back(get_ith_matpoly(ipoly));
+    }
+    return mat_polys;
+  }
+
+  /*!
+   @brief Extracts all polys belonging to a particular face group
+          and containing a given material as a vector of MatPoly objects
+   @param face_group_id  ID of the face group
+   @param mat_id  ID of the material for material polys to contain
+   @return  Vector of MatPoly objects belonging to a face group,
+            vector is empty if no polys of that group are present
+  */
+  std::vector<MatPoly<D>> get_face_group_matpolys(int const face_group_id,
+                                                  int const mat_id) const {
+    assert(!face_group_ids_.empty());
+
+    std::vector<MatPoly<D>> mat_polys;
+    for (int ipoly = 0; ipoly < num_matpolys_; ipoly++) {
+      if ((face_group_ids_[ipoly] == face_group_id) &&
+          (materialids_[ipoly] == mat_id))
         mat_polys.push_back(get_ith_matpoly(ipoly));
     }
     return mat_polys;
@@ -475,6 +502,7 @@ class CellMatPoly {
   //                      // Redundant but convenient!
   std::vector<int> materialids_;  // Material IDs of matpolys (can be repeated)
   std::vector<int> cell_materialids_;  // IDs of distinct materials in this CellMatPoly
+  std::vector<int> face_group_ids_;  // IDs of faces associated with matpolys (can be repeated)
   mutable std::vector< std::vector<double> > material_moments_;  // Aggregated moments for distinct material
   std::vector<std::vector<int>> matpoly_faces_;  // IDs of faces of matpolys
   std::vector<std::vector<int>> matpoly_facedirs_;  // Dirs of faces of matpolys
@@ -505,6 +533,7 @@ class CellMatPoly {
 /*!
   @brief Add a material "polygon" to 1D cell
   @param matid              ID of material in polygon
+  @param face_group_id      ID of the face group that material polygon is part of  
   @param matpoly_point0     First point of material polygon
   @param matpoly_point1     Second point of material polygon
   @param point0_parentkind  Entity_kind of parent entity on which point 0 lies (can be UNKNOWN)
@@ -514,6 +543,7 @@ class CellMatPoly {
 */
 template<int D>
 void CellMatPoly<D>::add_matpoly(int const matid,
+                                 int const face_group_id,
                                  double const matpoly_point0,
                                  double const matpoly_point1,
                                  double dst_tol,
@@ -527,6 +557,14 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     dst_tol_ = dst_tol;
   else {
     assert(dst_tol_ == dst_tol);
+  }
+
+  if (face_group_id == -1) {
+    assert(face_group_ids_.empty());
+  }
+  else {
+    assert(face_group_ids_.size() == num_matpolys_);
+    face_group_ids_.push_back(face_group_id);
   }
 
   int new_matpoly_id = num_matpolys_;
@@ -627,6 +665,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
 /*!
   @brief Add a material polygon to 2D cell
   @param matid              ID of material in polygon
+  @param face_group_id      ID of the face group that material polygon is part of  
   @param numverts           Number of vertices
   @param matpoly_points     List of points of material polygon listed ccw (numverts long)
   @param points_parentkind  Entity_kind of parent entity on which point lies (can be empty or numverts long)
@@ -634,6 +673,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
 */
 template<int D>
 void CellMatPoly<D>::add_matpoly(int const matid,
+                                 int const face_group_id,
                                  int const numverts,
                                  Point<2> const * const matpoly_points,
                                  double dst_tol,
@@ -647,6 +687,14 @@ void CellMatPoly<D>::add_matpoly(int const matid,
   else {
     assert(dst_tol_ == dst_tol);
   }  
+
+  if (face_group_id == -1) {
+    assert(face_group_ids_.empty());
+  }
+  else {
+    assert(face_group_ids_.size() == num_matpolys_);
+    face_group_ids_.push_back(face_group_id);
+  }
 
   int new_matpoly_id = num_matpolys_;
   if (std::find(cell_materialids_.begin(), cell_materialids_.end(), matid) == 
@@ -765,6 +813,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
 /*!
   @brief Add a material polyhedron to 3D cell
   @param matid              ID of material in polygon
+  @param face_group_id      ID of the face group that material polygon is part of  
   @param matpoly_points     List of points of material polygon listed ccw (numverts long)
   @param points_parentkind  Entity_kind of parent entity on which each point lies (can be empty or numverts long)
   @param points_parentid    Local ID in cell of parent entity on which each point lies (can be empty or numverts long)
@@ -778,8 +827,9 @@ void CellMatPoly<D>::add_matpoly(int const matid,
 */
 
 template<int D>
-void CellMatPoly<D>::add_matpoly(int matid,
-                                 int numverts,
+void CellMatPoly<D>::add_matpoly(int const matid,
+                                 int const face_group_id,
+                                 int const numverts,
                                  Point<3> const * const matpoly_points,
                                  double dst_tol,
                                  Entity_kind const * const points_parentkind,
@@ -795,7 +845,15 @@ void CellMatPoly<D>::add_matpoly(int matid,
   else {
     assert(dst_tol_ == dst_tol);
   }
-  
+
+  if (face_group_id == -1) {
+    assert(face_group_ids_.empty());
+  }
+  else {
+    assert(face_group_ids_.size() == num_matpolys_);
+    face_group_ids_.push_back(face_group_id);
+  }
+
   int new_matpoly_id = num_matpolys_;
   if (std::find(cell_materialids_.begin(), cell_materialids_.end(), matid) == 
       cell_materialids_.end())
@@ -979,7 +1037,7 @@ void CellMatPoly<D>::add_matpoly(int matid,
 template <>
 inline
 void CellMatPoly<2>::add_matpoly(const MatPoly<2>& mat_poly) {
-  add_matpoly(mat_poly.mat_id(), mat_poly.num_vertices(), 
+  add_matpoly(mat_poly.mat_id(), mat_poly.face_group_id(), mat_poly.num_vertices(), 
               &mat_poly.points()[0], mat_poly.dst_tol(), nullptr, nullptr,
               nullptr, nullptr);
 }
@@ -1001,7 +1059,7 @@ void CellMatPoly<3>::add_matpoly(const MatPoly<3>& mat_poly) {
     faces_vrts.insert(faces_vrts.end(), face_ivrts.begin(), face_ivrts.end());
   }
 
-  add_matpoly(mat_poly.mat_id(), mat_poly.num_vertices(), 
+  add_matpoly(mat_poly.mat_id(), mat_poly.face_group_id(), mat_poly.num_vertices(), 
               &mat_poly.points()[0], mat_poly.dst_tol(), nullptr, nullptr,
               nfaces, &nface_vrts[0], &faces_vrts[0], nullptr, nullptr);
 }
@@ -1020,6 +1078,8 @@ MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
   std::vector<Point<2>> mp_pts = matpoly_points(matpoly_id);
   MatPoly<2> matpoly(matpoly_matid(matpoly_id));
   matpoly.initialize(mp_pts, dst_tol_);
+  if (!face_group_ids_.empty())
+    matpoly.set_face_group_id(face_group_ids_[matpoly_id]);
   
   return matpoly;
 }
@@ -1063,6 +1123,8 @@ MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
 
   MatPoly<3> matpoly(matpoly_matid(matpoly_id));
   matpoly.initialize(mp_pts, mf_vrts, dst_tol_);
+  if (!face_group_ids_.empty())
+    matpoly.set_face_group_id(face_group_ids_[matpoly_id]);
   
   return matpoly;
 }

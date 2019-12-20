@@ -224,7 +224,8 @@ TEST(split_r2d, ConvexPoly) {
   for (int ihs = 0; ihs < nb_hsp_polys_lower; ihs++) {
     int nverts = hsp_lower_matpolys[ihs].num_vertices();
     auto vertices = hsp_lower_matpolys[ihs].points();
-    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(), dst_tol,
+    cellmatpoly_list[0]->add_matpoly(ihs, hsp_lower_matpolys[ihs].face_group_id(), 
+                                     nverts, vertices.data(), dst_tol,
                                      nullptr, nullptr, nullptr, nullptr);
   }
   Tangram::write_to_gmv(cellmatpoly_list, "convex_sp_lower.gmv");
@@ -235,7 +236,8 @@ TEST(split_r2d, ConvexPoly) {
   for (int ihs = 0; ihs < nb_hsp_polys_upper; ihs++) {
     int nverts = hsp_upper_matpolys[ihs].num_vertices();
     auto vertices = hsp_upper_matpolys[ihs].points();
-    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(), dst_tol,
+    cellmatpoly_list[0]->add_matpoly(ihs, hsp_upper_matpolys[ihs].face_group_id(), 
+                                     nverts, vertices.data(), dst_tol,
                                      nullptr, nullptr, nullptr, nullptr);
   }
   Tangram::write_to_gmv(cellmatpoly_list, "convex_sp_upper.gmv");
@@ -307,7 +309,8 @@ TEST(split_r2d, NonConvexPoly) {
   for (int ihs = 0; ihs < nb_hsp_polys_lower; ihs++) {
     int nverts = hsp_lower_matpolys[ihs].num_vertices();
     auto vertices = hsp_lower_matpolys[ihs].points();
-    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(), dst_tol,
+    cellmatpoly_list[0]->add_matpoly(ihs, hsp_lower_matpolys[ihs].face_group_id(),
+                                     nverts, vertices.data(), dst_tol,
                                      nullptr, nullptr, nullptr, nullptr);
   }
   Tangram::write_to_gmv(cellmatpoly_list, "nonconvex_sp_lower.gmv");
@@ -318,7 +321,8 @@ TEST(split_r2d, NonConvexPoly) {
   for (int ihs = 0; ihs < nb_hsp_polys_upper; ihs++) {
     int nverts = hsp_upper_matpolys[ihs].num_vertices();
     auto vertices = hsp_upper_matpolys[ihs].points();
-    cellmatpoly_list[0]->add_matpoly(ihs, nverts, vertices.data(), dst_tol,
+    cellmatpoly_list[0]->add_matpoly(ihs, hsp_upper_matpolys[ihs].face_group_id(),
+                                     nverts, vertices.data(), dst_tol,
                                      nullptr, nullptr, nullptr, nullptr);
   }
   Tangram::write_to_gmv(cellmatpoly_list, "nonconvex_sp_upper.gmv");

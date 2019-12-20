@@ -163,7 +163,8 @@ TEST(split_r3d, Mesh3D) {
       nface_vrts[iface] = face_ivrts.size();
       faces_vrts.insert(faces_vrts.end(), face_ivrts.begin(), face_ivrts.end());
     }
-    cellmatpoly_list[0]->add_matpoly(ihs, convex_polys[ihs].num_vertices(), 
+    cellmatpoly_list[0]->add_matpoly(ihs, convex_polys[ihs].face_group_id(), 
+                                     convex_polys[ihs].num_vertices(), 
                                      &convex_polys[ihs].points()[0],
                                      nullptr, nullptr,
                                      convex_polys[ihs].num_faces(), 
@@ -340,7 +341,8 @@ TEST(split_r3d, Mesh3D) {
         nface_vrts[iface] = face_ivrts.size();
         faces_vrts.insert(faces_vrts.end(), face_ivrts.begin(), face_ivrts.end());
       }
-      cellmatpoly_list[0]->add_matpoly(ihs, sub_polys[ihs][ipoly].num_vertices(), 
+      cellmatpoly_list[0]->add_matpoly(ihs, sub_polys[ihs][ipoly].face_group_id(),
+                                       sub_polys[ihs][ipoly].num_vertices(), 
                                        &sub_polys[ihs][ipoly].points()[0],
                                        nullptr, nullptr,
                                        sub_polys[ihs][ipoly].num_faces(), 

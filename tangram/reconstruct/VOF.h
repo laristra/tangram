@@ -248,6 +248,30 @@ public:
     return mat_poly;
   }
 
+  /*!
+    @brief IDs of the cell's faces to be associated with MatPoly's
+    in the cell's decomposition
+    @param[in] cellID Cell index
+    @return  IDs of the cell's faces
+  */
+  std::vector<int> cell_face_group_ids(const int cellID,
+                                       const bool faceted_faces) const { 
+    std::vector<int> cfaces, cfdirs;
+    mesh_.cell_get_faces_and_dirs(cellID, &cfaces, &cfdirs);
+    
+    if (!faceted_faces || Dim == 2)
+      return cfaces;
+
+    std::vector<int> facets_group_ids;
+    for (int icf = 0; icf < cfaces.size(); icf++) {
+      std::vector<int> fnodes;
+      mesh_.face_get_nodes(cfaces[icf], &fnodes);
+      facets_group_ids.insert(facets_group_ids.end(), fnodes.size(), cfaces[icf]);
+    }
+
+    return facets_group_ids;
+}
+
 private:
   const Mesh_Wrapper& mesh_;
   const std::vector<IterativeMethodTolerances_t> ims_tols_;
