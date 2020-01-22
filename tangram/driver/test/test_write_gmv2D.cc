@@ -77,7 +77,7 @@ TEST(WriteCellMatPoly, Mesh2D) {
   vparentkind0[3] = Tangram::Entity_kind::NODE;
   vparentid0[3] = 3;                            // parent is node 3
 
-  cellmatpoly.add_matpoly(0, 4, &(points0[0]), dst_tol, &(vparentkind0[0]),
+  cellmatpoly.add_matpoly(0, -1, 4, &(points0[0]), dst_tol, &(vparentkind0[0]),
                           &(vparentid0[0]), nullptr, nullptr);
 
 
@@ -97,7 +97,7 @@ TEST(WriteCellMatPoly, Mesh2D) {
   vparentkind1[2] = Tangram::Entity_kind::NODE;
   vparentid1[2] = 4;                            // parent is node 2
 
-  cellmatpoly.add_matpoly(1, 3, &(points1[0]), dst_tol, &(vparentkind1[0]),
+  cellmatpoly.add_matpoly(1, -1, 3, &(points1[0]), dst_tol, &(vparentkind1[0]),
                           &(vparentid1[0]), nullptr, nullptr);
 
   // Most cells have 1 material

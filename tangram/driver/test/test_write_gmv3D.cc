@@ -114,7 +114,7 @@ TEST(WriteCellMatPoly, Mesh3D) {
     for (int j = 0; j < nfv0[i]; j++)
        fverts0_flat.push_back(fverts0_in[i][j]);
 
-  cellmatpoly.add_matpoly(0, 8, &(points0[0]), dst_tol, &(vparentkind0[0]),
+  cellmatpoly.add_matpoly(0, -1, 8, &(points0[0]), dst_tol, &(vparentkind0[0]),
                           &(vparentid0[0]), 6, &(nfv0[0]), &(fverts0_flat[0]),
                           nullptr, nullptr);
 
@@ -163,7 +163,7 @@ TEST(WriteCellMatPoly, Mesh3D) {
        fverts1_flat.push_back(fverts1_in[i][j]);
 
 
-  cellmatpoly.add_matpoly(1, 6, &(points1[0]), dst_tol, &(vparentkind1[0]),
+  cellmatpoly.add_matpoly(1, -1, 6, &(points1[0]), dst_tol, &(vparentkind1[0]),
                           &(vparentid1[0]), 5, &(nfv1[0]), &(fverts1_flat[0]),
                           nullptr, nullptr);
 

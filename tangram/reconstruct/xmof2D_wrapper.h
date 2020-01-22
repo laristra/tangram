@@ -187,7 +187,7 @@ namespace Tangram {
             Tangram::Entity_kind::UNKNOWN_KIND : Tangram::Entity_kind::FACE;
 
           }
-          (*cell_mat_poly).add_matpoly(subcell.get_material_index(), nvrts,
+          (*cell_mat_poly).add_matpoly(subcell.get_material_index(), -1, nvrts,
                                        &subcell_vrts[0], dst_tol,
                                        &vrts_parentkind[0], &vrts_iparent[0],
                                        &sides_parentkind[0], &sides_iparent[0]);
@@ -201,7 +201,7 @@ namespace Tangram {
           cell_vrts[ivrt] = Tangram::Point<Dim>(ccell.get_node_crd(ivrt).x,
                                                 ccell.get_node_crd(ivrt).y);
         (*cell_mat_poly).add_matpoly(xmof_ir->get_cell_materials(cellID)[0],
-                                     nvrts, &cell_vrts[0], dst_tol, 
+                                     -1, nvrts, &cell_vrts[0], dst_tol, 
                                      NULL, NULL, NULL, NULL);
       }
 

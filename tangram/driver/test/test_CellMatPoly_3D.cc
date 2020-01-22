@@ -142,7 +142,7 @@ TEST(CellMatPoly, Mesh3D) {
   fmatpolys0.push_back({0, 1});
   fmatpolys0.push_back({0, -1});
 
-  cellmatpoly.add_matpoly(0, 8, &(points0[0]), dst_tol, &(vparentkind0[0]),
+  cellmatpoly.add_matpoly(0, -1, 8, &(points0[0]), dst_tol, &(vparentkind0[0]),
                           &(vparentid0[0]), 6, &(nfv0[0]), &(fverts0_flat[0]),
                           &(fparentkind0[0]), &(fparentid0[0]));
 
@@ -208,7 +208,7 @@ TEST(CellMatPoly, Mesh3D) {
   fmatpolys1.push_back({1, -1});
   fmatpolys1.push_back({0, 1});  // 2nd face is internal; cncted to matpolys 0,1
 
-  cellmatpoly.add_matpoly(1, 6, &(points1[0]), dst_tol, &(vparentkind1[0]),
+  cellmatpoly.add_matpoly(1, -1, 6, &(points1[0]), dst_tol, &(vparentkind1[0]),
                           &(vparentid1[0]), 5, &(nfv1[0]), &(fverts1_flat[0]),
                           nullptr, nullptr);
 

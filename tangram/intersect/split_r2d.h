@@ -105,9 +105,9 @@ inline
 
 inline
 void get_intersection_moments(const MatPoly<2>& mat_poly,
-                                const r2d_poly& r2dpoly,
-                                std::vector<double>& intersection_moments,
-                                bool convex_matpoly) {   
+                              const r2d_poly& r2dpoly,
+                              std::vector<double>& intersection_moments,
+                              bool convex_matpoly) {   
   const int POLY_ORDER = 1;
   int nmoments = R2D_NUM_MOMENTS(POLY_ORDER);
   r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
@@ -322,8 +322,11 @@ class SplitR2D {
                                cur_moments[0], cur_moments[1],
                                vol_tol_, dst_tol_);
 
+      int cur_face_group_id = (*convex_polys)[icp].face_group_id();
       for (int ihs = 0; ihs < 2; ihs++)
         if (cur_subpolys[ihs].num_vertices() != 0) {
+          if (cur_face_group_id >= 0)
+            cur_subpolys[ihs].set_face_group_id(cur_face_group_id);
           hs_subpolys_ptrs[ihs]->emplace_back(cur_subpolys[ihs]);
           for (int im = 0; im < 3; im++)
             (*hs_moments_ptrs[ihs])[im] += cur_moments[ihs][im];

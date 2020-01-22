@@ -98,7 +98,7 @@ TEST(CellMatPoly, Mesh2D) {
   fmatpolys0.push_back({0, -1});
   fmatpolys0.push_back({0, -1});
 
-  cellmatpoly.add_matpoly(0, 4, &(points0[0]), dst_tol, &(vparentkind0[0]),
+  cellmatpoly.add_matpoly(0, -1, 4, &(points0[0]), dst_tol, &(vparentkind0[0]),
                           &(vparentid0[0]), &(fparentkind0[0]),
                           &(fparentid0[0]));
 
@@ -134,7 +134,7 @@ TEST(CellMatPoly, Mesh2D) {
   fmatpolys1.push_back({1, -1});
   fmatpolys1.push_back({1, -1});
 
-  cellmatpoly.add_matpoly(1, 3, &(points1[0]), dst_tol, &(vparentkind1[0]),
+  cellmatpoly.add_matpoly(1, -1, 3, &(points1[0]), dst_tol, &(vparentkind1[0]),
                           &(vparentid1[0]), nullptr, nullptr);
 
 
