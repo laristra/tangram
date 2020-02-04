@@ -870,6 +870,8 @@ Vector<2> MatPoly<2>::face_normal_and_group(int const face_id,
 
     std::vector<Point2> group_poly_points = face_points(face_id);
     group_poly_points.push_back(matpoly_cen);
+
+    face_group_polys->push_back(MatPoly<2>(material_id_));
     (*face_group_polys)[0].initialize(group_poly_points, dst_tol_);
     (*face_group_polys)[0].set_face_group_id(face_group_id);
   }
