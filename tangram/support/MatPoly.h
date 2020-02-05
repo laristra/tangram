@@ -856,7 +856,7 @@ Vector<2> MatPoly<2>::face_normal_and_group(int const face_id,
 
   Vector<2> fnormal(
     (vertex_points_[isv][1] - vertex_points_[ifv][1])/flen,
-    -(vertex_points_[isv][0] - vertex_points_[isv][0])/flen);
+    -(vertex_points_[isv][0] - vertex_points_[ifv][0])/flen);
 
   if (face_group_polys != nullptr) {
     if (moments_.empty()) 
