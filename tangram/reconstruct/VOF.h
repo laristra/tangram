@@ -129,9 +129,8 @@ public:
                           const std::vector< MatPoly<Dim> >& mixed_polys,
                           Plane_t<Dim>& cutting_plane,
                           const bool planar_faces) const {
-#ifdef DEBUG
     double vol_tol = ims_tols_[0].fun_eps;
-#endif
+
     std::vector<int> istencil_cells;
     mesh_.cell_get_node_adj_cells(cellID, Entity_type::ALL, &istencil_cells);
     istencil_cells.insert(istencil_cells.begin(), cellID);
@@ -181,14 +180,14 @@ public:
     std::vector<double> clip_res = solve_cut_dst();
     cutting_plane.dist2origin = clip_res[0];
 
-#ifdef DEBUG
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
-    if (cur_vol_err > vol_tol)
+    if (cur_vol_err > vol_tol) {
       std::cerr << "VOF for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
         " iteration(s) achieved error in volume for material " <<
         matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
-#endif
+      throw std::runtime_error("Target error in volume exceeded, terminating...");
+    }
   }
 
   /*!
