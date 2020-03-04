@@ -366,14 +366,12 @@ private:
 
     double target_vol = cell_mat_vfracs_[cellID][cellMatID]*mesh_.cell_volume(cellID);
 
-#ifdef DEBUG
     double vol_tol = ims_tols_[0].fun_eps;
     //Confirm that the clipped volume is smaller than the volume of MatPoly's
     double mixed_polys_vol = 0.0;
     for (int ipoly = 0; ipoly < mixed_polys.size(); ipoly++)
       mixed_polys_vol += mixed_polys[ipoly].moments()[0];
     assert(target_vol < mixed_polys_vol + vol_tol);
-#endif
 
     //Create cutting distance solver
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
@@ -382,7 +380,6 @@ private:
     solve_cut_dst.set_target_volume(target_vol); 
     std::vector<double> clip_res = solve_cut_dst();
 
-#ifdef DEBUG
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol) {
@@ -396,8 +393,8 @@ private:
         ", volume tolerance is " << vol_tol << 
         ", volume of the split MatPoly's is " << mixed_polys_vol << 
         ", target volume is " << target_vol << std::endl;
+      throw std::runtime_error("Target error in volume exceeded, terminating...");
     }
-#endif   
 
     Point<Dim> mat_centroid;
     for (int idim = 0; idim < Dim; idim++)

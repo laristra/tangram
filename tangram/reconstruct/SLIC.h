@@ -152,15 +152,16 @@ namespace Tangram {
           std::vector<double> clip_res = solve_cut_dst();
           cutting_plane.dist2origin = clip_res[0];
 
-#ifdef DEBUG
           // Check if the resulting volume matches the reference value
           double cur_vol_err = std::fabs(clip_res[1] - target_vol);
-          if (cur_vol_err > vol_tol)
+          if (cur_vol_err > vol_tol) {
             std::cerr << "SLIC for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
               " iteration(s) achieved error in volume for material " <<
               cell_mat_ids_[iStart + iMat] << " is " << cur_vol_err <<
               ", volume tolerance is " << vol_tol << std::endl;
-#endif
+            throw std::runtime_error("Target error in volume exceeded, terminating...");
+          }
+
           hs_sets = split_matpolys();
 
           //Chopped off single-material MatPoly's are below the plane
