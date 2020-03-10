@@ -5,22 +5,48 @@
 ]]
 
 #-----------------------------------------------------------------------------~#
+project(tangram_driver)
+
+add_library(tangram_driver INTERFACE)
+
+target_include_directories(tangram_driver INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIRECTORY}>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIRECTORY}>
+  $<INSTALL_INTERFACE:include>)
 
 
-#-----------------------------------------------------------------------------~#
-
-# Add header files
-set(driver_HEADERS
+set(tangram_driver_HEADERS
   driver.h
   CellMatPoly.h
   write_to_gmv.h
-  PARENT_SCOPE
 )
 
-# Add source files
-set(driver_SOURCES
-    PARENT_SCOPE
-)
+# Not yet allowed for INTERFACE libraries
+#
+# set_target_properties(tangram_driver PROPERTIES
+#   PUBLIC_HEADER "${tangram_driver_HEADERS}")
+#
+# Directly install files instead
+#
+install(FILES ${tangram_driver_HEADERS} DESTINATION include/tangram/driver)
+
+
+target_link_libraries(tangram_driver INTERFACE tangram_support)
+target_link_libraries(tangram_driver INTERFACE tangram_reconstruct)
+target_link_libraries(tangram_driver INTERFACE tangram_intersect)
+
+
+target_link_libraries(tangram INTERFACE tangram_driver)
+
+install(TARGETS tangram_driver
+  EXPORT tangram_LIBRARIES
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  PUBLIC_HEADER DESTINATION include/tangram/driver
+  INCLUDES DESTINATION include/tangram/driver
+  )
+
 
 # Unit tests
 
@@ -29,35 +55,35 @@ if (ENABLE_UNIT_TESTS)
 
     cinch_add_unit(test_CellMatPoly_1D
       SOURCES test/test_CellMatPoly_1D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+      LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
   
     cinch_add_unit(test_CellMatPoly_2D
       SOURCES test/test_CellMatPoly_2D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+      LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
     
     cinch_add_unit(test_CellMatPoly_3D
       SOURCES test/test_CellMatPoly_3D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+      LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
 
     cinch_add_unit(test_write_gmv2D
       SOURCES test/test_write_gmv2D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+      LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
     
     cinch_add_unit(test_write_gmv3D
       SOURCES test/test_write_gmv3D.cc
-      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
+      LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
