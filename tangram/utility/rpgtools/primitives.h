@@ -37,7 +37,7 @@ inline double pow2(double x) { return x*x; }
  @param[in] rotation_angle Angle of rotation
  @return Rotation matrix
 */
-Tangram::Matrix rotation_matrix(const Tangram::Vector3& axis,
+Tangram::Matrix rotation_matrix(const Wonton::Vector<3>& axis,
                                 double rotation_angle) {
   Tangram::Matrix rot_matrix(3, 3);
   double cosang = cos(rotation_angle);
@@ -68,27 +68,27 @@ Tangram::Matrix rotation_matrix(const Tangram::Vector3& axis,
  @param[in] nsamples Number of points representing the circle
  @return Points representing the circle which are ordered ccw
 */
-std::vector<Tangram::Point3> circle3d(const Tangram::Point3& center,
+std::vector<Wonton::Point<3>> circle3d(const Wonton::Point<3>& center,
                                       double radius,
-                                      const Tangram::Vector3& normal,
+                                      const Wonton::Vector<3>& normal,
                                       int nsamples,
                                       double dst_tol) {
   //We start with the i vector aligned with the x-axis and
   //the j vector aligned with the x-axis, then pick the one with 
   //the larger projection
-  Tangram::Vector<3> test_vec[2];
+  Wonton::Vector<3> test_vec[2];
   for (int iv = 0; iv < 2; iv++) {
     test_vec[iv].axis(iv);
     //We project the current vector on the circle's plane
     test_vec[iv] = test_vec[iv] - Wonton::dot(test_vec[iv], normal)*normal;
   }
-  Tangram::Vector<3> start_vec = (test_vec[0].norm() >= test_vec[1].norm()) ?
+  Wonton::Vector<3> start_vec = (test_vec[0].norm() >= test_vec[1].norm()) ?
     test_vec[0] : test_vec[1];
 
   //Scale to radius length
   start_vec *= (radius/start_vec.norm());
 
-  std::vector<Tangram::Point3> circle_pts;
+  std::vector<Wonton::Point<3>> circle_pts;
   circle_pts.reserve(nsamples);
   //Add the starting point
   circle_pts.push_back(center + start_vec);
@@ -114,10 +114,10 @@ std::vector<Tangram::Point3> circle3d(const Tangram::Point3& center,
  @param[in] nteeth Number of teeth the cog has
  @return Points representing the cog which are ordered ccw
 */
-std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
+std::vector<Wonton::Point<3>> cog3d(const Wonton::Point<3>& center,
                                    double inner_radius,
                                    double outer_radius,
-                                   const Tangram::Vector3& normal,
+                                   const Wonton::Vector<3>& normal,
                                    int nteeth,
                                    double dst_tol) {
   assert(nteeth > 2);
@@ -125,22 +125,22 @@ std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
   //We start with the i vector aligned with the x-axis and
   //the j vector aligned with the x-axis, then pick the one with
   //the larger projection
-  Tangram::Vector<3> test_vec[2];
+  Wonton::Vector<3> test_vec[2];
   for (int iv = 0; iv < 2; iv++) {
     test_vec[iv].axis(iv);
     //We project the current vector on the circle's plane
     test_vec[iv] = test_vec[iv] - Wonton::dot(test_vec[iv], normal)*normal;
   }
-  Tangram::Vector<3> outer_start_vec = (test_vec[0].norm() >= test_vec[1].norm()) ?
+  Wonton::Vector<3> outer_start_vec = (test_vec[0].norm() >= test_vec[1].norm()) ?
     test_vec[0] : test_vec[1];
 
   double vnorm = outer_start_vec.norm();
-  Tangram::Vector<3> inner_start_vec = outer_start_vec;
+  Wonton::Vector<3> inner_start_vec = outer_start_vec;
   //Scale to the espective radius length
   outer_start_vec *= (outer_radius/vnorm);
   inner_start_vec *= (inner_radius/vnorm);
 
-  std::vector<Tangram::Point3> cog_pts;
+  std::vector<Wonton::Point<3>> cog_pts;
   cog_pts.reserve(4*nteeth);
 
   //We want chords on the inner and the outer circles to be of the same length,
@@ -180,22 +180,22 @@ std::vector<Tangram::Point3> cog3d(const Tangram::Point3& center,
  specified, it will be computed
  @return MatPoly object corresponding to the resulting prism
 */
-Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
+Tangram::MatPoly<3> prism(const std::vector<Wonton::Point<3>>& base_pts,
                           double height,
                           double base_scaling,
                           double dst_tol,
-                          const Tangram::Vector3& base_normal =
-                            Tangram::Vector3(0.0, 0.0, 0.0)) {
+                          const Wonton::Vector<3>& base_normal =
+                            Wonton::Vector<3>(0.0, 0.0, 0.0)) {
   int nbase_vrts = base_pts.size();
   std::vector< std::vector<int> > ifaces_vrts(nbase_vrts + 2);
   ifaces_vrts[0].resize(nbase_vrts);
   std::iota(ifaces_vrts[0].begin(), ifaces_vrts[0].end(), 0);
 
-  std::vector<Tangram::Point3> prism_pts;
+  std::vector<Wonton::Point<3>> prism_pts;
   prism_pts.reserve(2*nbase_vrts);
   prism_pts.insert(prism_pts.begin(), base_pts.begin(), base_pts.end());
 
-  Tangram::Vector3 base_shift;
+  Wonton::Vector<3> base_shift;
   if (base_normal.is_zero(dst_tol))
    base_shift = Tangram::polygon3d_normal(prism_pts, ifaces_vrts[0], dst_tol);
   else
@@ -204,7 +204,7 @@ Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
   base_shift *= -height;
 
   for(int ivrt = 0; ivrt < nbase_vrts; ivrt++)
-    prism_pts.push_back(Tangram::Point3(
+    prism_pts.push_back(Wonton::Point<3>(
       prism_pts[(nbase_vrts - ivrt)%nbase_vrts] + base_shift));
 
   for(int ivrt = 0; ivrt < nbase_vrts; ivrt++) {
@@ -223,12 +223,12 @@ Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
     Tangram::polygon3d_moments(prism_pts, ifaces_vrts[nbase_vrts + 1],
                                new_base_moments, dst_tol);
 
-    Tangram::Point3 new_base_cen;
+    Wonton::Point<3> new_base_cen;
     for (int idim = 0; idim < 3; idim++)
       new_base_cen[idim] = new_base_moments[idim + 1]/new_base_moments[0];
 
     for(int ivrt = 0; ivrt < nbase_vrts; ivrt++) {
-      Tangram::Vector3 cen2vrt = prism_pts[nbase_vrts + ivrt] - new_base_cen;
+      Wonton::Vector<3> cen2vrt = prism_pts[nbase_vrts + ivrt] - new_base_cen;
       cen2vrt *= base_scaling;
       prism_pts[nbase_vrts + ivrt] = new_base_cen + cen2vrt;
     }
@@ -253,37 +253,37 @@ Tangram::MatPoly<3> prism(const std::vector<Tangram::Point3>& base_pts,
  specified, it will be computed
  @return MatPoly object corresponding to the resulting prism
 */
-Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
-                                 const Tangram::Vector3& opp_base_normal,
-                                 const Tangram::Point3& opp_base_centroid,
+Tangram::MatPoly<3> skewed_prism(const std::vector<Wonton::Point<3>>& base_pts,
+                                 const Wonton::Vector<3>& opp_base_normal,
+                                 const Wonton::Point<3>& opp_base_centroid,
                                  double base_scaling,
                                  double dst_tol,
-                                 const Tangram::Vector3& base_normal =
-                                    Tangram::Vector3(0.0, 0.0, 0.0)) {
+                                 const Wonton::Vector<3>& base_normal =
+                                    Wonton::Vector<3>(0.0, 0.0, 0.0)) {
   int nbase_vrts = base_pts.size();
   std::vector< std::vector<int> > ifaces_vrts(nbase_vrts + 2);
   ifaces_vrts[0].resize(nbase_vrts);
   std::iota(ifaces_vrts[0].begin(), ifaces_vrts[0].end(), 0);
 
-  std::vector<Tangram::Point3> prism_pts;
+  std::vector<Wonton::Point<3>> prism_pts;
   prism_pts.reserve(2*nbase_vrts);
   prism_pts.insert(prism_pts.begin(), base_pts.begin(), base_pts.end());
 
   std::vector<double> base_moments;
   Tangram::polygon3d_moments(prism_pts, ifaces_vrts[0], base_moments, dst_tol);
 
-  Tangram::Point3 base_centroid;
+  Wonton::Point<3> base_centroid;
   for (int idim = 0; idim < 3; idim++)
     base_centroid[idim] = base_moments[idim + 1]/base_moments[0];
 
-  Tangram::Vector3 base_start_vec = prism_pts[0] - base_centroid;
+  Wonton::Vector<3> base_start_vec = prism_pts[0] - base_centroid;
   double vnorm = base_start_vec.norm();
   assert(vnorm >= dst_tol);
   base_start_vec /= vnorm;
 
   //We find the starting point on the opposite plane by intersecing it
   //with the line parallel to the line conneting centroids
-  Tangram::Vector3 line_dvec = opp_base_centroid - base_centroid;
+  Wonton::Vector<3> line_dvec = opp_base_centroid - base_centroid;
   vnorm = line_dvec.norm();
   assert(vnorm >= dst_tol);
   line_dvec /= vnorm;
@@ -291,7 +291,7 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
   double denom = Wonton::dot(line_dvec, opp_base_normal);
   assert(denom >= dst_tol);
 
-  Tangram::Vector3 opp_base_start_vec = prism_pts[0] - opp_base_centroid +
+  Wonton::Vector<3> opp_base_start_vec = prism_pts[0] - opp_base_centroid +
     (Wonton::dot(opp_base_centroid - prism_pts[0], opp_base_normal)/denom)*line_dvec;
 
   vnorm = opp_base_start_vec.norm();
@@ -299,7 +299,7 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
   opp_base_start_vec /= vnorm;
 
   //Base normal to check the rotation angle sign
-  Tangram::Vector3 base_normal_vec;
+  Wonton::Vector<3> base_normal_vec;
   if (base_normal.is_zero(dst_tol))
     base_normal_vec = Tangram::polygon3d_normal(prism_pts, ifaces_vrts[0], dst_tol);
   else
@@ -309,7 +309,7 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
   for(int ivrt = 0; ivrt < nbase_vrts; ivrt++) {
     int icur_vrt = (nbase_vrts - ivrt)%nbase_vrts;
 
-    Tangram::Vector3 base_cen2vrt_vec = prism_pts[icur_vrt] - base_centroid;
+    Wonton::Vector<3> base_cen2vrt_vec = prism_pts[icur_vrt] - base_centroid;
     double base_cen2vrt_dst = base_cen2vrt_vec.norm();
     base_cen2vrt_vec /= base_cen2vrt_dst;
 
@@ -363,29 +363,29 @@ Tangram::MatPoly<3> skewed_prism(const std::vector<Tangram::Point3>& base_pts,
  @return MatPoly object corresponding to the resulting sphere;
  the number of faces is 8*pow2(nquadrant_samples)
 */
-Tangram::MatPoly<3> sphere(const Tangram::Point3& center,
+Tangram::MatPoly<3> sphere(const Wonton::Point<3>& center,
                            double radius,
                            int nquadrant_samples,
                            double dst_tol) {
-  std::vector<Tangram::Point3> sphere_pts;
+  std::vector<Wonton::Point<3>> sphere_pts;
   int ncircle_samples = 4*nquadrant_samples;
   sphere_pts.reserve((2*nquadrant_samples - 1)*ncircle_samples + 2);
 
   //Top point
-  sphere_pts.push_back(Tangram::Point3(center[0], center[1], center[2] + radius));
+  sphere_pts.push_back(Wonton::Point<3>(center[0], center[1], center[2] + radius));
   //Level circles
   for (int iin = 0; iin < 2*nquadrant_samples - 1; iin++) {
     double inclination = (iin + 1)*PI/(2*nquadrant_samples);
     for (int iaz = 0; iaz < ncircle_samples; iaz++) {
       double azimuth = iaz*PI/(2*nquadrant_samples);
-      sphere_pts.push_back(Tangram::Point3(
+      sphere_pts.push_back(Wonton::Point<3>(
         center[0] + radius*sin(inclination)*cos(azimuth),
         center[1] + radius*sin(inclination)*sin(azimuth),
         center[2] + radius*cos(inclination)));
     }
   }
   //Bottom point
-  sphere_pts.push_back(Tangram::Point3(center[0], center[1], center[2] - radius));
+  sphere_pts.push_back(Wonton::Point<3>(center[0], center[1], center[2] - radius));
 
   std::vector< std::vector<int> > ifaces_vrts(8*pow2(nquadrant_samples));
   //Top triangular faces

@@ -19,18 +19,6 @@
 #include <limits>
 #include <numeric>
 
-#ifdef TANGRAM_ENABLE_THRUST
-
-#include "thrust/device_vector.h"
-#include "thrust/iterator/counting_iterator.h"
-#include "thrust/transform.h"
-
-#else  // no thrust
-
-#include <boost/iterator/counting_iterator.hpp>
-
-#endif
-
 // wonton includes
 #include "wonton/support/wonton.h"
 #include "wonton/support/Point.h"
@@ -76,98 +64,28 @@
 
 namespace Tangram {
 
-  // Point aliases
-  template<long D>
-  using Point = Wonton::Point<D>;
-  using Wonton::Point3;
-  using Wonton::Point2;
+// Point aliases
+template<long D>
+using Point = Wonton::Point<D>;
+using Wonton::Point3;
+using Wonton::Point2;
 
-  // Vector aliases
-  template<long D>
-  using Vector = Wonton::Vector<D>;
-  using Wonton::Vector3;
-  using Wonton::Vector2;
+// Vector aliases
+template<long D>
+using Vector = Wonton::Vector<D>;
+using Wonton::Vector3;
+using Wonton::Vector2;
 
-  // Matrix alias
-  using Wonton::Matrix;
+// Matrix alias
+using Wonton::Matrix;
 
-  // useful enums
-  using Wonton::Entity_kind;
-  using Wonton::Entity_type;
-  using Wonton::Element_type;
+// useful enums
+using Wonton::Entity_kind;
+using Wonton::Entity_type;
+using Wonton::Element_type;
 
-  using Wonton::Weights_t;
+using Wonton::Weights_t;
 
-#ifdef TANGRAM_ENABLE_THRUST
-
-template<typename T>
-    using vector = thrust::device_vector<T>;
-
-template<typename T>
-    using pointer = thrust::device_ptr<T>;
-
-typedef thrust::counting_iterator<int> counting_iterator;
-inline counting_iterator make_counting_iterator(int const i) {
-  return thrust::make_counting_iterator(i);
-}
-
-template<typename InputIterator, typename OutputIterator,
-         typename UnaryFunction>
-inline OutputIterator transform(InputIterator first, InputIterator last,
-                                OutputIterator result, UnaryFunction op) {
-  return thrust::transform(first, last, result, op);
-}
-
-template<typename InputIterator1, typename InputIterator2,
-         typename OutputIterator, typename BinaryFunction>
-inline OutputIterator transform(InputIterator1 first1, InputIterator1 last1,
-                                InputIterator2 first2, OutputIterator result,
-                                BinaryFunction op) {
-  return thrust::transform(first1, last1, first2, result, op);
-}
-
-template<typename InputIterator, typename UnaryFunction>
-inline void for_each(InputIterator first, InputIterator last,
-                              UnaryFunction f) {
-  thrust::for_each(first, last, f);
-}
-
-#else  // no thrust
-
-template<typename T>
-    using vector = std::vector<T>;
-
-template<typename T>
-    using pointer = std::shared_ptr<T>;
-
-typedef boost::counting_iterator<int> counting_iterator;
-inline counting_iterator make_counting_iterator(int const i) {
-  return boost::make_counting_iterator<int>(i);
-}
-
-template<typename InputIterator, typename OutputIterator,
-    typename UnaryFunction>
-inline OutputIterator transform(InputIterator first, InputIterator last,
-                                OutputIterator result, UnaryFunction op) {
-  return std::transform(first, last, result, op);
-}
-
-template<typename InputIterator1, typename InputIterator2,
-         typename OutputIterator, typename BinaryFunction>
-inline OutputIterator transform(InputIterator1 first1, InputIterator1 last1,
-                                InputIterator2 first2, OutputIterator result,
-                                BinaryFunction op) {
-  return std::transform(first1, last1, first2, result, op);
-}
-
-template<typename InputIterator, typename UnaryFunction>
-inline void for_each(InputIterator first, InputIterator last,
-                     UnaryFunction f) {
-  std::for_each(first, last, f);
-}
-
-
-#endif
 
 template <int D>
 struct Plane_t {

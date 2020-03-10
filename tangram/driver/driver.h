@@ -239,10 +239,10 @@ class Driver {
         if (nMMCs == 1)
           cellmatpolys_[mm_cells[0]] = reconstructor(0);
         else {
-          Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
+          Wonton::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
 
-          Tangram::transform(make_counting_iterator(0),
-                             make_counting_iterator(nMMCs),
+          Wonton::transform(Wonton::make_counting_iterator(0),
+                            Wonton::make_counting_iterator(nMMCs),
                              MMCs_cellmatpolys.begin(), reconstructor);
           for (int immc = 0; immc < nMMCs; immc++)
             cellmatpolys_[mm_cells[immc]] = MMCs_cellmatpolys[immc];

@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     std::vector<FEATURE<2>> features;
     read_features<2>(featfilename, &features, &global_nmats);
 
-    Tangram::vector<vfcen_t<2>> vfcen(ncells);
+    Wonton::vector<vfcen_t<2>> vfcen(ncells);
     InFeatureEvaluator<2> feature_functor(features);
     VolfracEvaluator<2, Wonton::Jali_Mesh_Wrapper>
       volfrac_calculator(mesh_wrapper, feature_functor, ptol, global_nmats);
@@ -111,9 +111,9 @@ int main(int argc, char *argv[]) {
     gettimeofday(&begin_core, 0);
 
     // Populate the vf array using the volfrac functor
-    Tangram::vector<int> counter(ncells);
+    Wonton::vector<int> counter(ncells);
     for (int i = 0; i < ncells; i++) counter[i] = i;
-    Tangram::transform(counter.begin(), counter.end(), vfcen.begin(),
+    Wonton::transform(counter.begin(), counter.end(), vfcen.begin(),
                        volfrac_calculator);
 
     gettimeofday(&end_core, 0);
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     std::vector<FEATURE<3>> features;
     read_features<3>(featfilename, &features, &global_nmats);
 
-    Tangram::vector<vfcen_t<3>> vfcen(ncells);
+    Wonton::vector<vfcen_t<3>> vfcen(ncells);
     InFeatureEvaluator<3> feature_functor(features);
     VolfracEvaluator<3, Wonton::Jali_Mesh_Wrapper>
       volfrac_calculator(mesh_wrapper, feature_functor, ptol, global_nmats);
@@ -148,9 +148,9 @@ int main(int argc, char *argv[]) {
     gettimeofday(&begin_core, 0);
 
     // Populate the vf array using the volfrac functor
-    Tangram::vector<int> counter(ncells);
+    Wonton::vector<int> counter(ncells);
     for (int i = 0; i < ncells; i++) counter[i] = i;
-    Tangram::transform(counter.begin(), counter.end(), vfcen.begin(),
+    Wonton::transform(counter.begin(), counter.end(), vfcen.begin(),
                        volfrac_calculator);
 
     gettimeofday(&end_core, 0);

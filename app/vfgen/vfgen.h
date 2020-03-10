@@ -45,7 +45,7 @@ struct vfcen_t {
   int nmats = 0;
   int matids[MAXMATS] = {};  // initialize to zero
   double vf[MAXMATS] = {};  // initialize to zero
-  Tangram::Point<dim> cen[MAXMATS];  // Constructor initializes to origin
+  Wonton::Point<dim> cen[MAXMATS];  // Constructor initializes to origin
 };
 
 
@@ -65,8 +65,8 @@ struct vfcen_t {
 // @param polypnts   Polygon points
 // @return bool      true if point is inside
 
-bool P_InPoly2D(Tangram::Point<2> ptest, int np,
-                 Tangram::Point<2> *polypnts) {
+bool P_InPoly2D(Wonton::Point<2> ptest, int np,
+                Wonton::Point<2> *polypnts) {
   /* Basic test - will work for strictly interior and exterior points */
 
   double x = ptest[0];
@@ -96,16 +96,16 @@ bool P_InPoly2D(Tangram::Point<2> ptest, int np,
 // @param tripnts   Triangle points  (3*ntri)
 // @return bool     if point is inside
 
-bool P_InTriPoly3D(Tangram::Point<3> ptest,
-                       int ntri, Tangram::Point<3> *tripnts) {
+bool P_InTriPoly3D(Wonton::Point<3> ptest,
+                       int ntri, Wonton::Point<3> *tripnts) {
   for (int t = 0; t < ntri; t++) {
-    Tangram::Point<3>& p0 = tripnts[3*t];
-    Tangram::Point<3>& p1 = tripnts[3*t+1];
-    Tangram::Point<3>& p2 = tripnts[3*t+2];
-    Tangram::Vector<3> v0 = p0 - ptest;
-    Tangram::Vector<3> v1 = p1 - ptest;
-    Tangram::Vector<3> v2 = p2 - ptest;
-    Tangram::Vector<3> vcross = cross(v0, v1);
+    Wonton::Point<3>& p0 = tripnts[3*t];
+    Wonton::Point<3>& p1 = tripnts[3*t+1];
+    Wonton::Point<3>& p2 = tripnts[3*t+2];
+    Wonton::Vector<3> v0 = p0 - ptest;
+    Wonton::Vector<3> v1 = p1 - ptest;
+    Wonton::Vector<3> v2 = p2 - ptest;
+    Wonton::Vector<3> vcross = cross(v0, v1);
     double vol = dot(vcross, v2);
     if (vol < 0.0) return false;
   }
@@ -127,15 +127,15 @@ bool P_InTriPoly3D(Tangram::Point<3> ptest,
 //                     of faceted polyhedron in 3D
 
 template<int dim>
-bool P_InPoly(Tangram::Point<dim> ptest, int npnts, Tangram::Point<dim> *points) {}
+bool P_InPoly(Wonton::Point<dim> ptest, int npnts, Wonton::Point<dim> *points) {}
 
 template<>
-bool P_InPoly<2>(Tangram::Point<2> ptest, int npnts, Tangram::Point<2> *points) {
+bool P_InPoly<2>(Wonton::Point<2> ptest, int npnts, Wonton::Point<2> *points) {
   return P_InPoly2D(ptest, npnts, points);
 }
 
 template<>
-bool P_InPoly<3>(Tangram::Point<3> ptest, int npnts, Tangram::Point<3> *points) {
+bool P_InPoly<3>(Wonton::Point<3> ptest, int npnts, Wonton::Point<3> *points) {
   int ntris = npnts/3;
   return P_InTriPoly3D(ptest, ntris, points);
 }
@@ -162,7 +162,7 @@ struct FEATURE {
   /* points of polygons and polyhedra - for polygons, these are
    * expected to be in ccw manner */
   int nppoly;
-  Tangram::Point<dim> polyxyz[MAXPV2];
+  Wonton::Point<dim> polyxyz[MAXPV2];
 
   /* Additional info for 3D Polyhedron description - Not filled in for 2D */
   int nfpoly;           /* Number of polyhedron faces */
@@ -175,20 +175,20 @@ struct FEATURE {
    * triangle. It is derived from nfpoly, nfpnts and fpnts - has no
    * meaning and not filled in 2D */
   int ntris;
-  Tangram::Point<dim> polytrixyz[MAXPF3*MAXPV2*3];
+  Wonton::Point<dim> polytrixyz[MAXPF3*MAXPV2*3];
 
 
   /* Circle or Sphere */
-  Tangram::Point<dim> cen;
+  Wonton::Point<dim> cen;
   double radius;
 
   /* Half-space defined by plane */
-  Tangram::Point<dim> plane_xyz;
-  Tangram::Point<dim> plane_normal;
+  Wonton::Point<dim> plane_xyz;
+  Wonton::Point<dim> plane_normal;
 
   /* Box */
-  Tangram::Point<dim> minxyz;     /* Lower left corner of box */
-  Tangram::Point<dim> maxxyz;     /* Upper right corner of box */
+  Wonton::Point<dim> minxyz;     /* Lower left corner of box */
+  Wonton::Point<dim> maxxyz;     /* Upper right corner of box */
 };
 
 
@@ -209,7 +209,7 @@ struct InFeatureEvaluator {
   explicit InFeatureEvaluator(std::vector<FEATURE<dim>> const& features) :
       features_(features), nfeat_(features.size()) {}
 
-  int operator() (Tangram::Point<dim> const& ptxyz) {
+  int operator() (Wonton::Point<dim> const& ptxyz) {
     int pmatid = -1;
     int imat = 1;
     bool test_in = true;
@@ -245,7 +245,7 @@ struct InFeatureEvaluator {
           ptin = P_InPoly<dim>(ptxyz, curfeat.nppoly, &(curfeat.polytrixyz[0]));
         }
       } else if (curfeat.type == FEATURETYPE::SPHERE) { /* Circle */
-        Tangram::Vector<dim> v = ptxyz-curfeat.cen;
+        Wonton::Vector<dim> v = ptxyz-curfeat.cen;
         ptin = (v.norm(false) < curfeat.radius*curfeat.radius);  // norm does not compute square root by default
       }
       else {
@@ -310,7 +310,7 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
     unsigned int seed = 0;
     double XMIN, XMAX, YMIN, YMAX;
 
-    std::vector<Tangram::Point<2>> fxyz;
+    std::vector<Wonton::Point<2>> fxyz;
     mesh_.cell_get_coordinates(cellID, &fxyz);
     int nfv = fxyz.size();
 
@@ -325,16 +325,16 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
     double XLEN = XMAX-XMIN;
     double YLEN = YMAX-YMIN;
 
-    Tangram::vector<int> pmatid(NPARTICLES, -1);
+    Wonton::vector<int> pmatid(NPARTICLES, -1);
 
     srand(cellID);
 
-    Tangram::vector<Tangram::Point<2>> ptxyz;
+    Wonton::vector<Wonton::Point<2>> ptxyz;
     ptxyz.reserve(NPARTICLES);
     double xmult = XLEN/RAND_MAX;
     double ymult = YLEN/RAND_MAX;
     for (int i = 0; i < NPARTICLES; i++) {
-      Tangram::Point<2> xyz;
+      Wonton::Point<2> xyz;
       xyz[0] = XMIN + rand_r(&seed)*xmult;
       xyz[1] = YMIN + rand_r(&seed)*ymult;
 
@@ -350,7 +350,7 @@ class VolfracEvaluator<2, Mesh_Wrapper> {
     // Compute a material ID for each point based on their inclusion
     // in a feature
 
-    Tangram::transform(ptxyz.begin(), ptxyz.end(), pmatid.begin(),
+    Wonton::transform(ptxyz.begin(), ptxyz.end(), pmatid.begin(),
                        feature_evaluator_);
 
     // Tally up the particles to compute volume fractions
@@ -411,7 +411,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
     XMIN = YMIN = ZMIN = 1.0e+20;
     XMAX = YMAX = ZMAX = -XMIN;
 
-    std::vector<Tangram::Point<3>> rxyz;
+    std::vector<Wonton::Point<3>> rxyz;
     mesh_.cell_get_coordinates(cellID, &rxyz);
     int nrv = rxyz.size();
 
@@ -430,7 +430,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 
     // Get a triangular facetization of cell boundary
     std::vector<std::vector<int>> tripnts;
-    std::vector<Tangram::Point<3>> points;
+    std::vector<Wonton::Point<3>> points;
 
     // ------ Will be replaced by call to mesh_.cell_get_facetization -------
     // ------ when PR-26 will get merged in ---------------------------------
@@ -441,27 +441,27 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 
 
     int ntris = tripnts.size();
-    std::vector<Tangram::Point<3>> tripnts_flat(3*ntris);
+    std::vector<Wonton::Point<3>> tripnts_flat(3*ntris);
     for (int t = 0; t < ntris; t++) {
       tripnts_flat[3*t] = points[tripnts[t][0]];
       tripnts_flat[3*t+1] = points[tripnts[t][1]];
       tripnts_flat[3*t+2] = points[tripnts[t][2]];
     }
 
-    Tangram::vector<int> pmatid(NPARTICLES, -1);
+    Wonton::vector<int> pmatid(NPARTICLES, -1);
 
     srand(cellID);
 
     /* Throw particles into cell and see which feature they lie in */
 
-    Tangram::vector<Tangram::Point<3>> ptxyz;
+    Wonton::vector<Wonton::Point<3>> ptxyz;
     ptxyz.reserve(NPARTICLES);
     double xmult = XLEN/RAND_MAX;
     double ymult = YLEN/RAND_MAX;
     double zmult = ZLEN/RAND_MAX;
 
     for (int i = 0; i < NPARTICLES; i++) {
-      Tangram::Point<3> xyz;
+      Wonton::Point<3> xyz;
       xyz[0] = XMIN + rand_r(&seed)*xmult;
       xyz[1] = YMIN + rand_r(&seed)*ymult;
       xyz[2] = ZMIN + rand_r(&seed)*zmult;
@@ -479,7 +479,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
     // Compute a material ID for each point based on their inclusion
     // in a feature
 
-    Tangram::transform(ptxyz.begin(), ptxyz.end(), pmatid.begin(),
+    Wonton::transform(ptxyz.begin(), ptxyz.end(), pmatid.begin(),
 		       feature_evaluator_);
 
     // Tally up the particles to compute volume fractions
@@ -522,7 +522,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 
   void cell_get_facetization(int const cellid,
                              std::vector<std::vector<int>> *facetpoints,
-                             std::vector<Tangram::Point<3>> *points) const {
+                             std::vector<Wonton::Point<3>> *points) const {
     facetpoints->clear();
     points->clear();
 
@@ -570,7 +570,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
         // the geometric center of the nodes of the face
 
         // Add centroid of face a new point to the point list
-        Tangram::Point<3> fcen;
+        Wonton::Point<3> fcen;
         mesh_.face_centroid(cfaces[f], &fcen);
         points->push_back(fcen);
         int icen = points->size() - 1;
@@ -600,7 +600,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
 
 template<int dim>
 void writeAsciiFile(std::string filename,
-                    Tangram::vector<vfcen_t<dim>> vfcen,
+                    Wonton::vector<vfcen_t<dim>> vfcen,
                     int nmats_) {
   std::ofstream outfile;
   outfile.open(filename.c_str());
@@ -665,7 +665,7 @@ void writeAsciiFile(std::string filename,
 //       <double, material centroids z-coordinate>
 
 template<int dim>
-void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) {
+void writeBinaryFile(std::string filename, Wonton::vector<vfcen_t<dim>> vfcen) {
   std::ofstream outfile;
   outfile.open(filename.c_str(), std::ofstream::out | std::ofstream::binary);
   if (!outfile.is_open()) {
@@ -852,7 +852,7 @@ void read_features(std::string featfilename,
         this_feature.ntris = 0;
         int ntripnts = 0;
         for (int f = 0; f < this_feature.nfpoly; f++) {
-          Tangram::Point<dim> fcen;   // will only come here when dim == 3
+          Wonton::Point<dim> fcen;   // will only come here when dim == 3
           int nfp = this_feature.nfpnts[f];
           for (int p = 0; p < nfp; p++)
             fcen += this_feature.polyxyz[this_feature.fpnts[f][p]];

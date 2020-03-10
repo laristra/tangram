@@ -90,7 +90,7 @@ public:
 
     bool intersects = false;
     for (int ivrt = 0; ivrt < r3dpoly.nverts; ivrt++) {
-      Tangram::Point3 cur_vrt;
+      Wonton::Point<3> cur_vrt;
       for (int ixyz = 0; ixyz < 3; ixyz++)
         cur_vrt[ixyz] = r3dpoly.verts[ivrt].pos.xyz[ixyz];
 
@@ -296,11 +296,11 @@ void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data
   r3d_planar_iface.d = planar_interface.dist2origin;
 
   r3d_split_operator r3d_split_op(polys_data, r3d_planar_iface, vol_tol);
-  Tangram::vector< PolyHalfspaceData_t > hs_data(num_polys);
+  Wonton::vector< PolyHalfspaceData_t > hs_data(num_polys);
 
-  Tangram::transform(Tangram::make_counting_iterator(0), 
-                     Tangram::make_counting_iterator(num_polys),
-                     hs_data.begin(), r3d_split_op);
+  Wonton::transform(Wonton::make_counting_iterator(0), 
+                    Wonton::make_counting_iterator(num_polys),
+                    hs_data.begin(), r3d_split_op);
 
   for (int ipoly = 0; ipoly < num_polys; ipoly++) {
     const PolyHalfspaceData_t& poly_hs_data = hs_data[ipoly];
@@ -351,11 +351,11 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
 
   r3d_poly_intersect_check r3d_isect_check(polys_data, iin_box_polys, 
                                            dst_tol, convex_matpoly);
-  Tangram::vector<R3DPOLY::Position> check_result(num_in_box);
+  Wonton::vector<R3DPOLY::Position> check_result(num_in_box);
 
-  Tangram::transform(Tangram::make_counting_iterator(0), 
-                     Tangram::make_counting_iterator(num_in_box),
-                     check_result.begin(), r3d_isect_check);
+  Wonton::transform(Wonton::make_counting_iterator(0), 
+                    Wonton::make_counting_iterator(num_in_box),
+                    check_result.begin(), r3d_isect_check);
 
   iinterior_polys.clear();
   iinstersecting_polys.clear();
@@ -531,7 +531,7 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
                        std::vector<int>& cell_num_mats,
                        std::vector<int>& cell_mat_ids,
                        std::vector<double>& cell_mat_volfracs,
-                       std::vector< Tangram::Point<3> >& cell_mat_centroids,
+                       std::vector< Wonton::Point<3> >& cell_mat_centroids,
                        const double dst_tol,
                        const bool decompose_cells,
                        std::vector< std::vector< std::vector<r3d_poly> > >*

@@ -256,12 +256,12 @@ public:
     nested_dissections.set_cell_materials_order(enable_permutations);
 
     int npermutations = nested_dissections.num_materials_orders();
-    Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> 
+    Wonton::vector<std::shared_ptr<CellMatPoly<Dim>>> 
       permutations_cellmatpoly(npermutations);
 
-    Tangram::transform(make_counting_iterator(0),
-                       make_counting_iterator(npermutations),
-                       permutations_cellmatpoly.begin(), nested_dissections);
+    Wonton::transform(Wonton::make_counting_iterator(0),
+                      Wonton::make_counting_iterator(npermutations),
+                      permutations_cellmatpoly.begin(), nested_dissections);
 
     int nmats = static_cast<int>(cell_mat_ids_[cellID].size());
 
