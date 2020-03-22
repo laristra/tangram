@@ -22,8 +22,8 @@
   #include "mpi.h"
 #endif
 
-#include "wonton/wonton/mesh/simple/simple_mesh.h"
-#include "wonton/wonton/mesh/simple/simple_mesh_wrapper.h"
+#include "wonton/mesh/simple/simple_mesh.h"
+#include "wonton/mesh/simple/simple_mesh_wrapper.h"
 
 #include "tangram/support/tangram.h"
 #include "tangram/driver/driver.h"
