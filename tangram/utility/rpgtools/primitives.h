@@ -16,7 +16,7 @@
 // tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
-#include "wonton/wonton/support/Matrix.h"
+#include "wonton/support/Matrix.h"
 
 // wonton includes
 #include "wonton/support/Vector.h"
