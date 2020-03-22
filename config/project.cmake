@@ -29,7 +29,7 @@ cmake_policy(SET CMP0074 NEW)  # Don't ignore Pkg_ROOT variables
 
 set(TANGRAM_VERSION_MAJOR 0)
 set(TANGRAM_VERSION_MINOR 9)
-set(TANGRAM_VERSION_PATCH 5)
+set(TANGRAM_VERSION_PATCH 9)
 
 
 # Top level target
@@ -60,7 +60,7 @@ if (WONTON_ROOT)
   find_package(WONTON QUIET REQUIRED NAMES wonton)
 
   target_include_directories(tangram INTERFACE ${WONTON_INCLUDE_DIR})
-  message(STATUS "WONTON_INCLUDE_DIRS=${WONTON_INCLUDE_DIR}")
+  message(STATUS "WONTON_INCLUDE_DIR=${WONTON_INCLUDE_DIR}")
 
   target_link_libraries(tangram INTERFACE ${WONTON_LIBRARIES})
   message(STATUS "WONTON_LIBRARIES=${WONTON_LIBRARIES}" )
