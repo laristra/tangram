@@ -48,7 +48,16 @@ cinch_load_extras()
 
 set(CINCH_HEADER_SUFFIXES "\\.h")
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+# Explicitly turn off module paths inherited from Cinch. When we get rid of
+# Cinch we can delete this line
+set(CMAKE_MODULE_PATH "")
+
+# Find our modules first
+if (CMAKE_VERSION GREATER_EQUAL 3.15)
+  list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+else ()
+  set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
+endif ()
 
 
 #-----------------------------------------------------------------------------
