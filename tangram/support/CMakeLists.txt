@@ -31,6 +31,14 @@ install(FILES ${tangram_support_HEADERS} DESTINATION include/tangram/support)
 
 target_link_libraries(tangram_support INTERFACE ${WONTON_LIBRARIES})
 
+if (WONTON_ENABLE_MPI)
+  target_compile_definitions(tangram_support INTERFACE WONTON_ENABLE_MPI)
+endif ()
+
+if (WONTON_ENABLE_THRUST)
+  target_compile_definitions(tangram_support INTERFACE WONTON_ENABLE_THRUST)
+endif ()
+
 target_link_libraries(tangram INTERFACE tangram_support)
 
 install(TARGETS tangram_support

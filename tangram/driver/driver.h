@@ -17,7 +17,7 @@
 #include <iostream>
 #include <type_traits>
 
-#ifdef TANGRAM_ENABLE_MPI
+#ifdef WONTON_ENABLE_MPI
 #include "mpi.h"
 #endif
 
@@ -166,7 +166,7 @@ class Driver {
     int comm_rank = 0;
     int world_size = 1;
 
-#ifdef TANGRAM_ENABLE_MPI
+#ifdef WONTON_ENABLE_MPI
 
     MPI_Comm mycomm = MPI_COMM_NULL;
     auto mpiexecutor = dynamic_cast<Wonton::MPIExecutor_type const *>(executor);
@@ -265,7 +265,7 @@ class Driver {
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
       
       float max_transform_time = tot_seconds;
-#ifdef TANGRAM_ENABLE_MPI
+#ifdef WONTON_ENABLE_MPI
       if (world_size > 1) {
         MPI_Allreduce(&tot_seconds, &max_transform_time, 1, MPI_FLOAT, MPI_MAX,
           mycomm);

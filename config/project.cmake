@@ -60,6 +60,14 @@ else ()
 endif ()
 
 
+#----------------------------------------------------------------------------
+# Find packages here and set CMake variables. Set link dependencies
+# and compile definitions for tangram_support target in
+# tangram/support. Since the top level tangram::tangram target depends
+# on tangram_support, the transitive dependencies will be picked up by
+# projects linking to Tangram
+#----------------------------------------------------------------------------
+
 #-----------------------------------------------------------------------------
 # Find or compile Wonton
 #-----------------------------------------------------------------------------
@@ -77,11 +85,18 @@ if (WONTON_ROOT)
   if (ENABLE_THRUST AND NOT WONTON_ENABLE_THRUST)
     message(FATAL_ERROR "Thrust enabled for Tangram but Wonton is not built with Thrust")
   endif ()
-
-  if (ENABLE_MPI AND NOT WONTON_ENABLE_MPI)
-    message(FATAL_ERROR "MPI enabled for Tangram but Wonton is not compiled with MPI (WONTON_ENABLE_MPI=${WONTON_ENABLE_MPI})")
+  if (NOT ENABLE_THRUST AND WONTON_ENABLE_THRUST)
+    message(FATAL_ERROR "Thrust disabled for Tangram but Wonton is built with Thrust")
   endif ()
 
+  if (ENABLE_MPI AND NOT WONTON_ENABLE_MPI)
+    message(FATAL_ERROR "MPI enabled for Tangram but Wonton is not compiled with MPI")
+  endif ()
+
+  if (NOT ENABLE_MPI AND WONTON_ENABLE_MPI)
+    message(FATAL_ERROR "MPI disabled for Tangram but Wonton is compiled with MPI")
+  endif ()
+  
 else ()
 
   # Build Wonton from a submodule
@@ -115,17 +130,6 @@ endif ()
 if (NOT WONTON_FOUND)
   message(FATAL_ERROR "WONTON_DIR is not specified and Wonton is not a subdirectory !")
 endif() 
-
-
-#-----------------------------------------------------------------------------
-# Thrust information
-#-----------------------------------------------------------------------------
-set(ENABLE_THRUST FALSE CACHE BOOL "Use Thrust")  # create a cache var with default
-if (ENABLE_THRUST)
-  if (NOT WONTON_ENABLE_THRUST)
-    message(FATAL_ERROR "Thrust enabled for Tangram but not for Wonton")
-  endif ()
-endif()
 
 
 #------------------------------------------------------------------------------#
@@ -223,7 +227,7 @@ install(EXPORT tangram_LIBRARIES
 
 
 # Dynamically configured header files that contains defines like
-# TANGRAM_ENABLE_MPI etc. if enabled
+# WONTON_ENABLE_MPI etc. if enabled
 
 configure_file(${PROJECT_SOURCE_DIR}/config/tangram-config.h.in
   ${PROJECT_BINARY_DIR}/tangram-config.h @ONLY)

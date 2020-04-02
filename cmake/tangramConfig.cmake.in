@@ -12,32 +12,14 @@ set(TANGRAM_VERSION_MINOR @TANGRAM_VERSION_MINOR@ CACHE STRING "Minor version of
 set(TANGRAM_VERSION_MINOR @TANGRAM_VERSION_PATCH@ CACHE STRING "Patch version of TANGRAM")
 
 
-# Compiler Definitions
-set(CMAKE_C_COMPILER @CMAKE_C_COMPILER@ CACHE FILEPATH "C Compiler used for compiling TANGRAM")
-set(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@ CACHE FILEPATH "CXX Compiler used for compiling TANGRAM")
-
-
 # Tangram installation path
 set(TANGRAM_ROOT @CMAKE_INSTALL_PREFIX@ CACHE PATH "Path to Tangram installation")
-
-# Tangram library 
-set(TANGRAM_LIBRARY_NAME @TANGRAM_LIBRARY@ CACHE STRING "Name of the TANGRAM library")
-
-# TANGRAM includes
-set(TANGRAM_INCLUDE_DIR @CMAKE_INSTALL_PREFIX@/include CACHE PATH "TANGRAM include file locations")
-
-# TANGRAM options
-set(TANGRAM_ENABLE_MPI @ENABLE_MPI@ CACHE BOOL "Enable MPI Parallelism for Tangram")
 
 # Wonton installation path
 set(WONTON_ROOT @WONTON_ROOT@ CACHE PATH "Path to Wonton installation")
 
 
-set(ENABLE_FleCSI @ENABLE_FleCSI@ CACHE BOOL "Use FleCSI")
-set(ENABLE_Jali @ENABLE_Jali@ CACHE BOOL "Use Jali")
-set(ENABLE_LAPACKE @ENABLE_LAPACKE@ CACHE BOOL "Use LAPACKE")
-set(ENABLE_THRUST @ENABLE_THRUST@ CACHE BOOL "Use Thrust")
-
+# Have to move this into the find dependencies section
 set(XMOF2D_FOUND @XMOF2D_FOUND@ CACHE BOOL "XMOF2D status")
 set(XMOF2D_LIBRARIES @XMOF2D_LIBRARIES@ CACHE STRING "XMOF2D libraries")
 

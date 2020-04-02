@@ -51,7 +51,7 @@ install(TARGETS tangram_driver
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
-  if (Jali_DIR)
+  if (WONTON_ENABLE_Jali)
 
     cinch_add_unit(test_CellMatPoly_1D
       SOURCES test/test_CellMatPoly_1D.cc
@@ -87,5 +87,5 @@ if (ENABLE_UNIT_TESTS)
       POLICY MPI
       THREADS 1
       )
-  endif(Jali_DIR)
+  endif(WONTON_ENABLE_Jali)
 endif (ENABLE_UNIT_TESTS)

@@ -26,41 +26,28 @@ hooking Tangram up to a mesh and interface reconstructor.
 At a minimum, Tangram requires:
 - A C++-11 compatible compiler; regular testing is performed with GCC
   6.3+ and Intel 17+.
-- [CMake](https://cmake.org) 3.8+
-- [LAPACKE](https://https://github.com/Reference-LAPACK/lapack/tree/master/LAPACKE) 3.8.0+
-- [Boost](https://www.boost.org) 1.68.0+ **or** [Thrust](https://thrust.github.io/) 1.8.1+
-
-In addition to the minimum set of libraries, Tangram is known to
-work with version 1.0.0 of the [Jali](https://github.com/lanl/jali).
+- [CMake](https://cmake.org) 3.13+
+- [Wonton](https://github.com/laristra/wonton)
 
 Distributed parallelism of Tangram is currently supported through MPI;
-regular testing is performed with OpenMPI 1.10.3+ . Most application
-tests are currently only built if MPI is
-used.  MPI is enabled in Tangram by setting the CMake variable
-`ENABLE_MPI=True`.
+regular testing is performed with OpenMPI 2.1.0+ . Most application
+tests are currently only built if MPI is used.
+MPI is enabled in Tangram by setting the CMake variable
+`ENABLE_MPI=True` **and** using a version of Wonton built with MPI.
 
 On-node parallelism is exposed through
 the [Thrust](https://thrust.github.io) library.  Enabling Thrust
 within Tangram requires setting at least two CMake variables:
-`ENABLE_THRUST=True` and `THRUST_DIR=<path_to_thrust_directory>`.
-Additionally, one can specify the Thrust backend to utilize, with the
-default being the OpenMP backend
-`THRUST_BACKEND=THRUST_DEVICE_SYSTEM_OMP`.  Tangram also supports the
-`THRUST_DEVICE_SYSTEM_TBB` backend.  Regular testing happens with
-Thrust 1.8. **If you turn
-on Thrust for multi-threading-enabled executables, the team strongly
-recommends linking to the TCMalloc library available in [Google
-Performance Tools](https://github.com/gperftools/gperftools) 
-to see the expected scaling.**
+`ENABLE_THRUST=True` **and** using a version of Wonton built with Thrust.
 
 ## Obtaining Tangram
 
-The latest release of [Tangram](https://github.com/laristra/Tangram)
+The latest release of [Tangram](https://github.com/laristra/tangram)
 can be found on GitHub.  Tangram makes use of git submodules, so it must be
 cloned recursively:
 
 ```sh
-git clone --recursive https://github.com/laristra/Tangram
+git clone --recursive https://github.com/laristra/tangram
 ```
 
 ## Building
@@ -72,7 +59,7 @@ find your Boost and LAPACKE installations, one can do
 ```sh
 Tangram/ $ mkdir build
 Tangram/ $ cd build
-Tangram/build/ $ cmake ..
+Tangram/build/ $ cmake -DWONTON_ROOT:FILEPATH=/path/to/wonton ..
 Tangram/build/ $ make
 ```
 
@@ -88,14 +75,11 @@ Tangram/ $ mkdir build
 Tangram/ $ cd build
 Tangram/build/ $ cmake -DENABLE_UNIT_TESTS=True \
                        -DENABLE_MPI=True \
-                       -DENABLE_THRUST=True 
-                       -DTHRUST_DIR=/path/to/thrust/include/directory \
-                       -DENABLE_TCMALLOC=True \
-                       -DTCMALLOC_LIB=path/to/TCMalloc/library \
-                       -DJali_DIR=path/to/Jali/lib \
-                       -DXMOF2D_DIR=path/to/XMOF2D/lib \
+                       -DENABLE_THRUST=True \
+                       -DWONTON_ROOT=path/to/Jali/lib \
+					   -DENABLE_XMOF2D=True \
+                       -DXMOF2D_ROOT=path/to/XMOF2D/lib \
                        -DENABLE_DOXYGEN=True \
-                       -DLAPACKE_DIR=/path/to/LAPACKE
                        ..
 Tangram/build/ $ make           # builds the library and tests
 Tangram/build/ $ make test      # runs the tests
@@ -115,13 +99,7 @@ Tangram.
 | `ENABLE_APP_TESTS:BOOL` | Turn on compilation and test harness of application tests | `False` |
 | `ENABLE_DOXYGEN:BOOL` | Create a target to build this documentation | `False` |
 | `ENABLE_MPI:BOOL` | Build with support for MPI | `False` |
-| `ENABLE_TCMALLOC:BOOL` | Build with support for TCMalloc | `False` |
 | `ENABLE_THRUST:BOOL` | Turn on Thrust support for on-node parallelism | `False` |
 | `ENABLE_UNIT_TESTS:BOOL` | Turn on compilation and test harness of unit tests | `False` |
-| `LAPACKE_DIR:PATH` | Hint location for CMake to find LAPACKE include and library files | NO_DEFAULT |
-| `Jali_DIR:PATH` | Hint location for CMake to find Jali.  This version of Tangram works with version 0.9.8 of Jali | NO_DEFAULT |
-| `XMOF2D_DIR:PATH` | Hint location for CMake to find XMOF2D | NO_DEFAULT |
-| `TCMALLOC_LIB:PATH` | The TCMalloc library to use | NO_DEFAULT |
-| `THRUST_DIR:PATH` | Directory of the Thrust install | NO_DEFAULT |
-| `BOOST_ROOT:PATH` | Directory of the Boost install | NO_DEFAULT |
-| `THRUST_BACKEND:STRING` | Backend to use for Thrust | `"THRUST_DEVICE_SYSTEM_OMP"` |
+| `WONTON_ROOT:PATH` | Path to Wonton installation under which wontonConfig.cmake may be found | NO_DEFAULT |
+| `XMOF2D_ROOT:PATH` | Hint location for CMake to find XMOF2DConfig.cmake | NO_DEFAULT |
