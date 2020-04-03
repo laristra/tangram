@@ -30,53 +30,59 @@ ngc_include_dir=$NGC/private/include
 
 # compiler-specific settings
 if [[ $compiler == "intel18" ]]; then
-  intel_version=18.0.1
-  cxxmodule=intel/${intel_version}
-  # openmpi version that libs were built against
-  openmpi_version=2.1.2
-  mpi_module=openmpi/${openmpi_version}
-  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-intel-${intel_version}
-  wonton_install_dir=$NGC/private/wonton/new-cmake-intel-${intel_version}-openmpi-${openmpi_version}
-elif [[ $compiler == "gcc6" ]]; then
-  gcc_version=6.4.0
-  cxxmodule=gcc/${gcc_version}
-  # openmpi version that libs were built against
-  openmpi_version=2.1.2
-  mpi_module=openmpi/${openmpi_version}
-  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-${gcc_version}
-  wonton_install_dir=$NGC/private/wonton/new-cmake-gcc-${gcc_version}-openmpi-${openmpi_version}
-elif [[ $compiler == "gcc7" ]]; then
-  gcc_version=7.3.0
-  cxxmodule=gcc/${gcc_version}
-  # openmpi version that libs were built against
-  openmpi_version=2.1.2
-  mpi_module=openmpi/${openmpi_version}
-  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-${gcc_version}
-  wonton_install_dir=$NGC/private/wonton/new-cmake-gcc-${gcc_version}-openmpi-${openmpi_version}
-elif [[ $compiler == "gcc8" ]]; then
-  gcc_version=8.2.0
-  cxxmodule=gcc/${gcc_version}
-  # openmpi version that libs were built against
-  openmpi_version=3.1.3
-  mpi_module=openmpi/${openmpi_version}
-  xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}-gcc-${gcc_version} 
-  wonton_install_dir=$NGC/private/wonton/new-cmake-gcc-${gcc_version}-openmpi-${openmpi_version}
+
+    intel_version=18.0.1
+    cxxmodule=intel/${intel_version}
+    compiler_suffix=-intel-${intel_version}
+    
+    openmpi_version=2.1.2
+    mpi_module=openmpi/${openmpi_version}
+    mpi_suffix=-openmpi-${openmpi_version}
+
+elif [[ $compiler =~ "gcc" ]]; then
+
+    openmpi_version=2.1.2
+    if [[ $compiler == "gcc6" ]]; then
+	gcc_version=6.4.0
+    elif [[ $compiler == "gcc7" ]]; then
+	gcc_version=7.4.0
+    elif [[ $compiler == "gcc8" ]]; then
+	gcc_version=8.2.0
+	openmpi_version=3.1.3
+    fi
+    
+    cxxmodule=gcc/${gcc_version}
+    compiler_suffix=-gcc-${gcc_version}
+    
+    mpi_module=openmpi/${openmpi_version}
+    mpi_suffix=-openmpi-${openmpi_version}
 fi
 
-wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
-xmof2d_flags="-D ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
-mpi_flags="-D ENABLE_MPI=True"
 
 # build-type-specific settings
+mpi_flags="-D ENABLE_MPI=True"
+if [[ $build_type != "serial" ]]; then
+    mpi_flags=
+    mpi_suffix=
+fi
+
 cmake_build_type=Release
-thrust_flags=
 if [[ $build_type == "debug" ]]; then
     cmake_build_type=Debug
-elif [[ $build_type == "serial" ]]; then
-    mpi_flags=
-elif [[ $build_type == "thrust" ]]; then
+fi
+
+thrust_flags=
+if [[ $build_type == "thrust" ]]; then
     thrust_flags="-D ENABLE_THRUST=True"
 fi
+
+
+
+xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}${compiler_suffix}
+xmof2d_flags="-D ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
+
+wonton_install_dir=$NGC/private/wonton/new-cmake${compiler_suffix}${mpi_suffix}
+wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
 export SHELL=/bin/sh
 
