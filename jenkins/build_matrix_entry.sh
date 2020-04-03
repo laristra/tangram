@@ -33,11 +33,11 @@ if [[ $compiler == "intel18" ]]; then
 
     intel_version=18.0.1
     cxxmodule=intel/${intel_version}
-    compiler_suffix=-intel-${intel_version}
+    compiler_suffix="-intel-${intel_version}"
     
     openmpi_version=2.1.2
     mpi_module=openmpi/${openmpi_version}
-    mpi_suffix=-openmpi-${openmpi_version}
+    mpi_suffix="-openmpi-${openmpi_version}"
 
 elif [[ $compiler =~ "gcc" ]]; then
 
@@ -52,10 +52,10 @@ elif [[ $compiler =~ "gcc" ]]; then
     fi
     
     cxxmodule=gcc/${gcc_version}
-    compiler_suffix=-gcc-${gcc_version}
+    compiler_suffix="-gcc-${gcc_version}"
     
     mpi_module=openmpi/${openmpi_version}
-    mpi_suffix=-openmpi-${openmpi_version}
+    mpi_suffix="-openmpi-${openmpi_version}"
 fi
 
 
@@ -72,8 +72,10 @@ if [[ $build_type == "debug" ]]; then
 fi
 
 thrust_flags=
+thrust_suffix=
 if [[ $build_type == "thrust" ]]; then
     thrust_flags="-D ENABLE_THRUST=True"
+    thrust_suffix="-thrust"
 fi
 
 
@@ -81,7 +83,7 @@ fi
 xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}${compiler_suffix}
 xmof2d_flags="-D ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
 
-wonton_install_dir=$NGC/private/wonton/new-cmake${compiler_suffix}${mpi_suffix}
+wonton_install_dir=$NGC/private/wonton/new-cmake${compiler_suffix}${mpi_suffix}${thrust_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
 export SHELL=/bin/sh
