@@ -20,8 +20,9 @@ set(WONTON_ROOT @WONTON_ROOT@ CACHE PATH "Path to Wonton installation")
 
 
 # Have to move this into the find dependencies section
-set(XMOF2D_FOUND @XMOF2D_FOUND@ CACHE BOOL "XMOF2D status")
+set(TANGRAM_ENABLE_XMOF2D @TANGRAM_ENABLE_XMOF2D@ CACHE BOOL "Is XMOF2D enabled?")
 set(XMOF2D_LIBRARIES @XMOF2D_LIBRARIES@ CACHE STRING "XMOF2D libraries")
+set(XMOF2D_ROOT @XMOF2D_ROOT@ CACHE STRING "Where XMOF2DConfig.cmake is found")
 
 
 # Find target dependencies
@@ -38,7 +39,11 @@ endif ()
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(wonton PATHS ${WONTON_ROOT} REQUIRED)
+find_dependency(wonton REQUIRED)
+
+if (TANGRAM_ENABLE_XMOF2D)
+  find_dependency(XMOF2D)
+endif ()
 
 # Restore original CMAKE_MODULE_PATH
 set(CMAKE_MODULE_PATH ${SAVED_CMAKE_MODULE_PATH})
