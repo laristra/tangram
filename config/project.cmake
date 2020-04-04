@@ -146,6 +146,7 @@ if (ENABLE_XMOF2D)
   message(STATUS "Located XMOF2D")
   
   target_include_directories(tangram INTERFACE ${XMOF2D_INCLUDE_DIRS})
+  message(STATUS "XMOF2D_INCLUDE_DIR ${XMOF2D_INCLUDE_DIRS}")
 
   # XMOF2D_LIBRARIES doesn't contain a real target name. Until we
   # upgrade XMOF2D's cmake to export the correct target, we have to
