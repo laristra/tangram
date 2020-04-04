@@ -136,6 +136,7 @@ endif()
 # Configure XMOF2D
 #------------------------------------------------------------------------------#
 
+set(TANGRAM_ENABLE_XMOF2D False CACHE BOOL "Is XMOF2D enabled?")
 if (ENABLE_XMOF2D)
 
   # Look for the XMOF2D package
@@ -152,6 +153,11 @@ if (ENABLE_XMOF2D)
   target_link_directories(tangram INTERFACE ${XMOF2D_LIBRARY_DIR})
   target_link_libraries(tangram INTERFACE ${XMOF2D_LIBRARIES})
   
+  if (NOT XMOF2D_ROOT)
+    set(XMOF2D_ROOT ${XMOF2D_INCLUDE_DIR}/../share/cmake CACHE FILEPATH "Where XMOF2D can be found")
+  endif ()
+
+  set(TANGRAM_ENABLE_XMOF2D False CACHE BOOL "Is XMOF2D enabled?" FORCE)
 endif (ENABLE_XMOF2D)
 
 
