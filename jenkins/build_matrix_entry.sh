@@ -61,7 +61,7 @@ fi
 
 # build-type-specific settings
 mpi_flags="-D ENABLE_MPI=True"
-if [[ $build_type != "serial" ]]; then
+if [[ $build_type == "serial" ]]; then
     mpi_flags=
     mpi_suffix=
 fi
