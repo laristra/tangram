@@ -69,64 +69,33 @@ endif ()
 #----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
-# Find or compile Wonton
+# Find Wonton
 #-----------------------------------------------------------------------------
-if (WONTON_ROOT)
 
-  # Link with an existing installation of Wonton, if provided. 
-  find_package(WONTON QUIET REQUIRED NAMES wonton)
+# Link with an existing installation of Wonton, if provided. 
+find_package(WONTON QUIET REQUIRED NAMES wonton)
 
-  target_include_directories(tangram INTERFACE ${WONTON_INCLUDE_DIR})
-  message(STATUS "WONTON_INCLUDE_DIR=${WONTON_INCLUDE_DIR}")
+target_include_directories(tangram INTERFACE ${WONTON_INCLUDE_DIR})
+message(STATUS "WONTON_INCLUDE_DIR=${WONTON_INCLUDE_DIR}")
 
-  target_link_libraries(tangram INTERFACE ${WONTON_LIBRARIES})
-  message(STATUS "WONTON_LIBRARIES=${WONTON_LIBRARIES}" )
+target_link_libraries(tangram INTERFACE ${WONTON_LIBRARIES})
+message(STATUS "WONTON_LIBRARIES=${WONTON_LIBRARIES}" )
 
-  if (ENABLE_THRUST AND NOT WONTON_ENABLE_THRUST)
-    message(FATAL_ERROR "Thrust enabled for Tangram but Wonton is not built with Thrust")
-  endif ()
-  if (NOT ENABLE_THRUST AND WONTON_ENABLE_THRUST)
-    message(FATAL_ERROR "Thrust disabled for Tangram but Wonton is built with Thrust")
-  endif ()
-
-  if (ENABLE_MPI AND NOT WONTON_ENABLE_MPI)
-    message(FATAL_ERROR "MPI enabled for Tangram but Wonton is not compiled with MPI")
-  endif ()
-
-  if (NOT ENABLE_MPI AND WONTON_ENABLE_MPI)
-    message(FATAL_ERROR "MPI disabled for Tangram but Wonton is compiled with MPI")
-  endif ()
-  
-else ()
-
-  # Build Wonton from a submodule
-  file(GLOB _wonton_contents ${PROJECT_SOURCE_DIR}/wonton/*)
-  if (_wonton_contents)
-    if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-      # We are building tangram, and wonton is a subdirectory
-      message(STATUS "Recursing down into wonton")
-      add_subdirectory(${PROJECT_SOURCE_DIR}/wonton)
-    endif()
-    
-    target_include_directories(tangram INTERFACE
-      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/wonton>
-      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/wonton>
-      $<INSTALL_INTERFACE:include>)
-
-    # set wonton_LIBRARIES which is needed for tangram_support library
-    # but is set by the wonton build system only later (it would be
-    # nice to avoid this)
-#    set(WONTON_LIBRARIES wonton::wonton)
-    target_link_libraries(tangram INTERFACE ${WONTON_LIBRARIES})
-    set(WONTON_FOUND True)
-
-    # If Wonton is included as a submodule, it will get installed alongside Portage
-    set(WONTON_DIR ${CMAKE_INSTALL_PREFIX})
-    set(WONTON_IS_SUBMODULE True)
-  endif ()
-  
+if (ENABLE_THRUST AND NOT WONTON_ENABLE_THRUST)
+  message(FATAL_ERROR "Thrust enabled for Tangram but Wonton is not built with Thrust")
 endif ()
-  
+if (NOT ENABLE_THRUST AND WONTON_ENABLE_THRUST)
+  message(FATAL_ERROR "Thrust disabled for Tangram but Wonton is built with Thrust")
+endif ()
+
+if (ENABLE_MPI AND NOT WONTON_ENABLE_MPI)
+  message(FATAL_ERROR "MPI enabled for Tangram but Wonton is not compiled with MPI")
+endif ()
+
+if (NOT ENABLE_MPI AND WONTON_ENABLE_MPI)
+  message(FATAL_ERROR "MPI disabled for Tangram but Wonton is compiled with MPI")
+endif ()
+
 if (NOT WONTON_FOUND)
   message(FATAL_ERROR "WONTON_DIR is not specified and Wonton is not a subdirectory !")
 endif() 
