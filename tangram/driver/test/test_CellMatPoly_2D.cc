@@ -152,7 +152,7 @@ TEST(CellMatPoly, Mesh2D) {
   // Verify info for matpoly 0
   {
     std::vector<int> mverts_out = cellmatpoly.matpoly_vertices(0);
-    ASSERT_EQ(4, mverts_out.size());
+    ASSERT_EQ(unsigned(4), mverts_out.size());
     ASSERT_EQ(0, mverts_out[0]);
     ASSERT_EQ(1, mverts_out[1]);
     ASSERT_EQ(2, mverts_out[2]);
@@ -165,13 +165,13 @@ TEST(CellMatPoly, Mesh2D) {
     }
 
     std::vector<Tangram::Point<2>> mpoints = cellmatpoly.matpoly_points(0);
-    ASSERT_EQ(4, mpoints.size());
+    ASSERT_EQ(unsigned(4), mpoints.size());
     for (int i = 0; i < 4; i++) {
       ASSERT_TRUE(approxEq(points0[i], mpoints[i], 1.0e-8));
     }  
     
     std::vector<int> const& mfaces_out = cellmatpoly.matpoly_faces(0);
-    ASSERT_EQ(4, mfaces_out.size());
+    ASSERT_EQ(unsigned(4), mfaces_out.size());
     ASSERT_EQ(0, mfaces_out[0]);
     ASSERT_EQ(1, mfaces_out[1]);
     ASSERT_EQ(2, mfaces_out[2]);
@@ -180,7 +180,8 @@ TEST(CellMatPoly, Mesh2D) {
     for (int i = 0; i < 4; i++) {
       int f = mfaces_out[i];
       std::vector<int> const& mfverts_out = cellmatpoly.matface_vertices(f);
-      for (int j = 0; j < mfverts_out.size(); j++)
+      int const nb_mfverts_out = mfverts_out.size();
+      for (int j = 0; j < nb_mfverts_out; j++)
         ASSERT_EQ(fverts0[i][j], mfverts_out[j]);
       
       int fmatpolys_out[2];
@@ -213,7 +214,7 @@ TEST(CellMatPoly, Mesh2D) {
 
   {
     std::vector<int> mverts_out = cellmatpoly.matpoly_vertices(1);
-    ASSERT_EQ(3, mverts_out.size());
+    ASSERT_EQ(unsigned(3), mverts_out.size());
     ASSERT_EQ(2, mverts_out[0]);
     ASSERT_EQ(1, mverts_out[1]);
     ASSERT_EQ(4, mverts_out[2]);
@@ -225,13 +226,13 @@ TEST(CellMatPoly, Mesh2D) {
     }
 
     std::vector<Tangram::Point<2>> mpoints = cellmatpoly.matpoly_points(1);
-    ASSERT_EQ(3, mpoints.size());
+    ASSERT_EQ(unsigned(3), mpoints.size());
     for (int i = 0; i < 3; i++) {
       ASSERT_TRUE(approxEq(points1[i], mpoints[i], 1.0e-08));
     }  
 
     std::vector<int> const& mfaces_out = cellmatpoly.matpoly_faces(1);
-    ASSERT_EQ(3, mfaces_out.size());
+    ASSERT_EQ(unsigned(3), mfaces_out.size());
     ASSERT_EQ(1, mfaces_out[0]);
     ASSERT_EQ(4, mfaces_out[1]);
     ASSERT_EQ(5, mfaces_out[2]);
@@ -239,7 +240,8 @@ TEST(CellMatPoly, Mesh2D) {
     for (int i = 0; i < 3; i++) {
       int f = mfaces_out[i];
       std::vector<int> const& mfverts_out = cellmatpoly.matface_vertices(f);
-      for (int j = 0; j < mfverts_out.size(); j++)
+      int const nb_mfverts_out = mfverts_out.size();
+      for (int j = 0; j < nb_mfverts_out; j++)
         ASSERT_EQ(fverts1[i][j], mfverts_out[j]);
       
       int fmatpolys_out[2];
@@ -294,7 +296,7 @@ TEST(CellMatPoly, Mesh2D) {
     ASSERT_EQ(3, MatPoly1.num_faces());
     for (int iface = 0; iface < 3; iface++) {
       const std::vector<int>& face_vertices = MatPoly1.face_vertices(iface);
-      ASSERT_EQ(2, face_vertices.size());
+      ASSERT_EQ(unsigned(2), face_vertices.size());
       ASSERT_EQ(expected_mp1_faces[iface][0], face_vertices[0]);
       ASSERT_EQ(expected_mp1_faces[iface][1], face_vertices[1]);
     }
