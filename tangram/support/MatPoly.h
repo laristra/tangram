@@ -236,7 +236,7 @@ class MatPoly {
     containing cell
     @param face_group_id ID of the associated face: should be a valid (>=0) value
   */
-  int set_face_group_id(int const face_group_id) { 
+  void set_face_group_id(int const face_group_id) {
 #ifdef DEBUG
     assert(face_group_id >= 0);
 #endif
@@ -810,7 +810,7 @@ void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys,
       for (int ivrt = 0; ivrt < 3; ivrt++)
         tet_vrts[ivrt] = vertex_points_[face_vertices_[iface][ivrt]];
       int icur_poly = static_cast<int>(sub_polys.size());
-      sub_polys.push_back(MatPoly<3>(material_id_));
+      sub_polys.emplace_back(material_id_);
       sub_polys[icur_poly].initialize(tet_vrts, tet_faces, dst_tol_);
       if (face_ids != nullptr)
         sub_polys[icur_poly].set_face_group_id((*face_ids)[iface]);
@@ -822,7 +822,7 @@ void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys,
         tet_vrts[2] = vertex_points_[face_vertices_[iface][(ivrt + 1)%face_nvrts]];
 
         int icur_poly = static_cast<int>(sub_polys.size());
-        sub_polys.push_back(MatPoly<3>(material_id_));
+        sub_polys.emplace_back(material_id_);
         sub_polys[icur_poly].initialize(tet_vrts, tet_faces, dst_tol_);
         if (face_ids != nullptr)
           sub_polys[icur_poly].set_face_group_id((*face_ids)[iface]);
@@ -852,7 +852,7 @@ Vector<2> MatPoly<2>::face_normal_and_group(int const face_id,
   int ifv = face_id, isv = (face_id + 1)%nfaces;
   double flen = (vertex_points_[isv] - vertex_points_[ifv]).norm();
   if (flen < dst_tol_)
-    return Vector<2>(0.0, 0.0);
+    return {0.0, 0.0};
 
   Vector<2> fnormal(
     (vertex_points_[isv][1] - vertex_points_[ifv][1])/flen,
@@ -893,8 +893,8 @@ inline
 Vector<3> MatPoly<3>::face_normal_and_group(int const face_id,
                                 int const face_group_id,
                                 std::vector< MatPoly<3> >* face_group_polys) const {
-  int nfaces = num_faces();
-  assert((face_id >= 0) && (face_id < nfaces));
+
+  assert((face_id >= 0) && (face_id < num_faces()));
 
   Vector<3> fnormal(0.0, 0.0, 0.0);
   Point<3> fcentroid;
