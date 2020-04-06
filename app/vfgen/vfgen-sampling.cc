@@ -40,20 +40,15 @@
 
 int main(int argc, char *argv[]) {
   int global_nmats;
-  char mstk_fname[256], mname[256], feat_fname[256], out_fname[256];
-  int i, j, t, ok, status, idx, idx2, nrv, len, flag, done, ir;
-  int imat, ptin, inout, nppoly, mkid, rid, refmk, ptnum, nblock;
-  double xmin, xmax, ymin, ymax, xlen, ylen;
-  double XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, XLEN, YLEN, ZLEN;
-  double radius, radius2, area;
-  double cen[3];
-  char temp_str[256], feat_str[256], inout_str[8];
 
-  struct timeval begin_total, begin_core, end_total, end_core,
-      diff_total, diff_core;
+  struct timeval begin_total {};
+  struct timeval begin_core {};
+  struct timeval end_total {};
+  struct timeval end_core {};
+  struct timeval diff_total {};
+  struct timeval diff_core {};
 
   double ptol = 1.0e-12;
-  double ptol2 = ptol*ptol;
 
   MPI_Init(&argc, &argv);
 
@@ -70,7 +65,6 @@ int main(int argc, char *argv[]) {
   std::string basename(meshfilename.substr(0, pos));
 
   std::string featfilename;
-  int probdim = std::stoi(argv[2]);
   if (argc > 3)
     featfilename = argv[3];
   else
@@ -81,7 +75,7 @@ int main(int argc, char *argv[]) {
 
   std::shared_ptr<Jali::Mesh> mesh;
   Jali::MeshFactory mf(MPI_COMM_WORLD);
-  mf.included_entities({Jali::Entity_kind::ALL_KIND});
+  mf.included_entities(Jali::Entity_kind::ALL_KIND);
 
   mf.partitioner(Jali::Partitioner_type::METIS);
   mesh = mf(meshfilename);

@@ -127,7 +127,9 @@ bool P_InTriPoly3D(Tangram::Point<3> ptest,
 //                     of faceted polyhedron in 3D
 
 template<int dim>
-bool P_InPoly(Tangram::Point<dim> ptest, int npnts, Tangram::Point<dim> *points) {}
+bool P_InPoly(Tangram::Point<dim> ptest, int npnts, Tangram::Point<dim> *points) {
+  throw std::runtime_error("invalid dimension");
+}
 
 template<>
 bool P_InPoly<2>(Tangram::Point<2> ptest, int npnts, Tangram::Point<2> *points) {
@@ -202,9 +204,9 @@ struct FEATURE {
 
 template <int dim>
 struct InFeatureEvaluator {
-  int nfeat_;
 
-  std::vector<FEATURE<dim>> features_;
+  std::vector<FEATURE<dim>> features_ {};
+  int nfeat_ = 0;
 
   explicit InFeatureEvaluator(std::vector<FEATURE<dim>> const& features) :
       features_(features), nfeat_(features.size()) {}
@@ -617,9 +619,7 @@ void writeAsciiFile(std::string filename,
     outfile << "mat" << i << "\n";
 
   /* Write out volume fractions and centroids to file */
-  int ncells_nmats[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   for (int i = 0; i < ncells; i++) {
-    double sum = 0.0;
 
     vfcen_t<dim> vfcen_i = vfcen[i];  // device to host copy, if Thrust is used
 
@@ -680,7 +680,6 @@ void writeBinaryFile(std::string filename, Tangram::vector<vfcen_t<dim>> vfcen) 
   outfile.write((char *) &ncells, sizeof(int));
 
   /* Write out volume fractions and centroids to file */
-  int ncells_nmats[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   for (int i = 0; i < ncells; i++) {
     vfcen_t<dim> const& vfcen_i = vfcen[i];
     int nmats_cell = vfcen_i.nmats;
@@ -785,7 +784,6 @@ void read_features(std::string featfilename,
 
 
   std::string inout_str, feat_str;
-  int nfeat = 0;
   while (!featfile.eof()) {
     featfile >> feat_str;
 
@@ -833,7 +831,6 @@ void read_features(std::string featfilename,
       // Read points of the polygon or polyhedron
       featfile >> this_feature.nppoly;
       for (int j = 0; j < this_feature.nppoly; j++) {
-        double polyx, polyy;
         featfile >> this_feature.polyxyz[j][0];
         featfile >> this_feature.polyxyz[j][1];
       }
@@ -893,7 +890,6 @@ void read_features(std::string featfilename,
       continue;
     }
   }
-  nfeat = features->size();
 
   featfile.close();
 }  // read_features
