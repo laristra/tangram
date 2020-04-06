@@ -262,10 +262,10 @@ public:
       return cfaces;
 
     std::vector<int> facets_group_ids;
-    for (int icf = 0; icf < cfaces.size(); icf++) {
+    for (int & cface : cfaces) {
       std::vector<int> fnodes;
-      mesh_.face_get_nodes(cfaces[icf], &fnodes);
-      facets_group_ids.insert(facets_group_ids.end(), fnodes.size(), cfaces[icf]);
+      mesh_.face_get_nodes(cface, &fnodes);
+      facets_group_ids.insert(facets_group_ids.end(), fnodes.size(), cface);
     }
 
     return facets_group_ids;
