@@ -65,6 +65,9 @@ int main(int argc, char *argv[]) {
   std::string basename(meshfilename.substr(0, pos));
 
   std::string featfilename;
+#ifdef DEBUG
+  int probdim = std::stoi(argv[2]);
+#endif
   if (argc > 3)
     featfilename = argv[3];
   else
@@ -81,7 +84,9 @@ int main(int argc, char *argv[]) {
   mesh = mf(meshfilename);
 
   int meshdim = mesh->space_dimension();
+#ifdef DEBUG
   assert(meshdim == probdim);
+#endif
 
   int ncells = mesh->num_cells();
 
