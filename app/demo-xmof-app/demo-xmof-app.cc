@@ -198,12 +198,12 @@ int main(int argc, char** argv) {
     const Tangram::CellMatPoly<2>* cell_mat_poly_ptr = cellmatpoly_list[icell].get();
     if (cell_mat_poly_ptr) {
       int cur_npolys = cell_mat_poly_ptr->num_matpolys();
-      if (cur_npolys > ncells_with_nmats.size()) {
+      if (unsigned(cur_npolys) > ncells_with_nmats.size()) {
         ncells_with_nmats.resize(cur_npolys, 0);
         imaxcells.resize(1);
         imaxcells[0] = icell;
       }
-      else if (cur_npolys == ncells_with_nmats.size())
+      else if (unsigned(cur_npolys) == ncells_with_nmats.size())
         imaxcells.push_back(icell);
 
       ncells_with_nmats[cur_npolys - 1]++;
@@ -216,8 +216,8 @@ int main(int argc, char** argv) {
     MPI_COMM_WORLD);
   ncells_with_nmats.resize(top_max_nmats, 0);
 
-  int* ncells_per_rank = NULL;
-  int* nowned_cells_per_rank = NULL;
+  int* ncells_per_rank = nullptr;
+  int* nowned_cells_per_rank = nullptr;
   if (comm_rank == 0) {
     ncells_per_rank = new int [world_size];
     nowned_cells_per_rank = new int [world_size];
@@ -246,7 +246,9 @@ int main(int argc, char** argv) {
     for (int irank = 0; irank < world_size; irank++)
       std::cout << cellmat_stats[0][irank] << " ";
     std::cout << std::endl;
-    for (int inm = 0; inm < ncells_with_nmats.size() - 1; inm++) {
+
+    int const extent = static_cast<int>(ncells_with_nmats.size() - 1);
+    for (int inm = 0; inm < extent; inm++) {
       std::cout << "Number of CellMatPoly's with " << inm + 2 << " materials created on each rank: ";
       for (int irank = 0; irank < world_size; irank++)
         std::cout << cellmat_stats[inm + 1][irank] << " ";
@@ -262,12 +264,13 @@ int main(int argc, char** argv) {
   if ( (world_size == 1) && (ncells_with_nmats.size() > 1) && (imaxcells.size() <= 25) ) {
     std::cout << "Cells with max number of material polygons are:" << std::endl;
     std::cout << "\t#CellID: [MaterialID, MaterialVolumeFraction] [..., ...]" << std::endl;
-    for (int imc = 0; imc < imaxcells.size(); imc++) {
-      double volume = mesh_wrapper.cell_volume(imaxcells[imc]);
-      std::cout << "\t#" << imaxcells[imc] << ": ";
-      for (int imp = 0; imp < ncells_with_nmats.size(); imp++) {
+    for (int imaxcell : imaxcells) {
+      double volume = mesh_wrapper.cell_volume(imaxcell);
+      std::cout << "\t#" << imaxcell << ": ";
+      int const extent = ncells_with_nmats.size();
+      for (int imp = 0; imp < extent; imp++) {
         const Tangram::CellMatPoly<2>* cell_mat_poly =
-          cellmatpoly_list[imaxcells[imc]].get();
+          cellmatpoly_list[imaxcell].get();
         std::cout << "[" << cell_mat_poly->matpoly_matid(imp) << ", " <<
           cell_mat_poly->matpoly_volume(imp)/volume << "]\t";
       }
