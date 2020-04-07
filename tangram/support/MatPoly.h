@@ -688,9 +688,11 @@ template <>
 inline
 void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys,
                            const std::vector<int>* face_ids) const {
+#ifdef DEBUG
   if (face_ids != nullptr) {
-    assert(face_ids->size() == nfaces_);
+    assert(face_ids->size() == unsigned(nfaces_));
   }
+#endif
 
   if (moments_.empty()) 
     compute_moments(moments_);
@@ -725,9 +727,11 @@ template <>
 inline
 void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys,
                            const std::vector<int>* face_ids) const {
+#ifdef DEBUG
   if (face_ids != nullptr) {
-    assert(face_ids->size() == nfaces_);
+    assert(face_ids->size() == unsigned(nfaces_));
   }
+#endif
   
   if (moments_.empty()) 
     compute_moments(moments_);
@@ -788,9 +792,11 @@ template <>
 inline
 void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys,
                                     const std::vector<int>* face_ids) const {
+#ifdef DEBUG
   if (face_ids != nullptr) {
-    assert(face_ids->size() == nfaces_);
+    assert(face_ids->size() == unsigned(nfaces_));
   }
+#endif
 
   std::vector< std::vector<int> > tet_faces(4);
   for (int ivrt = 0; ivrt < 3; ivrt++)

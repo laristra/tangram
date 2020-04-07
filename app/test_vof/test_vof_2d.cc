@@ -194,8 +194,9 @@ int main(int argc, char** argv) {
         cur_matpoly.set_mat_id(cell_mat_ids[offsets[icell] + icmat]);
 
         std::vector<Tangram::Point2> mt_pts = cur_matpoly.points();
-        std::cout<<"nverts = "<<mt_pts.size()<<std::endl;
-        for (int i = 0; i < mt_pts.size(); i++)
+        int const nverts = mt_pts.size();
+        std::cout<<"nverts = "<< nverts <<std::endl;
+        for (int i = 0; i < nverts; i++)
           std::cout<<"Pt["<<i<<"] = { "<<mt_pts[i][0]<<", "<<mt_pts[i][1]<<"}"<<std::endl;
 
 

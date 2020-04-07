@@ -54,7 +54,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nplanes = static_cast<int>(planar_interfaces.size());
-  assert(material_IDs.size() == nplanes + 1);
+  assert(material_IDs.size() == unsigned(nplanes + 1));
   
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
   
@@ -404,7 +404,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector< std::vector< std::vector<r2d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nlines = static_cast<int>(linear_interfaces.size());
-  assert(material_IDs.size() == nlines + 1);
+  assert(material_IDs.size() == unsigned(nlines + 1));
   
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
   

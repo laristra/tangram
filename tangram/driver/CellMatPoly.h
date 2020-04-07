@@ -35,11 +35,10 @@ class CellMatPoly {
     @brief Constructor with known cell ID
     @param cellid  ID of the cell
   */
-  explicit CellMatPoly(int const cellid = -1) :
-      cellid_(cellid) {}
+  explicit CellMatPoly(int const cellid = -1) : cellid_(cellid) {}
 
   /*! Destructor */
-  ~CellMatPoly() {}
+  ~CellMatPoly() = default;
 
   /*!
     @brief Cell ID for which this object describes material polygons
@@ -330,13 +329,13 @@ class CellMatPoly {
     @param point0_parentid    Local ID in cell of parent entity on which point 0 lies (can be -1)
     @param point1_parentid    Local ID in cell of parent entity on which point 1 lies (can be -1)
   */
-  void add_matpoly(int const matid,
-                   int const face_group_id,
-                   double const matpoly_point0, double const matpoly_point1,
+  void add_matpoly(int matid,
+                   int face_group_id,
+                   double matpoly_point0, double matpoly_point1,
                    double dst_tol,
-                   Entity_kind const point0_parentkind,
-                   Entity_kind const point1_parentkind,
-                   int const point0_parentid, int const point1_parentid);
+                   Entity_kind point0_parentkind,
+                   Entity_kind point1_parentkind,
+                   int point0_parentid, int point1_parentid);
 
 
   /*!
@@ -348,14 +347,14 @@ class CellMatPoly {
     @param points_parentkind  Entity_kind of parent entity on which point lies (can be empty or numverts long)
     @param points_parentid    Local ID in cell of parent entity on which point lies (can be empty or numverts long)
   */
-  void add_matpoly(int const matid,
-                   int const face_group_id,
-                   int const numverts, Point<2> const * const matpoly_points,
+  void add_matpoly(int matid,
+                   int face_group_id,
+                   int numverts, Point<2> const * matpoly_points,
                    double dst_tol,
-                   Entity_kind const * const points_parentkind,
-                   int const * const points_parentid,
-                   Entity_kind const * const faces_parentkind,
-                   int const * const faces_parentid);
+                   Entity_kind const * points_parentkind,
+                   int const * points_parentid,
+                   Entity_kind const * faces_parentkind,
+                   int const * faces_parentid);
 
   /*!
     @brief Add a material polyhedron to 3D cell
@@ -371,16 +370,16 @@ class CellMatPoly {
     @param faces_parentkind   Entity_kind of parent entity on which each face lies (can be empty or numfaces long)
     @param faces_parentid     Local ID in cell of parent entity on which point lies (can be empty or numfaces long)
   */
-  void add_matpoly(int const matid,
-                   int const face_group_id,
-                   int const numverts, Point<3> const * const matpoly_points,
+  void add_matpoly(int matid,
+                   int face_group_id,
+                   int numverts, Point<3> const * matpoly_points,
                    double dst_tol,
-                   Entity_kind const * const points_parentkind,
-                   int const * const points_parentid,
-                   int const numfaces, int const * const numfaceverts,
-                   int const * const faces_point_ids,
-                   Entity_kind const * const faces_parentkind,
-                   int const * const faces_parentid);
+                   Entity_kind const * points_parentkind,
+                   int const * points_parentid,
+                   int numfaces, int const * numfaceverts,
+                   int const * faces_point_ids,
+                   Entity_kind const * faces_parentkind,
+                   int const * faces_parentid);
   
   /*!
    @brief Add a MatPoly to a cell
@@ -479,8 +478,8 @@ class CellMatPoly {
    @brief Computes aggregated moments for a cell's material
    @param cmp_mat_id Local ID of a distinct cell's material
   */  
-  void compute_material_moments(const int cmp_mat_id) const {
-    assert(cmp_mat_id < material_moments_.size());
+  void compute_material_moments(int cmp_mat_id) const {
+    assert(unsigned(cmp_mat_id) < material_moments_.size());
     material_moments_[cmp_mat_id].assign(D + 1, 0.0);
 
     int mat_id = cell_materialids_[cmp_mat_id];
@@ -563,7 +562,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     assert(face_group_ids_.empty());
   }
   else {
-    assert(face_group_ids_.size() == num_matpolys_);
+    assert(face_group_ids_.size() == unsigned(num_matpolys_));
     face_group_ids_.push_back(face_group_id);
   }
 
@@ -682,8 +681,11 @@ void CellMatPoly<D>::add_matpoly(int const matid,
                                  Entity_kind const * const faces_parentkind,
                                  int const * const faces_parentid) {
   assert(D == 2);
-  if (num_matpolys_ == 0)
+  if (num_matpolys_ == 0) {
     dst_tol_ = dst_tol;
+  }
+  // avoid empty conditional branch in release mode
+#ifdef DEBUG
   else {
     assert(dst_tol_ == dst_tol);
   }  
@@ -692,7 +694,10 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     assert(face_group_ids_.empty());
   }
   else {
-    assert(face_group_ids_.size() == num_matpolys_);
+    assert(face_group_ids_.size() == unsigned(num_matpolys_));
+#else
+  if (face_group_id != -1) {
+#endif
     face_group_ids_.push_back(face_group_id);
   }
 
@@ -840,8 +845,11 @@ void CellMatPoly<D>::add_matpoly(int const matid,
                                  int const * const faces_parentid) {
 
   assert(D == 3);
-  if (num_matpolys_ == 0)
+  if (num_matpolys_ == 0) {
     dst_tol_ = dst_tol;
+  }
+  // avoid empty conditional branch on release mode
+#ifdef DEBUG
   else {
     assert(dst_tol_ == dst_tol);
   }
@@ -850,7 +858,10 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     assert(face_group_ids_.empty());
   }
   else {
-    assert(face_group_ids_.size() == num_matpolys_);
+    assert(face_group_ids_.size() == unsigned(num_matpolys_));
+#else
+  if (face_group_id != -1) {
+#endif
     face_group_ids_.push_back(face_group_id);
   }
 

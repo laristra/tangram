@@ -733,7 +733,7 @@ void rotor_material_moments(const Mesh_Wrapper& mesh,
     //Prepare carrier shaft
     std::vector< Tangram::Point<3> > carrier_shaft_pts = 
       gear_carrier_shaft_poly.face_points(nshaft_sides + 1);
-    assert(carrier_shaft_pts.size() == nshaft_sides);
+    assert(carrier_shaft_pts.size() == unsigned(nshaft_sides));
     std::reverse(carrier_shaft_pts.begin(), carrier_shaft_pts.end());
  
     Tangram::MatPoly<3> carrier_shaft_poly = 
