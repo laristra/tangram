@@ -343,7 +343,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nspheres = static_cast<int>(radius.size());
-  assert(material_IDs.size() == nspheres + 1);
+  assert(material_IDs.size() == unsigned(nspheres + 1));
 
   std::vector< std::shared_ptr<RefPolyData_t> > mesh_polys, cur_polys_data, rem_polys_data;
   mesh_to_r3d_polys<Mesh_Wrapper>(mesh, mesh_polys, dst_tol, decompose_cells);
@@ -785,7 +785,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
       std::find(cells_mat_ids[icell].begin(), 
                 cells_mat_ids[icell].end(), material_IDs[1]));
 
-    if (cell_mat_id == cells_mat_ids[icell].size()) {
+    if (unsigned(cell_mat_id) == cells_mat_ids[icell].size()) {
       cells_mat_ids[icell].push_back(material_IDs[1]);
       cells_mat_moments[icell].resize(cell_mat_id + 1);
       cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
