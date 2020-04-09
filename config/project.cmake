@@ -266,7 +266,7 @@ if(ENABLE_THRUST)
   # Allow for swapping backends - should this be in CACHE?
   set(THRUST_BACKEND "THRUST_DEVICE_SYSTEM_OMP" CACHE STRING "Thrust backend")
   message(STATUS "Using ${THRUST_BACKEND} as Thrust backend.")
-  include_directories(${THRUST_DIR})
+  include_directories(SYSTEM ${THRUST_DIR})
   add_definitions(-DTHRUST)
   add_definitions(-DTHRUST_DEVICE_SYSTEM=${THRUST_BACKEND})
 
