@@ -34,7 +34,7 @@ set(reconstruct_SOURCES
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
-  cinch_add_unit(cutting_distance_solver
+  cinch_add_unit(test_cutting_distance_solver
     SOURCES test/test_cutting_distance_solver.cc
     LIBRARIES wonton
     POLICY SERIAL
