@@ -25,17 +25,17 @@ set(intersect_SOURCES
 
 if (ENABLE_UNIT_TESTS) 
 
-  cinch_add_unit(split_r3d
+  cinch_add_unit(test_split_r3d
     SOURCES test/test_split_r3d.cc
     LIBRARIES wonton
     POLICY SERIAL
     )
-  cinch_add_unit(split_r2d
+  cinch_add_unit(test_split_r2d
     SOURCES test/test_split_r2d.cc
     LIBRARIES wonton
     POLICY SERIAL
     )
-  cinch_add_unit(split_order
+  cinch_add_unit(test_split_order
     SOURCES test/test_split_order.cc
     LIBRARIES wonton
     POLICY SERIAL

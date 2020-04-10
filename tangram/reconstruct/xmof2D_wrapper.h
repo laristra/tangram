@@ -97,7 +97,7 @@ namespace Tangram {
                               std::vector<Point<Dim>> const& cell_mat_centroids) {
       assert(Dim == 2);
       int ncells = xmof_ir->get_base_mesh().ncells();
-      assert(cell_num_mats.size() == ncells);
+      assert(cell_num_mats.size() == unsigned(ncells));
       XMOF2D::CellsMatData mat_data;
       mat_data.cells_materials.resize(ncells);
       mat_data.cells_vfracs.resize(ncells);
@@ -156,12 +156,12 @@ namespace Tangram {
      */
     std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
       assert(Dim == 2);
-      assert(cell_op_ID < icells_to_reconstruct.size());
+      assert(unsigned(cell_op_ID) < icells_to_reconstruct.size());
 
       double dst_tol = ims_tols_[0].arg_eps;
       int cellID = icells_to_reconstruct[cell_op_ID];
 
-      CellMatPoly<Dim>* cell_mat_poly = new CellMatPoly<Dim>(cellID);
+      auto* cell_mat_poly = new CellMatPoly<Dim>(cellID);
       const XMOF2D::BaseMesh& mesh = xmof_ir->get_base_mesh();
       if (xmof_ir->get_cell_materials(cellID).size() > 1) {
         xmof_ir->construct_minimesh(cellID);

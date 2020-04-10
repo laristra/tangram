@@ -256,7 +256,7 @@ TEST(CellMatPoly, Mesh3D) {
  //   }  
     
     std::vector<int> const& mfaces_out = cellmatpoly.matpoly_faces(0);
-    ASSERT_EQ(6, mfaces_out.size());
+    ASSERT_EQ(unsigned(6), mfaces_out.size());
     ASSERT_EQ(0, mfaces_out[0]);
     ASSERT_EQ(1, mfaces_out[1]);
     ASSERT_EQ(2, mfaces_out[2]);
@@ -267,9 +267,10 @@ TEST(CellMatPoly, Mesh3D) {
     for (int i = 0; i < 6; i++) {
       int f = mfaces_out[i];
       std::vector<int> const& mfverts_out = cellmatpoly.matface_vertices(f);
-      ASSERT_EQ(nfv0[i], mfverts_out.size());
+      int const nb_mfverts_out = mfverts_out.size();
+      ASSERT_EQ(nfv0[i], nb_mfverts_out);
 
-      for (int j = 0; j < mfverts_out.size(); j++)
+      for (int j = 0; j < nb_mfverts_out; j++)
         ASSERT_EQ(fverts0_expected[i][j], mfverts_out[j]);
       
       int fmatpolys_out[2];
@@ -328,7 +329,7 @@ TEST(CellMatPoly, Mesh3D) {
 //    }  
 
     std::vector<int> const& mfaces_out = cellmatpoly.matpoly_faces(1);
-    ASSERT_EQ(5, mfaces_out.size());
+    ASSERT_EQ(unsigned(5), mfaces_out.size());
     ASSERT_EQ(6, mfaces_out[0]);
     ASSERT_EQ(7, mfaces_out[1]);
     ASSERT_EQ(8, mfaces_out[2]);
@@ -338,9 +339,10 @@ TEST(CellMatPoly, Mesh3D) {
     for (int i = 0; i < 5; i++) {
       int f = mfaces_out[i];
       std::vector<int> const& mfverts_out = cellmatpoly.matface_vertices(f);
-      ASSERT_EQ(nfv1[i], mfverts_out.size());
+      int const nb_mfverts_out = mfverts_out.size();
+      ASSERT_EQ(nfv1[i], nb_mfverts_out);
 
-      for (int j = 0; j < mfverts_out.size(); j++)
+      for (int j = 0; j < nb_mfverts_out; j++)
         ASSERT_EQ(fverts1_expected[i][j], mfverts_out[j]);
       
       int fmatpolys_out[2];
@@ -388,7 +390,8 @@ TEST(CellMatPoly, Mesh3D) {
     for (int iface = 0; iface < 5; iface++) {
       const std::vector<int>& face_vertices = MatPoly1.face_vertices(iface);
       ASSERT_EQ(exp_face_vrts[iface].size(), face_vertices.size());
-      for (int ivrt = 0; ivrt < exp_face_vrts[iface].size(); ivrt++)
+      int const nb_elems = exp_face_vrts[iface].size();
+      for (int ivrt = 0; ivrt < nb_elems; ivrt++)
         ASSERT_EQ(exp_face_vrts[iface][ivrt], face_vertices[ivrt]);
     }
   }

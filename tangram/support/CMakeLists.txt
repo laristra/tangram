@@ -26,13 +26,13 @@ set(support_SOURCES
 
 if (ENABLE_UNIT_TESTS)
 
-  cinch_add_unit(test_MatPoly_2D
-    SOURCES test/test_MatPoly_2D.cc
+  cinch_add_unit(test_matpoly_2d
+    SOURCES test/test_matpoly_2d.cc
     POLICY SERIAL
     )
 
-  cinch_add_unit(test_MatPoly_3D
-    SOURCES test/test_MatPoly_3D.cc
+  cinch_add_unit(test_matpoly_3d
+    SOURCES test/test_matpoly_3d.cc
     POLICY SERIAL
     )
 endif(ENABLE_UNIT_TESTS)
