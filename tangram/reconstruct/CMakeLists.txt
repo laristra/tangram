@@ -22,7 +22,7 @@ if (XMOF2D_DIR)
     )
 endif (XMOF2D_DIR)
 
-set(tangam_reconstruct_HEADERS
+set(tangram_reconstruct_HEADERS
   SLIC.h
   cutting_distance_solver.h
   nested_dissections.h
