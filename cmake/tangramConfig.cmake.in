@@ -15,6 +15,9 @@ set(TANGRAM_VERSION_MINOR @TANGRAM_VERSION_PATCH@ CACHE STRING "Patch version of
 # Tangram installation path
 set(TANGRAM_ROOT @CMAKE_INSTALL_PREFIX@ CACHE PATH "Path to Tangram installation")
 
+# Tangram library
+set(TANGRAM_LIBRARIES @TANGRAM_LIBRARIES@ CACHE STRING "Name of Tangram library")
+
 # Wonton installation path
 set(WONTON_ROOT @WONTON_ROOT@ CACHE PATH "Path to Wonton installation")
 
