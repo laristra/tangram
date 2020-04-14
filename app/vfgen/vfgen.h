@@ -202,9 +202,9 @@ struct FEATURE {
 
 template <int dim>
 struct InFeatureEvaluator {
-  int nfeat_;
 
-  std::vector<FEATURE<dim>> features_;
+  std::vector<FEATURE<dim>> features_ {};
+  int nfeat_ = 0;
 
   explicit InFeatureEvaluator(std::vector<FEATURE<dim>> const& features) :
       features_(features), nfeat_(features.size()) {}
@@ -617,9 +617,7 @@ void writeAsciiFile(std::string filename,
     outfile << "mat" << i << "\n";
 
   /* Write out volume fractions and centroids to file */
-  int ncells_nmats[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   for (int i = 0; i < ncells; i++) {
-    double sum = 0.0;
 
     vfcen_t<dim> vfcen_i = vfcen[i];  // device to host copy, if Thrust is used
 
@@ -680,7 +678,6 @@ void writeBinaryFile(std::string filename, Wonton::vector<vfcen_t<dim>> vfcen) {
   outfile.write((char *) &ncells, sizeof(int));
 
   /* Write out volume fractions and centroids to file */
-  int ncells_nmats[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   for (int i = 0; i < ncells; i++) {
     vfcen_t<dim> const& vfcen_i = vfcen[i];
     int nmats_cell = vfcen_i.nmats;
@@ -785,7 +782,6 @@ void read_features(std::string featfilename,
 
 
   std::string inout_str, feat_str;
-  int nfeat = 0;
   while (!featfile.eof()) {
     featfile >> feat_str;
 
@@ -833,7 +829,6 @@ void read_features(std::string featfilename,
       // Read points of the polygon or polyhedron
       featfile >> this_feature.nppoly;
       for (int j = 0; j < this_feature.nppoly; j++) {
-        double polyx, polyy;
         featfile >> this_feature.polyxyz[j][0];
         featfile >> this_feature.polyxyz[j][1];
       }
@@ -893,7 +888,6 @@ void read_features(std::string featfilename,
       continue;
     }
   }
-  nfeat = features->size();
 
   featfile.close();
 }  // read_features

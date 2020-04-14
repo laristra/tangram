@@ -94,7 +94,7 @@ public:
     permutation ID can be used to choose an alternative ordering. 
   */
   std::shared_ptr< CellMatPoly<Dim> > operator()(const int permutation_ID = 0) const {
-    assert(permutation_ID < cell_materials_order_.size());
+    assert(unsigned(permutation_ID) < cell_materials_order_.size());
 
     // Get material indices for the cell from the reconstructor
     const std::vector<int>& mat_ids = reconstructor_.cell_materials(cell_id_);    

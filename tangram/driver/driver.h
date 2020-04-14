@@ -116,7 +116,7 @@ class Driver {
                             std::vector<Point<Dim>>
                             const& cell_mat_centroids = {}) {
     int nc = mesh_.num_entities(Tangram::Entity_kind::CELL);
-    assert(cell_num_mats.size() == nc);
+    assert(cell_num_mats.size() == unsigned(nc));
     
     cell_num_mats_ = cell_num_mats;
     cell_mat_ids_.clear();
