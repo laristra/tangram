@@ -42,7 +42,7 @@ endif ()
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(wonton REQUIRED)
+find_dependency(WONTON REQUIRED NAMES wonton)
 
 if (TANGRAM_ENABLE_XMOF2D)
   find_dependency(XMOF2D)
