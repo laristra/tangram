@@ -7,9 +7,9 @@
 #-----------------------------------------------------------------------------~#
 project(tangram_utility)
 
-add_library(tangram_utility)
+add_library(tangram_utility INTERFACE)
 
-target_include_directories(tangram_utility PUBLIC
+target_include_directories(tangram_utility INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIRECTORY}>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIRECTORY}>
   $<INSTALL_INTERFACE:include>)
@@ -27,7 +27,7 @@ set(rpgtools_HEADERS
   )
 set(rpgtools_examples_HEADERS
   rpgtools/examples/matdata_rotor3d.h
-  }
+  )
 
 # Not yet allowed for INTERFACE libraries
 #
@@ -44,7 +44,9 @@ install(FILES ${rpgtools_examples_HEADERS}
   DESTINATION include/tangram/utility/rpgtools/examples)
 
 
-target_link_libraries(tangram_utility PUBLIC tangram_support)
+target_link_libraries(tangram_utility INTERFACE tangram_support)
+
+target_link_libraries(tangram INTERFACE tangram_utility)
 
 install(TARGETS tangram_utility
   EXPORT tangram_LIBRARIES

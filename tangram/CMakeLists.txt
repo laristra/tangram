@@ -10,4 +10,4 @@ add_subdirectory(support)
 add_subdirectory(intersect)
 add_subdirectory(reconstruct)
 add_subdirectory(driver)
-
+add_subdirectory(utility)
