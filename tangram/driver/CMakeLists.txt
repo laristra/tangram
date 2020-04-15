@@ -53,36 +53,36 @@ install(TARGETS tangram_driver
 if (ENABLE_UNIT_TESTS)
   if (WONTON_ENABLE_Jali)
 
-    cinch_add_unit(test_CellMatPoly_1D
-      SOURCES test/test_CellMatPoly_1D.cc
+    cinch_add_unit(test_cell_matpoly_1d
+      SOURCES test/test_cell_matpoly_1d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
   
-    cinch_add_unit(test_CellMatPoly_2D
-      SOURCES test/test_CellMatPoly_2D.cc
+    cinch_add_unit(test_cell_matpoly_2d
+      SOURCES test/test_cell_matpoly_2d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
     
-    cinch_add_unit(test_CellMatPoly_3D
-      SOURCES test/test_CellMatPoly_3D.cc
+    cinch_add_unit(test_cell_matpoly_3d
+      SOURCES test/test_cell_matpoly_3d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
 
-    cinch_add_unit(test_write_gmv2D
-      SOURCES test/test_write_gmv2D.cc
+    cinch_add_unit(test_write_gmv_2d
+      SOURCES test/test_write_gmv_2d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
     
-    cinch_add_unit(test_write_gmv3D
-      SOURCES test/test_write_gmv3D.cc
+    cinch_add_unit(test_write_gmv_3d
+      SOURCES test/test_write_gmv_3d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
