@@ -6,11 +6,11 @@ https://github.com/laristra/tangram/blob/master/LICENSE
 message(STATUS "Adding test_xmof2d test")
 
 # this app should be run in serial
-if(ENABLE_MPI)
+if(WONTON_ENABLE_MPI)
   set(RUN_COMMAND "mpirun -np 1")
 else()
   set(RUN_COMMAND "")
-endif(ENABLE_MPI)
+endif(WONTON_ENABLE_MPI)
 
 macro(ADD_XMOF2D_TEST TEST_NUM)
   file(COPY xmof2d_test${TEST_NUM}.sh
@@ -28,10 +28,10 @@ macro(ADD_XMOF2D_TEST TEST_NUM)
     PROPERTY PROCESSORS 1)
 endmacro(ADD_XMOF2D_TEST)
 
-if (Jali_DIR)
+if (WONTON_ENABLE_Jali)
   ADD_XMOF2D_TEST(1)
 
   file(COPY voronoi124.exo DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-else(Jali_DIR)
+else(WONTON_ENABLE_Jali)
   ADD_XMOF2D_TEST(0)
-endif(Jali_DIR)
+endif(WONTON_ENABLE_Jali)

@@ -95,30 +95,30 @@ TEST(CellMatPoly, Mesh1D) {
   // Verify info for faces of matpoly 0 and 1
 
   std::vector<int> const& mfaces = cellmatpoly.matpoly_faces(0);
-  ASSERT_EQ(2, mfaces.size());
+  ASSERT_EQ(unsigned(2), mfaces.size());
 
   std::vector<Tangram::Point<1>> mfpoints = cellmatpoly.matface_points(0);
-  ASSERT_EQ(1, mfpoints.size());
+  ASSERT_EQ(unsigned(1), mfpoints.size());
   ASSERT_NEAR(cpoints[0][0], mfpoints[0][0], 1.0e-16);
 
   std::vector<int> const& mfverts0 = cellmatpoly.matface_vertices(0);
-  ASSERT_EQ(1, mfverts0.size());
+  ASSERT_EQ(unsigned(1), mfverts0.size());
   ASSERT_EQ(0, mfverts0[0]);
 
   mfpoints = cellmatpoly.matface_points(1);
-  ASSERT_EQ(1, mfpoints.size());
+  ASSERT_EQ(unsigned(1), mfpoints.size());
   ASSERT_NEAR(cpoints[2][0], mfpoints[0][0], 1.0e-16);
 
   std::vector<int> const& mfverts1 = cellmatpoly.matface_vertices(1);
-  ASSERT_EQ(1, mfverts1.size());
+  ASSERT_EQ(unsigned(1), mfverts1.size());
   ASSERT_EQ(1, mfverts1[0]);
 
   mfpoints = cellmatpoly.matface_points(2);
-  ASSERT_EQ(1, mfpoints.size());
+  ASSERT_EQ(unsigned(1), mfpoints.size());
   ASSERT_NEAR(cpoints[1][0], mfpoints[0][0], 1.0e-16);
 
   std::vector<int> const& mfverts2 = cellmatpoly.matface_vertices(2);
-  ASSERT_EQ(1, mfverts2.size());
+  ASSERT_EQ(unsigned(1), mfverts2.size());
   ASSERT_EQ(2, mfverts2[0]);
 
   // Are faces being correctly identified as being on the interface or not?

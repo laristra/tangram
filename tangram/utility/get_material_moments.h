@@ -47,14 +47,14 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector<int>& cell_num_mats,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
-                          std::vector< Tangram::Point<3> >& cell_mat_centroids,
+                          std::vector< Wonton::Point<3> >& cell_mat_centroids,
                           const double vol_tol,
                           const double dst_tol,
                           const bool decompose_cells,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nplanes = static_cast<int>(planar_interfaces.size());
-  assert(material_IDs.size() == nplanes + 1);
+  assert(material_IDs.size() == unsigned(nplanes + 1));
   
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
   
@@ -267,13 +267,13 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 template <class Mesh_Wrapper>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector<int>& material_IDs,
-                          const Tangram::Point<3>& center,
+                          const Wonton::Point<3>& center,
                           const double radius,
                           const int nquadrant_samples,
                           std::vector<int>& cell_num_mats,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
-                          std::vector< Tangram::Point<3> >& cell_mat_centroids,
+                          std::vector< Wonton::Point<3> >& cell_mat_centroids,
                           const double vol_tol,
                           const double dst_tol,
                           const bool decompose_cells,
@@ -330,20 +330,20 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 template <class Mesh_Wrapper>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector<int>& material_IDs,
-                          const Tangram::Point<3>& center,
+                          const Wonton::Point<3>& center,
                           const std::vector<double>& radius,
                           const int nquadrant_samples,
                           std::vector<int>& cell_num_mats,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
-                          std::vector< Tangram::Point<3> >& cell_mat_centroids,
+                          std::vector< Wonton::Point<3> >& cell_mat_centroids,
                           const double vol_tol,
                           const double dst_tol,
                           const bool decompose_cells,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nspheres = static_cast<int>(radius.size());
-  assert(material_IDs.size() == nspheres + 1);
+  assert(material_IDs.size() == unsigned(nspheres + 1));
 
   std::vector< std::shared_ptr<RefPolyData_t> > mesh_polys, cur_polys_data, rem_polys_data;
   mesh_to_r3d_polys<Mesh_Wrapper>(mesh, mesh_polys, dst_tol, decompose_cells);
@@ -397,14 +397,14 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           std::vector<int>& cell_num_mats,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
-                          std::vector< Tangram::Point<2> >& cell_mat_centroids,
+                          std::vector< Wonton::Point<2> >& cell_mat_centroids,
                           const double vol_tol,
                           const double dst_tol,
                           const bool decompose_cells,
                           std::vector< std::vector< std::vector<r2d_poly> > >*
                             reference_mat_polys = nullptr) {
   int nlines = static_cast<int>(linear_interfaces.size());
-  assert(material_IDs.size() == nlines + 1);
+  assert(material_IDs.size() == unsigned(nlines + 1));
   
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();
   
@@ -616,13 +616,13 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 template <class Mesh_Wrapper>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector<int>& material_IDs,
-                          const Tangram::Point<2>& center,
+                          const Wonton::Point<2>& center,
                           const double radius,
                           const int nquadrant_samples,
                           std::vector<int>& cell_num_mats,
                           std::vector<int>& cell_mat_ids,
                           std::vector<double>& cell_mat_volfracs,
-                          std::vector< Tangram::Point<2> >& cell_mat_centroids,
+                          std::vector< Wonton::Point<2> >& cell_mat_centroids,
                           const double vol_tol,
                           const double dst_tol,
                           const bool decompose_cells,
@@ -634,7 +634,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   
   // Create a MatPoly that represents the circle
   int ncircle_samples = 4*nquadrant_samples;
-  std::vector<Tangram::Point<2>> circle_pts;
+  std::vector<Wonton::Point<2>> circle_pts;
   circle_pts.reserve(ncircle_samples);
 
   for (int ipt = 0; ipt < ncircle_samples; ipt++) {
@@ -785,7 +785,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
       std::find(cells_mat_ids[icell].begin(), 
                 cells_mat_ids[icell].end(), material_IDs[1]));
 
-    if (cell_mat_id == cells_mat_ids[icell].size()) {
+    if (unsigned(cell_mat_id) == cells_mat_ids[icell].size()) {
       cells_mat_ids[icell].push_back(material_IDs[1]);
       cells_mat_moments[icell].resize(cell_mat_id + 1);
       cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);

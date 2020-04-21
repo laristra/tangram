@@ -256,12 +256,12 @@ public:
     nested_dissections.set_cell_materials_order(enable_permutations);
 
     int npermutations = nested_dissections.num_materials_orders();
-    Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> 
+    Wonton::vector<std::shared_ptr<CellMatPoly<Dim>>> 
       permutations_cellmatpoly(npermutations);
 
-    Tangram::transform(make_counting_iterator(0),
-                       make_counting_iterator(npermutations),
-                       permutations_cellmatpoly.begin(), nested_dissections);
+    Wonton::transform(Wonton::make_counting_iterator(0),
+                      Wonton::make_counting_iterator(npermutations),
+                      permutations_cellmatpoly.begin(), nested_dissections);
 
     int nmats = static_cast<int>(cell_mat_ids_[cellID].size());
 
@@ -335,10 +335,10 @@ public:
       return cfaces;
 
     std::vector<int> facets_group_ids;
-    for (int icf = 0; icf < cfaces.size(); icf++) {
+    for (int & cface : cfaces) {
       std::vector<int> fnodes;
-      mesh_.face_get_nodes(cfaces[icf], &fnodes);
-      facets_group_ids.insert(facets_group_ids.end(), fnodes.size(), cfaces[icf]);
+      mesh_.face_get_nodes(cface, &fnodes);
+      facets_group_ids.insert(facets_group_ids.end(), fnodes.size(), cface);
     }
 
     return facets_group_ids;
@@ -369,7 +369,8 @@ private:
     double vol_tol = ims_tols_[0].fun_eps;
     //Confirm that the clipped volume is smaller than the volume of MatPoly's
     double mixed_polys_vol = 0.0;
-    for (int ipoly = 0; ipoly < mixed_polys.size(); ipoly++)
+    int const nb_mixed_polys = mixed_polys.size();
+    for (int ipoly = 0; ipoly < nb_mixed_polys; ipoly++)
       mixed_polys_vol += mixed_polys[ipoly].moments()[0];
     assert(target_vol < mixed_polys_vol + vol_tol);
 

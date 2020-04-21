@@ -15,12 +15,12 @@
 #include <string>
 #include <sstream>
 
-#include "tangram/support/tangram.h"  // TANGRAM_ENABLE_MPI defined in this file
+#include "tangram/support/tangram.h"  // WONTON_ENABLE_MPI defined in this file
 
-#ifdef TANGRAM_ENABLE_MPI
+#ifdef WONTON_ENABLE_MPI
   #include "mpi.h"
 #endif
-#if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
+#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   #include "Mesh.hh"
   #include "MeshFactory.hh"
   #include "wonton/mesh/jali/jali_mesh_wrapper.h"
@@ -58,7 +58,7 @@ const std::vector< Tangram::Point2 > material_interface_points = {
 };
 
 int main(int argc, char** argv) {
-#ifdef TANGRAM_ENABLE_MPI
+#ifdef WONTON_ENABLE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
 
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
   assert((material_interface_normals.size() == material_interface_points.size()) &&
          (mesh_materials.size() == material_interface_normals.size() + 1));
 
-#if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
+#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   if (argc != 3) {
     std::ostringstream os;
     os << std::endl <<
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
                     material_interfaces[iplane].normal);
   }
 
-#if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
+#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   std::string mesh_name = argv[2];
   mesh_name.resize(mesh_name.size() - 4);
 #else
@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
   std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
 #endif
 
-#if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
+#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   Jali::MeshFactory mesh_factory(comm);
   mesh_factory.framework(Jali::MSTK);
   mesh_factory.included_entities({Jali::Entity_kind::EDGE});
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
   std::vector<Tangram::Point2> cell_mat_centroids;
   std::vector< std::vector< std::vector<r2d_poly> > > reference_mat_polys;
 
-#if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
+#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
 #endif
 
 // Build the driver
-#if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
+#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   Tangram::Driver<Tangram::MOF, 2, Wonton::Jali_Mesh_Wrapper,
                   Tangram::SplitR2D, Tangram::ClipR2D>
     mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
   fout.close();
 
 std::cout << std::endl << "Stats for ";
-#if defined(ENABLE_JALI) && defined(TANGRAM_ENABLE_MPI)
+#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   std::cout << "computational mesh " << mesh_name;
 #else
   std::cout << "structured " << nx << "x" << ny <<
@@ -345,7 +345,7 @@ std::cout << std::endl << "Stats for ";
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
 #endif
 
-#ifdef TANGRAM_ENABLE_MPI
+#ifdef WONTON_ENABLE_MPI
   MPI_Finalize();
 #endif
 

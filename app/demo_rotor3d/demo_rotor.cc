@@ -18,12 +18,12 @@
 #include <cmath>
 #include <limits>
 
-#ifdef ENABLE_MPI 
+#ifdef WONTON_ENABLE_MPI 
   #include "mpi.h"
 #endif
 
-#include "wonton/wonton/mesh/simple/simple_mesh.h"
-#include "wonton/wonton/mesh/simple/simple_mesh_wrapper.h"
+#include "wonton/mesh/simple/simple_mesh.h"
+#include "wonton/mesh/simple/simple_mesh_wrapper.h"
 
 #include "tangram/support/tangram.h"
 #include "tangram/driver/driver.h"
@@ -45,7 +45,7 @@
    reference poly's, and outputs reconstruction results to gmv files. */
 
 int main(int argc, char** argv) {
-#ifdef ENABLE_MPI  
+#ifdef WONTON_ENABLE_MPI  
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
 
@@ -360,7 +360,7 @@ int main(int argc, char** argv) {
   std::cout << "Time taken to write reference material polyhedra -> " <<
     seconds_taken << " (s)" << std::endl;
 
-#ifdef ENABLE_MPI 
+#ifdef WONTON_ENABLE_MPI 
   MPI_Finalize();
 #endif
 
