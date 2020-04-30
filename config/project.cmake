@@ -81,18 +81,18 @@ message(STATUS "WONTON_INCLUDE_DIR=${WONTON_INCLUDE_DIR}")
 target_link_libraries(tangram INTERFACE ${WONTON_LIBRARIES})
 message(STATUS "WONTON_LIBRARIES=${WONTON_LIBRARIES}" )
 
-if (ENABLE_THRUST AND NOT WONTON_ENABLE_THRUST)
+if (TANGRAM_ENABLE_THRUST AND NOT WONTON_ENABLE_THRUST)
   message(FATAL_ERROR "Thrust enabled for Tangram but Wonton is not built with Thrust")
 endif ()
-if (NOT ENABLE_THRUST AND WONTON_ENABLE_THRUST)
+if (NOT TANGRAM_ENABLE_THRUST AND WONTON_ENABLE_THRUST)
   message(FATAL_ERROR "Thrust disabled for Tangram but Wonton is built with Thrust")
 endif ()
 
-if (ENABLE_MPI AND NOT WONTON_ENABLE_MPI)
+if (TANGRAM_ENABLE_MPI AND NOT WONTON_ENABLE_MPI)
   message(FATAL_ERROR "MPI enabled for Tangram but Wonton is not compiled with MPI")
 endif ()
 
-if (NOT ENABLE_MPI AND WONTON_ENABLE_MPI)
+if (NOT TANGRAM_ENABLE_MPI AND WONTON_ENABLE_MPI)
   message(FATAL_ERROR "MPI disabled for Tangram but Wonton is compiled with MPI")
 endif ()
 
