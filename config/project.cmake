@@ -96,9 +96,13 @@ if (NOT TANGRAM_ENABLE_MPI AND WONTON_ENABLE_MPI)
   message(FATAL_ERROR "MPI disabled for Tangram but Wonton is compiled with MPI")
 endif ()
 
-if (NOT WONTON_FOUND)
-  message(FATAL_ERROR "WONTON_DIR is not specified and Wonton is not a subdirectory !")
-endif() 
+if (TANGRAM_ENABLE_Jali AND NOT WONTON_ENABLE_Jali)
+  message(FATAL_ERROR "Jali enabled for Tangram but Wonton is not built with Jali")
+endif ()
+    
+if (TANGRAM_ENABLE_FleCSI AND NOT WONTON_ENABLE_FleCSI)
+  message(FATAL_ERROR "FleCSI enabled for Tangram but Wonton is not built with FleCSI")
+endif ()
 
 
 #------------------------------------------------------------------------------#
