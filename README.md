@@ -115,7 +115,7 @@ cmake \
 	-D CMAKE_INSTALL_PREFIX=/path/where/to/install/tangram \
     -D ENABLE_UNIT_TESTS=True \
     -D ENABLE_APP_TESTS=True \
-    -D ENABLE_MPI=True \
+    -D TANGRAM_ENABLE_MPI=True \
 	-D WONTON_ROOT=/path/where/wonton/is/installed \
 	-D TANGRAM_ENABLE_Jali=True \
 	-D ENABLE_XMOF2D=True \
@@ -148,11 +148,11 @@ cmake \
   -D CMAKE_CXX_COMPILER=`which mpiCC` \
   -D CMAKE_BUILD_TYPE=Release \
   -D ENABLE_UNIT_TESTS=True \
-  -D ENABLE_MPI=True \
+  -D TANGRAM+ENABLE_MPI=True \
   -D ENABLE_JENKINS_OUTPUT=True \
   -D WONTON_ROOT=$WONTON_INSTALL_PREFIX \
   -D TANGRAM_ENABLE_Jali=True \
-  -D ENABLE_XMOF2D=True \
+  -D TANGRAM_ENABLE_XMOF2D=True \
   -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
   ..
 make -j2

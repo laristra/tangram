@@ -61,7 +61,7 @@ fi
 
 
 # build-type-specific settings
-mpi_flags="-D ENABLE_MPI=True"
+mpi_flags="-D TANGRAM_ENABLE_MPI=True"
 if [[ $build_type == "serial" ]]; then
     mpi_flags=
     mpi_suffix=
@@ -75,14 +75,14 @@ fi
 thrust_flags=
 thrust_suffix=
 if [[ $build_type == "thrust" ]]; then
-    thrust_flags="-D ENABLE_THRUST=True"
+    thrust_flags="-D TANGRAM_ENABLE_THRUST=True"
     thrust_suffix="-thrust"
 fi
 
 
 
 xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}${compiler_suffix}
-xmof2d_flags="-D ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
+xmof2d_flags="-D TANGRAM_ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
 
 wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
