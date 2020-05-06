@@ -87,6 +87,11 @@ xmof2d_flags="-D ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/
 wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
+jali_flags="-D TANGRAM_ENABLE_Jali:BOOL=True"  # Jali found through Wonton
+if [[ $compiler == "gcc6" ]]; then
+    flecsi_flags="-D TANGRAM_ENABLE_FleCSI:BOOL=True"  # FleCSI found through Wonton
+fi
+
 export SHELL=/bin/sh
 
 export MODULEPATH=""
@@ -110,6 +115,8 @@ cmake \
   $wonton_flags \
   $xmof2d_flags \
   $thrust_flags \
+  $jali_flags \
+  $flecsi_flags \
   ..
 make -j2
 ctest --output-on-failure
