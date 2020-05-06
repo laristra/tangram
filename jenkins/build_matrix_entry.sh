@@ -46,7 +46,7 @@ elif [[ $compiler =~ "gcc" ]]; then
     if [[ $compiler == "gcc6" ]]; then
 	gcc_version=6.4.0
     elif [[ $compiler == "gcc7" ]]; then
-	gcc_version=7.4.0
+	gcc_version=7.3.0
     elif [[ $compiler == "gcc8" ]]; then
 	gcc_version=8.2.0
 	openmpi_version=3.1.3
@@ -87,7 +87,9 @@ xmof2d_flags="-D TANGRAM_ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_inst
 wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
-jali_flags="-D TANGRAM_ENABLE_Jali:BOOL=True"  # Jali found through Wonton
+if [[ $build_type != "serial"]]; then
+    jali_flags="-D TANGRAM_ENABLE_Jali:BOOL=True"  # Jali found through Wonton
+fi
 if [[ $compiler == "gcc6" ]]; then
     flecsi_flags="-D TANGRAM_ENABLE_FleCSI:BOOL=True"  # FleCSI found through Wonton
 fi
