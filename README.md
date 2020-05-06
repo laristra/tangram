@@ -117,6 +117,7 @@ cmake \
     -D ENABLE_APP_TESTS=True \
     -D ENABLE_MPI=True \
 	-D WONTON_ROOT=/path/where/wonton/is/installed \
+	-D TANGRAM_ENABLE_Jali=True \
 	-D ENABLE_XMOF2D=True \
     -D XMOF2D_DIR:FILEPATH=${XMOF2D_INSTALL_PREFIX}/share/cmake \
     -D ENABLE_THRUST:BOOL=True \
@@ -150,6 +151,7 @@ cmake \
   -D ENABLE_MPI=True \
   -D ENABLE_JENKINS_OUTPUT=True \
   -D WONTON_ROOT=$WONTON_INSTALL_PREFIX \
+  -D TANGRAM_ENABLE_Jali=True \
   -D ENABLE_XMOF2D=True \
   -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
   ..
