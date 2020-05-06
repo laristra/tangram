@@ -24,6 +24,7 @@ fi
 # set modules and install paths
 
 xmof2d_version=0.9.5
+wonton_version=1.1.5
 
 export NGC=/usr/local/codes/ngc
 ngc_include_dir=$NGC/private/include
@@ -83,7 +84,7 @@ fi
 xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}${compiler_suffix}
 xmof2d_flags="-D ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
 
-wonton_install_dir=$NGC/private/wonton/new-cmake${compiler_suffix}${mpi_suffix}${thrust_suffix}
+wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
 export SHELL=/bin/sh
