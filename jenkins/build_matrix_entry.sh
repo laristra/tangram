@@ -87,11 +87,11 @@ xmof2d_flags="-D TANGRAM_ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_inst
 wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
+if [[ $compiler == "gcc6" && $build_type != "serial" ]]; then
+    flecsi_flags="-D TANGRAM_ENABLE_FleCSI:BOOL=True"  # FleCSI found through Wonton
+fi
 if [[ $build_type != "serial" ]]; then
     jali_flags="-D TANGRAM_ENABLE_Jali:BOOL=True"  # Jali found through Wonton
-fi
-if [[ $compiler == "gcc6" ]]; then
-    flecsi_flags="-D TANGRAM_ENABLE_FleCSI:BOOL=True"  # FleCSI found through Wonton
 fi
 
 export SHELL=/bin/sh
