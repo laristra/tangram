@@ -87,7 +87,7 @@ xmof2d_flags="-D TANGRAM_ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_inst
 wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
-if [[ $build_type != "serial"]]; then
+if [[ $build_type != "serial" ]]; then
     jali_flags="-D TANGRAM_ENABLE_Jali:BOOL=True"  # Jali found through Wonton
 fi
 if [[ $compiler == "gcc6" ]]; then
