@@ -169,11 +169,11 @@ namespace Tangram {
         for (int isc = 0; isc < cminimesh.ncells(); isc++) {
           const XMOF2D::Cell& subcell = cminimesh.get_cell(isc);
           int nvrts = subcell.nfaces();
-          std::vector<Tangram::Point<Dim>> subcell_vrts(nvrts);
+          std::vector<Wonton::Point<Dim>> subcell_vrts(nvrts);
           std::vector<Tangram::Entity_kind> vrts_parentkind(nvrts);
           std::vector<int> vrts_iparent(nvrts);
           for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-            subcell_vrts[ivrt] = Tangram::Point<Dim>(subcell.get_node_crd(ivrt).x,
+            subcell_vrts[ivrt] = Wonton::Point<Dim>(subcell.get_node_crd(ivrt).x,
                                                      subcell.get_node_crd(ivrt).y);
             vrts_iparent[ivrt] = subcell.get_node(ivrt).iparent();
             vrts_parentkind[ivrt] = (vrts_iparent[ivrt] == -1) ?
@@ -196,9 +196,9 @@ namespace Tangram {
       else {
         const XMOF2D::Cell& ccell = mesh.get_cell(cellID);
         int nvrts = ccell.nfaces();
-        std::vector<Tangram::Point<Dim>> cell_vrts(nvrts);
+        std::vector<Wonton::Point<Dim>> cell_vrts(nvrts);
         for (int ivrt = 0; ivrt < nvrts; ivrt++)
-          cell_vrts[ivrt] = Tangram::Point<Dim>(ccell.get_node_crd(ivrt).x,
+          cell_vrts[ivrt] = Wonton::Point<Dim>(ccell.get_node_crd(ivrt).x,
                                                 ccell.get_node_crd(ivrt).y);
         (*cell_mat_poly).add_matpoly(xmof_ir->get_cell_materials(cellID)[0],
                                      -1, nvrts, &cell_vrts[0], dst_tol, 
