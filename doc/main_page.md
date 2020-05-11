@@ -33,12 +33,12 @@ Distributed parallelism of Tangram is currently supported through MPI;
 regular testing is performed with OpenMPI 2.1.0+ . Most application
 tests are currently only built if MPI is used.
 MPI is enabled in Tangram by setting the CMake variable
-`ENABLE_MPI=True` **and** using a version of Wonton built with MPI.
+`TANGRAM_ENABLE_MPI=True` **and** using a version of Wonton built with MPI.
 
 On-node parallelism is exposed through
 the [Thrust](https://thrust.github.io) library.  Enabling Thrust
 within Tangram requires setting at least two CMake variables:
-`ENABLE_THRUST=True` **and** using a version of Wonton built with Thrust.
+`TANGRAM_ENABLE_THRUST=True` **and** using a version of Wonton built with Thrust.
 
 ## Obtaining Tangram
 
@@ -74,10 +74,10 @@ like:
 Tangram/ $ mkdir build
 Tangram/ $ cd build
 Tangram/build/ $ cmake -DENABLE_UNIT_TESTS=True \
-                       -DENABLE_MPI=True \
+                       -DTANGRAM_ENABLE_MPI=True \
                        -DENABLE_THRUST=True \
                        -DWONTON_ROOT=path/to/Jali/lib \
-					   -DENABLE_XMOF2D=True \
+					   -DTANGRAM_ENABLE_XMOF2D=True \
                        -DXMOF2D_ROOT=path/to/XMOF2D/lib \
                        -DENABLE_DOXYGEN=True \
                        ..
@@ -98,8 +98,9 @@ Tangram.
 | `CMAKE_PREFIX_PATH:PATH` | Locations where CMake can look for packages | "" |
 | `ENABLE_APP_TESTS:BOOL` | Turn on compilation and test harness of application tests | `False` |
 | `ENABLE_DOXYGEN:BOOL` | Create a target to build this documentation | `False` |
-| `ENABLE_MPI:BOOL` | Build with support for MPI | `False` |
-| `ENABLE_THRUST:BOOL` | Turn on Thrust support for on-node parallelism | `False` |
+| `TANGRAM_ENABLE_MPI:BOOL` | Build with support for MPI | `False` |
+| `TANGRAM_ENABLE_THRUST:BOOL` | Turn on Thrust support for on-node parallelism | `False` |
 | `ENABLE_UNIT_TESTS:BOOL` | Turn on compilation and test harness of unit tests | `False` |
 | `WONTON_ROOT:PATH` | Path to Wonton installation under which wontonConfig.cmake may be found | NO_DEFAULT |
+| `TANGRAM_ENABLE_XMOF2D:BOOL` | Turn on interface reconstruction through Tangram | `False` |
 | `XMOF2D_ROOT:PATH` | Hint location for CMake to find XMOF2DConfig.cmake | NO_DEFAULT |
