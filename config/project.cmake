@@ -132,7 +132,7 @@ if (TANGRAM_ENABLE_XMOF2D)
   endif ()
 
   set(TANGRAM_ENABLE_XMOF2D False CACHE BOOL "Is XMOF2D enabled?" FORCE)
-endif (ENABLE_XMOF2D)
+endif ()
 
 
 #-----------------------------------------------------------------------------
