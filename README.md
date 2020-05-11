@@ -57,7 +57,7 @@ without MPI (or Thrust).
 
 Tangram can optionally be built with the
 [XMOF2D](https://github.com/laristra/xmof2d) library. Enable XMOF2D
-support using the option "ENABLE_XMOF2D=True" and point to the
+support using the option "TANGRAM_ENABLE_XMOF2D=True" and point to the
 location where *XMOF2DConfig.cmake* is installed either through the
 **XMOF2D_ROOT** variable or include it in the **CMAKE_PREFIX_PATH**.
 
@@ -118,9 +118,9 @@ cmake \
     -D TANGRAM_ENABLE_MPI=True \
 	-D WONTON_ROOT=/path/where/wonton/is/installed \
 	-D TANGRAM_ENABLE_Jali=True \
-	-D ENABLE_XMOF2D=True \
+	-D TANGRAM_ENABLE_XMOF2D=True \
     -D XMOF2D_DIR:FILEPATH=${XMOF2D_INSTALL_PREFIX}/share/cmake \
-    -D ENABLE_THRUST:BOOL=True \
+    -D TANGRAM_ENABLE_THRUST:BOOL=True \
     ..
 make -j
 ```
@@ -153,7 +153,7 @@ cmake \
   -D WONTON_ROOT=$WONTON_INSTALL_PREFIX \
   -D TANGRAM_ENABLE_Jali=True \
   -D TANGRAM_ENABLE_XMOF2D=True \
-  -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
+  -D XMOF2D_ROOT:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
   ..
 make -j2
 ctest --output-on-failure
