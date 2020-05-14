@@ -12,6 +12,7 @@
 // tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
+#include "tangram/driver/CellMatPoly.h"
 #include "tangram/reconstruct/nested_dissections.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
 
