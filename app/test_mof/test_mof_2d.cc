@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   Jali::MeshFactory mesh_factory(comm);
   mesh_factory.framework(Jali::MSTK);
-  mesh_factory.included_entities({Jali::Entity_kind::EDGE});
+  mesh_factory.included_entities(Jali::Entity_kind::EDGE);
   std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[2]);
 
   assert(mesh != nullptr);
