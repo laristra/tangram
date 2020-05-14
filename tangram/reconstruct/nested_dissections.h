@@ -12,6 +12,7 @@
 #include <algorithm>
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
+#include "tangram/driver/CellMatPoly.h"
 
 
 /*!
