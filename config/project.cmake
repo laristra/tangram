@@ -131,7 +131,7 @@ if (TANGRAM_ENABLE_XMOF2D)
     set(XMOF2D_ROOT ${XMOF2D_INCLUDE_DIR}/../share/cmake CACHE FILEPATH "Where XMOF2D can be found")
   endif ()
 
-  set(TANGRAM_ENABLE_XMOF2D False CACHE BOOL "Is XMOF2D enabled?" FORCE)
+  set(TANGRAM_ENABLE_XMOF2D True CACHE BOOL "Is XMOF2D enabled?" FORCE)
 endif ()
 
 
