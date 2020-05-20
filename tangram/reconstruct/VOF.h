@@ -12,7 +12,6 @@
 // tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
-#include "tangram/driver/CellMatPoly.h"
 #include "tangram/reconstruct/nested_dissections.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
 
@@ -119,17 +118,18 @@ public:
     does not require decomposion into tetrahedrons.
     @param[in] cellID Index of the multi-material cell to operate on
     @param[in] matID Index of the material to clip
-    @param[in] mixed_polys Vector of material poly's that contain the material
-    to clip and (possibly) other materials
+    @param[in] mixed_polys Vector of pointers to vectors of material poly's 
+    that contain the material to clip and (possibly) other materials
     @param[out] cutting_plane The resulting cutting plane position
     @param[in] planar_faces Flag indicating whether the faces of all mixed_polys
     are planar
   */
   void get_plane_position(const int cellID,
                           const int matID,
-                          const std::vector< MatPoly<Dim> >& mixed_polys,
+                          const std::vector< std::vector< MatPoly<Dim> >* >& mixed_polys_ptrs,
                           Plane_t<Dim>& cutting_plane,
                           const bool planar_faces) const {
+    const std::vector< MatPoly<Dim> >& mixed_polys = *(mixed_polys_ptrs[0]);
     double vol_tol = ims_tols_[0].fun_eps;
 
     std::vector<int> istencil_cells;
@@ -225,7 +225,7 @@ public:
     // actual material indices.
     nested_dissections.set_cell_materials_order(false);
 
-    return nested_dissections();
+    return nested_dissections()[0];
   }
 
   /*!
@@ -247,6 +247,8 @@ public:
 
     return mat_poly;
   }
+
+  std::vector<int> neighbor_cells_to_split(const int cellID) const { return {}; }
 
   /*!
     @brief IDs of the cell's faces to be associated with MatPoly's

@@ -52,7 +52,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           const double dst_tol,
                           const bool decompose_cells,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
-                            reference_mat_polys = nullptr) {
+                            reference_mat_polys = nullptr,
+                          const bool reverse_mat_order = false) {
   int nplanes = static_cast<int>(planar_interfaces.size());
   assert(material_IDs.size() == unsigned(nplanes + 1));
   
@@ -217,6 +218,13 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   cell_mat_centroids.clear();
 
   for (int icell = 0; icell < ncells; icell++) {
+    if (reverse_mat_order) {
+      std::reverse(cells_mat_ids[icell].begin(), cells_mat_ids[icell].end());
+      std::reverse(cells_mat_moments[icell].begin(), cells_mat_moments[icell].end());
+      if (reference_mat_polys != nullptr)
+        std::reverse((*reference_mat_polys)[icell].begin(), (*reference_mat_polys)[icell].end());
+    }
+
     cell_num_mats[icell] = cells_mat_ids[icell].size();
     cell_mat_ids.insert(cell_mat_ids.end(), cells_mat_ids[icell].begin(), 
                         cells_mat_ids[icell].end());
@@ -402,7 +410,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           const double dst_tol,
                           const bool decompose_cells,
                           std::vector< std::vector< std::vector<r2d_poly> > >*
-                            reference_mat_polys = nullptr) {
+                            reference_mat_polys = nullptr,
+                          const bool reverse_mat_order = false) {
   int nlines = static_cast<int>(linear_interfaces.size());
   assert(material_IDs.size() == unsigned(nlines + 1));
   
@@ -567,6 +576,13 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   cell_mat_centroids.clear();
 
   for (int icell = 0; icell < ncells; icell++) {
+    if (reverse_mat_order) {    
+      std::reverse(cells_mat_ids[icell].begin(), cells_mat_ids[icell].end());
+      std::reverse(cells_mat_moments[icell].begin(), cells_mat_moments[icell].end());
+      if (reference_mat_polys != nullptr)
+        std::reverse((*reference_mat_polys)[icell].begin(), (*reference_mat_polys)[icell].end());
+    }
+
     cell_num_mats[icell] = cells_mat_ids[icell].size();
     cell_mat_ids.insert(cell_mat_ids.end(), cells_mat_ids[icell].begin(), 
                         cells_mat_ids[icell].end());

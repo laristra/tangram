@@ -17,7 +17,14 @@
 
 namespace Tangram {
 
-  using Wonton::pow2;
+using Wonton::pow2;
+
+enum BFGS_ALG {
+  BFGS,       //Algorithm based on Nocedal&Wright book, 
+              //uses linesearch with strong Wolfe conditions
+  DBFGS       //Algorithm by M.Al-Baali, uses linesearch with strong Wolfe conditions
+              //and an advanced damping technique
+};
 
 /*!
   @brief Computes the minimizer of a quadratic interpolant in the interval

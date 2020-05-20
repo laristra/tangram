@@ -4,21 +4,26 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef TANGRAM_RECONSTRUCT_MOF_H
-#define TANGRAM_RECONSTRUCT_MOF_H
+#ifndef TANGRAM_RECONSTRUCT_LVIRA_H
+#define TANGRAM_RECONSTRUCT_LVIRA_H
 
 #include <vector>
 #include <functional>
+
+// tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 #include "tangram/reconstruct/nested_dissections.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
 #include "tangram/support/bfgs.h"
 
+// wonton includes
+#include "wonton/support/lsfits.h"
+
 /*!
- @file MOF.h
-  @brief Calculates the interfaces and constructs CellMatPoly using the MOF
-  algorithm.
+ @file LVIRA.h
+  @brief Calculates the interfaces and constructs CellMatPoly's using the
+  Least squares Volume-of-fluid Interface Reconstruction Algorithm (LVIRA).
   
   @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
   implementation that provides certain functionality
@@ -31,25 +36,29 @@
 
 namespace Tangram {
 
-constexpr BFGS_ALG mof_bfgs_alg = BFGS;
+constexpr BFGS_ALG lvira_bfgs_alg = BFGS;
 
 template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter, class MatPoly_Clipper>
-class MOF {
+class LVIRA {
 public:
   /*!
-    @brief Constructor for a MOF interface reconstruction algorithm
+    @brief Constructor for the LVIRA interface reconstruction
     @param[in] Mesh A lightweight wrapper to a specific input mesh
     implementation that provides certain functionality
     @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
-  explicit MOF(const Mesh_Wrapper& Mesh, 
-               const std::vector<IterativeMethodTolerances_t>& ims_tols,
-               const bool all_convex) : 
-               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
-    if (ims_tols.size() < 2)
-      throw std::runtime_error(
-        "MOF uses 0 and 1-order moments and needs tolerances for related iterative methods!");
+  explicit LVIRA(const Mesh_Wrapper& Mesh, 
+                 const std::vector<IterativeMethodTolerances_t>& ims_tols,
+                 const bool all_convex) : 
+                 mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+    if (ims_tols.size() < 2) {
+      std::string err_msg = "LVIRA+ uses optimization procedure to find the orientation of the cutting plane ";
+      err_msg += "and then numerically solves for its position that matches the given volume fraction.";
+      err_msg += "Tolerances should be provided for both iterative methods!\n";
+
+      throw std::runtime_error(err_msg);
+    }
   }
   
   /*!
@@ -65,14 +74,15 @@ public:
                             std::vector<int> const& cell_mat_ids,
                             std::vector<double> const& cell_mat_volfracs,
                             std::vector<Point<Dim>>
-                              const& cell_mat_centroids) {
+                              const& cell_mat_centroids = {}) {
     cell_mat_ids_.clear();
-    cell_mat_vfracs_.clear();       
-    cell_mat_centroids_.clear();                               
+    cell_mat_vfracs_.clear();
+    cell_neighbors_ids_.clear();
+
     int ncells = mesh_.num_owned_cells() + mesh_.num_ghost_cells();
     cell_mat_ids_.resize(ncells);
-    cell_mat_vfracs_.resize(ncells);  
-    cell_mat_centroids_.resize(ncells);
+    cell_mat_vfracs_.resize(ncells);
+    cell_neighbors_ids_.resize(ncells);
 
     int offset = 0;
     for (int icell = 0; icell < ncells; icell++) {
@@ -81,7 +91,6 @@ public:
       for (int icmat = 0; icmat < nmats; icmat++) {
         cell_mat_ids_[icell].push_back(cell_mat_ids[offset + icmat]);
         cell_mat_vfracs_[icell].push_back(cell_mat_volfracs[offset + icmat]);
-        cell_mat_centroids_[icell].push_back(cell_mat_centroids[offset + icmat]);
       }
       offset += nmats;
     }
@@ -91,15 +100,16 @@ public:
     @brief Used iterative methods tolerances
     @return  Tolerances for iterative methods, 
     here ims_tols_[0] correspond to methods for volumes 
-    and ims_tols_[1] correspond to methods for centroids.
+    and ims_tols_[1] correspond to the optimization methods.
     In particular, ims_tols_[0].arg_eps is a negligible 
     change in cutting distance, ims_tols_[0].fun_eps is a 
     negligible discrepancy in volume, ims_tols_[1].arg_eps
     is a negligible change in the cutting plane orientation,
-    and ims_tols_[1].fun_eps is a negligible distance between
-    actual and reference centroids. The change in cutting plane
-    orientation is defined as the norm of change of the cutting
-    plane's normal, which is expressed in polar coordinates (angles).
+    and ims_tols_[1].fun_eps is a negligible error in given
+    material volumes over neighboring cells, computed according
+    to the LVIRA. The change in cutting plane orientation is 
+    defined as the norm of change of the cutting plane's normal, 
+    which is expressed in polar coordinates (angles).
   */
   const std::vector<IterativeMethodTolerances_t>& 
   iterative_methods_tolerances() const {
@@ -115,6 +125,13 @@ public:
   */
   void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
     icells_to_reconstruct = cellIDs_to_op_on;
+    int nIR_cells = static_cast<int>(icells_to_reconstruct.size());
+
+    for (int iirc = 0; iirc < nIR_cells; iirc++) {
+      int icell = icells_to_reconstruct[iirc];
+      // Find neighbors of the cell
+      mesh_.cell_get_node_adj_cells(icell, Entity_type::ALL, &cell_neighbors_ids_[icell]);
+    }
   }
 
   /*!
@@ -136,42 +153,71 @@ public:
                           Plane_t<Dim>& cutting_plane,
                           const bool planar_faces) const {
     assert(Dim > 1);
-
-    const std::vector< MatPoly<Dim> >& mixed_polys = *(mixed_polys_ptrs[0]);
+    
     double vol_tol = ims_tols_[0].fun_eps;
     int cellMatID = std::distance(cell_mat_ids_[cellID].begin(),
       std::find(cell_mat_ids_[cellID].begin(), 
                 cell_mat_ids_[cellID].end(), matID));
 
-    Point<Dim> cell_cen;
-    mesh_.cell_centroid(cellID, &cell_cen);
-    Vector<Dim - 1> init_guess = cartesian_to_polar(
-      cell_cen - cell_mat_centroids_[cellID][cellMatID]);
+    //For the initial guess we use the standard VOF method
+    std::vector<int> iVOF_stencil_cells = neighbor_cells_to_split(cellID);
+    iVOF_stencil_cells.insert(iVOF_stencil_cells.begin(), cellID);
+    int nsc = static_cast<int>(iVOF_stencil_cells.size());
+
+    // Create stencil for the volume fractions gradient: the first entry corresponds
+    // to the current cell, the rest correspond to all its neighbors through the nodes
+    std::vector<double> VOF_stencil_vfracs(nsc);
+    std::vector< Point<Dim> > VOF_stencil_centroids(nsc);
+    for (int isc = 0; isc < nsc; isc++) {
+      const std::vector<int>& cur_mat_ids = cell_mat_ids_[iVOF_stencil_cells[isc]];
+      int local_id =
+        std::distance(cur_mat_ids.begin(),
+          std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
+
+      if (static_cast<int>(cur_mat_ids.size()) != local_id)
+        VOF_stencil_vfracs[isc] = cell_mat_vfracs_[iVOF_stencil_cells[isc]][local_id];
+
+      mesh_.cell_centroid(iVOF_stencil_cells[isc], &VOF_stencil_centroids[isc]);
+    }
+
+    // Use least squares to compute the gradient
+    cutting_plane.normal = -ls_gradient(VOF_stencil_centroids, VOF_stencil_vfracs);
+
+    double grad_norm = cutting_plane.normal.norm();
+    if (is_equal(grad_norm, 0.0)) {
+      // Zero gradient: we choose SLIC-like plane orientation
+      // Normal is set in the direction of the x-axis
+      cutting_plane.normal.axis(0);
+    }
+    else
+      cutting_plane.normal /= grad_norm;
+
+    Vector<Dim - 1> init_guess = cartesian_to_polar(cutting_plane.normal);
 
     std::function<double(const Vector<Dim - 1>&)> bfgs_obj_fun = 
-      [this, &cellID, &cellMatID, &mixed_polys]
+      [this, &cellID, &cellMatID, &mixed_polys_ptrs]
       (const Vector<Dim - 1>& cur_arg)->double {
-      return centroid_error(cellID, cellMatID, mixed_polys, 
-                            polar_to_cartesian(cur_arg));
+      return neighbors_error(cellID, cellMatID, mixed_polys_ptrs, 
+                             polar_to_cartesian(cur_arg));
     };    
 
     double bfgs_obj_fun_lbnd = 0.0;
 
     Vector<Dim - 1> ang_min;
-    switch(mof_bfgs_alg) {
+    switch(lvira_bfgs_alg) {
       case BFGS: ang_min = bfgs<Dim - 1>(bfgs_obj_fun, bfgs_obj_fun_lbnd, 
                                          init_guess, ims_tols_[1]);
         break;
       case DBFGS: ang_min = dbfgs<Dim - 1>(bfgs_obj_fun, bfgs_obj_fun_lbnd, 
                                            init_guess, ims_tols_[1]);
         break;
-      default: throw std::runtime_error("Unknown BFGS algorithm is selected for MOF!");
+      default: throw std::runtime_error("Unknown BFGS algorithm is selected for LVIRA!");
     }
 
     cutting_plane.normal = polar_to_cartesian(ang_min);
 
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
-      solve_cut_dst(mixed_polys, cutting_plane.normal, ims_tols_[0], planar_faces);
+      solve_cut_dst(*(mixed_polys_ptrs[0]), cutting_plane.normal, ims_tols_[0], planar_faces);
 
     double target_vol = cell_mat_vfracs_[cellID][cellMatID]*mesh_.cell_volume(cellID);
     solve_cut_dst.set_target_volume(target_vol); 
@@ -181,7 +227,7 @@ public:
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol) {
-      std::cerr << "MOF for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
+      std::cerr << "LVIRA+ for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
         " iteration(s) achieved error in volume for material " <<
         matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
       throw std::runtime_error("Target error in volume exceeded, terminating...");
@@ -189,7 +235,7 @@ public:
   }
 
   /*!
-    @brief Given a cell index, calculate the CellMatPoly using the MOF 
+    @brief Given a cell index, calculate the CellMatPoly using the LVIRA+ 
     interface reconstruction method.
     Uses nested dissections algorithm.
   */
@@ -213,75 +259,13 @@ public:
     // to invoke get_plane_position position method. Nested dissections
     // itself does not have its own MeshWrapper, MatPoly_Clipper, etc.,
     // they all are reconstructor specific
-    NestedDissections<MOF, Dim, MatPoly_Splitter> 
+    NestedDissections<LVIRA, Dim, MatPoly_Splitter> 
       nested_dissections(*this, cellID, all_convex_);
 
-    // Normally, we test all the permutations of the materials order
-    bool enable_permutations = true;
+    // VaniLVIRA doesn't use permutations
+    nested_dissections.set_cell_materials_order(false);
 
-    // For two-material cells we check if the aggregated reference centroids
-    // match the cell centroid. If they do, we do NOT permute materials order
-    if (cell_mat_ids_[cellID].size() == 2) {
-      Point<Dim> cell_cen;
-      mesh_.cell_centroid(cellID, &cell_cen);
-
-      Vector<Dim> cen_dist = cell_cen.asV();
-      for (int icmat = 0; icmat < 2; icmat++)
-        cen_dist -= cell_mat_vfracs_[cellID][icmat]*cell_mat_centroids_[cellID][icmat].asV();
-
-      if (cen_dist.norm() <= ims_tols_[1].fun_eps)
-        enable_permutations = false;
-    }
-    
-    nested_dissections.set_cell_materials_order(enable_permutations);
-
-    int npermutations = nested_dissections.num_materials_orders();
-    Wonton::vector< std::vector< std::shared_ptr< CellMatPoly<Dim> > > > 
-      permutations_cellmatpolys(npermutations);
-
-    Wonton::transform(Wonton::make_counting_iterator(0),
-                      Wonton::make_counting_iterator(npermutations),
-                      permutations_cellmatpolys.begin(), nested_dissections);
-
-    int nmats = static_cast<int>(cell_mat_ids_[cellID].size());
-
-    int iopt_permutation = 0;
-    if (enable_permutations) {
-      double min_centroids_error = DBL_MAX;
-      for (int iperm = 0; iperm < npermutations; iperm++) {
-        const std::vector< std::shared_ptr< CellMatPoly<Dim> > >& cur_perm_cmp_ptrs = 
-          permutations_cellmatpolys[iperm];
-        std::shared_ptr<CellMatPoly<Dim>> cur_cmp_ptr = cur_perm_cmp_ptrs[0];
-
-        double cur_error = 0.0;      
-        for (int imat = 0; imat < nmats; imat++) {
-          int mat_id = cell_mat_ids_[cellID][imat];
-          if (!cur_cmp_ptr->is_cell_material(mat_id))
-            continue;
-
-          const std::vector<double>& cur_moments = 
-            cur_cmp_ptr->material_moments(cell_mat_ids_[cellID][imat]);
-
-          Point<Dim> mat_centroid;
-          for (int idim = 0; idim < Dim; idim++)
-            mat_centroid[idim] = cur_moments[idim + 1]/cur_moments[0];
-
-          // We prioritize materials with larger volumes and essentially
-          // compute a discrete L2 norm scaled by the cell volume
-          cur_error += cell_mat_vfracs_[cellID][imat]*
-            (mat_centroid - cell_mat_centroids_[cellID][imat]).norm(false);
-        }
-        cur_error = sqrt(cur_error);
-
-        if (cur_error < min_centroids_error) {
-          iopt_permutation = iperm;
-          min_centroids_error = cur_error;
-        }
-      }                       
-    }
-    const std::vector< std::shared_ptr< CellMatPoly<Dim> > >& opt_perm_cmp_ptrs = 
-      permutations_cellmatpolys[iopt_permutation];
-    return opt_perm_cmp_ptrs[0];
+    return nested_dissections()[0];
   }
 
   /*!
@@ -304,7 +288,14 @@ public:
     return mat_poly;
   }
 
-  std::vector<int> neighbor_cells_to_split(const int cellID) const { return {}; }
+  /*!
+    @brief Indices of neigboring cell that are split when errors are computed
+    @param[in] cellID Cell index
+    @return  Vector of indices of cell's neighbors through the nodes
+  */
+  std::vector<int> neighbor_cells_to_split(const int cellID) const {
+    return cell_neighbors_ids_[cellID];
+  }  
 
   /*!
     @brief IDs of the cell's faces to be associated with MatPoly's
@@ -334,35 +325,35 @@ private:
   /*!
     @brief For a given material, normal, and collection of MatPoly's
     finds the position of the plane corresponding to the material's
-    volume fraction and computes the distance between the reference
-    and the actual aggregated centroids of clipped MatPoly's
+    volume fraction and computes the error in accordance with the LVIRA
     @param[in] cellID Index of the multi-material cell
     @param[in] cellMatID Local index of the clipped material
     @param[in] mixed_polys Vector of pointers to vectors of material poly's 
     that contain the material to clip and (possibly) other materials
     @param[in] plane_normal Direction of the cutting plane
-    @return Distance between the reference and the actual centroids
+    @return Error computed according to the LVIRA.
   */  
-  double centroid_error(const int cellID, 
-                        const int cellMatID,
-                        const std::vector< MatPoly<Dim> >& mixed_polys,
-                        const Vector<Dim>& plane_normal) const {
+  double neighbors_error(const int cellID, 
+                         const int cellMatID,
+                         const std::vector< std::vector< MatPoly<Dim> >* >& mixed_polys_ptrs,
+                         const Vector<Dim>& plane_normal) const {
     Plane_t<Dim> cutting_plane;
     cutting_plane.normal = plane_normal;
+    const std::vector< MatPoly<Dim> >& cell_mixed_polys = *(mixed_polys_ptrs[0]);
 
     double target_vol = cell_mat_vfracs_[cellID][cellMatID]*mesh_.cell_volume(cellID);
-
     double vol_tol = ims_tols_[0].fun_eps;
-    //Confirm that the clipped volume is smaller than the volume of MatPoly's
+
+    // Confirm that the clipped volume is smaller than the volume of MatPoly's
     double mixed_polys_vol = 0.0;
-    int const nb_mixed_polys = mixed_polys.size();
-    for (int ipoly = 0; ipoly < nb_mixed_polys; ipoly++)
-      mixed_polys_vol += mixed_polys[ipoly].moments()[0];
+    int nmixed_polys = static_cast<int>(cell_mixed_polys.size());
+    for (int ipoly = 0; ipoly < nmixed_polys; ipoly++)
+      mixed_polys_vol += cell_mixed_polys[ipoly].moments()[0];
     assert(target_vol < mixed_polys_vol + vol_tol);
 
-    //Create cutting distance solver
+    // Create cutting distance solver
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
-      solve_cut_dst(mixed_polys, cutting_plane.normal, ims_tols_[0], true);
+      solve_cut_dst(cell_mixed_polys, cutting_plane.normal, ims_tols_[0], true);
 
     solve_cut_dst.set_target_volume(target_vol); 
     std::vector<double> clip_res = solve_cut_dst();
@@ -370,7 +361,7 @@ private:
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol) {
-      std::cerr << "MOF for cell " << cellID << ", testing normal ( ";
+      std::cerr << "LVIRA+ for cell " << cellID << ", testing normal ( ";
       for (int idim = 0; idim < Dim; idim++)
         std::cerr << plane_normal[idim] << " ";
       std::cerr << "): given a maximum of " <<
@@ -383,11 +374,38 @@ private:
       throw std::runtime_error("Target error in volume exceeded, terminating...");
     }
 
-    Point<Dim> mat_centroid;
-    for (int idim = 0; idim < Dim; idim++)
-      mat_centroid[idim] = clip_res[idim + 2]/clip_res[1];
+    cutting_plane.dist2origin = clip_res[0];
+
+    const std::vector<int>& ineighbor_cells = cell_neighbors_ids_[cellID];
+    int nnc = static_cast<int>(ineighbor_cells.size());
+    assert(mixed_polys_ptrs.size() == nnc + 1);
+
+    double nghb_error = 0.0;
+    int matID = cell_mat_ids_[cellID][cellMatID];
+    for (int inc = 0; inc < nnc; inc++) {
+      const std::vector< MatPoly<Dim> >& nghb_mat_polys = *(mixed_polys_ptrs[inc + 1]);
+      // Find the reference volume fraction of the material in the neighboring cell
+      int inghb_cell = ineighbor_cells[inc];
+      int nnghb_mats = static_cast<int>(cell_mat_ids_[inghb_cell].size());
+      int nghb_cell_imat = std::distance(cell_mat_ids_[inghb_cell].begin(),
+        std::find(cell_mat_ids_[inghb_cell].begin(), 
+                  cell_mat_ids_[inghb_cell].end(), matID));
+      double nghb_reference_vfrac = (nghb_cell_imat == nnghb_mats) ? 0.0 :
+        cell_mat_vfracs_[inghb_cell][nghb_cell_imat];
+
+      //Find the volume fraction of the material in the neighboring cell that
+      //corresponds to the extended material interface
+      MatPoly_Clipper clip_neighbor(vol_tol);
+      clip_neighbor.set_matpolys(nghb_mat_polys, true);
+      clip_neighbor.set_plane(cutting_plane);
+      std::vector<double> nghb_moments = clip_neighbor();
+      double nghb_IR_vfrac = nghb_moments[0]/mesh_.cell_volume(inghb_cell);
+
+      //Compute error
+      nghb_error += pow2(nghb_reference_vfrac - nghb_IR_vfrac);
+    }
     
-    return (mat_centroid - cell_mat_centroids_[cellID][cellMatID]).norm();
+    return sqrt(nghb_error);
   }
 
   const Mesh_Wrapper& mesh_;
@@ -395,9 +413,9 @@ private:
   const bool all_convex_;
   std::vector< std::vector<int> > cell_mat_ids_;
   std::vector< std::vector<double> > cell_mat_vfracs_;
-  std::vector< std::vector< Point<Dim> > > cell_mat_centroids_;
   std::vector<int> icells_to_reconstruct;
-};  // class MOF
+  std::vector< std::vector<int> > cell_neighbors_ids_;
+};  // class LVIRAPlus
 
 } // namespace Tangram
 
