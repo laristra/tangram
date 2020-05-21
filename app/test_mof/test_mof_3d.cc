@@ -140,10 +140,11 @@ int main(int argc, char** argv) {
 
   // Volume and angle tolerances
   double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
-  double vol_tol = std::numeric_limits<double>::epsilon();
+  //double vol_tol = std::numeric_limits<double>::epsilon();
+  double vol_tol = 5.0e-17;
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
   ims_tols[0] = {1000, dst_tol, vol_tol};
-  ims_tols[1] = {100, 1.0e-15, 1.0e-15};
+  ims_tols[1] = {100, 1.0e-18, dst_tol};
 
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
