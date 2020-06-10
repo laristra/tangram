@@ -49,10 +49,10 @@ public:
     @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
-  explicit LVIRAPlus(const Mesh_Wrapper& Mesh, 
-                     const std::vector<IterativeMethodTolerances_t>& ims_tols,
-                     const bool all_convex) : 
-                     mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+  LVIRAPlus(const Mesh_Wrapper& Mesh, 
+            const std::vector<IterativeMethodTolerances_t>& ims_tols,
+            const bool all_convex) : 
+    mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.size() < 2) {
       std::string err_msg = "LVIRA+ uses optimization procedure to find the orientation of the cutting plane ";
       err_msg += "and then numerically solves for its position that matches the given volume fraction.";
@@ -120,8 +120,8 @@ public:
   }
 
   /*!
-    @brief Pass in indices of cells for which CellMatPoly objects 
-    are to be constructed. If the index is in the list, a CellMatPoly object will be
+    @brief Pass in list of cells to decompose into material polygons using nested
+    dissections. If the index is in the list, a CellMatPoly object will be
     created even for a single-material cell.
     @param[in] cellIDs_to_op_on A vector of length up to (num_cells) 
     specifying the indices of cells for which CellMatPoly objects are requested.

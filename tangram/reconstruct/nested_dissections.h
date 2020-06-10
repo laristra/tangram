@@ -101,11 +101,15 @@ public:
     const std::vector<int>& mat_ids = reconstructor_.cell_materials(cell_id_);    
     int nmats = static_cast<int>(mat_ids.size());
 
-    // See what cells does the reconstructor split
+    // See what cells does the reconstructor split: most reconstructors only split the
+    // cell itself, but some, such as LVIRA, extend the cutting plane to the neighbors
     std::vector<int> icells_to_split = reconstructor_.neighbor_cells_to_split(cell_id_);
     icells_to_split.insert(icells_to_split.begin(), cell_id_);
     int nsplit_cells = static_cast<int>(icells_to_split.size());
 
+    // Reconstructors that extend material interfaces to neighboring cells might require
+    // the resulting collections of material polygons in those cells in order to determine
+    // the optimal material ordering
     int nstored_cmps = permutations_enabled ? nsplit_cells : 1;
 
     //Get the MatPoly's for all the cells we need to split

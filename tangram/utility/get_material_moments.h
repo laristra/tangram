@@ -33,12 +33,15 @@
                                vector, requires computations of offsets
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
- @param[out] reference_mat_polys For every cell and every material inside that cell, 
- the collection of single-material polyhedra containing that material
  @param[in] vol_tol Volume tolerance 
  @param[in] dst_tol Distance tolerance 
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
- in order to decompose cells into tetrahedrons                            
+ in order to decompose cells into tetrahedrons
+ @param[out] reference_mat_polys For every cell and every material inside that cell, 
+ the collection of single-material polyhedra containing that material
+ @param[in] reverse_mat_order Flips the order in which the material data was stored:
+ by construction, the default order is generally optimal and can be misleading when
+ used to evaluate the accuracy of an interface reconstruction algorithm
 */
 template <class Mesh_Wrapper>
 void get_material_moments(const Mesh_Wrapper& mesh,
@@ -391,12 +394,15 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                                vector, requires computations of offsets
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
- @param[out] reference_mat_polys For every cell and every material inside that cell, 
- the collection of single-material polygons containing that material
  @param[in] vol_tol Volume tolerance
  @param[in] dst_tol Distance tolerance
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
- in order to decompose cells into triangles                            
+ in order to decompose cells into triangles
+ @param[out] reference_mat_polys For every cell and every material inside that cell, 
+ the collection of single-material polygons containing that material
+ @param[in] reverse_mat_order Flips the order in which the material data was stored:
+ by construction, the default order is generally optimal and can be misleading when
+ used to evaluate the accuracy of an interface reconstruction algorithm
 */
 template <class Mesh_Wrapper>
 void get_material_moments(const Mesh_Wrapper& mesh,

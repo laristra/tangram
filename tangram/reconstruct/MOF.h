@@ -43,10 +43,10 @@ public:
     @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
-  explicit MOF(const Mesh_Wrapper& Mesh, 
-               const std::vector<IterativeMethodTolerances_t>& ims_tols,
-               const bool all_convex) : 
-               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+  MOF(const Mesh_Wrapper& Mesh, 
+      const std::vector<IterativeMethodTolerances_t>& ims_tols,
+      const bool all_convex) : 
+    mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.size() < 2)
       throw std::runtime_error(
         "MOF uses 0 and 1-order moments and needs tolerances for related iterative methods!");
@@ -107,8 +107,8 @@ public:
   }
 
   /*!
-    @brief Pass in indices of cells for which CellMatPoly objects 
-    are to be constructed. If the index is in the list, a CellMatPoly object will be
+    @brief Pass in list of cells to decompose into material polygons using nested
+    dissections. If the index is in the list, a CellMatPoly object will be
     created even for a single-material cell.
     @param[in] cellIDs_to_op_on A vector of length up to (num_cells) 
     specifying the indices of cells for which CellMatPoly objects are requested.
@@ -189,9 +189,19 @@ public:
   }
 
   /*!
-    @brief Given a cell index, calculate the CellMatPoly using the MOF 
-    interface reconstruction method.
-    Uses nested dissections algorithm.
+    @brief For a given cell, use the MOF interface reconstruction algorithm to calculate
+    a tiling of polygons (or polyhedra) that represent the extents of the materials
+    in the cells. The calculation of each material polygon is performed by finding
+    a plane that cuts off the right amount of material in the cell while matching
+    the centroid of the material polygon as closely as possible to a given reference
+    centroid. Multiple materials (more than 2) are handled by the nested dissections
+    method which sequentially cuts off the next material from the unprocessed part
+    of the original cell. The ordering of the material may be predetermined or the
+    optimal ordering may be determined by minimizing the error of reconstruction
+    over all permutations of material ordering.
+
+    The method returns a CellMatPoly object which is a composite object containing
+    all the material polygons in the cell.
   */
   std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
     int cellID = icells_to_reconstruct[cell_op_ID];
@@ -236,6 +246,10 @@ public:
     nested_dissections.set_cell_materials_order(enable_permutations);
 
     int npermutations = nested_dissections.num_materials_orders();
+    // Even though MOF operates on one cell at a time and will return only one CellMatPoly
+    // (tiling of the cell) for a particular combination, other algorithms (like LVIRA),
+    // operate on a primary cell while also cutting secondary, neighboring cells. 
+    // This necessitates returning a vector of CellMatPoly objects, one for each cell in the set.
     Wonton::vector< std::vector< std::shared_ptr< CellMatPoly<Dim> > > > 
       permutations_cellmatpolys(npermutations);
 
