@@ -720,7 +720,7 @@ void writeBinaryFile(std::string filename, Wonton::vector<vfcen_t<dim>> vfcen) {
 // # less than the normal projection of the reference point
 // # Alternative to 'in' is of course 'out'
 // # to mean behind the plane
-// # Plane is specified by reference point and normal
+// # Halfspace is specified by reference point and normal
 // #
 // halfspace in 2
 // 0.5 0.5 0.5

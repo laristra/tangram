@@ -8,8 +8,8 @@
 # genvf - generate volume fractions and centroids
 #-------------------------------------------------------------------------------
   if (WONTON_ENABLE_MPI AND WONTON_ENABLE_Jali)
-    add_executable(vfgen-sampling vfgen-sampling.cc)
-    target_link_libraries(vfgen-sampling tangram)
+    add_executable(vfgen-sampling-jali vfgen-sampling-jali.cc)
+    target_link_libraries(vfgen-sampling-jali tangram)
   endif (WONTON_ENABLE_MPI AND WONTON_ENABLE_Jali)
 
   add_executable(vfgen-sampling-sm vfgen-sampling-sm.cc)
