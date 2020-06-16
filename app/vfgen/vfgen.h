@@ -19,9 +19,8 @@
 #include <string>
 
 #include <omp.h>
-#include <mpi.h>
 
-#ifdef THRUST
+#ifdef WONTON_ENABLE_THRUST
 #include "thrust/device_vector.h"
 #include "thrust/transform.h"
 #include "thrust/for_each.h"
@@ -214,7 +213,7 @@ struct InFeatureEvaluator {
     int imat = 1;
     bool test_in = true;
     for (int j = nfeat_-1; j >= 0; j--) {
-      FEATURE<dim> curfeat = features_[j];
+      FEATURE<dim>& curfeat = features_[j];
       imat = curfeat.matid;
       test_in = (curfeat.inout == 1);
 
@@ -716,14 +715,14 @@ void writeBinaryFile(std::string filename, Wonton::vector<vfcen_t<dim>> vfcen) {
 // 0.5 0.5 0.5
 // 0.3
 // #
-// # PLANE
-// # 'front' means consider the front of the plane
-// # i.e. in direction of normal
-// # Alternative to 'front' is of course 'back'
+// # HALFSPACE
+// # 'in' means keep points with projections onto the normal
+// # less than the normal projection of the reference point
+// # Alternative to 'in' is of course 'out'
 // # to mean behind the plane
-// # Plane is specified by point and normal
+// # Plane is specified by reference point and normal
 // #
-// plane front 2
+// halfspace in 2
 // 0.5 0.5 0.5
 // 1.0 1.0 2.0
 //
