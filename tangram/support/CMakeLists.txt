@@ -10,8 +10,8 @@ project(tangram_support)
 add_library(tangram_support INTERFACE)
 
 target_include_directories(tangram_support INTERFACE
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIRECTORY}>
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIRECTORY}>
+  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>)
 
 set(tangram_support_HEADERS
@@ -54,13 +54,13 @@ install(TARGETS tangram_support
 
 if (ENABLE_UNIT_TESTS)
 
-  cinch_add_unit(test_matpoly_2d
+  tangram_add_unittest(test_matpoly_2d
     SOURCES test/test_matpoly_2d.cc
     POLICY SERIAL
     LIBRARIES tangram_support
     )
 
-  cinch_add_unit(test_matpoly_3d
+  tangram_add_unittest(test_matpoly_3d
     SOURCES test/test_matpoly_3d.cc
     POLICY SERIAL
     LIBRARIES tangram_support

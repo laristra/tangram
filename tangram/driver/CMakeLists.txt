@@ -10,8 +10,8 @@ project(tangram_driver)
 add_library(tangram_driver INTERFACE)
 
 target_include_directories(tangram_driver INTERFACE
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIRECTORY}>
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIRECTORY}>
+  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>)
 
 
@@ -53,35 +53,35 @@ install(TARGETS tangram_driver
 if (ENABLE_UNIT_TESTS)
   if (WONTON_ENABLE_Jali)
 
-    cinch_add_unit(test_cell_matpoly_1d
+    tangram_add_unittest(test_cell_matpoly_1d
       SOURCES test/test_cell_matpoly_1d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
   
-    cinch_add_unit(test_cell_matpoly_2d
+    tangram_add_unittest(test_cell_matpoly_2d
       SOURCES test/test_cell_matpoly_2d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
     
-    cinch_add_unit(test_cell_matpoly_3d
+    tangram_add_unittest(test_cell_matpoly_3d
       SOURCES test/test_cell_matpoly_3d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
 
-    cinch_add_unit(test_write_gmv_2d
+    tangram_add_unittest(test_write_gmv_2d
       SOURCES test/test_write_gmv_2d.cc
       LIBRARIES tangram_driver
       POLICY MPI
       THREADS 1
       )
     
-    cinch_add_unit(test_write_gmv_3d
+    tangram_add_unittest(test_write_gmv_3d
       SOURCES test/test_write_gmv_3d.cc
       LIBRARIES tangram_driver
       POLICY MPI

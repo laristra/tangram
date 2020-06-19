@@ -10,8 +10,8 @@ project(tangram_utility)
 add_library(tangram_utility INTERFACE)
 
 target_include_directories(tangram_utility INTERFACE
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIRECTORY}>
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIRECTORY}>
+  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>)
 
 set(tangram_utility_HEADERS
