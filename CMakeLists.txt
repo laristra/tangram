@@ -12,8 +12,6 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-cinch_minimum_required(VERSION 1.0)
-
 if (CMAKE_VERSION_MAJOR GREATER_EQUAL 3.13)
   CMAKE_POLICY(SET CMP0079 NEW)  # allow target_link_libraries to reference
                                  # targets from other directories
@@ -27,9 +25,9 @@ cmake_policy(SET CMP0074 NEW)  # Don't ignore Pkg_ROOT variables
 # As soon as a change with a new version number is merged into the master,
 # tag the central repository.
 
-set(TANGRAM_VERSION_MAJOR 0)
-set(TANGRAM_VERSION_MINOR 9)
-set(TANGRAM_VERSION_PATCH 9)
+set(TANGRAM_VERSION_MAJOR 1)
+set(TANGRAM_VERSION_MINOR 0)
+set(TANGRAM_VERSION_PATCH 0)
 
 
 # Top level target
@@ -41,16 +39,6 @@ add_library(tangram INTERFACE)
 
 add_library(tangram::tangram ALIAS tangram)
 set(TANGRAM_LIBRARIES tangram::tangram)
-
-# cinch extras
-
-cinch_load_extras()
-
-set(CINCH_HEADER_SUFFIXES "\\.h")
-
-# Explicitly turn off module paths inherited from Cinch. When we get rid of
-# Cinch we can delete this line
-set(CMAKE_MODULE_PATH "")
 
 # Find our modules first
 if (CMAKE_VERSION GREATER_EQUAL 3.15)
@@ -133,6 +121,18 @@ if (TANGRAM_ENABLE_XMOF2D)
 
   set(TANGRAM_ENABLE_XMOF2D True CACHE BOOL "Is XMOF2D enabled?" FORCE)
 endif ()
+
+
+if (ENABLE_UNIT_TESTS)
+
+  # This needs to be set in the root directory for tests to be run by
+  # 'make test' or ctest
+  enable_testing()
+
+  include(cmake/unittest.cmake)
+  
+endif ()
+
 
 
 #-----------------------------------------------------------------------------
