@@ -11,8 +11,8 @@ project(tangram_intersect)
 add_library(tangram_intersect INTERFACE)
 
 target_include_directories(tangram_intersect INTERFACE
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIRECTORY}>
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIRECTORY}>
+  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>)
 
 set(tangram_intersect_HEADERS
@@ -48,17 +48,17 @@ install(TARGETS tangram_intersect
 
 if (ENABLE_UNIT_TESTS) 
 
-  cinch_add_unit(test_split_r3d
+  tangram_add_unittest(test_split_r3d
     SOURCES test/test_split_r3d.cc
     LIBRARIES tangram_intersect
     POLICY SERIAL
     )
-  cinch_add_unit(test_split_r2d
+  tangram_add_unittest(test_split_r2d
     SOURCES test/test_split_r2d.cc
     LIBRARIES tangram_intersect
     POLICY SERIAL
     )
-  cinch_add_unit(test_split_order
+  tangram_add_unittest(test_split_order
     SOURCES test/test_split_order.cc
     LIBRARIES tangram_intersect
     POLICY SERIAL
