@@ -18,7 +18,9 @@
 #include <algorithm>
 #include <string>
 
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #ifdef WONTON_ENABLE_THRUST
 #include "thrust/device_vector.h"
