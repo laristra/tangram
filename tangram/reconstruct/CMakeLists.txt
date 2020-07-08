@@ -11,8 +11,8 @@ project(tangram_reconstruct)
 add_library(tangram_reconstruct INTERFACE)
 
 target_include_directories(tangram_reconstruct INTERFACE
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIRECTORY}>
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIRECTORY}>
+  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>)
 
 
@@ -61,7 +61,7 @@ install(TARGETS tangram_reconstruct
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
-  cinch_add_unit(test_cutting_distance_solver
+  tangram_add_unittest(test_cutting_distance_solver
     SOURCES test/test_cutting_distance_solver.cc
     LIBRARIES tangram_reconstruct
     POLICY SERIAL
