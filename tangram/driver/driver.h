@@ -136,6 +136,8 @@ class Driver {
 
       for (int icmat = 0; icmat < ncmats; icmat++) {
         double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
+        // quick fix for Marc Charest's segfault on very tiny material volumes,
+        // do not update until a permanent solution is set (shift and scale).
         if (not(mat_volume < volume_tol)) {
           cell_mat_ids_.push_back(cell_mat_ids[offset + icmat]);
           cell_mat_volfracs_.push_back(cell_mat_volfracs[offset + icmat]);
