@@ -136,7 +136,7 @@ class Driver {
 
       for (int icmat = 0; icmat < ncmats; icmat++) {
         double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
-        if (mat_volume >= volume_tol) {
+        if (not(mat_volume < volume_tol)) {
           cell_mat_ids_.push_back(cell_mat_ids[offset + icmat]);
           cell_mat_volfracs_.push_back(cell_mat_volfracs[offset + icmat]);
           if (!cell_mat_centroids.empty())
