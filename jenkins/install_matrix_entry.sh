@@ -20,8 +20,8 @@ export NGC="/usr/local/codes/ngc"
 
 # versions
 xmof2d_version=0.9.5
-wonton_version="dev"
-tangram_version=1.0.1
+wonton_version=$3
+tangram_version=$4
 
 # suffixes
 compiler_suffix=""
