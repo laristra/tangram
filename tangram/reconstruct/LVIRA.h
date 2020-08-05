@@ -24,6 +24,8 @@
  @file LVIRA.h
   @brief Calculates the interfaces and constructs CellMatPoly's using the
   Least squares Volume-of-fluid Interface Reconstruction Algorithm (LVIRA).
+  The LVIRA is suitable for domains with two materials and can demonstrate
+  reduced accuracy when more materials are present.
   
   @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
   implementation that provides certain functionality
@@ -53,7 +55,7 @@ public:
         const bool all_convex) : 
     mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.size() < 2) {
-      std::string err_msg = "LVIRA uses optimization procedure to find the orientation of the cutting plane ";
+      std::string err_msg = "LVIRA uses an optimization procedure to find the orientation of the cutting plane ";
       err_msg += "and then numerically solves for its position that matches the given volume fraction.";
       err_msg += "Tolerances should be provided for both iterative methods!\n";
 
@@ -108,8 +110,8 @@ public:
     and ims_tols_[1].fun_eps is a negligible error in given
     material volumes over neighboring cells, computed according
     to the LVIRA. The change in cutting plane orientation is 
-    defined as the norm of change of the cutting plane's normal, 
-    which is expressed in polar coordinates (angles).
+    defined as the norm of change of the cutting plane's normal 
+    expressed in polar coordinates (angles).
   */
   const std::vector<IterativeMethodTolerances_t>& 
   iterative_methods_tolerances() const {
@@ -120,6 +122,7 @@ public:
     @brief Pass in list of cells to decompose into material polygons using nested
     dissections. If the index is in the list, a CellMatPoly object will be
     created even for a single-material cell.
+    Note that this method caches ID's of the neighboring cells.
     @param[in] cellIDs_to_op_on A vector of length up to (num_cells) 
     specifying the indices of cells for which CellMatPoly objects are requested.
   */
@@ -136,13 +139,22 @@ public:
 
   /*!
     @brief Calculate the position of a plane that clips off a particular material.
-    This method is used on every step of the nested dissections algorithm.
+    This method is used on every step of the nested dissections algorithm with 
+    materials sequentially chopped off in the order they are given. 
+    The orientation of the plane is found accordind to the standard LVIRA by 
+    extending the material interface to the neighboring cells and minimizing the
+    norm of discrepancies between the parts of the neighbors below the plane
+    and reference volumes of the clipped material prescribed for those cells.
     Note that if MatPoly_Clipper can handle non-convex cells, this method
     does not require decomposion into tetrahedrons.
     @param[in] cellID Index of the multi-material cell to operate on
     @param[in] matID Index of the material to clip
     @param[in] mixed_polys Vector of pointers to vectors of material poly's 
-    that contain the material to clip and (possibly) other materials
+    that contain the material to clip and (possibly) other materials;
+    the first pointer corresponds to MatPoly's representing the remaining part 
+    of the cell on the current step of the nested dissections algorithm, the 
+    remaining pointers correspond to single-entry vectors with MatPoly's identical
+    to the neighboring cells
     @param[out] cutting_plane The resulting cutting plane position
     @param[in] planar_faces Flag indicating whether the faces of all mixed_polys
     are planar
@@ -159,7 +171,7 @@ public:
       std::find(cell_mat_ids_[cellID].begin(), 
                 cell_mat_ids_[cellID].end(), matID));
 
-    //For the initial guess we use the standard VOF method
+    // For the initial guess we use the standard VOF method
     std::vector<int> iVOF_stencil_cells = neighbor_cells_to_split(cellID);
     iVOF_stencil_cells.insert(iVOF_stencil_cells.begin(), cellID);
     int nsc = static_cast<int>(iVOF_stencil_cells.size());
@@ -194,6 +206,8 @@ public:
 
     Vector<Dim - 1> init_guess = cartesian_to_polar(cutting_plane.normal);
 
+    // Objective function for the minimization algorithm caclculated according
+    // to the LVIRA
     std::function<double(const Vector<Dim - 1>&)> bfgs_obj_fun = 
       [this, &cellID, &cellMatID, &mixed_polys_ptrs]
       (const Vector<Dim - 1>& cur_arg)->double {
@@ -203,6 +217,7 @@ public:
 
     double bfgs_obj_fun_lbnd = 0.0;
 
+    // Find the cutting plane orientation that minimizes the objective function
     Vector<Dim - 1> ang_min;
     switch(lvira_bfgs_alg) {
       case BFGS: ang_min = bfgs<Dim - 1>(bfgs_obj_fun, bfgs_obj_fun_lbnd, 
@@ -216,6 +231,7 @@ public:
 
     cutting_plane.normal = polar_to_cartesian(ang_min);
 
+    // Find the distance to origin for the optimal cutting plane orientation
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
       solve_cut_dst(*(mixed_polys_ptrs[0]), cutting_plane.normal, ims_tols_[0], planar_faces);
 
@@ -227,7 +243,7 @@ public:
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol) {
-      std::cerr << "LVIRA+ for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
+      std::cerr << "LVIRA for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
         " iteration(s) achieved error in volume for material " <<
         matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
       throw std::runtime_error("Target error in volume exceeded, terminating...");
@@ -235,8 +251,8 @@ public:
   }
 
   /*!
-    @brief Given a cell index, calculate the CellMatPoly using the LVIRA+ 
-    interface reconstruction method.
+    @brief Given a cell index, calculate the corresponding CellMatPoly using 
+    the LVIRA interface reconstruction method.
     Uses nested dissections algorithm.
   */
   std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
@@ -245,6 +261,8 @@ public:
     double dst_tol = ims_tols_[0].arg_eps;
     // Check if the cell is single-material
     if (cell_mat_ids_[cellID].size() == 1) {
+      // For a single-material cell, create a CellMatPoly with a single material
+      // polytope identical to the cell itself
       std::shared_ptr< CellMatPoly<Dim> > cmp_ptr(new CellMatPoly<Dim>(cellID));
       MatPoly<Dim> cell_matpoly;
       cell_get_matpoly(mesh_, cellID, &cell_matpoly, dst_tol);
@@ -262,9 +280,11 @@ public:
     NestedDissections<LVIRA, Dim, MatPoly_Splitter> 
       nested_dissections(*this, cellID, all_convex_);
 
-    // VaniLVIRA doesn't use permutations
+    // The standard LVIRA doesn't use material order permutations
     nested_dissections.set_cell_materials_order(false);
 
+    // Perform the reconstruction and return the resulting CellMatPoly
+    // for the prescribed material order
     return nested_dissections()[0];
   }
 
@@ -290,6 +310,7 @@ public:
 
   /*!
     @brief Indices of neigboring cell that are split when errors are computed
+    according to the LVIRA
     @param[in] cellID Cell index
     @return  Vector of indices of cell's neighbors through the nodes
   */
@@ -324,12 +345,17 @@ public:
 private:
   /*!
     @brief For a given material, normal, and collection of MatPoly's
-    finds the position of the plane corresponding to the material's
-    volume fraction and computes the error in accordance with the LVIRA
+    corresponding to the cell and its neigboring cells finds the position 
+    of the plane corresponding to the material's volume fraction in the cell
+    and computes the error in accordance with the LVIRA
     @param[in] cellID Index of the multi-material cell
     @param[in] cellMatID Local index of the clipped material
     @param[in] mixed_polys Vector of pointers to vectors of material poly's 
-    that contain the material to clip and (possibly) other materials
+    that contain the material to clip and (possibly) other materials;
+    the first pointer corresponds to MatPoly's representing the remaining part 
+    of the cell on the current step of the nested dissections algorithm, the 
+    remaining pointers correspond to single-entry vectors with MatPoly's identical
+    to the neighboring cells
     @param[in] plane_normal Direction of the cutting plane
     @return Error computed according to the LVIRA.
   */  
@@ -337,6 +363,7 @@ private:
                          const int cellMatID,
                          const std::vector< std::vector< MatPoly<Dim> >* >& mixed_polys_ptrs,
                          const Vector<Dim>& plane_normal) const {
+    // Find the distance to origin for the given cutting plane orientation
     Plane_t<Dim> cutting_plane;
     cutting_plane.normal = plane_normal;
     const std::vector< MatPoly<Dim> >& cell_mixed_polys = *(mixed_polys_ptrs[0]);
@@ -361,7 +388,7 @@ private:
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol) {
-      std::cerr << "LVIRA+ for cell " << cellID << ", testing normal ( ";
+      std::cerr << "LVIRA for cell " << cellID << ", testing normal ( ";
       for (int idim = 0; idim < Dim; idim++)
         std::cerr << plane_normal[idim] << " ";
       std::cerr << "): given a maximum of " <<
@@ -376,6 +403,10 @@ private:
 
     cutting_plane.dist2origin = clip_res[0];
 
+    // Compute the error according to the standard LVIRA by clipping all the
+    // neighboring cells with the cutting line and computing the discrepancy
+    // between the resulting volumes below the plane and reference volumes of
+    // the given material as prescribed for those neighbors
     const std::vector<int>& ineighbor_cells = cell_neighbors_ids_[cellID];
     int nnc = static_cast<int>(ineighbor_cells.size());
     assert(mixed_polys_ptrs.size() == nnc + 1);
@@ -383,8 +414,11 @@ private:
     double nghb_error = 0.0;
     int matID = cell_mat_ids_[cellID][cellMatID];
     for (int inc = 0; inc < nnc; inc++) {
+      // Vector of MatPoly's corresponding to the clipped neighboring cell
+      // In this case, the vector always contains a single material polytope which
+      // is identical to the neighboring cell itself
       const std::vector< MatPoly<Dim> >& nghb_mat_polys = *(mixed_polys_ptrs[inc + 1]);
-      // Find the reference volume fraction of the material in the neighboring cell
+      // Find the reference volume fraction of the given material in the neighboring cell
       int inghb_cell = ineighbor_cells[inc];
       int nnghb_mats = static_cast<int>(cell_mat_ids_[inghb_cell].size());
       int nghb_cell_imat = std::distance(cell_mat_ids_[inghb_cell].begin(),
@@ -394,14 +428,14 @@ private:
         cell_mat_vfracs_[inghb_cell][nghb_cell_imat];
 
       //Find the volume fraction of the material in the neighboring cell that
-      //corresponds to the extended material interface
+      //corresponds to the volume below the extended material interface
       MatPoly_Clipper clip_neighbor(vol_tol);
       clip_neighbor.set_matpolys(nghb_mat_polys, true);
       clip_neighbor.set_plane(cutting_plane);
       std::vector<double> nghb_moments = clip_neighbor();
       double nghb_IR_vfrac = nghb_moments[0]/mesh_.cell_volume(inghb_cell);
 
-      //Compute error
+      //Compute the error contribution for this neigboring cell
       nghb_error += pow2(nghb_reference_vfrac - nghb_IR_vfrac);
     }
     

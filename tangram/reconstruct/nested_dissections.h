@@ -22,8 +22,8 @@
   variable that can be modified externally. Materials order should
   generally be updated if cellID is modified.
   
-  @tparam Reconstructor A reconstructor that implements an algorithm 
-  for finding the position of a plane between a given material and the rest
+  @tparam Reconstructor A reconstructor that implements a specific 
+  interface reconstruction algorithm for the two-material case
   @tparam Dim The spatial dimension of the problem
   @tparam MatPoly_Splitter An operator for splitting a vector of MatPoly's 
   into half-space sets with a cutting plane
@@ -49,9 +49,11 @@ public:
                              convex_cell_(convex_cell) {}
 
   /*!
-    @brief Specifies the order in which materials are clipped
-    @param[in] cell_materials_order Vector of local material indices, if a cell 
-    has three materials, it will have three entries (0, 1, 2) in certain order
+    @brief Specifies a custom order in which materials are clipped
+    @param[in] cell_materials_order Vector of local material indices, from zero
+    to the number of materials minus one; index zero corresponds to the first
+    given material, the last index corresponds to the last given material;
+    materials will be clipped in the order given by this vector
   */
   void set_cell_materials_order(const std::vector<int>& cell_materials_order) {
     cell_materials_order_.clear();                              
@@ -102,27 +104,32 @@ public:
     int nmats = static_cast<int>(mat_ids.size());
 
     // See what cells does the reconstructor split: most reconstructors only split the
-    // cell itself, but some, such as LVIRA, extend the cutting plane to the neighbors
+    // cell itself (its ID always being the first entry), but some, such as LVIRA, 
+    // extend the cutting plane to the neighbors, in which case ID's of the neihboring
+    // cells are appended
     std::vector<int> icells_to_split = reconstructor_.neighbor_cells_to_split(cell_id_);
     icells_to_split.insert(icells_to_split.begin(), cell_id_);
     int nsplit_cells = static_cast<int>(icells_to_split.size());
 
-    // Reconstructors that extend material interfaces to neighboring cells might require
-    // the resulting collections of material polygons in those cells in order to determine
-    // the optimal material ordering
+    // Reconstructors that extend material interfaces to neighboring cells and employ
+    // material order permutations might require CellMatPoly's corresponding to the sequence
+    // of those (extended) interfaces not just for the cell itself, but also its neighbors
+    // (e.g. LVIRA+ uses neighbor CellMatPoly's to find the optimal material ordering)
     int nstored_cmps = permutations_enabled ? nsplit_cells : 1;
 
     //Get the MatPoly's for all the cells we need to split
     std::vector< MatPoly<Dim> > cell_matpolys(nsplit_cells);
     for (int isc = 0; isc < nsplit_cells; isc++) {
-      //MatPoly corresponding to a non-convex cell can have non-planar faces
+      // MatPoly corresponding to a non-convex cell can have non-planar faces
       if (convex_cell_)
         cell_matpolys[isc] = reconstructor_.cell_matpoly(icells_to_split[isc]);
-      else
+      else {
+        // We facetize faces of non-convex cells
         reconstructor_.cell_matpoly(icells_to_split[isc]).faceted_matpoly(&cell_matpolys[isc]);
+      }
     }
 
-    //Create required CellMatPoly's
+    // Create requested CellMatPoly's objects
     std::vector< std::shared_ptr< CellMatPoly<Dim> > > cmp_ptrs(nstored_cmps);
     for (int iscmp = 0; iscmp < nstored_cmps; iscmp++)
       cmp_ptrs[iscmp] = std::make_shared< CellMatPoly<Dim> >(icells_to_split[iscmp]);
@@ -133,23 +140,23 @@ public:
     Plane_t<Dim> cutting_plane {};
     std::vector< HalfSpaceSets_t<Dim> > hs_sets(nsplit_cells); // Structures containing vectors of MatPoly's and their
                                                                // aggregated moments for the respective half-spaces
-    //Pointers to MatPoly's that are split on every step
+    // Pointers to MatPoly's that are split on every step
     std::vector< std::vector< MatPoly<Dim> >* > upper_halfspace_matpolys(nsplit_cells);
 
     for (int isc = 0; isc < nsplit_cells; isc++) {
-      //Original vector of mixed MatPoly's consists of the cell's MatPoly
+      // Original vector of mixed MatPoly's consists of the cell's MatPoly
       hs_sets[isc].upper_halfspace_set.matpolys = { cell_matpolys[isc] };
-      //We split MatPoly's in the upper halfspace
+      // MatPoly's in the upper halfspace are carried over to the next step of nested dissections
       upper_halfspace_matpolys[isc] = &hs_sets[isc].upper_halfspace_set.matpolys;
     }
 
-    //Create Splitter instances: assumes split MatPoly's are convex
+    //Create Splitter instances for each requested CellMatPolys object: assumes split MatPoly's are convex
     std::vector<MatPoly_Splitter> material_splitters;
     material_splitters.reserve(nstored_cmps);
     for (int iscmp = 0; iscmp < nstored_cmps; iscmp++)
       material_splitters.push_back(MatPoly_Splitter(hs_sets[iscmp].upper_halfspace_set.matpolys, 
                                                     cutting_plane, vol_tol, dst_tol, true));
-
+    // Iterate over material in the given order, adding corresponding MatPoly's on each step
     for (int imat = 0; imat < nmats; imat++) {
       int matid = mat_ids[cell_materials_order_[permutation_ID][imat]];
      
@@ -175,7 +182,9 @@ public:
         // This is done inside the loop to make the first step cheaper: 
         // finding the position of the cutting plane normally requires 
         // only computation of moments, which we assume to be possible 
-        // without decomposing into tetrahedrons (e.g. if r3d is used). 
+        // without decomposing into tetrahedrons (e.g. if r3d is used).
+        // This approach is particularly beneficial in the case of 
+        // two-material cells
         if (!convex_cell_ and imat == 0) {
           for (int iscmp = 0; iscmp < nstored_cmps; iscmp++) {
             hs_sets[iscmp].upper_halfspace_set.matpolys.clear();
@@ -184,12 +193,15 @@ public:
           }
         }
 
+        // For every requested CellMatPoly we split the remaining part of 
+        // the corresponding cell and store MatPoly's correspoinding to the
+        // material chopped off on the current step
         for (int iscmp = 0; iscmp < nstored_cmps; iscmp++) {
           hs_sets[iscmp] = material_splitters[iscmp]();
           //Single-material MatPoly's are below the plane
           single_mat_set_ptrs[iscmp] = &hs_sets[iscmp].lower_halfspace_set;
 
-          // Filter out MatPoly's with volumes below tolerance
+          // Filter out MatPoly's with volumes below volume tolerance
           int ismp = 0;
           int nsingle_mat_points = single_mat_set_ptrs[iscmp]->matpolys.size();
           while (ismp < nsingle_mat_points) {
@@ -209,7 +221,7 @@ public:
         }
       }
 
-      // Add single-material poly's below the plane to CellMatPoly's
+      // Add single-material poly's below the plane to the corresponding CellMatPoly's
       for (int iscmp = 0; iscmp < nstored_cmps; iscmp++) {
         for (auto& cur_mat_poly : single_mat_set_ptrs[iscmp]->matpolys) {
           cur_mat_poly.set_mat_id(matid);

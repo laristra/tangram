@@ -119,7 +119,10 @@ public:
     @param[in] cellID Index of the multi-material cell to operate on
     @param[in] matID Index of the material to clip
     @param[in] mixed_polys Vector of pointers to vectors of material poly's 
-    that contain the material to clip and (possibly) other materials
+    that contain the material to clip and (possibly) other materials;
+    for VOF this vector is of length one, with the only pointer corresponding
+    to MatPoly's representing the remaining part of the cell on the current step
+    of the nested dissections algorithm    
     @param[out] cutting_plane The resulting cutting plane position
     @param[in] planar_faces Flag indicating whether the faces of all mixed_polys
     are planar
@@ -248,6 +251,12 @@ public:
     return mat_poly;
   }
 
+  /*!
+    @brief Indices of neigboring cell that are split when errors are computed:
+    for VOF the vector is empry
+    @param[in] cellID Cell index
+    @return  Empty vector
+  */
   std::vector<int> neighbor_cells_to_split(const int cellID) const { return {}; }
 
   /*!

@@ -24,7 +24,10 @@
  @file LVIRAPlus.h
   @brief Calculates the interfaces and constructs CellMatPoly's using the
   Least squares Volume-of-fluid Interface Reconstruction Algorithm (LVIRA)
-  modified for use on domains with more than two materials.
+  modified for use on domains with more than two materials (LVIRA+).
+  This method uses material order permutations in the case the cell and its
+  neighbors contain three or more distinct materials and a significant increase
+  in computational cost should be expected in comparison to the standard LVIRA.
   
   @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
   implementation that provides certain functionality
@@ -112,7 +115,7 @@ public:
     material volumes over neighboring cells, computed according
     to the modified LVIRA. The change in cutting plane
     orientation is defined as the norm of change of the cutting
-    plane's normal, which is expressed in polar coordinates (angles).
+    plane's normal expressed in polar coordinates (angles).
   */
   const std::vector<IterativeMethodTolerances_t>& 
   iterative_methods_tolerances() const {
@@ -123,6 +126,10 @@ public:
     @brief Pass in list of cells to decompose into material polygons using nested
     dissections. If the index is in the list, a CellMatPoly object will be
     created even for a single-material cell.
+    Note that this method caches ID's of the neighboring cells and volume fractions
+    of "alien" materials for each of the neighboring cells. Alien materials are defined
+    as materials contained in the neighboring cell, but absent from the cell for which
+    the reconstruction is performed.
     @param[in] cellIDs_to_op_on A vector of length up to (num_cells) 
     specifying the indices of cells for which CellMatPoly objects are requested.
   */
@@ -135,23 +142,29 @@ public:
       // Find neighbors of the cell
       mesh_.cell_get_node_adj_cells(icell, Entity_type::ALL, &cell_neighbors_ids_[icell]);
 
-      // Find aggregated volume fractions of materials that are contained
-      // in the neighboring cells, but not in the cell itself
+      // Find aggregated volume fractions of "alien" materials in each of the
+      // neighboring cells
       int nnc = static_cast<int>(cell_neighbors_ids_[icell].size());
       nghb_alien_mat_vfracs_[icell].assign(nnc, 0.0);
+      // Loop over neighboring cells
       for (int inc = 0; inc < nnc; inc++) {
         int inghb_cell = cell_neighbors_ids_[icell][inc];
         int nnghb_mats = static_cast<int>(cell_mat_ids_[inghb_cell].size());
+        // Check that the material data is provided for the neighboring cell:
+        // this is important in the case the neighbor is a ghost cell
+        if (nnghb_mats == 0) {
+          std::string err_msg = "LVIRA+ requires material data in the cells "; 
+          err_msg += "neighboring the multi-material cells!\n";
+          err_msg += "No material data is provided for cell " + std::to_string(inghb_cell);
+          err_msg += " when reconstruction is requested for cell " + std::to_string(icell) + "!\n";
+          throw std::runtime_error(err_msg);
+        }
 
+        // Loop over materials contained in the neighboring cell
         for (int incm = 0; incm < nnghb_mats; incm++) {
-          if (cell_mat_ids_[inghb_cell].empty()) {
-            std::string err_msg = "LVIRA+ requires material data in the cells "; 
-            err_msg += "neighboring the multi-material cells!\n";
-            err_msg += "No material data is provided for cell " + std::to_string(inghb_cell);
-            err_msg += " when reconstruction is requested for cell " + std::to_string(icell) + "!\n";
-            throw std::runtime_error(err_msg);
-          }
-
+          // If the material is not present in the cell for which the reconstruction
+          // is performed, it's considered to be "alien" and its volume fraction is
+          // added to the volume fraction of all alien material in this neighboring cell
           if (std::find(cell_mat_ids_[icell].begin(), 
                         cell_mat_ids_[icell].end(), cell_mat_ids_[inghb_cell][incm]) ==
               cell_mat_ids_[icell].end())
@@ -163,13 +176,26 @@ public:
 
   /*!
     @brief Calculate the position of a plane that clips off a particular material.
-    This method is used on every step of the nested dissections algorithm.
+    This method is used on every step of the nested dissections algorithm with 
+    materials sequentially chopped off in a currently tested order. 
+    The orientation of the plane is found accordind to the modified LVIRA by 
+    extending the material interface to the neighboring cells and minimizing the
+    norm of errors based on discrepancies between computed and reference volumes 
+    of the clipped material prescribed for those cells. 
+    Unlike LVIRA that always clips the entire neighboring cell, LVIRA+ only clips 
+    the part that remains following the previous steps of nested dissections. 
+    It also uses modified error calculation procedure that accounts for the presence
+    of alien materials.
     Note that if MatPoly_Clipper can handle non-convex cells, this method
     does not require decomposion into tetrahedrons.
     @param[in] cellID Index of the multi-material cell to operate on
     @param[in] matID Index of the material to clip
     @param[in] mixed_polys Vector of pointers to vectors of material poly's 
-    that contain the material to clip and (possibly) other materials
+    that contain the material to clip and (possibly) other materials;
+    the first pointer corresponds to MatPoly's representing the remaining part 
+    of the cell on the current step of the nested dissections algorithm, the 
+    remaining pointers correspond to MatPoly's representing the remaining parts 
+    of the neighboring cells on the current step of the nested dissections algorithm
     @param[out] cutting_plane The resulting cutting plane position
     @param[in] planar_faces Flag indicating whether the faces of all mixed_polys
     are planar
@@ -221,6 +247,8 @@ public:
 
     Vector<Dim - 1> init_guess = cartesian_to_polar(cutting_plane.normal);
 
+    // Objective function for the minimization algorithm caclculated according
+    // to the LVIRA+
     std::function<double(const Vector<Dim - 1>&)> bfgs_obj_fun = 
       [this, &cellID, &cellMatID, &mixed_polys_ptrs]
       (const Vector<Dim - 1>& cur_arg)->double {
@@ -230,6 +258,7 @@ public:
 
     double bfgs_obj_fun_lbnd = 0.0;
 
+    // Find the cutting plane orientation that minimizes the objective function
     Vector<Dim - 1> ang_min;
     switch(lvira_plus_bfgs_alg) {
       case BFGS: ang_min = bfgs<Dim - 1>(bfgs_obj_fun, bfgs_obj_fun_lbnd, 
@@ -243,6 +272,7 @@ public:
 
     cutting_plane.normal = polar_to_cartesian(ang_min);
 
+    // Find the distance to origin for the optimal cutting plane orientation
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
       solve_cut_dst(*(mixed_polys_ptrs[0]), cutting_plane.normal, ims_tols_[0], planar_faces);
 
@@ -265,6 +295,8 @@ public:
     @brief Given a cell index, calculate the CellMatPoly using the LVIRA+ 
     interface reconstruction method.
     Uses nested dissections algorithm.
+    Uses material order permutations for three and more material cells and
+    for cell's with alien materials in their stencil.
   */
   std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
     int cellID = icells_to_reconstruct[cell_op_ID];
@@ -272,6 +304,8 @@ public:
     double dst_tol = ims_tols_[0].arg_eps;
     // Check if the cell is single-material
     if (cell_mat_ids_[cellID].size() == 1) {
+      // For a single-material cell, create a CellMatPoly with a single material
+      // polytope identical to the cell itself
       std::shared_ptr< CellMatPoly<Dim> > cmp_ptr(new CellMatPoly<Dim>(cellID));
       MatPoly<Dim> cell_matpoly;
       cell_get_matpoly(mesh_, cellID, &cell_matpoly, dst_tol);
@@ -294,7 +328,7 @@ public:
     bool enable_permutations = (cell_mat_ids_[cellID].size() != 2);
 
     // But if the stencil of a two-material cell includes cells with
-    // a material not present in it, we still permute materials
+    // alien materials, we still go through with permutations
     const std::vector<int>& ineighbor_cells = cell_neighbors_ids_[cellID];
     int nnc = static_cast<int>(ineighbor_cells.size());
     if (!enable_permutations) {
@@ -312,13 +346,21 @@ public:
     Wonton::vector< std::vector< std::shared_ptr< CellMatPoly<Dim> > > > 
       permutations_cellmatpolys(npermutations);
 
+    // Perform reconstruction for all required materials orders
     Wonton::transform(Wonton::make_counting_iterator(0),
                       Wonton::make_counting_iterator(npermutations),
                       permutations_cellmatpolys.begin(), nested_dissections);
 
+    // If permuations were required, find the optimal materials order.
+    // We use neighboring CellMatPoly's that correspond to the extended
+    // material interfaces found for this cell. Those CellMatPoly's are
+    // not used outside of this operator and are independent (and different)
+    // from CellMatPoly's resulting from the reconstruction performed for the
+    // neighboring cells themselves.
     int iopt_permutation = 0;
     if (enable_permutations) {
       double min_neighbors_error = DBL_MAX;
+      // Loop over materials orders
       for (int iperm = 0; iperm < npermutations; iperm++) {
         const std::vector< std::shared_ptr< CellMatPoly<Dim> > >& cur_perm_cmp_ptrs = 
           permutations_cellmatpolys[iperm];
@@ -326,26 +368,38 @@ public:
         int nmats = static_cast<int>(cell_matids.size());
 
         double cur_error = 0.0;
+        // Loop over neighboring CellMatPoly's and compute the aggregated error for
+        // the current materials order
         for (int inc = 0; inc < nnc; inc++) {
           int inghb_cell = ineighbor_cells[inc];
           double nghb_cell_vol = mesh_.cell_volume(inghb_cell);
           std::shared_ptr< CellMatPoly<Dim> > nghb_cmp_ptr = cur_perm_cmp_ptrs[inc + 1];
           int nghb_cmp_nmats = nghb_cmp_ptr->num_materials();
 
+          // Loop over materials in the neighboring CellMatPoly
           for (int imat = 0; imat < nmats; imat++) {
             int mat_id = cell_matids[imat];
 
             int nnghb_mats = static_cast<int>(cell_mat_ids_[inghb_cell].size());
-            //Find the reference volume fraction of the material in the neighboring cell
+            // Find the reference volume fraction of the material in the neighboring cell
             int nghb_cell_imat = std::distance(cell_mat_ids_[inghb_cell].begin(),
               std::find(cell_mat_ids_[inghb_cell].begin(), 
                         cell_mat_ids_[inghb_cell].end(), mat_id));
             double nghb_reference_vfrac = 0.0;
+            // We weight the error by the fraction of non-alien materials in the
+            // neighboring cell, i.e. the materials that are assumed to extend to the
+            // neighboring cell: the more alien materials that cell contains, the less
+            // accurate that assumption is, and the less should be that cell's influence
+            // on the position of the material interfaces in the cell for which the 
+            // reconstruction is performed
             double nghb_weight = 1.0 - nghb_alien_mat_vfracs_[cellID][inc];
             if (nghb_cell_imat != nnghb_mats) {
               //Material should extend to the neighboring cell
               nghb_reference_vfrac = cell_mat_vfracs_[inghb_cell][nghb_cell_imat];
 
+              // By construction, alien materials are never contained in the neighboring
+              // CellMatPoly's. We add their volume fractions to either the first or the
+              // last material in the current materials order
               if (lump_aliens_with_first_mat_) {
                 //If the neighboring cell has materials NOT present in the CellMatPoly,
                 //they were lumped with the FIRST clipped material
@@ -374,6 +428,8 @@ public:
         }
       }                       
     }
+    // Return the CellMatPoly corresponding to this cell and the optimal
+    // materials order
     const std::vector< std::shared_ptr< CellMatPoly<Dim> > >& opt_perm_cmp_ptrs = 
       permutations_cellmatpolys[iopt_permutation];
     return opt_perm_cmp_ptrs[0];
@@ -401,6 +457,7 @@ public:
 
   /*!
     @brief Indices of neigboring cell that are split when errors are computed
+    according to the LVIRA+
     @param[in] cellID Cell index
     @return  Vector of indices of cell's neighbors through the nodes
   */
@@ -435,22 +492,25 @@ public:
 private:
   /*!
     @brief For a given material, normal, and collection of MatPoly's
-    finds the position of the plane corresponding to the material's
-    volume fraction and computes the error in accordance with the
-    modified LVIRA
+    corresponding to the cell and its neigboring cells finds the position 
+    of the plane corresponding to the material's volume fraction in the cell
+    and computes the error in accordance with the modified LVIRA
     @param[in] cellID Index of the multi-material cell
     @param[in] cellMatID Local index of the clipped material
     @param[in] mixed_polys Vector of pointers to vectors of material poly's 
-    that contain the material to clip and (possibly) other materials
+    that contain the material to clip and (possibly) other materials;
+    the first pointer corresponds to MatPoly's representing the remaining part 
+    of the cell on the current step of the nested dissections algorithm, the 
+    remaining pointers correspond to MatPoly's representing the remaining parts 
+    of the neighboring cells on the current step of the nested dissections algorithm
     @param[in] plane_normal Direction of the cutting plane
-    @return Error computed according to the modified LVIRA. Finaly a hard 
-    number estimate for the sins sommited by your neighbors. Fund LVIRA++ to
-    see the numbers for your in-laws.
+    @return Error computed according to the modified LVIRA.
   */  
   double neighbors_error(const int cellID, 
                          const int cellMatID,
                          const std::vector< std::vector< MatPoly<Dim> >* >& mixed_polys_ptrs,
                          const Vector<Dim>& plane_normal) const {
+    // Find the distance to origin for the given cutting plane orientation
     Plane_t<Dim> cutting_plane;
     cutting_plane.normal = plane_normal;
     const std::vector< MatPoly<Dim> >& cell_mixed_polys = *(mixed_polys_ptrs[0]);
@@ -467,8 +527,12 @@ private:
 
     double min_mat_vfrac = 0.0;
     bool first_cut = false;
+    // If we add the volume fraction of alien materials to the first material
+    // in the materials order, we have to check if the current cut is the first
+    // cut
     if (lump_aliens_with_first_mat_) {
-      // Determine if a material has already been chopped off
+      // Determine if this is the first material to be chopped off:
+      // in this case, the given MatPoly's should cover the whole cell
       min_mat_vfrac = *std::min_element(cell_mat_vfracs_[cellID].begin(), cell_mat_vfracs_[cellID].end());
       first_cut = (mixed_polys_vol > mesh_.cell_volume(cellID)*(1.0 - 0.5*min_mat_vfrac));
     }
@@ -498,6 +562,10 @@ private:
 
     cutting_plane.dist2origin = clip_res[0];
 
+    // Compute the error according to the modified LVIRA by clipping the parts
+    // of neighboring cells remaining on the current step of nested dissections
+    // with the cutting plane and computing the error based on the discrepancies
+    // between the resulting and reference volumes for the given material
     const std::vector<int>& ineighbor_cells = cell_neighbors_ids_[cellID];
     int nnc = static_cast<int>(ineighbor_cells.size());
     assert(mixed_polys_ptrs.size() == nnc + 1);
@@ -505,6 +573,8 @@ private:
     double nghb_error = 0.0;
     int matID = cell_mat_ids_[cellID][cellMatID];
     for (int inc = 0; inc < nnc; inc++) {
+      // Vector of MatPoly's corresponding to the remaining part of the 
+      // clipped neighboring cell
       const std::vector< MatPoly<Dim> >& nghb_mat_polys = *(mixed_polys_ptrs[inc + 1]);
       // Find the reference volume fraction of the material in the neighboring cell
       int inghb_cell = ineighbor_cells[inc];
@@ -513,17 +583,27 @@ private:
         std::find(cell_mat_ids_[inghb_cell].begin(), 
                   cell_mat_ids_[inghb_cell].end(), matID));
       double nghb_reference_vfrac = 0.0;
-      // The weight corresponds to the fraction of materials that extend from the cell
-      // to its neighbor
+      // We weight the error by the fraction of non-alien materials in the
+      // neighboring cell, i.e. the materials that are assumed to extend to the
+      // neighboring cell: the more alien materials that cell contains, the less
+      // accurate that assumption is, and the less should be that cell's influence
+      // on the position of the material interfaces in the cell for which the 
+      // reconstruction is performed
       double nghb_weight = 1.0 - nghb_alien_mat_vfracs_[cellID][inc];
       if (nghb_cell_imat != nnghb_mats) {
         // Clipped material extends to the neighboring cell
         nghb_reference_vfrac = cell_mat_vfracs_[inghb_cell][nghb_cell_imat];
 
+        // We have no information on how the extended interface should split
+        // alien materials, so the assume that all them fall either below the
+        // first material interface or float above the last material interface
         if (lump_aliens_with_first_mat_ && first_cut) {
           // If the neighboring cell has materials NOT present in the current cell,
           // then we assume they are in the same half-space as the material chopped
-          // off on the first cut
+          // off on the first cut.
+          // Note that we never invoke this function for the last material in the 
+          // materials order, so the volume fraction correction is not performed here
+          // if alien materials are lumped with the last material in the materils order
           nghb_reference_vfrac += nghb_alien_mat_vfracs_[cellID][inc];
         }
       }
@@ -536,7 +616,7 @@ private:
       std::vector<double> nghb_moments = clip_neighbor();
       double nghb_IR_vol = nghb_moments[0];
 
-      //Compute error
+      //Compute error contribution for the current neighbor
       nghb_error += pow2(nghb_weight*(nghb_reference_vfrac*mesh_.cell_volume(inghb_cell) - nghb_IR_vol));
     }
     
