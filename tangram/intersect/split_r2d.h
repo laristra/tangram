@@ -105,9 +105,9 @@ inline
 
 inline
 void get_intersection_moments(const MatPoly<2>& mat_poly,
-                                const r2d_poly& r2dpoly,
-                                std::vector<double>& intersection_moments,
-                                bool convex_matpoly) {   
+                              const r2d_poly& r2dpoly,
+                              std::vector<double>& intersection_moments,
+                              bool convex_matpoly) {   
   const int POLY_ORDER = 1;
   int nmoments = R2D_NUM_MOMENTS(POLY_ORDER);
   r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
@@ -301,9 +301,9 @@ class SplitR2D {
     if (all_convex_)
       convex_polys = &matpolys_;
     else {
-      int nncpolys = (int) matpolys_.size();
-      for (int incp = 0; incp < nncpolys; incp++)
-        matpolys_[incp].decompose(convex_components);
+      for (auto&& matpoly : matpolys_) {
+        matpoly.decompose(convex_components);
+      }
 
       convex_polys = &convex_components;
     }
@@ -312,7 +312,7 @@ class SplitR2D {
       hs_moments_ptrs[ihs]->assign(3, 0.0);
 
     int hs_poly_count[2] = {0, 0};
-    int npolys = (int) convex_polys->size();
+    int const npolys = convex_polys->size();
 
     for (int icp = 0; icp < npolys; icp++) {
       MatPoly<2> cur_subpolys[2];
@@ -322,8 +322,11 @@ class SplitR2D {
                                cur_moments[0], cur_moments[1],
                                vol_tol_, dst_tol_);
 
+      int cur_face_group_id = (*convex_polys)[icp].face_group_id();
       for (int ihs = 0; ihs < 2; ihs++)
         if (cur_subpolys[ihs].num_vertices() != 0) {
+          if (cur_face_group_id >= 0)
+            cur_subpolys[ihs].set_face_group_id(cur_face_group_id);
           hs_subpolys_ptrs[ihs]->emplace_back(cur_subpolys[ihs]);
           for (int im = 0; im < 3; im++)
             (*hs_moments_ptrs[ihs])[im] += cur_moments[ihs][im];
@@ -370,8 +373,7 @@ class SplitR2D {
 
 class ClipR2D {
  public:
-  ClipR2D(double vol_tol) : 
-          vol_tol_(vol_tol) {}
+  ClipR2D(double vol_tol) : vol_tol_(vol_tol) {}
 
   /*! 
     @brief Set the cutting line used by the functor. 
@@ -405,17 +407,20 @@ class ClipR2D {
   */
   std::vector<double> aggregated_moments() {
     std::vector<double> agg_moments;
-    if (!r2d_polys_.empty()) {
+
+    if (not r2d_polys_.empty()) {
       agg_moments.assign(3, 0.0);
 
       const int POLY_ORDER = 1;
       r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
-      for(int ipoly = 0; ipoly < r2d_polys_.size(); ipoly++)
-        if (r2d_polys_[ipoly].nverts != 0) {
-          r2d_reduce(&r2d_polys_[ipoly], r2d_moments, POLY_ORDER);
+
+      for (auto&& poly : r2d_polys_) {
+        if (poly.nverts != 0) {
+          r2d_reduce(&poly, r2d_moments, POLY_ORDER);
           for (int im = 0; im < 3; im++)
             agg_moments[im] += r2d_moments[im];
         }
+      }
     }
 
     if (agg_moments[0] < vol_tol_)
@@ -436,11 +441,11 @@ class ClipR2D {
     const int POLY_ORDER = 1;
     r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
 
-    for (int ipoly = 0; ipoly < r2d_polys_.size(); ipoly++) {
-      if (r2d_polys_[ipoly].nverts != 0) {
+    for (const auto& poly : r2d_polys_) {
+      if (poly.nverts != 0) {
         //r2d does in-place clipping and does not have the const modifier
         //for the line: we need to make copies
-        r2d_poly clipped_poly = r2d_polys_[ipoly];
+        r2d_poly clipped_poly = poly;
         r2d_plane line_copy = r2d_cut_line_;
         r2d_clip(&clipped_poly, &line_copy, 1);
         if (clipped_poly.nverts != 0) {

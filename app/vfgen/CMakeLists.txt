@@ -7,13 +7,11 @@
 #-------------------------------------------------------------------------------
 # genvf - generate volume fractions and centroids
 #-------------------------------------------------------------------------------
-add_executable(vfgen-sampling vfgen-sampling.cc)
-target_link_libraries(vfgen-sampling ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
-  ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
+  if (WONTON_ENABLE_MPI AND WONTON_ENABLE_Jali)
+    add_executable(vfgen-sampling-jali vfgen-sampling-jali.cc)
+    target_link_libraries(vfgen-sampling-jali tangram)
+  endif (WONTON_ENABLE_MPI AND WONTON_ENABLE_Jali)
 
-#TCMalloc option
-set(ENABLE_TCMALLOC TRUE CACHE BOOL "Use TCMalloc")
-if(ENABLE_TCMALLOC)
-  set(TCMALLOC_LIB "${HOME}" CACHE STRING "Set the TCMalloc library")
-  target_link_libraries(vfgen-sampling ${TCMALLOC_LIB})
-endif(ENABLE_TCMALLOC)
+  add_executable(vfgen-sampling-sm vfgen-sampling-sm.cc)
+  target_link_libraries(vfgen-sampling-sm tangram)
+

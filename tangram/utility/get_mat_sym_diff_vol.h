@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include "tangram/support/tangram.h"
+#include "tangram/driver/CellMatPoly.h"
 #include "tangram/intersect/split_r2d.h"
 #include "tangram/intersect/split_r3d.h"
 
@@ -35,21 +36,20 @@ void get_mat_sym_diff_vol(const std::vector< std::vector<r3d_poly> >& reference_
   int nref_mats = ref_mat_ids.size();
   mat_sym_diff_vol.resize(nref_mats);
 
-  for(int icmat = 0; icmat < nref_mats; icmat++) {
+  for (int icmat = 0; icmat < nref_mats; icmat++) {
     int material_id = ref_mat_ids[icmat];
-    std::vector< Tangram::MatPoly<3> > res_mat_polys = 
-      result_ptr->get_matpolys(material_id);
+    auto res_mat_polys = result_ptr->get_matpolys(material_id);
 
     if (res_mat_polys.empty())
       mat_sym_diff_vol[icmat] = ref_mat_vol[icmat];
     else {
-      mat_sym_diff_vol[icmat] = result_ptr->material_moments(material_id)[0] +
-                                ref_mat_vol[icmat]; 
-      for (int iref_poly = 0; iref_poly < reference_mat_polys[icmat].size(); iref_poly++) {
-        for (int ires_mpoly = 0; ires_mpoly < res_mat_polys.size(); ires_mpoly++) {
+      mat_sym_diff_vol[icmat] =
+        result_ptr->material_moments(material_id)[0] + ref_mat_vol[icmat];
+
+      for (auto&& ref_poly : reference_mat_polys[icmat]) {
+        for (auto&& res_mat_poly : res_mat_polys) {
           std::vector<double> intersection_moments;
-          Tangram::get_intersection_moments(res_mat_polys[ires_mpoly], 
-                                            reference_mat_polys[icmat][iref_poly],
+          Tangram::get_intersection_moments(res_mat_poly, ref_poly,
                                             intersection_moments, convex_matpolys);
           mat_sym_diff_vol[icmat] -= 2*intersection_moments[0];                               
         }
@@ -83,21 +83,20 @@ void get_mat_sym_diff_vol(const std::vector< std::vector<r2d_poly> >& reference_
   int nref_mats = ref_mat_ids.size();
   mat_sym_diff_vol.resize(nref_mats);
 
-  for(int icmat = 0; icmat < nref_mats; icmat++) {
+  for (int icmat = 0; icmat < nref_mats; icmat++) {
     int material_id = ref_mat_ids[icmat];
-    std::vector< Tangram::MatPoly<2> > res_mat_polys = 
-      result_ptr->get_matpolys(material_id);
+    auto res_mat_polys = result_ptr->get_matpolys(material_id);
 
     if (res_mat_polys.empty())
       mat_sym_diff_vol[icmat] = ref_mat_vol[icmat];
     else {
-      mat_sym_diff_vol[icmat] = result_ptr->material_moments(material_id)[0] +
-                                ref_mat_vol[icmat]; 
-      for (int iref_poly = 0; iref_poly < reference_mat_polys[icmat].size(); iref_poly++) {
-        for (int ires_mpoly = 0; ires_mpoly < res_mat_polys.size(); ires_mpoly++) {
+      mat_sym_diff_vol[icmat] =
+        result_ptr->material_moments(material_id)[0] + ref_mat_vol[icmat];
+
+      for (auto&& ref_poly : reference_mat_polys[icmat]) {
+        for (auto&& res_mat_poly : res_mat_polys) {
           std::vector<double> intersection_moments;
-          Tangram::get_intersection_moments(res_mat_polys[ires_mpoly], 
-                                            reference_mat_polys[icmat][iref_poly],
+          Tangram::get_intersection_moments(res_mat_poly, ref_poly,
                                             intersection_moments, convex_matpolys);
           mat_sym_diff_vol[icmat] -= 2*intersection_moments[0];                               
         }

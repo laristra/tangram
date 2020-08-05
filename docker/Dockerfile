@@ -18,12 +18,12 @@ ARG TRAVIS_OS_NAME
 # for docs
 ARG DOCS
 
-COPY tangram /home/portage/tangram
+COPY tangram /home/tangram/tangram
 
 USER root
-RUN chown -R portage:portage /home/portage/tangram
+RUN chown -R portage:portage /home/tangram/tangram
 USER portage
-WORKDIR /home/portage/tangram
+WORKDIR /home/tangram/tangram
 RUN mkdir build
 WORKDIR build
 RUN cmake -D CMAKE_BUILD_TYPE=Debug -D ENABLE_UNIT_TESTS=True \

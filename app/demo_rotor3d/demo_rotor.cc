@@ -18,12 +18,12 @@
 #include <cmath>
 #include <limits>
 
-#ifdef ENABLE_MPI 
+#ifdef WONTON_ENABLE_MPI 
   #include "mpi.h"
 #endif
 
-#include "wonton/wonton/mesh/simple/simple_mesh.h"
-#include "wonton/wonton/mesh/simple/simple_mesh_wrapper.h"
+#include "wonton/mesh/simple/simple_mesh.h"
+#include "wonton/mesh/simple/simple_mesh_wrapper.h"
 
 #include "tangram/support/tangram.h"
 #include "tangram/driver/driver.h"
@@ -45,7 +45,7 @@
    reference poly's, and outputs reconstruction results to gmv files. */
 
 int main(int argc, char** argv) {
-#ifdef ENABLE_MPI  
+#ifdef WONTON_ENABLE_MPI  
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
 
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
   std::cout << "Time taken to generate reference material polyhedra and their moments -> " << 
     seconds_taken << " (s)" << std::endl;
 
-  int nmesh_material_IDs = (int) mesh_material_IDs.size();   
+  int nmesh_material_IDs = mesh_material_IDs.size();
   std::vector<int> offsets(ncells, 0);  
   for (int icell = 0; icell < ncells - 1; icell++)
     offsets[icell + 1] = offsets[icell] + cell_num_mats[icell];
@@ -180,7 +180,9 @@ int main(int argc, char** argv) {
     std::endl << "  " << nmesh_material_IDs << " materials," <<
     std::endl << "  " << ncells_with_xmats[0] << " single-material cells," <<
     std::endl << "  " << nmmcells << " multi-material cells:" << std::endl;
-  for (int inm = 0; inm < ncells_with_xmats.size() - 1; inm++)
+
+  int count_cells_with_xmats = ncells_with_xmats.size();
+  for (int inm = 0; inm < count_cells_with_xmats - 1; inm++)
     std::cout << "    Number of cells with " << inm + 2 << " materials -> " <<
       ncells_with_xmats[inm + 1] << std::endl;
 
@@ -289,14 +291,16 @@ int main(int argc, char** argv) {
           total_mat_sym_diff_vol[imat]/mmcells_material_volumes[imat]; 
       std::cout << std::endl;
 
-      for (int mc = 0; mc < ncells_with_xmats.size() - 1; mc++)
+      for (int mc = 0; mc < count_cells_with_xmats - 1; mc++) {
         if (xmat_cells_material_volumes[imat][mc] != 0.0) {
-          std::cout << "    over all " << mc + 2 << "-material cells:" << std::endl << 
+          std::cout << "    over all " << mc + 2 << "-material cells:" << std::endl <<
           "      Aggregate vol = " << xmat_cells_material_volumes[imat][mc] << "," << std::endl <<
-          "      aggregate sym.diff.vol = " << xmat_cells_mat_sym_diff_vol[imat][mc] << "," << std::endl << 
-          "      relative sym.diff.vol = " << 
-              xmat_cells_mat_sym_diff_vol[imat][mc]/xmat_cells_material_volumes[imat][mc] << std::endl; 
+          "      aggregate sym.diff.vol = " << xmat_cells_mat_sym_diff_vol[imat][mc] << "," << std::endl <<
+          "      relative sym.diff.vol = " <<
+              xmat_cells_mat_sym_diff_vol[imat][mc]/xmat_cells_material_volumes[imat][mc] << std::endl;
         }
+      }
+
       std::cout << std::endl;      
     }
     std::cout << std::endl;
@@ -333,7 +337,7 @@ int main(int argc, char** argv) {
     ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<3> >(icell);
 
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
-      int nmp = (int) reference_mat_polys[icell][icmat].size();
+      int nmp = reference_mat_polys[icell][icmat].size();
       for (int imp = 0; imp < nmp; imp++) {
         std::vector< Tangram::MatPoly<3> > cur_matpoly;
         Tangram::r3dpoly_to_matpolys(reference_mat_polys[icell][icmat][imp], 
@@ -356,7 +360,7 @@ int main(int argc, char** argv) {
   std::cout << "Time taken to write reference material polyhedra -> " <<
     seconds_taken << " (s)" << std::endl;
 
-#ifdef ENABLE_MPI 
+#ifdef WONTON_ENABLE_MPI 
   MPI_Finalize();
 #endif
 

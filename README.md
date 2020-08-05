@@ -37,22 +37,29 @@ Tangram uses standard C++11 features, so a fairly modern compiler is
 needed.  We regularly test with Intel 18.0.1, GCC 6.4.0, and GCC 7.3.0.  
 Utilizing the full capabilities of Tangram will require an MPI implementation; 
 we regularly test with OpenMPI 2.1.2. The build system _requires_ CMake
-version 3.0+.
+version 3.13+.
 
 The following libraries are also _required_ (see examples below):
 
-- **__Either__** Boost (1.68.0+) **__or__** Thrust (1.6.0+):
+- **__Either__** Boost (1.68.0+) **__or__** Thrust (1.8.0+):
   We wrap some features of either one of these packages.  If you would
-  like to run with OpenMP or TBB threads, then you _must_ use Thrust.
+  like to run with OpenMP, then you _must_ use Thrust.
 
-Tangram provides wrappers for a few third-party mesh types.  Building
-support for these is _optional_:
+Tangram requires the [Wonton](https://github.com/laristra/wonton)
+library. The path where Wonton is installed must be specified either
+through the **WONTON_ROOT** variable or included in the
+**CMAKE_PREFIX_PATH**. Tangram will pick up the third party libraries
+that Wonton is built with (Jali, FleCSI and LAPACKE) based on the
+installation. Some options requested for Tangram must match those of
+the Wonton installation. For example, you cannot ask for Tangram to be
+built with MPI (or Thrust) and link to an installation of Wonton built
+without MPI (or Thrust).
 
-- [Jali](http://github.com/lanl/jali):
-
-  We regularly test with verison 1.0.4.  You will need to set the
-  `Jali_Dir` CMake variable if you wish to build support for Jali and
-  its tests (see examples below).
+Tangram can optionally be built with the
+[XMOF2D](https://github.com/laristra/xmof2d) library. Enable XMOF2D
+support using the option "TANGRAM_ENABLE_XMOF2D=True" and point to the
+location where *XMOF2DConfig.cmake* is installed either through the
+**XMOF2D_ROOT** variable or include it in the **CMAKE_PREFIX_PATH**.
 
 ### Installing
 
@@ -63,7 +70,7 @@ searches, then the build step is:
 ```sh
 tangram $ mkdir build
 tangram $ cd build
-tangram/build $ cmake -DENABLE_APP_TESTS=True ..
+tangram/build $ cmake -DWONTON_ROOT:FILEPATH=/path/to/wonton ..
 tangram/build $ make
 ```
 
@@ -97,36 +104,23 @@ assigned **LA-CC-17-133**.
 #!/bin/bash
 
 BUILD_TYPE=Release
-JALI_INSTALL_PREFIX=/path/to/jali/installation
-TPLS_INSTALL_PREFIX=/path/to/jali/tpls/installation
-LAPACKE_INSTALL_PREFIX=/path/to/LAPACKE/intallation
 XMOF2D_INSTALL_PREFIX=/path/to/XMOF2D/installation
-THRUST_PATH=/path/to/thrust
-BOOST_PATH=/path/to/boost
-TCMALLOC_PATH=/path/to/google/performance/tools/installation
-
-CC=`which mpicc`
-CXX=`which mpiCC`
 
 rm -rf build
 mkdir build
 cd build
 
 cmake \
-    -D CMAKE_C_COMPILER=${CC} \
-    -D CMAKE_CXX_COMPILER=${CXX} \
     -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+	-D CMAKE_INSTALL_PREFIX=/path/where/to/install/tangram \
     -D ENABLE_UNIT_TESTS=True \
     -D ENABLE_APP_TESTS=True \
-    -D ENABLE_MPI=True \
+    -D TANGRAM_ENABLE_MPI=True \
+	-D WONTON_ROOT=/path/where/wonton/is/installed \
+	-D TANGRAM_ENABLE_Jali=True \
+	-D TANGRAM_ENABLE_XMOF2D=True \
     -D XMOF2D_DIR:FILEPATH=${XMOF2D_INSTALL_PREFIX}/share/cmake \
-    -D BOOST_ROOT:FILEPATH=${BOOST_PATH} \
-    -D LAPACKE_DIR:FILEPATH=${LAPACKE_INSTALL_PREFIX} \
-    -D ENABLE_THRUST:BOOL=True \
-    -D THRUST_DIR:PATH=${THRUST_PATH} \
-    -D Jali_DIR:FILEPATH=${JALI_INSTALL_PREFIX}/lib \
-    -D ENABLE_TCMALLOC=True \
-    -D TCMALLOC_LIB:FILEPATH={TCMALLOC_PATH}/libtcmalloc.so \
+    -D TANGRAM_ENABLE_THRUST:BOOL=True \
     ..
 make -j
 ```
@@ -144,11 +138,9 @@ Execute the following from the Tangram root directory:
 # machine=varan
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
-module load intel/18.0.1 openmpi/2.1.2 cmake/3.10.2
-TPL_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali-tpl/1.2.0-intel-18.0.1-openmpi-2.1.2
-NGC_INCLUDE_DIR=/usr/local/codes/ngc/private/include
+module load intel/18.0.1 openmpi/2.1.2 cmake/3.14.0
 XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/0.9.5-intel-18.0.1
-JALI_INSTALL_PREFIX=/usr/local/codes/ngc/private/jali/1.0.4-intel-18.0.1-openmpi-2.1.2
+WONTON_INSTALL_PREFIX=/usr/local/codes/ngc/private/wonton/1.2.2-intel-18.0.1-openmpi-2.1.2
 mkdir build
 cd build
 cmake \
@@ -156,12 +148,12 @@ cmake \
   -D CMAKE_CXX_COMPILER=`which mpiCC` \
   -D CMAKE_BUILD_TYPE=Release \
   -D ENABLE_UNIT_TESTS=True \
-  -D ENABLE_MPI=True \
+  -D TANGRAM_ENABLE_MPI=True \
   -D ENABLE_JENKINS_OUTPUT=True \
-  -D Jali_DIR:FILEPATH=$JALI_INSTALL_PREFIX/lib \
-  -D XMOF2D_DIR:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
-  -D BOOST_ROOT:FILEPATH=$TPL_INSTALL_PREFIX \
-  -D NGC_INCLUDE_DIR:FILEPATH=$NGC_INCLUDE_DIR \
+  -D WONTON_ROOT=$WONTON_INSTALL_PREFIX \
+  -D TANGRAM_ENABLE_Jali=True \
+  -D TANGRAM_ENABLE_XMOF2D=True \
+  -D XMOF2D_ROOT:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
   ..
 make -j2
 ctest --output-on-failure
