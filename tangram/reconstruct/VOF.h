@@ -253,7 +253,7 @@ public:
 
   /*!
     @brief Indices of neigboring cell that are split when errors are computed:
-    for VOF the vector is empry
+    for VOF the vector is empty
     @param[in] cellID Cell index
     @return  Empty vector
   */
