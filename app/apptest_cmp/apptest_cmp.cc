@@ -50,29 +50,33 @@ int main(int argc, char** argv) {
   load_field(f1, gid1, values1);
   load_field(f2, gid2, values2);
 
+  std::pair<int,int> field_size(gid1.size(), gid2.size());
+
   std::cout << std::scientific;
   std::cout.precision(17);
   std::cout << "Comparing files: " << argv[1] << " " << argv[2] << std::endl;
   std::cout << "Absolute Epsilon: " << abs_eps << std::endl;
   std::cout << "Relative Epsilon: " << rel_eps << std::endl;
-  std::cout << "Field sizes: " << gid1.size() << " " << gid2.size() <<
-    std::endl;
-  if (gid1.size() != gid2.size()) {
+  std::cout << "Field sizes: " << field_size.first << " " << field_size.second
+            << std::endl;
+
+  if (field_size.first != field_size.second) {
     throw std::runtime_error("The field sizes do not match.");
   }
-  double delta, maxval;
-  for (int i=0; i < gid1.size(); i++) {
+
+  for (int i=0; i < field_size.first; i++) {
     if (gid1[i] != gid2[i]) {
       std::cout << i << " " << gid1[i] << " " << gid2[i] << std::endl;
       throw std::runtime_error("The field global IDs do not match.");
     }
     // Test absolute tolerance
-    delta = std::abs(values1[i] - values2[i]);
+    double delta = std::abs(values1[i] - values2[i]);
     if (delta <= abs_eps)
       continue;
     // Still might be the same if within the relative tolerance
-    maxval = (std::abs(values1[i]) > std::abs(values2[i])) ?
-      values1[i] : values2[i];
+    double maxval =
+      std::abs(values1[i]) > std::abs(values2[i]) ? values1[i] : values2[i];
+
     if ((delta / std::abs(maxval)) <= rel_eps)
       continue;
     // Fails -- abort

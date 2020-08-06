@@ -1,0 +1,65 @@
+#-----------------------------------------------------------------------------
+# This file is part of the Ristra Tangram project.
+# Please see the license file at the root of this repository, or at:
+#    https://github.com/laristra/tangram/blob/master/LICENSE
+#
+# TANGRAM configuration file template
+#
+#-----------------------------------------------------------------------------
+
+set(TANGRAM_VERSION_MAJOR @TANGRAM_VERSION_MAJOR@ CACHE STRING "Major version of TANGRAM")
+set(TANGRAM_VERSION_MINOR @TANGRAM_VERSION_MINOR@ CACHE STRING "Minor version of TANGRAM")
+set(TANGRAM_VERSION_MINOR @TANGRAM_VERSION_PATCH@ CACHE STRING "Patch version of TANGRAM")
+
+
+# Tangram installation path
+set(TANGRAM_ROOT @CMAKE_INSTALL_PREFIX@ CACHE PATH "Path to Tangram installation")
+
+# Tangram library
+set(TANGRAM_LIBRARIES @TANGRAM_LIBRARIES@ CACHE STRING "Name of Tangram library")
+
+# Wonton installation path
+set(WONTON_ROOT @WONTON_ROOT@ CACHE PATH "Path to Wonton installation")
+
+
+# Have to move this into the find dependencies section
+set(TANGRAM_ENABLE_XMOF2D @TANGRAM_ENABLE_XMOF2D@ CACHE BOOL "Is XMOF2D enabled?")
+set(XMOF2D_LIBRARIES @XMOF2D_LIBRARIES@ CACHE STRING "XMOF2D libraries")
+set(XMOF2D_ROOT @XMOF2D_ROOT@ CACHE STRING "Where XMOF2DConfig.cmake is found")
+
+
+# Find target dependencies
+
+# Temporarily modify CMAKE module path so we can find our custom
+# modules for packages that don't have config files
+
+set(SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+  list(PREPEND CMAKE_MODULE_PATH @CMAKE_INSTALL_PREFIX@/lib/cmake/tangram/modules)
+else ()
+  set(CMAKE_MODULE_PATH "@CMAKE_INSTALL_PREFIX@/lib/cmake/tangram/modules;${CMAKE_MODULE_PATH}")
+endif ()
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(WONTON REQUIRED NAMES wonton)
+
+if (TANGRAM_ENABLE_XMOF2D)
+  find_dependency(XMOF2D)
+endif ()
+
+# Restore original CMAKE_MODULE_PATH
+set(CMAKE_MODULE_PATH ${SAVED_CMAKE_MODULE_PATH})
+
+#
+# Import Tangram targets
+#
+
+include("@CMAKE_INSTALL_PREFIX@/lib/cmake/tangram/tangramTargets.cmake")
+
+
+
+
+
+
+

@@ -38,6 +38,7 @@ void read_mat_data(const Mesh_Wrapper& Mesh,
   cell_mat_ids.clear();
   cell_mat_volfracs.clear();
   cell_mat_centroids.clear();
+
   std::ifstream os(mesh_data_fname.c_str(), std::ifstream::binary);
   if (!os.good()) {
     std::ostringstream os;
@@ -45,16 +46,19 @@ void read_mat_data(const Mesh_Wrapper& Mesh,
       " for binary input" << std::endl;
     throw XMOF2D::Exception(os.str());
   }
+
   int nrank_cells = Mesh.num_owned_cells() + Mesh.num_ghost_cells();
   cell_num_mats.resize(nrank_cells);
   std::vector<std::vector<int>> on_rank_mat_ids(nrank_cells);
   std::vector<std::vector<double>> on_rank_mat_volfracs(nrank_cells);
   std::vector<std::vector<Tangram::Point2>> on_rank_mat_centroids(nrank_cells);
+
   int data_dim;
   os.read(reinterpret_cast<char *>(&data_dim), sizeof(int));
   assert(data_dim == 2);
   int ncells;
   os.read(reinterpret_cast<char *>(&ncells), sizeof(int));
+
   std::vector<int> rank_cells_gid(nrank_cells);
   for (int irc = 0; irc < nrank_cells; irc++)
     rank_cells_gid[irc] = Mesh.get_global_id(irc, Tangram::Entity_kind::CELL);
@@ -80,6 +84,7 @@ void read_mat_data(const Mesh_Wrapper& Mesh,
         on_rank_mat_centroids[on_rank_id].push_back(cur_cell_cen);
       }
     }
+
     for (int im = 0; im < mesh_cell_num_mats[icell]; im++) {
       int imat;
       os.read(reinterpret_cast<char *>(&imat), sizeof(int));
@@ -124,6 +129,7 @@ void read_mat_data(const Mesh_Wrapper& Mesh,
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
   MPI_Comm comm = MPI_COMM_WORLD;
+
   if (argc != 3) {
     std::ostringstream os;
     os << std::endl <<
@@ -149,6 +155,7 @@ int main(int argc, char** argv) {
   if (path_end != std::string::npos)
     out_gmv_fname = out_gmv_fname.substr(path_end + 1);
   out_gmv_fname += "_post_xmof_rank" + std::to_string(comm_rank) + ".gmv";
+
   Jali::MeshFactory mesh_factory(comm);
   mesh_factory.framework(Jali::MSTK);
   mesh_factory.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
@@ -191,12 +198,12 @@ int main(int argc, char** argv) {
     const Tangram::CellMatPoly<2>* cell_mat_poly_ptr = cellmatpoly_list[icell].get();
     if (cell_mat_poly_ptr) {
       int cur_npolys = cell_mat_poly_ptr->num_matpolys();
-      if (cur_npolys > ncells_with_nmats.size()) {
+      if (unsigned(cur_npolys) > ncells_with_nmats.size()) {
         ncells_with_nmats.resize(cur_npolys, 0);
         imaxcells.resize(1);
         imaxcells[0] = icell;
       }
-      else if (cur_npolys == ncells_with_nmats.size())
+      else if (unsigned(cur_npolys) == ncells_with_nmats.size())
         imaxcells.push_back(icell);
 
       ncells_with_nmats[cur_npolys - 1]++;
@@ -209,8 +216,8 @@ int main(int argc, char** argv) {
     MPI_COMM_WORLD);
   ncells_with_nmats.resize(top_max_nmats, 0);
 
-  int* ncells_per_rank = NULL;
-  int* nowned_cells_per_rank = NULL;
+  int* ncells_per_rank = nullptr;
+  int* nowned_cells_per_rank = nullptr;
   if (comm_rank == 0) {
     ncells_per_rank = new int [world_size];
     nowned_cells_per_rank = new int [world_size];
@@ -239,13 +246,16 @@ int main(int argc, char** argv) {
     for (int irank = 0; irank < world_size; irank++)
       std::cout << cellmat_stats[0][irank] << " ";
     std::cout << std::endl;
-    for (int inm = 0; inm < ncells_with_nmats.size() - 1; inm++) {
+
+    int const extent = static_cast<int>(ncells_with_nmats.size() - 1);
+    for (int inm = 0; inm < extent; inm++) {
       std::cout << "Number of CellMatPoly's with " << inm + 2 << " materials created on each rank: ";
       for (int irank = 0; irank < world_size; irank++)
         std::cout << cellmat_stats[inm + 1][irank] << " ";
       std::cout << std::endl;
     }
     std::cout << std::endl;
+
     delete ncells_per_rank;
     delete nowned_cells_per_rank;
     for (int inm = 0; inm < top_max_nmats; inm++)
@@ -254,12 +264,13 @@ int main(int argc, char** argv) {
   if ( (world_size == 1) && (ncells_with_nmats.size() > 1) && (imaxcells.size() <= 25) ) {
     std::cout << "Cells with max number of material polygons are:" << std::endl;
     std::cout << "\t#CellID: [MaterialID, MaterialVolumeFraction] [..., ...]" << std::endl;
-    for (int imc = 0; imc < imaxcells.size(); imc++) {
-      double volume = mesh_wrapper.cell_volume(imaxcells[imc]);
-      std::cout << "\t#" << imaxcells[imc] << ": ";
-      for (int imp = 0; imp < ncells_with_nmats.size(); imp++) {
+    for (int imaxcell : imaxcells) {
+      double volume = mesh_wrapper.cell_volume(imaxcell);
+      std::cout << "\t#" << imaxcell << ": ";
+      int const extent = ncells_with_nmats.size();
+      for (int imp = 0; imp < extent; imp++) {
         const Tangram::CellMatPoly<2>* cell_mat_poly =
-          cellmatpoly_list[imaxcells[imc]].get();
+          cellmatpoly_list[imaxcell].get();
         std::cout << "[" << cell_mat_poly->matpoly_matid(imp) << ", " <<
           cell_mat_poly->matpoly_volume(imp)/volume << "]\t";
       }
@@ -267,9 +278,11 @@ int main(int argc, char** argv) {
     }
     std::cout << std::endl;
   }
+
   int nmats = *std::max_element(cell_mat_ids.begin(), cell_mat_ids.end()) + 1;
   Tangram::write_to_gmv(mesh_wrapper, nmats, cell_num_mats, cell_mat_ids,
                         cellmatpoly_list, out_gmv_fname);
   std::cout << "Resulting material polygons were written to " << out_gmv_fname << std::endl;
+
   MPI_Finalize();
 }

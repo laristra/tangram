@@ -12,6 +12,7 @@
 // tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
+#include "tangram/driver/CellMatPoly.h"
 #include "tangram/reconstruct/nested_dissections.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
 
@@ -53,6 +54,7 @@ public:
       throw std::runtime_error(
         "VOF uses 0-order moments and needs tolerances for the related iterative method!");
   }
+
   /*!
     @brief Pass in the volume fraction data for use in the reconstruction.
     @param[in] cell_num_mats A vector of length (num_cells) specifying the
@@ -109,6 +111,7 @@ public:
   void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
     icells_to_reconstruct = cellIDs_to_op_on;
   }
+
   /*!
     @brief Calculate the position of a plane that clips off a particular material.
     This method is used on every step of the nested dissections algorithm.
@@ -147,10 +150,11 @@ public:
         err_msg += " when reconstruction is requested for cell " + std::to_string(cellID) + "!\n";
         throw std::runtime_error(err_msg);
       }
-      int local_id = std::distance(cur_mat_ids.begin(),
-        std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
+      int local_id =
+        std::distance(cur_mat_ids.begin(),
+          std::find(cur_mat_ids.begin(), cur_mat_ids.end(), matID));
 
-      if (local_id != cur_mat_ids.size())
+      if (static_cast<int>(cur_mat_ids.size()) != local_id)
         stencil_vfracs[isc] = cell_mat_vfracs_[istencil_cells[isc]][local_id];
 
       mesh_.cell_centroid(istencil_cells[isc], &stencil_centroids[isc]);
@@ -177,14 +181,14 @@ public:
     std::vector<double> clip_res = solve_cut_dst();
     cutting_plane.dist2origin = clip_res[0];
 
-#ifdef DEBUG
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
-    if (cur_vol_err > vol_tol)
+    if (cur_vol_err > vol_tol) {
       std::cerr << "VOF for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
         " iteration(s) achieved error in volume for material " <<
         matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
-#endif
+      throw std::runtime_error("Target error in volume exceeded, terminating...");
+    }
   }
 
   /*!
@@ -243,6 +247,30 @@ public:
 
     return mat_poly;
   }
+
+  /*!
+    @brief IDs of the cell's faces to be associated with MatPoly's
+    in the cell's decomposition
+    @param[in] cellID Cell index
+    @return  IDs of the cell's faces
+  */
+  std::vector<int> cell_face_group_ids(const int cellID,
+                                       const bool faceted_faces) const { 
+    std::vector<int> cfaces, cfdirs;
+    mesh_.cell_get_faces_and_dirs(cellID, &cfaces, &cfdirs);
+    
+    if (!faceted_faces || Dim == 2)
+      return cfaces;
+
+    std::vector<int> facets_group_ids;
+    for (int & cface : cfaces) {
+      std::vector<int> fnodes;
+      mesh_.face_get_nodes(cface, &fnodes);
+      facets_group_ids.insert(facets_group_ids.end(), fnodes.size(), cface);
+    }
+
+    return facets_group_ids;
+}
 
 private:
   const Mesh_Wrapper& mesh_;

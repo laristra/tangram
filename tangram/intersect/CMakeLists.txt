@@ -5,39 +5,62 @@
 ]]
 
 #-----------------------------------------------------------------------------~#
+project(tangram_intersect)
 
 
-#-----------------------------------------------------------------------------~#
+add_library(tangram_intersect INTERFACE)
 
-# Add header files
-set(intersect_HEADERS
-    split_r2d.h
-    split_r3d.h
-    PARENT_SCOPE
-)
+target_include_directories(tangram_intersect INTERFACE
+  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
+  $<INSTALL_INTERFACE:include>)
 
-# Add source files
-set(intersect_SOURCES
-    PARENT_SCOPE
-)
+set(tangram_intersect_HEADERS
+  split_r2d.h
+  split_r3d.h)
+
+# Not yet allowed for INTERFACE libraries
+#
+# set_target_properties(tangram_intersect PROPERTIES
+#   PUBLIC_HEADER "${tangram_intersect_HEADERS}")
+#
+# Directly install files instead
+#
+install(FILES ${tangram_intersect_HEADERS}
+  DESTINATION include/tangram/intersect)
+
+
+target_link_libraries(tangram_intersect INTERFACE tangram_support)
+
+
+target_link_libraries(tangram INTERFACE tangram_intersect)
+
+install(TARGETS tangram_intersect
+  EXPORT tangram_LIBRARIES
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  PUBLIC_HEADER DESTINATION include/tangram/intersect
+  INCLUDES DESTINATION include/tangram/intersect
+  )
 
 # Unit tests
 
 if (ENABLE_UNIT_TESTS) 
 
-  cinch_add_unit(split_r3d
+  tangram_add_unittest(test_split_r3d
     SOURCES test/test_split_r3d.cc
-    LIBRARIES wonton
+    LIBRARIES tangram_intersect
     POLICY SERIAL
     )
-  cinch_add_unit(split_r2d
+  tangram_add_unittest(test_split_r2d
     SOURCES test/test_split_r2d.cc
-    LIBRARIES wonton
+    LIBRARIES tangram_intersect
     POLICY SERIAL
     )
-  cinch_add_unit(split_order
+  tangram_add_unittest(test_split_order
     SOURCES test/test_split_order.cc
-    LIBRARIES wonton
+    LIBRARIES tangram_intersect
     POLICY SERIAL
     )
 endif(ENABLE_UNIT_TESTS)

@@ -23,14 +23,17 @@
  @file SLIC.h
  @brief Simple implemenation of the crude Piecewise Linear Interface
  Reconstruction algorithm.
+
  Here, we use only vertical, "y"-aligned interfaces
  */
 
 namespace Tangram {
+
   /*!
    @class SLIC "SLIC.h"
    @brief Calculates the interface and constructs CellMatPoly for the SLIC
    algorithm.
+
    @tparam Mesh_Wrapper A lightweight wrapper to a specific input mesh
    implementation that provides certain functionality
    @tparam Dim The spatial dimension of the problem.
@@ -93,6 +96,7 @@ namespace Tangram {
     void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
       icells_to_reconstruct = cellIDs_to_op_on;
     }
+
     /*!
      @brief Given a cell index, calculate the CellMatPoly for this reconstruction
      */
@@ -102,9 +106,7 @@ namespace Tangram {
 
       int cellID = icells_to_reconstruct[cell_op_ID];
       auto numMats = cell_num_mats_[cellID];
-
-      CellMatPoly<Dim>* cellpoly = new CellMatPoly<Dim>(cellID);
-
+      auto* cellpoly = new CellMatPoly<Dim>(cellID);
       auto iStart = cell_mat_offsets_[cellID];
 
       //Sets of MatPoly's on two sides of the cutting plane
@@ -139,8 +141,8 @@ namespace Tangram {
         if (target_vol < vol_tol) continue;
 
         MatPolySet_t<Dim>* single_mat_set_ptr;
-        
-	//On the last iteration the remaining part is single-material,
+
+        //On the last iteration the remaining part is single-material,
         //so we don't need to split it
         if (iMat == numMats - 1)
           single_mat_set_ptr = &hs_sets.upper_halfspace_set;
@@ -150,26 +152,27 @@ namespace Tangram {
           std::vector<double> clip_res = solve_cut_dst();
           cutting_plane.dist2origin = clip_res[0];
 
-#ifdef DEBUG
           // Check if the resulting volume matches the reference value
           double cur_vol_err = std::fabs(clip_res[1] - target_vol);
-          if (cur_vol_err > vol_tol)
+          if (cur_vol_err > vol_tol) {
             std::cerr << "SLIC for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
               " iteration(s) achieved error in volume for material " <<
               cell_mat_ids_[iStart + iMat] << " is " << cur_vol_err <<
               ", volume tolerance is " << vol_tol << std::endl;
-#endif
+            throw std::runtime_error("Target error in volume exceeded, terminating...");
+          }
+
           hs_sets = split_matpolys();
 
           //Chopped off single-material MatPoly's are below the plane
           single_mat_set_ptr = &hs_sets.lower_halfspace_set;
         }
-        //Add single-material MatPoly's to CellMatPoly
-        for (int ismp = 0; ismp < single_mat_set_ptr->matpolys.size(); ismp++) {
-          MatPoly<Dim>& cur_matpoly = single_mat_set_ptr->matpolys[ismp];
-          cur_matpoly.set_mat_id(cell_mat_ids_[iStart+iMat]);
-          cellpoly->add_matpoly(cur_matpoly);
-    	}
+
+        // Add single-material MatPoly's to CellMatPoly
+        for (auto&& single_mat_poly : single_mat_set_ptr->matpolys) {
+          single_mat_poly.set_mat_id(cell_mat_ids_[iStart+iMat]);
+          cellpoly->add_matpoly(single_mat_poly);
+        }
       }
 
       return std::shared_ptr<CellMatPoly<Dim>>(cellpoly);
