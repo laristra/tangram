@@ -25,7 +25,6 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
                   std::vector<int> const& cell_mat_ids,
                   std::vector<std::shared_ptr<CellMatPoly<D>>> cellmatpoly_list,
                   std::string filename) {
-
   int nc = mesh.num_entities(Entity_kind::CELL, Entity_type::PARALLEL_OWNED);
   std::vector<int> cell_offsets(nc);
   cell_offsets[0] = 0;
@@ -136,7 +135,7 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
           for (auto f : mfaces) {
             std::vector<int> const& mfverts = cellmatpoly->matface_vertices(f);
             int nfv = mfverts.size();
-            int mp0, mp1;
+            int dir, mp0, mp1;
             cellmatpoly->matface_matpolys(f, &mp0, &mp1);
             if (mp0 == i) {  // Natural order of vertices
               for (int j = 0; j < nfv; j++) {
@@ -181,13 +180,13 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
         // Write out the cell
         std::vector<int> cverts;
         mesh.cell_get_nodes(c, &cverts);
-
         // write cell out as polygons (even if its a quad or tri)
         fout << "general 1 " << cverts.size() << " ";
         for (auto n : cverts)
           fout << n+1 << " ";
         fout << std::endl;
       } else if (D == 3) {
+        int nf;
         std::vector<int> cfaces;
         std::vector<int> cfdirs;
         mesh.cell_get_faces_and_dirs(c, &cfaces, &cfdirs);
@@ -198,7 +197,6 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
           fout << fverts.size() << " ";
         }
         fout << std::endl;
-
         int j = 0;
         for (auto f : cfaces) {
           std::vector<int> fverts;
@@ -262,9 +260,7 @@ void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpol
   int npoly = 0;
   int nmats = 0;
   std::vector<Point<D>> points;
-  int const nb_cell_matpolys = cellmatpoly_list.size();
-
-  for (int imp = 0; imp < nb_cell_matpolys; imp++) {
+  for (int imp = 0; imp < cellmatpoly_list.size(); imp++) {
     CellMatPoly<D> *cellmatpoly = cellmatpoly_list[imp].get();
 
     if (cellmatpoly) {  // Mixed cell
@@ -289,8 +285,7 @@ void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpol
 
   fout << "cells " << npoly << std::endl;
   int pts_offset = 0;
-
-  for (int imp = 0; imp < nb_cell_matpolys; imp++) {
+  for (int imp = 0; imp < cellmatpoly_list.size(); imp++) {
     CellMatPoly<D> *cellmatpoly = cellmatpoly_list[imp].get();
     if (!cellmatpoly)
       continue;
@@ -331,7 +326,7 @@ void write_to_gmv(const std::vector<std::shared_ptr<CellMatPoly<D>>>& cellmatpol
   for (int i = 0; i < nmats; i++)
     fout << "mat" << i + 1 << std::endl;
 
-  for (int imp = 0; imp < nb_cell_matpolys; imp++) {
+  for (int imp = 0; imp < cellmatpoly_list.size(); imp++) {
     CellMatPoly<D> *cellmatpoly = cellmatpoly_list[imp].get();
     if (cellmatpoly) {
       for (int i = 0; i < cellmatpoly->num_matpolys(); i++)

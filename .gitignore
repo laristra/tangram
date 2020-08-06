@@ -30,30 +30,3 @@
 *.exe
 *.out
 *.app
-
-# Images
-*.png
-
-# Meshes
-*.gmv
-*.exo
-
-# vfgen input
-*.inp
-
-# Binary data
-*.bvf
-*.dat
-
-.DS_Store
-build
-build-Debug
-build-Release
-install
-install-Debug
-install-Release
-.vscode
-
-# Editor backup files
-*~
-.idea

@@ -8,5 +8,36 @@
 # demo-mof-app - uses 2D/3D mesh from Jali
 #-------------------------------------------------------------------------------
 add_executable(demo-mof-app demo-mof-app.cc)
-target_link_libraries(demo-mof-app tangram)
+target_link_libraries(demo-mof-app wonton ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES} 
+                                   ${MPI_CXX_LIBRARIES} ${EXTRA_LIBS})
 
+if(ENABLE_MPI)
+  if(MPI_CXX_COMPILE_FLAGS)
+    set_target_properties(demo-mof-app PROPERTIES
+      COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
+  endif(MPI_CXX_COMPILE_FLAGS)
+
+  if(MPI_CXX_LINK_FLAGS)
+    set_target_properties(demo-mof-app PROPERTIES
+      LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
+  endif(MPI_CXX_LINK_FLAGS)
+endif(ENABLE_MPI)
+
+#TCMalloc option
+set(ENABLE_TCMALLOC TRUE CACHE BOOL "Use TCMalloc")
+if(ENABLE_TCMALLOC)
+  set(TCMALLOC_LIB "${HOME}" CACHE STRING "Set the TCMalloc library")
+  target_link_libraries(demo-mof-app ${TCMALLOC_LIB})
+endif(ENABLE_TCMALLOC)
+
+
+#-------------------------------------------------------------------------------
+# Other libraries
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Testing
+#-------------------------------------------------------------------------------
+# if (ENABLE_APP_TESTS)
+#   add_subdirectory(test)
+# endif (ENABLE_APP_TESTS)

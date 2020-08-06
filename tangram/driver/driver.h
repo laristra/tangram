@@ -17,7 +17,7 @@
 #include <iostream>
 #include <type_traits>
 
-#ifdef WONTON_ENABLE_MPI
+#ifdef TANGRAM_ENABLE_MPI
 #include "mpi.h"
 #endif
 
@@ -78,26 +78,6 @@ class Driver {
   unsigned int dim() const {
     return mesh_.space_dimension();
   }
-
- /*!
-    @brief Used iterative methods tolerances
-    @return  Tolerances for iterative methods,
-    here ims_tols_[0] correspond to methods for volumes
-    and ims_tols_[1] correspond to methods for centroids.
-    In particular, ims_tols_[0].arg_eps is a negligible
-    change in cutting distance, ims_tols_[0].fun_eps is a
-    negligible discrepancy in volume, ims_tols_[1].arg_eps
-    is a negligible change in the cutting plane orientation,
-    and ims_tols_[1].fun_eps is a negligible distance between
-    actual and reference centroids. The change in cutting plane
-    orientation is defined as the norm of change of the cutting
-    plane's normal, which is expressed in polar coordinates (angles).
-  */
-  const std::vector<IterativeMethodTolerances_t>&
-  iterative_methods_tolerances() const {
-    return ims_tols_;
-  }
-
   
   bool is_reconstruction_done() const { return reconstruction_done_; }
 
@@ -116,7 +96,7 @@ class Driver {
                             std::vector<Point<Dim>>
                             const& cell_mat_centroids = {}) {
     int nc = mesh_.num_entities(Tangram::Entity_kind::CELL);
-    assert(cell_num_mats.size() == unsigned(nc));
+    assert(cell_num_mats.size() == nc);
     
     cell_num_mats_ = cell_num_mats;
     cell_mat_ids_.clear();
@@ -136,9 +116,7 @@ class Driver {
 
       for (int icmat = 0; icmat < ncmats; icmat++) {
         double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
-        // quick fix for Marc Charest's segfault on very tiny material volumes,
-        // do not update until a permanent solution is set (shift and scale).
-        if (not(mat_volume < volume_tol)) {
+        if (mat_volume >= volume_tol) {
           cell_mat_ids_.push_back(cell_mat_ids[offset + icmat]);
           cell_mat_volfracs_.push_back(cell_mat_volfracs[offset + icmat]);
           if (!cell_mat_centroids.empty())
@@ -156,7 +134,8 @@ class Driver {
     }
 
     if (insufficient_vol_tol) {
-      auto& ims_tols_r = const_cast<std::vector<IterativeMethodTolerances_t>&>(ims_tols_);
+      std::vector<IterativeMethodTolerances_t>& ims_tols_r = 
+        const_cast <std::vector<IterativeMethodTolerances_t>&> (ims_tols_);
       ims_tols_r[0].fun_eps /= 2;
     }
   }
@@ -165,17 +144,20 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct(Wonton::Executor_type const *executor = nullptr) {
+
+    bool distributed = false;
     int comm_rank = 0;
     int world_size = 1;
 
-#ifdef WONTON_ENABLE_MPI
-
+#ifdef TANGRAM_ENABLE_MPI
     MPI_Comm mycomm = MPI_COMM_NULL;
     auto mpiexecutor = dynamic_cast<Wonton::MPIExecutor_type const *>(executor);
     if (mpiexecutor && mpiexecutor->mpicomm != MPI_COMM_NULL) {
       mycomm = mpiexecutor->mpicomm;
       MPI_Comm_rank(mycomm, &comm_rank);
       MPI_Comm_size(mycomm, &world_size);
+      if (world_size > 1)
+        distributed = true;
     }
 #endif
 
@@ -210,64 +192,59 @@ class Driver {
       //materials, the size of iMMCs vector is therefore (n_max-1).
       std::vector<std::vector<int>> iMMCs;
       for (int icell = 0; icell < ncells; icell++) {
-        int nb_mats = cell_num_mats_[icell];
-        int nb_mmcs = static_cast<int>(iMMCs.size());
-        if (nb_mats < 2)
+        int nmats = cell_num_mats_[icell];
+        if (nmats < 2)
           continue;
-        else if (nb_mats - 1 > nb_mmcs) {
-          iMMCs.resize(nb_mats - 1);
-        }
-        iMMCs[nb_mats - 2].push_back(icell);
+        else if (nmats - 1 > iMMCs.size()) 
+          iMMCs.resize(nmats - 1);
+        iMMCs[nmats - 2].push_back(icell);
       }
       cellmatpolys_.resize(ncells);
 
       //Reconstructor is set to operate on multi-material cells only.
       //To improve load balancing, we operate on the cells with the same
       //number of materials at a time
-      int count = 2;
-      for (auto&& mm_cells : iMMCs) {
-        int const nMMCs = mm_cells.size();
+      for (int inm = 0; inm < iMMCs.size(); inm++) {    
+        int nMMCs = iMMCs[inm].size();
         if (nMMCs == 0)
           continue;
 
         if (world_size == 1)
           gettimeofday(&xmat_begin_timeval, 0);
 
-        reconstructor.set_cell_indices_to_operate_on(mm_cells);
+        reconstructor.set_cell_indices_to_operate_on(iMMCs[inm]);
 
         //If reconstruction is performed for a single cell, we do not use transform:
         //this allows to use transform inside the reconstructor (e.g. to run
         //multiple threads for material order permutations in MOF)
         if (nMMCs == 1)
-          cellmatpolys_[mm_cells[0]] = reconstructor(0);
+          cellmatpolys_[iMMCs[inm][0]] = reconstructor(0);
         else {
-          Wonton::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
+          Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
 
-          Wonton::transform(Wonton::make_counting_iterator(0),
-                            Wonton::make_counting_iterator(nMMCs),
+          Tangram::transform(make_counting_iterator(0),
+                             make_counting_iterator(nMMCs),
                              MMCs_cellmatpolys.begin(), reconstructor);
           for (int immc = 0; immc < nMMCs; immc++)
-            cellmatpolys_[mm_cells[immc]] = MMCs_cellmatpolys[immc];
+            cellmatpolys_[iMMCs[inm][immc]] = MMCs_cellmatpolys[immc];
         }
 
         if (world_size == 1) {
           gettimeofday(&xmat_end_timeval, 0);
           timersub(&xmat_end_timeval, &xmat_begin_timeval, &xmat_diff_timeval);
-          xmat_cells_seconds = xmat_diff_timeval.tv_sec + 1.0E-6*xmat_diff_timeval.tv_usec;
-
-          std::cout << "Transform Time for " << nMMCs << " "
-                    << count++ << "-material cells (s): "
-                    << xmat_cells_seconds << ", mean time per cell (s): "
-                    << xmat_cells_seconds/nMMCs << std::endl;
+          xmat_cells_seconds = xmat_diff_timeval.tv_sec + 1.0E-6*xmat_diff_timeval.tv_usec; 
+          std::cout << "Transform Time for " << nMMCs << " " << 
+            inm + 2 << "-material cells (s): " <<
+            xmat_cells_seconds << ", mean time per cell (s): " << 
+            xmat_cells_seconds/nMMCs << std::endl;       
         }
       }
-
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
       
       float max_transform_time = tot_seconds;
-#ifdef WONTON_ENABLE_MPI
+#ifdef TANGRAM_ENABLE_MPI
       if (world_size > 1) {
         MPI_Allreduce(&tot_seconds, &max_transform_time, 1, MPI_FLOAT, MPI_MAX,
           mycomm);

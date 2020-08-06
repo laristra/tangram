@@ -62,7 +62,7 @@ public:
                            const double dst_tol,
                            const Tangram::MatPoly<3>& convex_matpoly) :
                            polys_data_(polys_data), IDs_to_check_(IDs_to_check),
-                           convex_matpoly_(convex_matpoly), dst_tol_(dst_tol) {
+                           dst_tol_(dst_tol), convex_matpoly_(convex_matpoly) {
     std::vector< Tangram::Plane_t<3> > fplanes;
     convex_matpoly_.face_planes(fplanes);
 
@@ -90,17 +90,15 @@ public:
 
     bool intersects = false;
     for (int ivrt = 0; ivrt < r3dpoly.nverts; ivrt++) {
-      Wonton::Point<3> cur_vrt;
+      Tangram::Point3 cur_vrt;
       for (int ixyz = 0; ixyz < 3; ixyz++)
         cur_vrt[ixyz] = r3dpoly.verts[ivrt].pos.xyz[ixyz];
 
       if (Tangram::point_inside_matpoly(convex_matpoly_, cur_vrt, dst_tol_, true)) {
-        if (not intersects and ivrt > 0)
-          return R3DPOLY::Position::INTERSECTS;
+        if (!intersects && (ivrt > 0)) return R3DPOLY::Position::INTERSECTS;
         intersects = true;
       }
-      else if (intersects)
-        return R3DPOLY::Position::INTERSECTS;
+      else if (intersects) return R3DPOLY::Position::INTERSECTS;  
     }
 
     if (intersects) return R3DPOLY::Position::INSIDE;
@@ -108,10 +106,10 @@ public:
     //Instead of checking if MatPoly vertices are inside the r3d_poly,
     //we look at the volume of the actual intersection
     r3d_poly intersection = r3dpoly;
-    for (auto cur_plane : face_planes_) {
+    for (int iplane = 0; iplane < face_planes_.size(); iplane++) {
+      r3d_plane cur_plane = face_planes_[iplane];
       r3d_clip(&intersection, &cur_plane, 1);
-      if (intersection.nverts == 0)
-        return R3DPOLY::Position::OUTSIDE;
+      if (intersection.nverts == 0) return R3DPOLY::Position::OUTSIDE;
     }
     
     return R3DPOLY::Position::INTERSECTS;
@@ -162,9 +160,7 @@ public:
                                    .upper = std::make_shared<RefPolyData_t>() };
 
     const r3d_poly& r3dpoly = polys_data_[polyID]->r3dpoly;
-#if !BUGS_IN_R3D
     const r3d_real* poly_moments = polys_data_[polyID]->moments;
-#endif
     int cellID = polys_data_[polyID]->cellID;
 
     r3d_poly split_poly = r3dpoly;
@@ -289,6 +285,7 @@ void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data
   upper_hs_data.clear();
   
   int num_polys = static_cast<int>(polys_data.size());
+  int nmoments = R3D_NUM_MOMENTS(R3D_POLY_ORDER);
 
   r3d_plane r3d_planar_iface;
   for (int ixyz = 0; ixyz < 3; ixyz++)
@@ -296,11 +293,11 @@ void apply_plane(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data
   r3d_planar_iface.d = planar_interface.dist2origin;
 
   r3d_split_operator r3d_split_op(polys_data, r3d_planar_iface, vol_tol);
-  Wonton::vector< PolyHalfspaceData_t > hs_data(num_polys);
+  Tangram::vector< PolyHalfspaceData_t > hs_data(num_polys);
 
-  Wonton::transform(Wonton::make_counting_iterator(0), 
-                    Wonton::make_counting_iterator(num_polys),
-                    hs_data.begin(), r3d_split_op);
+  Tangram::transform(Tangram::make_counting_iterator(0), 
+                     Tangram::make_counting_iterator(num_polys),
+                     hs_data.begin(), r3d_split_op);
 
   for (int ipoly = 0; ipoly < num_polys; ipoly++) {
     const PolyHalfspaceData_t& poly_hs_data = hs_data[ipoly];
@@ -332,6 +329,7 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
   convex_matpoly.face_planes(face_planes);
   Tangram::BoundingBox_t<3> poly_bbox = convex_matpoly.bounding_box();
 
+  int nfaces = static_cast<int>(face_planes.size());
   int npolys = static_cast<int>(polys_data.size()); 
 
   iexterior_polys.clear();
@@ -351,11 +349,11 @@ void sort_wrt_convex_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& p
 
   r3d_poly_intersect_check r3d_isect_check(polys_data, iin_box_polys, 
                                            dst_tol, convex_matpoly);
-  Wonton::vector<R3DPOLY::Position> check_result(num_in_box);
+  Tangram::vector<R3DPOLY::Position> check_result(num_in_box);
 
-  Wonton::transform(Wonton::make_counting_iterator(0), 
-                    Wonton::make_counting_iterator(num_in_box),
-                    check_result.begin(), r3d_isect_check);
+  Tangram::transform(Tangram::make_counting_iterator(0), 
+                     Tangram::make_counting_iterator(num_in_box),
+                     check_result.begin(), r3d_isect_check);
 
   iinterior_polys.clear();
   iinstersecting_polys.clear();
@@ -504,6 +502,14 @@ void apply_poly(const std::vector< std::shared_ptr<RefPolyData_t> >& polys_data,
   }
 }
 
+unsigned int factorial(unsigned int n)
+{
+  unsigned int res = 1;
+  for(unsigned int i = 0; i < n; ++i)
+      res *= i + 1;
+  return res;
+}
+
 /*!
  @brief For a given collections of single-material reference polyhedra sets
  generates data compatible with Tangram's driver. 
@@ -531,7 +537,7 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
                        std::vector<int>& cell_num_mats,
                        std::vector<int>& cell_mat_ids,
                        std::vector<double>& cell_mat_volfracs,
-                       std::vector< Wonton::Point<3> >& cell_mat_centroids,
+                       std::vector< Tangram::Point<3> >& cell_mat_centroids,
                        const double dst_tol,
                        const bool decompose_cells,
                        std::vector< std::vector< std::vector<r3d_poly> > >*
@@ -539,13 +545,11 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
   int ncells = -1, nsets = static_cast<int>(ref_sets_data.size());
   for (int iset = 0; iset < nsets; iset++) {
     int set_max_cellID = -1;
-    for (auto&& poly : ref_sets_data[iset]) {
-      if (poly->cellID > set_max_cellID)
-        set_max_cellID = poly->cellID;
-    }
-
-    if (set_max_cellID > ncells)
-      ncells = set_max_cellID;
+    for (int ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++)
+      if (ref_sets_data[iset][ipoly]->cellID > set_max_cellID)
+        set_max_cellID = ref_sets_data[iset][ipoly]->cellID;
+    
+    if (set_max_cellID > ncells) ncells = set_max_cellID;  
   }
   ncells++;
 
@@ -561,15 +565,13 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
   for (int iset = 0; iset < nsets; iset++) {
     int cur_mat_id = sets_material_IDs[iset];
 
-    for (auto&& poly : ref_sets_data[iset]) {
-      int icell = poly->cellID;
+    for (int ipoly = 0; ipoly < ref_sets_data[iset].size(); ipoly++) {
+      int icell = ref_sets_data[iset][ipoly]->cellID;
 
-      int cell_mat_id =
-        std::distance(cells_mat_ids[icell].begin(),
-          std::find(cells_mat_ids[icell].begin(),
-            cells_mat_ids[icell].end(), cur_mat_id));
+      int cell_mat_id = std::distance(cells_mat_ids[icell].begin(), 
+        std::find(cells_mat_ids[icell].begin(), cells_mat_ids[icell].end(), cur_mat_id));
 
-      if (static_cast<int>(cells_mat_ids[icell].size()) == cell_mat_id) {
+      if (cell_mat_id == cells_mat_ids[icell].size()) {
         cells_mat_ids[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell].resize(cell_mat_id + 1);
         cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
@@ -579,10 +581,11 @@ void finalize_ref_data(const Mesh_Wrapper& mesh,
       }
 
       if (reference_mat_polys != nullptr)
-        (*reference_mat_polys)[icell][cell_mat_id].push_back(poly->r3dpoly);
-
+        (*reference_mat_polys)[icell][cell_mat_id].push_back(
+          ref_sets_data[iset][ipoly]->r3dpoly);
       for (int im = 0; im < nmoments; im++)
-        cells_mat_moments[icell][cell_mat_id][im] += poly->moments[im];
+        cells_mat_moments[icell][cell_mat_id][im] += 
+          ref_sets_data[iset][ipoly]->moments[im];
     }
   }
 

@@ -36,14 +36,14 @@ template <class Mesh_Wrapper, int D>
 void advance_moments(const Mesh_Wrapper& mesh,
                      const std::vector<int>& mesh_mat_IDs,
                      const std::vector<double>& mesh_mat_vols,
-                     const std::function<Wonton::Vector<D>(double, 
-                       const Wonton::Point<D>&)>& velocity,
+                     const std::function<Tangram::Vector<D>(double, 
+                       const Tangram::Point<D>&)>& velocity,
                      double t_prev,
                      double dt,
                      const std::vector<int>& cell_num_mats,
                      const std::vector<int>& cell_mat_ids,
                      std::vector<double>& cell_mat_volfracs,
-                     std::vector< Wonton::Point<D> >& cell_mat_centroids,
+                     std::vector< Tangram::Point<D> >& cell_mat_centroids,
                      double vol_tol) {
 
   int ncells = mesh.num_owned_cells() + mesh.num_ghost_cells();

@@ -48,6 +48,7 @@ Tangram::Plane_t<Dim> get_cutting_plane(Tangram::Point<Dim>& plane_pt, Tangram::
 
 TEST(split_order, ConvexPoly2D) {
   double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+  double vol_tol = pow(dst_tol, 2);
 
   //Cutting plane in 2d
   Tangram::Point2 plane_pt2d(0.5,0.0);
@@ -173,36 +174,25 @@ TEST(split_order, ConvexPoly3D) {
   Tangram::r3dpoly_to_matpolys(r3d_subpolys[0], cube_low, vol_tol, dst_tol);
   Tangram::r3dpoly_to_matpolys(r3d_subpolys[1], cube_up, vol_tol, dst_tol);
 
-  ASSERT_EQ(cube_low.size(), unsigned(1));
-  ASSERT_EQ(cube_up.size(), unsigned(1));
+  ASSERT_EQ(cube_low.size(), 1);
+  ASSERT_EQ(cube_up.size(), 1);
 
   ///Check lower and upper subpolys
-  int const nb_cube_ref_low = cube_ref_low.size();
-  int const nb_cube_ref_up = cube_ref_up.size();
-
-  ASSERT_EQ(nb_cube_ref_low, cube_low[0].num_vertices());
-  std::vector<int> ref2res_vrt(nb_cube_ref_low, -1);
-
-  for (int i = 0; i < nb_cube_ref_low; i++) {
-    for (int j = 0; j < cube_low[0].num_vertices(); j++) {
+  ASSERT_EQ(cube_ref_low.size(), cube_low[0].num_vertices());
+  std::vector<int> ref2res_vrt(cube_ref_low.size(), -1);
+  for (int i = 0; i < cube_ref_low.size(); i++)
+    for (int j = 0; j < cube_low[0].num_vertices(); j++)
       if (Wonton::approxEq(cube_ref_low[i], cube_low[0].vertex_point(j), dst_tol))
         ref2res_vrt[i] = j;
-    }
-  }
-
-  for (int ivrt = 0; ivrt < nb_cube_ref_low; ivrt++)
+  for (int ivrt = 0; ivrt < cube_ref_low.size(); ivrt++)
     ASSERT_NE(ref2res_vrt[ivrt], -1);
 
-  ASSERT_EQ(nb_cube_ref_up, cube_up[0].num_vertices());
-  ref2res_vrt.assign(nb_cube_ref_up, -1);
-
-  for (int i = 0; i < nb_cube_ref_up; i++) {
-    for (int j = 0; j < cube_up[0].num_vertices(); j++) {
+  ASSERT_EQ(cube_ref_up.size(), cube_up[0].num_vertices());
+  ref2res_vrt.assign(cube_ref_up.size(), -1);
+  for (int i = 0; i < cube_ref_up.size(); i++)
+    for (int j = 0; j < cube_up[0].num_vertices(); j++)
       if (Wonton::approxEq(cube_ref_up[i], cube_up[0].vertex_point(j), dst_tol))
         ref2res_vrt[i] = j;
-    }
-  }
-
-  for (int ivrt = 0; ivrt < nb_cube_ref_up; ivrt++)
+  for (int ivrt = 0; ivrt < cube_ref_up.size(); ivrt++)
     ASSERT_NE(ref2res_vrt[ivrt], -1);
 }

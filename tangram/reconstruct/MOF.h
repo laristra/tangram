@@ -11,7 +11,6 @@
 #include <functional>
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
-#include "tangram/driver/CellMatPoly.h"
 #include "tangram/reconstruct/nested_dissections.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
 #include "tangram/support/bfgs.h"
@@ -257,12 +256,12 @@ public:
     nested_dissections.set_cell_materials_order(enable_permutations);
 
     int npermutations = nested_dissections.num_materials_orders();
-    Wonton::vector<std::shared_ptr<CellMatPoly<Dim>>> 
+    Tangram::vector<std::shared_ptr<CellMatPoly<Dim>>> 
       permutations_cellmatpoly(npermutations);
 
-    Wonton::transform(Wonton::make_counting_iterator(0),
-                      Wonton::make_counting_iterator(npermutations),
-                      permutations_cellmatpoly.begin(), nested_dissections);
+    Tangram::transform(make_counting_iterator(0),
+                       make_counting_iterator(npermutations),
+                       permutations_cellmatpoly.begin(), nested_dissections);
 
     int nmats = static_cast<int>(cell_mat_ids_[cellID].size());
 
@@ -321,30 +320,6 @@ public:
     return mat_poly;
   }
 
-  /*!
-    @brief IDs of the cell's faces to be associated with MatPoly's
-    in the cell's decomposition
-    @param[in] cellID Cell index
-    @return  IDs of the cell's faces
-  */
-  std::vector<int> cell_face_group_ids(const int cellID,
-                                       const bool faceted_faces) const { 
-    std::vector<int> cfaces, cfdirs;
-    mesh_.cell_get_faces_and_dirs(cellID, &cfaces, &cfdirs);
-    
-    if (!faceted_faces || Dim == 2)
-      return cfaces;
-
-    std::vector<int> facets_group_ids;
-    for (int & cface : cfaces) {
-      std::vector<int> fnodes;
-      mesh_.face_get_nodes(cface, &fnodes);
-      facets_group_ids.insert(facets_group_ids.end(), fnodes.size(), cface);
-    }
-
-    return facets_group_ids;
-  }
-
 private:
   /*!
     @brief For a given material, normal, and collection of MatPoly's
@@ -367,13 +342,14 @@ private:
 
     double target_vol = cell_mat_vfracs_[cellID][cellMatID]*mesh_.cell_volume(cellID);
 
+#ifdef DEBUG
     double vol_tol = ims_tols_[0].fun_eps;
     //Confirm that the clipped volume is smaller than the volume of MatPoly's
     double mixed_polys_vol = 0.0;
-    int const nb_mixed_polys = mixed_polys.size();
-    for (int ipoly = 0; ipoly < nb_mixed_polys; ipoly++)
+    for (int ipoly = 0; ipoly < mixed_polys.size(); ipoly++)
       mixed_polys_vol += mixed_polys[ipoly].moments()[0];
     assert(target_vol < mixed_polys_vol + vol_tol);
+#endif
 
     //Create cutting distance solver
     CuttingDistanceSolver<Dim, MatPoly_Clipper> 
@@ -382,6 +358,7 @@ private:
     solve_cut_dst.set_target_volume(target_vol); 
     std::vector<double> clip_res = solve_cut_dst();
 
+#ifdef DEBUG
     // Check if the resulting volume matches the reference value
     double cur_vol_err = std::fabs(clip_res[1] - target_vol);
     if (cur_vol_err > vol_tol) {
@@ -395,8 +372,8 @@ private:
         ", volume tolerance is " << vol_tol << 
         ", volume of the split MatPoly's is " << mixed_polys_vol << 
         ", target volume is " << target_vol << std::endl;
-      throw std::runtime_error("Target error in volume exceeded, terminating...");
     }
+#endif   
 
     Point<Dim> mat_centroid;
     for (int idim = 0; idim < Dim; idim++)

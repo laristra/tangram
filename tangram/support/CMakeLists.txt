@@ -5,64 +5,34 @@
 ]]
 
 #-----------------------------------------------------------------------------~#
-project(tangram_support)
 
-add_library(tangram_support INTERFACE)
 
-target_include_directories(tangram_support INTERFACE
-  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
-  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
-  $<INSTALL_INTERFACE:include>)
+#-----------------------------------------------------------------------------~#
 
-set(tangram_support_HEADERS
-  tangram.h
-  MatPoly.h
-  bfgs.h
-  )
+# Add header files
+set(support_HEADERS
+    tangram.h
+    MatPoly.h
+    bfgs.h
+    PARENT_SCOPE
+)
 
-# Not yet allowed for INTERFACE libraries
-# 
-# set_target_properties(tangram_support PROPERTIES
-#   PUBLIC_HEADER "${tangram_support_HEADERS}")
-#
-# Directly install files instead
-#
-install(FILES ${tangram_support_HEADERS} DESTINATION include/tangram/support)
-
-target_link_libraries(tangram_support INTERFACE ${WONTON_LIBRARIES})
-
-if (WONTON_ENABLE_MPI)
-  target_compile_definitions(tangram_support INTERFACE WONTON_ENABLE_MPI)
-endif ()
-
-if (WONTON_ENABLE_THRUST)
-  target_compile_definitions(tangram_support INTERFACE WONTON_ENABLE_THRUST)
-endif ()
-
-target_link_libraries(tangram INTERFACE tangram_support)
-
-install(TARGETS tangram_support
-  EXPORT tangram_LIBRARIES
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-  PUBLIC_HEADER DESTINATION include/tangram/support
-  INCLUDES DESTINATION include/tangram/support
-  )
+# Add source files
+set(support_SOURCES
+    PARENT_SCOPE
+)
 
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
 
-  tangram_add_unittest(test_matpoly_2d
-    SOURCES test/test_matpoly_2d.cc
+  cinch_add_unit(test_MatPoly_2D
+    SOURCES test/test_MatPoly_2D.cc
     POLICY SERIAL
-    LIBRARIES tangram_support
     )
 
-  tangram_add_unittest(test_matpoly_3d
-    SOURCES test/test_matpoly_3d.cc
+  cinch_add_unit(test_MatPoly_3D
+    SOURCES test/test_MatPoly_3D.cc
     POLICY SERIAL
-    LIBRARIES tangram_support
     )
 endif(ENABLE_UNIT_TESTS)

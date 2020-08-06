@@ -5,87 +5,61 @@
 ]]
 
 #-----------------------------------------------------------------------------~#
-project(tangram_driver)
-
-add_library(tangram_driver INTERFACE)
-
-target_include_directories(tangram_driver INTERFACE
-  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
-  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
-  $<INSTALL_INTERFACE:include>)
 
 
-set(tangram_driver_HEADERS
+#-----------------------------------------------------------------------------~#
+
+# Add header files
+set(driver_HEADERS
   driver.h
   CellMatPoly.h
   write_to_gmv.h
+  PARENT_SCOPE
 )
 
-# Not yet allowed for INTERFACE libraries
-#
-# set_target_properties(tangram_driver PROPERTIES
-#   PUBLIC_HEADER "${tangram_driver_HEADERS}")
-#
-# Directly install files instead
-#
-install(FILES ${tangram_driver_HEADERS} DESTINATION include/tangram/driver)
-
-
-target_link_libraries(tangram_driver INTERFACE tangram_support)
-target_link_libraries(tangram_driver INTERFACE tangram_reconstruct)
-target_link_libraries(tangram_driver INTERFACE tangram_intersect)
-
-
-target_link_libraries(tangram INTERFACE tangram_driver)
-
-install(TARGETS tangram_driver
-  EXPORT tangram_LIBRARIES
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-  PUBLIC_HEADER DESTINATION include/tangram/driver
-  INCLUDES DESTINATION include/tangram/driver
-  )
-
+# Add source files
+set(driver_SOURCES
+    PARENT_SCOPE
+)
 
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
-  if (WONTON_ENABLE_Jali)
+  if (Jali_DIR)
 
-    tangram_add_unittest(test_cell_matpoly_1d
-      SOURCES test/test_cell_matpoly_1d.cc
-      LIBRARIES tangram_driver
+    cinch_add_unit(test_CellMatPoly_1D
+      SOURCES test/test_CellMatPoly_1D.cc
+      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
       POLICY MPI
       THREADS 1
       )
   
-    tangram_add_unittest(test_cell_matpoly_2d
-      SOURCES test/test_cell_matpoly_2d.cc
-      LIBRARIES tangram_driver
+    cinch_add_unit(test_CellMatPoly_2D
+      SOURCES test/test_CellMatPoly_2D.cc
+      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
       POLICY MPI
       THREADS 1
       )
     
-    tangram_add_unittest(test_cell_matpoly_3d
-      SOURCES test/test_cell_matpoly_3d.cc
-      LIBRARIES tangram_driver
+    cinch_add_unit(test_CellMatPoly_3D
+      SOURCES test/test_CellMatPoly_3D.cc
+      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
       POLICY MPI
       THREADS 1
       )
 
-    tangram_add_unittest(test_write_gmv_2d
-      SOURCES test/test_write_gmv_2d.cc
-      LIBRARIES tangram_driver
+    cinch_add_unit(test_write_gmv2D
+      SOURCES test/test_write_gmv2D.cc
+      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
       POLICY MPI
       THREADS 1
       )
     
-    tangram_add_unittest(test_write_gmv_3d
-      SOURCES test/test_write_gmv_3d.cc
-      LIBRARIES tangram_driver
+    cinch_add_unit(test_write_gmv3D
+      SOURCES test/test_write_gmv3D.cc
+      LIBRARIES ${Jali_LIBRARIES} ${Jali_TPL_LIBRARIES}
       POLICY MPI
       THREADS 1
       )
-  endif(WONTON_ENABLE_Jali)
+  endif(Jali_DIR)
 endif (ENABLE_UNIT_TESTS)

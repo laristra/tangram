@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
 
   if (dim == 2)
   {
-    mesh_factory.included_entities(Jali::Entity_kind::EDGE);
+    mesh_factory.included_entities({Jali::Entity_kind::EDGE});
     std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[4]);
 
     run<2>(mesh, isconvex, in_data_fname, out_gmv_fname);

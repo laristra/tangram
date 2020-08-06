@@ -71,9 +71,9 @@ public:
     double dst_bnd[2] = { -DBL_MAX, DBL_MAX };
     // Find the cutting distance corresponding to the planes passing through
     // the nearest and the farthest vertices
-    for (auto&& poly : matpolys_) {
-      auto const& poly_pts = poly.points();
-      for (int ivrt = 0; ivrt < poly.num_vertices(); ivrt++) {
+    for (int ipoly = 0; ipoly < matpolys_.size(); ipoly++) {
+      const std::vector< Point<D> >& poly_pts = matpolys_[ipoly].points();
+      for (int ivrt = 0; ivrt < matpolys_[ipoly].num_vertices(); ivrt++) {
         // dist2origin for Plane_t is defined as dot(PO, normal), where PO
         // is the vector from the point to the origin and is the negative of P.asV()
         double dst_vrt = -dot(plane_normal_, poly_pts[ivrt].asV());
@@ -191,7 +191,6 @@ public:
         vol_bnd[1] = cur_moments[0];
       }
     }
-
     cur_moments.insert(cur_moments.begin(), d2orgn);
     return cur_moments;
   }

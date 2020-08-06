@@ -1,3 +1,6 @@
-[submodule "googletest"]
-	path = googletest
-	url = ../../google/googletest
+[submodule "cinch"]
+	path = cinch
+	url = ../../laristra/cinch.git
+[submodule "wonton"]
+	path = wonton
+	url = ../../laristra/wonton.git

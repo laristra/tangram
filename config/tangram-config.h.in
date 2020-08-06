@@ -17,8 +17,14 @@ Please see the license file at the root of this repository, or at:
 #define TANGRAM_VERSION_MINOR @TANGRAM_VERSION_MINOR@
 #define TANGRAM_VERSION_PATCH @TANGRAM_VERSION_PATCH@
 
-// Is TANGRAM compiled with XMOF2D
-#cmakedefine TANGRAM_ENABLE_XMOF2D
+// Is TANGRAM compiled with MPI
+
+#cmakedefine TANGRAM_ENABLE_MPI
+
+// Is TANGRAM compiled with Thrust
+
+#cmakedefine TANGRAM_ENABLE_THRUST
+
 
 #endif  // TANGRAM_CONFIG_H_
 

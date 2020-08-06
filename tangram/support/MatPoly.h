@@ -166,13 +166,10 @@ class MatPoly {
     @brief Constructor, undefined material ID corresponds to -1 value
     @param material_id  ID of the material this poly contains
   */
-  explicit MatPoly(int const material_id = -1,
-                   int const face_group_id = -1) : 
-                   material_id_(material_id), 
-                   face_group_id_(face_group_id) {}
+  MatPoly(int const material_id = -1) : material_id_(material_id) {}
 
   /*! Destructor */
-  ~MatPoly() = default;
+  ~MatPoly() {}
 
   /*!
    @brief Assignment operator
@@ -180,14 +177,12 @@ class MatPoly {
   */
   MatPoly& operator=(const MatPoly& source_poly) {
     material_id_ = source_poly.material_id_;
-    face_group_id_ = source_poly.face_group_id_;
     vertex_points_ = source_poly.vertex_points_;
     face_vertices_ = source_poly.face_vertices_;
     dst_tol_ = source_poly.dst_tol_;
     nvertices_ = source_poly.nvertices_;
     nfaces_ = source_poly.nfaces_;
     moments_ = source_poly.moments_;
-    return *this;
   }
   
   /*!
@@ -223,31 +218,6 @@ class MatPoly {
     nfaces_ = 0;
     moments_.clear();    
   }
-
-  /*!
-    @brief ID of the associated face in the decomposition of the
-    containing cell
-    @return ID of the associated face
-  */
-  int face_group_id() const { return face_group_id_; }
-
-  /*!
-    @brief Set the ID of the associated face in the decomposition of the
-    containing cell
-    @param face_group_id ID of the associated face: should be a valid (>=0) value
-  */
-  void set_face_group_id(int const face_group_id) {
-#ifdef DEBUG
-    assert(face_group_id >= 0);
-#endif
-    face_group_id_ = face_group_id;
-  }
-
-  /*!
-   @brief Set the ID of the associated face in the decomposition of the cell 
-   to the undefined state
-  */
-  void reset_face_group_id() { face_group_id_ = -1; }
 
   /*!
    @brief Initialize a 2D polygon from its vertices
@@ -391,24 +361,20 @@ class MatPoly {
   /*!
     @brief Decomposes this MatPoly into MatPoly's using its centroid.
     If faces of MatPoly are planar, MatPoly's in the decomposition will be convex.
+    @param[in] mat_poly MatPoly to decompose
     @param[out] convex_matpolys Vector of MatPoly's: 
     as many MatPoly's as mat_poly has faces will be appended to it.
-    @param[in] face_ids IDs of the faces to be associated with MatPoly's in the
-    decomposition
   */
-  void decompose(std::vector< MatPoly<D> >& sub_polys,
-                 const std::vector<int>* face_ids = nullptr) const;
+  void decompose(std::vector< MatPoly<D> >& sub_polys) const;
 
   /*!
     @brief Facetizes and decomposes this MatPoly into simplex MatPoly's 
     using its centroid.
+    @param[in] mat_poly MatPoly to decompose
     @param[out] convex_matpolys Vector of MatPoly's: 
     as many MatPoly's as mat_poly has facets will be appended to it.
-    @param[in] face_ids IDs of the faces to be associated with MatPoly's in the
-    decomposition
   */
-  void facetize_decompose(std::vector< MatPoly<D> >& sub_polys,
-                          const std::vector<int>* face_ids = nullptr) const;
+  void facetize_decompose(std::vector< MatPoly<D> >& sub_polys) const;
 
   /*!
     @brief For every face, returns a plane containing that face.
@@ -434,18 +400,6 @@ class MatPoly {
     return bbox;
   }
 
-  /*!
-    @brief Computes a unit normal to the face and constructs simplex MatPoly's for that
-    face's group.
-    @param[in] face_id Index of the face
-    @param[in] face_group_id Index of the face group
-    @param[out] face_group_polys Pointer to an optional vector of MatPoly's that make
-    the corresponding face group
-    @return Face normal
-  */
-  Vector<D> face_normal_and_group(int const face_id,
-                                  int const face_group_id = -1,
-                                  std::vector< MatPoly<D> >* face_group_polys = nullptr) const;
  protected:
   /*!
    @brief Computes moments of this material poly
@@ -456,11 +410,9 @@ class MatPoly {
  private:
 
   int material_id_;  // material ID of this matpoly
-  int face_group_id_; // ID of the associated face in the decomposition
-                      // of the containing MatPoly
   std::vector< Point<D> > vertex_points_;  // coordinates of vertices
   std::vector< std::vector<int> > face_vertices_;  // vertices of faces
-  double dst_tol_ = 0.0; // distance tolerance
+  double dst_tol_; // distance tolerance
   
   int nvertices_ = 0;  // number of vertices
   int nfaces_ = 0;  //number of faces
@@ -648,27 +600,21 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
       itri_pts.push_back({0, 1, 2});
     else {
       itri_pts.reserve(nvrts);
-      face_pts.emplace_back(
-        face_moments[1]/face_moments[0],
-        face_moments[2]/face_moments[0],
-        face_moments[3]/face_moments[0]);
-
+      face_pts.push_back(Point3(face_moments[1]/face_moments[0],
+        face_moments[2]/face_moments[0], face_moments[3]/face_moments[0]));
       for (int ivrt = 0; ivrt < nvrts; ivrt++)
         itri_pts.push_back({nvrts, ivrt, (ivrt + 1)%nvrts});
     }
 
-    for (auto&& point : itri_pts) {
-      Vector3 vcp = cross(face_pts[point[1]] - face_pts[point[0]],
-                          face_pts[point[2]] - face_pts[point[0]]);
+    for (int itri = 0; itri < itri_pts.size(); itri++) {
+      Vector3 vcp = cross(face_pts[itri_pts[itri][1]] - face_pts[itri_pts[itri][0]], 
+                          face_pts[itri_pts[itri][2]] - face_pts[itri_pts[itri][0]]);
 
-      moments[0] += dot(vcp, face_pts[point[0]].asV());
-      for (int idim = 0; idim < 3; idim++) {
-        for (int ivrt = 0; ivrt < 3; ivrt++) {
-          int next = (ivrt + 1) % 3;
-          moments[idim + 1] += vcp[idim]*pow(face_pts[point[ivrt]][idim] +
-                                             face_pts[point[next]][idim], 2);
-        }
-      }
+      moments[0] += dot(vcp, face_pts[itri_pts[itri][0]].asV());
+      for (int idim = 0; idim < 3; idim++)
+        for (int ivrt = 0; ivrt < 3; ivrt++)
+          moments[idim + 1] += vcp[idim]*pow(face_pts[itri_pts[itri][ivrt]][idim] + 
+                                             face_pts[itri_pts[itri][(ivrt + 1)%3]][idim], 2);
     }
   }
 
@@ -679,21 +625,14 @@ void MatPoly<3>::compute_moments(std::vector<double>& moments) const {
 
 /*!
   @brief Decomposes a 2D MatPoly into triangular MatPoly's using its centroid.
+  @param[in] mat_poly MatPoly to decompose
   @param[out] convex_matpolys Vector of MatPoly's: 
   as many MatPoly's as mat_poly has faces will be appended to it.
-  @param[in] face_ids IDs of the faces to be associated with MatPoly's in the
-  decomposition
 */
 template <>
 inline
-void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys,
-                           const std::vector<int>* face_ids) const {
-#ifdef DEBUG
-  if (face_ids != nullptr) {
-    assert(face_ids->size() == unsigned(nfaces_));
-  }
-#endif
-
+void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys) const {
+  std::vector<double> moments;
   if (moments_.empty()) 
     compute_moments(moments_);
 
@@ -707,32 +646,20 @@ void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys,
   for (int iface = 0; iface < nfaces_; iface++) {
     std::vector<Point2> subpoly_points = face_points(iface);
     subpoly_points.push_back(matpoly_cen);
-    if (material_id_ >= 0)
-      sub_polys[offset + iface].set_mat_id(material_id_);
     sub_polys[offset + iface].initialize(subpoly_points, dst_tol_);
-    if (face_ids != nullptr)
-      sub_polys[offset + iface].set_face_group_id((*face_ids)[iface]);
   }
 }
 
 /*!
   @brief Decomposes a 3D MatPoly into MatPoly's using its centroid.
   If faces of MatPoly are planar, MatPoly's in the decomposition will be convex.
+  @param[in] mat_poly MatPoly to decompose
   @param[out] convex_matpolys Vector of MatPoly's: 
   as many MatPoly's as mat_poly has faces will be appended to it.
-  @param[in] face_ids IDs of the faces to be associated with MatPoly's in the
-  decomposition
 */
 template <>
 inline
-void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys,
-                           const std::vector<int>* face_ids) const {
-#ifdef DEBUG
-  if (face_ids != nullptr) {
-    assert(face_ids->size() == unsigned(nfaces_));
-  }
-#endif
-  
+void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys) const {
   if (moments_.empty()) 
     compute_moments(moments_);
 
@@ -757,47 +684,33 @@ void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys,
     std::iota(subpoly_faces[face_nvrts].begin(), 
               subpoly_faces[face_nvrts].end(), 0);      
     
-    if (material_id_ >= 0)
-      sub_polys[offset + iface].set_mat_id(material_id_);
     sub_polys[offset + iface].initialize(subpoly_vrts, subpoly_faces, dst_tol_);
-    if (face_ids != nullptr)
-      sub_polys[offset + iface].set_face_group_id((*face_ids)[iface]);
   }
 }
 
 /*!
   @brief Decomposes a 2D MatPoly into triangular MatPoly's using its centroid.
   This method is identical to decompose.
+  @param[in] mat_poly MatPoly to decompose
   @param[out] convex_matpolys Vector of MatPoly's: 
   as many MatPoly's as mat_poly has faces will be appended to it.
-  @param[in] face_ids IDs of the faces to be associated with MatPoly's in the
-  decomposition
 */
 template <>
 inline
-void MatPoly<2>::facetize_decompose(std::vector< MatPoly<2> >& sub_polys,
-                                    const std::vector<int>* face_ids) const {
-  decompose(sub_polys, face_ids);
+void MatPoly<2>::facetize_decompose(std::vector< MatPoly<2> >& sub_polys) const {
+  decompose(sub_polys);
 }
 
 /*!
   @brief Facetizes and decomposes a 3D MatPoly into tetrahedral MatPoly's 
   using its centroid.
+  @param[in] mat_poly MatPoly to decompose
   @param[out] convex_matpolys Vector of MatPoly's: 
   as many MatPoly's as mat_poly has facets will be appended to it.
-  @param[in] face_ids IDs of the faces to be associated with MatPoly's in the
-  decomposition
 */
 template <>
 inline
-void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys,
-                                    const std::vector<int>* face_ids) const {
-#ifdef DEBUG
-  if (face_ids != nullptr) {
-    assert(face_ids->size() == unsigned(nfaces_));
-  }
-#endif
-
+void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys) const {
   std::vector< std::vector<int> > tet_faces(4);
   for (int ivrt = 0; ivrt < 3; ivrt++)
     tet_faces[ivrt] = {3, (ivrt + 1)%3, ivrt};
@@ -816,10 +729,8 @@ void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys,
       for (int ivrt = 0; ivrt < 3; ivrt++)
         tet_vrts[ivrt] = vertex_points_[face_vertices_[iface][ivrt]];
       int icur_poly = static_cast<int>(sub_polys.size());
-      sub_polys.emplace_back(material_id_);
+      sub_polys.push_back(MatPoly<3>(material_id_));
       sub_polys[icur_poly].initialize(tet_vrts, tet_faces, dst_tol_);
-      if (face_ids != nullptr)
-        sub_polys[icur_poly].set_face_group_id((*face_ids)[iface]);
     }
     else {
       tet_vrts[0] = face_centroid(iface);
@@ -828,161 +739,11 @@ void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys,
         tet_vrts[2] = vertex_points_[face_vertices_[iface][(ivrt + 1)%face_nvrts]];
 
         int icur_poly = static_cast<int>(sub_polys.size());
-        sub_polys.emplace_back(material_id_);
+        sub_polys.push_back(MatPoly<3>(material_id_));
         sub_polys[icur_poly].initialize(tet_vrts, tet_faces, dst_tol_);
-        if (face_ids != nullptr)
-          sub_polys[icur_poly].set_face_group_id((*face_ids)[iface]);
       }
     }
   }
-}
-
-
-/*!
-  @brief Computes a unit normal to the face and constructs simplex MatPoly's for that
-  face's group.
-  @param[in] face_id Index of the face
-  @param[in] face_group_id Index of the face group
-  @param[out] face_group_polys Pointer to an optional vector of MatPoly's that make
-  the corresponding face group
-  @return Face normal
-*/
-template <>
-inline 
-Vector<2> MatPoly<2>::face_normal_and_group(int const face_id,
-                                int const face_group_id,
-                                std::vector< MatPoly<2> >* face_group_polys) const {
-  int nfaces = num_faces();
-  assert((face_id >= 0) && (face_id < nfaces));
-
-  int ifv = face_id, isv = (face_id + 1)%nfaces;
-  double flen = (vertex_points_[isv] - vertex_points_[ifv]).norm();
-  if (flen < dst_tol_)
-    return {0.0, 0.0};
-
-  Vector<2> fnormal(
-    (vertex_points_[isv][1] - vertex_points_[ifv][1])/flen,
-    -(vertex_points_[isv][0] - vertex_points_[ifv][0])/flen);
-
-  if (face_group_polys != nullptr) {
-    if (moments_.empty()) 
-      compute_moments(moments_);
-
-    Point2 matpoly_cen;
-    for (int ixy = 0; ixy < 2; ixy++)
-      matpoly_cen[ixy] = moments_[ixy + 1]/moments_[0];
-
-    face_group_polys->clear();
-
-    std::vector<Point2> group_poly_points = face_points(face_id);
-    group_poly_points.push_back(matpoly_cen);
-
-    face_group_polys->push_back(MatPoly<2>(material_id_));
-    (*face_group_polys)[0].initialize(group_poly_points, dst_tol_);
-    (*face_group_polys)[0].set_face_group_id(face_group_id);
-  }
-
-  return fnormal;
-}
-
-/*!
-  @brief Computes a unit normal to the face and constructs simplex MatPoly's for that
-  face's group. Non-triangular faces are facetized.
-  @param[in] face_id Index of the face
-  @param[in] face_group_id Index of the face group
-  @param[out] face_group_polys Pointer to an optional vector of MatPoly's that make
-  the corresponding face group
-  @return Face normal
-*/
-template <>
-inline 
-Vector<3> MatPoly<3>::face_normal_and_group(int const face_id,
-                                int const face_group_id,
-                                std::vector< MatPoly<3> >* face_group_polys) const {
-
-  assert((face_id >= 0) && (face_id < num_faces()));
-
-  Vector<3> fnormal(0.0, 0.0, 0.0);
-  Point<3> fcentroid;
-
-  int face_nvrts = static_cast<int>(face_vertices_[face_id].size());
-  if (face_nvrts == 3) {
-    int nnz_edges = 0;
-    Vector<3> side_vec[2];
-    for (int iside = 0; iside < 2; iside++) {
-      side_vec[iside] = vertex_points_[face_vertices_[face_id][iside + 1]] - 
-                        vertex_points_[face_vertices_[face_id][0]];
-      if (side_vec[iside].norm() >= dst_tol_) nnz_edges++;
-    }
-
-    if ((nnz_edges == 2) && 
-        ((vertex_points_[face_vertices_[face_id][2]] - 
-          vertex_points_[face_vertices_[face_id][1]]).norm() >= dst_tol_)) {
-      fnormal = cross(side_vec[0], side_vec[1]);
-      fnormal.normalize();
-    }
-    else return fnormal;
-  }
-  else {
-    std::vector<double> face_moments;
-    polygon3d_moments(vertex_points_, face_vertices_[face_id], face_moments, dst_tol_);
-
-    if (face_moments[0] == 0.0)
-      return fnormal;
-
-    for (int idim = 0; idim < 3; idim++)
-      fcentroid[idim] = face_moments[idim + 1]/face_moments[0];
-
-    for (int ivrt = 0; ivrt < face_nvrts; ivrt++) {
-      Vector<3> side_vec = vertex_points_[face_vertices_[face_id][(ivrt + 1)%face_nvrts]] - 
-                           vertex_points_[face_vertices_[face_id][ivrt]];
-      Vector<3> tri_normal = cross(side_vec, 
-        fcentroid - vertex_points_[face_vertices_[face_id][ivrt]]);
-      fnormal += tri_normal;
-    }
-    fnormal.normalize();
-  }
-  
-
-  if (face_group_polys != nullptr) {
-    face_group_polys->clear();
-
-    std::vector< std::vector<int> > tet_faces(4);
-    for (int ivrt = 0; ivrt < 3; ivrt++)
-      tet_faces[ivrt] = {3, (ivrt + 1)%3, ivrt};
-    tet_faces[3] = {0, 1, 2};  
-
-    if (moments_.empty()) 
-      compute_moments(moments_);
-
-    std::vector<Point3> tet_vrts(4);
-    for (int ixyz = 0; ixyz < 3; ixyz++)
-      tet_vrts[3][ixyz] = moments_[ixyz + 1]/moments_[0];
-
-    if (face_nvrts == 3) {
-      for (int ivrt = 0; ivrt < 3; ivrt++)
-        tet_vrts[ivrt] = vertex_points_[face_vertices_[face_id][ivrt]];
-
-      face_group_polys->push_back(MatPoly<3>(material_id_));
-      (*face_group_polys)[0].initialize(tet_vrts, tet_faces, dst_tol_);
-      (*face_group_polys)[0].set_face_group_id(face_group_id);
-    }
-    else {
-      face_group_polys->resize(face_nvrts);
-
-      tet_vrts[0] = fcentroid;
-      for (int ivrt = 0; ivrt < face_nvrts; ivrt++) {
-        tet_vrts[1] = vertex_points_[face_vertices_[face_id][ivrt]];
-        tet_vrts[2] = vertex_points_[face_vertices_[face_id][(ivrt + 1)%face_nvrts]];
-
-        (*face_group_polys)[ivrt].set_mat_id(material_id_);
-        (*face_group_polys)[ivrt].initialize(tet_vrts, tet_faces, dst_tol_);
-        (*face_group_polys)[ivrt].set_face_group_id(face_group_id);
-      }
-    }
-  }
-
-  return fnormal;  
 }
 
 /*!
@@ -1155,20 +916,18 @@ MatPoly<2> natural_selection(const std::vector< Point<2> >& poly_points,
     // i.e. if the respective edge is degenerate: points 
     // are considered coincident if the distance between them
     // is below the distance tolerance
-    int next = (ivrt + 1) % nvrts;
-    if ((poly_points[ivrt] - poly_points[next]).norm() >= dst_tol) {
+    if ((poly_points[ivrt] - poly_points[(ivrt + 1)%nvrts]).norm() >= dst_tol) {
       bool reference_match = false;
       if (reference_pts != nullptr) {
-        for (auto&& reference_point : *reference_pts) {
-          if ((poly_points[ivrt] - reference_point).norm() < dst_tol) {
-            unique_points.push_back(reference_point);
+        for (int irp = 0; irp < reference_pts->size(); irp++)
+          if ((poly_points[ivrt] - (*reference_pts)[irp]).norm() < dst_tol) {
+            unique_points.push_back((*reference_pts)[irp]);
             reference_match = true;
-            break;
+            break;  
           }
-        }
       }
 
-      if (not reference_match)
+      if (!reference_match)
         unique_points.push_back(poly_points[ivrt]);
     }
   }
@@ -1201,15 +960,11 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   int nvrts = static_cast<int>(vertex_points.size());
   std::vector<Point3> unique_vrts;
   unique_vrts.reserve(nvrts);
-
   // We only store unique vertices, so we need a map from the original node indices
   // to unique node indices for when we process faces
   std::vector<int> orig2unique_vrt_ids(nvrts, -1);
-
-  int nb_unique_vertices = 0;
-
   for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-    for (int i = 0; i < nb_unique_vertices; i++) {
+    for (int i = 0; i < unique_vrts.size(); i++) {
       // Check if this point is coincident with a stored one: points 
       // are considered coincident if the distance between them is below
       // the distance tolerance
@@ -1218,16 +973,16 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
         break;
       }
     }
-
     // If the point is unique, we store it
     if (orig2unique_vrt_ids[ivrt] == -1) {
-      orig2unique_vrt_ids[ivrt] = nb_unique_vertices;
+      orig2unique_vrt_ids[ivrt] = static_cast<int>(unique_vrts.size());
       bool reference_match = false;
       if (reference_pts != nullptr) {
         // We check if this point matches any of the reference ones
-        for (auto const& reference_point : *reference_pts) {
-          if ((vertex_points[ivrt] - reference_point).norm() < dst_tol) {
-            unique_vrts.push_back(reference_point);
+        for (int irp = 0; irp < reference_pts->size(); irp++) {
+          const Point<3>& cur_ref_pt = (*reference_pts)[irp];
+          if ((vertex_points[ivrt] - cur_ref_pt).norm() < dst_tol) {            
+            unique_vrts.push_back(cur_ref_pt);            
             reference_match = true;
             break; 
           }
@@ -1236,9 +991,7 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
       if (!reference_match)
         unique_vrts.push_back(vertex_points[ivrt]);
     }
-    nb_unique_vertices = unique_vrts.size();
   }
-
   unique_vrts.shrink_to_fit();
   nvrts = static_cast<int>(unique_vrts.size());
 
@@ -1263,13 +1016,13 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   // connections is in each vertice's network
   std::vector< std::vector<int> > connected_vrt_ids(nvrts);
   std::vector< std::vector< std::pair<int, int> > > vrt_in_faces(nvrts);
-
   for (int ivrt = 0; ivrt < nvrts; ivrt++) {
-    int iface = 0;
-    for (auto&& face : face_unique_vrts) {
-      int nface_vrts = static_cast<int>(face.size());
-      int id_in_face =
-        std::distance(face.begin(), std::find(face.begin(), face.end(), ivrt));
+    for (int iface = 0; iface < face_unique_vrts.size(); iface++) {
+      const std::vector<int>& cur_face_vrts = face_unique_vrts[iface];
+      int nface_vrts = static_cast<int>(cur_face_vrts.size());
+      int id_in_face = std::distance(cur_face_vrts.begin(),
+                                     std::find(cur_face_vrts.begin(),
+                                               cur_face_vrts.end(), ivrt));
       
       if (id_in_face != nface_vrts) {
         // Vertex is in the current face
@@ -1277,13 +1030,12 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
         // We check if it has unknown connections with vertices of the current face
         for (int p0n1 = 0; p0n1 < 2; p0n1++) {
           int adj_vrt_face_id = (nface_vrts + id_in_face + 2*p0n1 - 1)%nface_vrts;
-          auto& adj_vrt_id = face[adj_vrt_face_id];
-          auto& list = connected_vrt_ids[ivrt];
-          if (std::find(list.begin(), list.end(), adj_vrt_id) == list.end())
-            list.push_back(adj_vrt_id);
+          int adj_vrt_id = face_unique_vrts[iface][adj_vrt_face_id];
+          if (std::find(connected_vrt_ids[ivrt].begin(), connected_vrt_ids[ivrt].end(),
+                        adj_vrt_id) == connected_vrt_ids[ivrt].end())
+            connected_vrt_ids[ivrt].push_back(adj_vrt_id);
         }
       }
-      iface++;
     }      
   }
 
@@ -1292,77 +1044,65 @@ MatPoly<3> natural_selection(const std::vector<Point3>& vertex_points,
   // so we need to check if those get dragged down the cliff as well
   bool dropped_connections;
   std::vector<int> hanging_vrts_ids;
-
   do {
     dropped_connections = false;
     for (int ivrt = 0; ivrt < nvrts; ivrt++) {
       int ncv = static_cast<int>(connected_vrt_ids[ivrt].size());
       if (ncv < 3) {
         hanging_vrts_ids.push_back(ivrt);
-
         // Others break connections first
         for (int icv = 0; icv < ncv; icv++) {
-          int index = connected_vrt_ids[ivrt][icv];
-          connected_vrt_ids[index].erase(
-            std::find(connected_vrt_ids[index].begin(),
-                      connected_vrt_ids[index].end(), ivrt));
+          int icvrt = connected_vrt_ids[ivrt][icv];
+          connected_vrt_ids[icvrt].erase(
+            std::find(connected_vrt_ids[icvrt].begin(), 
+                      connected_vrt_ids[icvrt].end(), ivrt));
         }
-
         if (ncv == 1) dropped_connections = true;
 
         bool third_wheel = false;
-
-        for (auto&& face : vrt_in_faces[ivrt]) {
-          int iface = face.first;
-          int hvrt_fid = face.second;
+        for (int icf = 0; icf < vrt_in_faces[ivrt].size(); icf++) {
+          int iface = vrt_in_faces[ivrt][icf].first;
+          int hvrt_fid = vrt_in_faces[ivrt][icf].second;
           // Check if the two others can connect by themselves
           if (ncv == 2) {
             int nface_vrts = static_cast<int>(face_unique_vrts[iface].size());
-            for (int icv = 0; icv < 2; icv++) {
-              int const i = (hvrt_fid + 1) % nface_vrts;
-              int const j = (nface_vrts + hvrt_fid - 1) % nface_vrts;
-              int const a = (icv + 1) % 2;
-              int const b = icv;
-
-              if (face_unique_vrts[iface][i] == connected_vrt_ids[ivrt][a] and
-                  face_unique_vrts[iface][j] == connected_vrt_ids[ivrt][b]) {
+            for (int icv = 0; icv < 2; icv++)
+              if ( (face_unique_vrts[iface][(hvrt_fid + 1)%nface_vrts] ==
+                    connected_vrt_ids[ivrt][(icv + 1)%2]) &&
+                   (face_unique_vrts[iface][(nface_vrts + hvrt_fid - 1)%nface_vrts] ==
+                    connected_vrt_ids[ivrt][icv]) ) {
                 third_wheel = true;
-                for (int k = 0; k < 2; k++) {
-                  auto const& cur = connected_vrt_ids[ivrt][k];
-                  auto const& nxt = connected_vrt_ids[ivrt][(k + 1) % 2];
-                  connected_vrt_ids[cur].push_back(nxt);
-                }
+                for (int i = 0; i < 2; i++)
+                  connected_vrt_ids[connected_vrt_ids[ivrt][i]].push_back(
+                    connected_vrt_ids[ivrt][(i + 1)%2]);
                 // And the hanger-on now has no one to cling to
                 connected_vrt_ids[ivrt].clear();
                 ncv = 0;
               }
-            }
           }
           // Gets evicted from the hosting face
-          face_unique_vrts[iface].erase(face_unique_vrts[iface].begin() + face.second);
-
+          face_unique_vrts[iface].erase(face_unique_vrts[iface].begin() + 
+                                        vrt_in_faces[ivrt][icf].second);
           // Tell the following face vertices about their change of address
-          int nb_face_unique_verts = face_unique_vrts[iface].size();
-          for (int ifv = face.second; ifv < nb_face_unique_verts; ifv++) {
+          for (int ifv = vrt_in_faces[ivrt][icf].second; 
+                   ifv < face_unique_vrts[iface].size(); ifv++) {
             int icur_vrt = face_unique_vrts[iface][ifv];
-            for (auto&& i : vrt_in_faces[icur_vrt]) {
-              if (i.first == iface) {
-                i.second--;
+            for (int i = 0; i < vrt_in_faces[icur_vrt].size(); i++)
+              if (vrt_in_faces[icur_vrt][i].first == iface) {
+                vrt_in_faces[icur_vrt][i].second--;
                 break;
               }
-            }
           }
-        }
 
-        if (not third_wheel)
-          dropped_connections = true;
+        }      
+        if (!third_wheel) dropped_connections = true;
       }
     }
   } while (dropped_connections);
 
   // Filter out degenerate faces
   int face_id = 0;
-  while (face_id < static_cast<int>(face_unique_vrts.size())) {
+  while (face_id < face_unique_vrts.size()) {
     // Check if this face is still at least a triangle
     if (face_unique_vrts[face_id].size() > 2) face_id++;
     else {
@@ -1425,16 +1165,18 @@ bool point_inside_matpoly(const MatPoly<3> mat_poly,
   else 
     mat_poly.facetize_decompose(convex_polys);
 
-  for (auto&& poly : convex_polys) {
-    auto const& poly_pts = poly.points();
+  for (int icp = 0; icp < convex_polys.size(); icp++) {
+    const std::vector< Point<3> >& poly_pts = convex_polys[icp].points();
+
     bool pt_inside_cur_poly = true;
-    for (int iface = 0; iface < poly.num_faces(); iface++) {
-      auto const& iface_vrts = poly.face_vertices(iface);
+    for (int iface = 0; iface < convex_polys[icp].num_faces(); iface++) {
+      const std::vector<int>& iface_vrts = convex_polys[icp].face_vertices(iface);
       Vector3 pt2vrt_vec;
       double pt2vrt_dst = 0.0;
       //Find a face vertex that is the farthest from the given point
-      for (auto&& vertex : iface_vrts) {
-        auto cur_pt2vrt_vec = poly.vertex_point(vertex) - pt;
+      for (int ifvrt = 0; ifvrt < iface_vrts.size(); ifvrt++) {
+        Vector3 cur_pt2vrt_vec = 
+          convex_polys[icp].vertex_point(iface_vrts[ifvrt]) - pt;
         double cur_vec_norm = cur_pt2vrt_vec.norm();
         if (cur_vec_norm > pt2vrt_dst) {
           pt2vrt_vec = cur_pt2vrt_vec;

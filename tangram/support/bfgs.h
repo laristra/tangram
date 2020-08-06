@@ -74,7 +74,6 @@ void fwd_diff_grad(const std::function<double(const Vector<arg_dim>&)>& fun,
                    Vector<arg_dim>& approx_grad,
                    double& fdiff_h) {
   fdiff_h = sqrt(std::numeric_limits<double>::epsilon());
-
   Vector<arg_dim> fwd_arg = arg_val;
   for (int i = 0; i < arg_dim; i++) {
     fwd_arg[i] += fdiff_h;
@@ -181,6 +180,7 @@ double linesearch(const std::function<double(const Vector<arg_dim>&)>& obj_fun,
   double df0 = dot(cur_grad, dir);
   assert(df0 < 0.0);
   double alpha_tol = im_tols.arg_eps/dir.norm();
+  double fdiff_err;
 
   auto fval = [&obj_fun, &arg, &dir](double alpha) {
     return obj_fun(arg + alpha*dir);
@@ -390,7 +390,6 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
         B_darg = B*darg;
         darg_B_darg = dot(darg, B_darg);
       }
-
       B += (1.0/darg_dgrad)*(dgrad*dgrad) - (1.0/darg_B_darg)*(B_darg*B_darg);
     }
   }
@@ -533,7 +532,6 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
         B_darg = B*darg;
         darg_B_darg = dot(darg, B_darg);
       }
-
       B += (1.0/darg_dgrad)*(dgrad*dgrad) - (1.0/darg_B_darg)*(B_darg*B_darg);
     }
   }
