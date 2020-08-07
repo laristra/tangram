@@ -202,6 +202,30 @@ std::vector<int> sorted_indices(const std::vector<T> &v,
   return ids;
 }
 
+inline
+Vector<1> cartesian_to_polar(const Vector<2> cartesian_vec) {
+  return Vector<1>(atan2(cartesian_vec[1], cartesian_vec[0]));
+}
+
+inline
+Vector<2> cartesian_to_polar(const Vector<3> cartesian_vec) {
+  double len = cartesian_vec.norm();
+  return Vector<2>(atan2(cartesian_vec[1], cartesian_vec[0]), 
+                   acos(cartesian_vec[2]/len));
+}
+
+inline
+Vector<2> polar_to_cartesian(const Vector<1> polar_vec) {
+  return Vector<2>(cos(polar_vec[0]), sin(polar_vec[0]));
+}
+
+inline
+Vector<3> polar_to_cartesian(const Vector<2> polar_vec) {
+  return Vector<3>(sin(polar_vec[1])*cos(polar_vec[0]),
+                   sin(polar_vec[1])*sin(polar_vec[0]),
+                   cos(polar_vec[1])); 
+}
+
 }  // namespace Tangram
 
 #endif  // TANGRAM_H_

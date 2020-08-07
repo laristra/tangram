@@ -31,7 +31,7 @@
 
 // tangram includes
 #include "tangram/driver/driver.h"
-#include "tangram/reconstruct/MOF.h"
+#include "tangram/reconstruct/LVIRAPlus.h"
 #include "tangram/driver/write_to_gmv.h"
 #include "tangram/utility/get_material_moments.h"
 #include "tangram/utility/get_mat_sym_diff_vol.h"
@@ -40,21 +40,23 @@
 #include "wonton/support/Vector.h"
 
 /* Test app for a 2D mesh and planar material interfaces.
-   Uses SimpleMesh/Jali and MOF.
+   Uses SimpleMesh/Jali and LVIRA+.
    Generates (SimpleMesh) or reads mesh from file (Jali),
    computes material moments for a sequence of planar interfaces,
-   performs interface reconstruction (MOF), and outputs volumes of
+   performs interface reconstruction (LVIRA+), and outputs volumes of
    symmetric difference for every material in every
    multi-material cell */
 
 #include <set>
 
+const bool reverse_mat_order = true;
+
 const std::vector<int> mesh_materials = {5, 0, 3};
-const std::vector< Tangram::Vector2 > material_interface_normals = {
-  Tangram::Vector2(-0.5, 0.0), Tangram::Vector2(0, -0.5)
+const std::vector< Wonton::Vector<2> > material_interface_normals = {
+  Wonton::Vector<2>(-1.0, 0.0), Wonton::Vector<2>(0, -1.0)
 };
-const std::vector< Tangram::Point2 > material_interface_points = {
-  Tangram::Point2(0.5, 0.0), Tangram::Point2(1.0, 0.5)
+const std::vector< Wonton::Point<2> > material_interface_points = {
+  Wonton::Point<2>(0.5, 0.5), Wonton::Point<2>(0.5, 0.5)
 };
 
 int main(int argc, char** argv) {
@@ -75,7 +77,7 @@ int main(int argc, char** argv) {
   if (argc != 3) {
     std::ostringstream os;
     os << std::endl <<
-    "Correct usage: test_mof_2d" << " <decompose_cells> [0|1]" <<
+    "Correct usage: test_lvira+_2d" << " <decompose_cells> [0|1]" <<
       " <base_mesh_file>" << std::endl;
     throw std::runtime_error(os.str());
   }
@@ -83,7 +85,7 @@ int main(int argc, char** argv) {
   if (argc != 4) {
     std::ostringstream os;
     os << std::endl <<
-    "Correct usage: test_mof_2d" << " <decompose_cells> [0|1]" <<
+    "Correct usage: test_lvira+_2d" << " <decompose_cells> [0|1]" <<
       " <nx> <ny> " << std::endl;
     throw std::runtime_error(os.str());
   }
@@ -142,22 +144,22 @@ int main(int argc, char** argv) {
   double vol_tol = 1.0e-16;
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
   ims_tols[0] = {1000, dst_tol, vol_tol};
-  ims_tols[1] = {100, 1.0e-18, dst_tol};  
+  ims_tols[1] = {100, 1.0e-18, vol_tol};
 
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
   std::vector<double> cell_mat_volfracs;
-  std::vector<Tangram::Point2> cell_mat_centroids;
+  std::vector<Wonton::Point<2>> cell_mat_centroids;
   std::vector< std::vector< std::vector<r2d_poly> > > reference_mat_polys;
 
 #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys, reverse_mat_order);
 #else
   get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys, reverse_mat_order);
 #endif
 
   std::vector<int> offsets(ncells, 0);
@@ -203,21 +205,21 @@ int main(int argc, char** argv) {
 
 // Build the driver
 #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  Tangram::Driver<Tangram::MOF, 2, Wonton::Jali_Mesh_Wrapper,
+  Tangram::Driver<Tangram::LVIRAPlus, 2, Wonton::Jali_Mesh_Wrapper,
                   Tangram::SplitR2D, Tangram::ClipR2D>
-    mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
+    lvira_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #else
-  Tangram::Driver<Tangram::MOF, 2, Wonton::Simple_Mesh_Wrapper,
+  Tangram::Driver<Tangram::LVIRAPlus, 2, Wonton::Simple_Mesh_Wrapper,
                   Tangram::SplitR2D, Tangram::ClipR2D>
-    mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
+    lvira_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #endif
 
-  mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
-                                  cell_mat_volfracs, cell_mat_centroids);
-  mof_driver.reconstruct();
+  lvira_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
+                                    cell_mat_volfracs, cell_mat_centroids);
+  lvira_driver.reconstruct();
 
   std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list =
-    mof_driver.cell_matpoly_ptrs();
+    lvira_driver.cell_matpoly_ptrs();
 
   std::vector<double> total_mat_sym_diff_vol(nmesh_materials, 0.0);
   std::vector<double> max_mat_sym_diff_vol(nmesh_materials, 0.0);
