@@ -5,38 +5,63 @@
 ]]
 
 #-----------------------------------------------------------------------------~#
+project(tangram_reconstruct)
 
 
-#-----------------------------------------------------------------------------~#
+add_library(tangram_reconstruct INTERFACE)
+
+target_include_directories(tangram_reconstruct INTERFACE
+  $<BUILD_INTERFACE:${tangram_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${tangram_BINARY_DIR}>
+  $<INSTALL_INTERFACE:include>)
+
 
 if (XMOF2D_DIR)
-    set(xmof2D_wrapper_headers
-        reconstruct/xmof2D_wrapper.h
-        )
+  set(xmof2D_wrapper_HEADERS
+    xmof2D_wrapper.h
+    )
 endif (XMOF2D_DIR)
 
-# Add header files
-set(reconstruct_HEADERS
-    SLIC.h
-    xmof2D_wrapper.h
-    cutting_distance_solver.h
-    nested_dissections.h
-    VOF.h
-    MOF.h
-    PARENT_SCOPE
-)
+set(tangram_reconstruct_HEADERS
+  SLIC.h
+  cutting_distance_solver.h
+  nested_dissections.h
+  VOF.h
+  MOF.h
+  )
 
-# Add source files
-set(reconstruct_SOURCES
-    PARENT_SCOPE
-)
+# Not yet allowed for INTERFACE libraries
+#
+# set_target_properties(tangram_reconstruct PROPERTIES
+#   PUBLIC_HEADER "${xmof2D_wrapper_HEADERS};${tangram_reconstruct_HEADERS}")
+#
+# Directly install files instead
+#
+install(FILES ${xmof2D_wrapper_HEADERS} ${tangram_reconstruct_HEADERS}
+  DESTINATION include/tangram/reconstruct)
+
+
+target_link_libraries(tangram_reconstruct INTERFACE tangram_support)
+
+
+target_link_libraries(tangram INTERFACE tangram_reconstruct)
+
+install(TARGETS tangram_reconstruct
+  EXPORT tangram_LIBRARIES
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  PUBLIC_HEADER DESTINATION include/tangram/reconstruct
+  INCLUDES DESTINATION include/tangram/reconstruct
+  )
+
 
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
-  cinch_add_unit(cutting_distance_solver
+  tangram_add_unittest(test_cutting_distance_solver
     SOURCES test/test_cutting_distance_solver.cc
-    LIBRARIES wonton
+    LIBRARIES tangram_reconstruct
     POLICY SERIAL
     )
 endif (ENABLE_UNIT_TESTS)

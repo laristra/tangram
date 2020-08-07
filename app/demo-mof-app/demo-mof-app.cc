@@ -148,6 +148,7 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
   std::vector<int> offsets(ncells, 0);
   for (int icell = 0; icell < ncells - 1; icell++)
     offsets[icell + 1] = offsets[icell] + cell_num_mats[icell];
+
   for (int icell = 0; icell < ncells; icell++) {
     if (cell_num_mats[icell] == 1) {
       assert(cellmatpoly_list[icell] == nullptr);
@@ -161,6 +162,7 @@ void run (std::shared_ptr<Jali::Mesh> inputMesh,
       cellmatpoly_list[icell] = cmp_ptr;
     }
   }
+
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
 }
 
@@ -190,9 +192,10 @@ int main(int argc, char** argv) {
 
   Jali::MeshFactory mesh_factory(comm);
   mesh_factory.framework(Jali::MSTK);
+
   if (dim == 2)
   {
-    mesh_factory.included_entities({Jali::Entity_kind::EDGE});
+    mesh_factory.included_entities(Jali::Entity_kind::EDGE);
     std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[4]);
 
     run<2>(mesh, isconvex, in_data_fname, out_gmv_fname);

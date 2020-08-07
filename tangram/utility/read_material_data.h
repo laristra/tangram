@@ -32,7 +32,7 @@ void read_material_data(const Mesh_Wrapper& mesh,
                         std::vector<int>& cell_num_mats,
                         std::vector<int>& cell_mat_ids,
                         std::vector<double>& cell_mat_volfracs,
-                        std::vector< Tangram::Point<D> >& cell_mat_centroids) {
+                        std::vector< Wonton::Point<D> >& cell_mat_centroids) {
   std::ifstream os(mesh_data_fname.c_str(), std::ifstream::binary);
   if (!os.good()) {
     std::ostringstream os;
