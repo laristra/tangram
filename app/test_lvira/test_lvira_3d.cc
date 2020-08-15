@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
   }
 #endif
 
-#ifdef DEBUG
+#ifndef NDEBUG
   std::string ref_gmv_fname = mesh_name + "_ref_matpolys.gmv";
   std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
 #endif
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
       nmmcells++;
     }
 
-#ifdef DEBUG
+#ifndef NDEBUG
   std::vector< std::shared_ptr< Tangram::CellMatPoly<3> > > 
     ref_matpoly_list(ncells, nullptr);
   for (int icell = 0; icell < ncells; icell++) 
@@ -335,7 +335,7 @@ std::cout << std::endl << "Stats for ";
         max_mat_sym_diff_vol[imat]/max_sym_diff_mat_vol << std::endl;
   }
 
-#ifdef DEBUG
+#ifndef NDEBUG
   write_to_gmv(mesh_wrapper, nmesh_materials, cell_num_mats, cell_mat_ids,
                cellmatpoly_list, out_gmv_fname);  
 #endif
