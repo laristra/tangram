@@ -104,9 +104,13 @@ export SHELL=/bin/sh
 
 export MODULEPATH=""
 . /usr/share/lmod/lmod/init/sh
-module load $cxxmodule
-module load ${mpi_module}
+echo ${cxxmodule}
+module load ${cxxmodule}
 module load cmake/3.14.0  # 3.13 or higher is required
+
+if [[ -n "$mpi_flags" ]]; then
+    module load openmpi/${openmpi_version}
+fi
 
 echo $WORKSPACE
 cd $WORKSPACE
