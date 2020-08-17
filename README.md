@@ -134,7 +134,7 @@ below to ensure they build.
 
 Execute the following from the Tangram root directory:
 
-```c++
+```sh
 # machine=varan
 export MODULEPATH=""
 . /opt/local/packages/Modules/default/init/sh
@@ -147,6 +147,34 @@ cmake \
   -D CMAKE_C_COMPILER=`which mpicc` \
   -D CMAKE_CXX_COMPILER=`which mpiCC` \
   -D CMAKE_BUILD_TYPE=Release \
+  -D ENABLE_UNIT_TESTS=True \
+  -D TANGRAM_ENABLE_MPI=True \
+  -D ENABLE_JENKINS_OUTPUT=True \
+  -D WONTON_ROOT=$WONTON_INSTALL_PREFIX \
+  -D TANGRAM_ENABLE_Jali=True \
+  -D TANGRAM_ENABLE_XMOF2D=True \
+  -D XMOF2D_ROOT:FILEPATH=$XMOF2D_INSTALL_PREFIX/share/cmake \
+  ..
+make -j2
+ctest --output-on-failure
+```
+
+## Varan
+
+Execute the following from the Tangram root directory:
+
+```sh
+# machine=sn-fey
+export MODULEPATH=""
+. /usr/share/lmod/lmod/init/sh
+module load intel/18.0.5 openmpi/2.1.2 cmake/3.14.0
+XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/0.9.5-intel-18.0.5
+WONTON_INSTALL_PREFIX=/usr/local/codes/ngc/private/wonton/1.2.2-intel-18.0.5-openmpi-2.1.2
+mkdir build
+cd build
+cmake \
+  -D CMAKE_BUILD_TYPE=Release \
+  -D CMAKE_CXX_FLAGS="-Wall -Werror" \
   -D ENABLE_UNIT_TESTS=True \
   -D TANGRAM_ENABLE_MPI=True \
   -D ENABLE_JENKINS_OUTPUT=True \
