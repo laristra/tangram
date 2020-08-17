@@ -36,7 +36,7 @@ fi
 xmof2d_version=0.9.5
 wonton_version=1.2.2
 
-export NGC=/usr/local/codes/ngc
+export NGC=/usr/projects/ngc
 ngc_include_dir=$NGC/private/include
 
 # compiler-specific settings
@@ -103,7 +103,7 @@ fi
 export SHELL=/bin/sh
 
 export MODULEPATH=""
-. /opt/local/packages/Modules/default/init/sh
+. /usr/share/lmod/lmod/init/sh
 module load $cxxmodule
 module load ${mpi_module}
 module load cmake/3.14.0  # 3.13 or higher is required
