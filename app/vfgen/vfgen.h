@@ -128,7 +128,9 @@ bool P_InTriPoly3D(Wonton::Point<3> ptest,
 //                     of faceted polyhedron in 3D
 
 template<int dim>
-bool P_InPoly(Wonton::Point<dim> ptest, int npnts, Wonton::Point<dim> *points) {}
+bool P_InPoly(Wonton::Point<dim> ptest, int npnts, Wonton::Point<dim> *points) {
+  return false;
+}
 
 template<>
 bool P_InPoly<2>(Wonton::Point<2> ptest, int npnts, Wonton::Point<2> *points) {

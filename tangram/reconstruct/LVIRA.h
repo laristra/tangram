@@ -409,7 +409,7 @@ private:
     // the given material as prescribed for those neighbors
     const std::vector<int>& ineighbor_cells = cell_neighbors_ids_[cellID];
     int nnc = static_cast<int>(ineighbor_cells.size());
-    assert(mixed_polys_ptrs.size() == nnc + 1);
+    assert(mixed_polys_ptrs.size() == static_cast<size_t>(nnc + 1));
 
     double nghb_error = 0.0;
     int matID = cell_mat_ids_[cellID][cellMatID];
