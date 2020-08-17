@@ -100,7 +100,7 @@ assigned **LA-CC-17-133**.
 
 # Example of the configure script:
 
-```c++
+```sh
 #!/bin/bash
 
 BUILD_TYPE=Release
@@ -144,8 +144,6 @@ WONTON_INSTALL_PREFIX=/usr/local/codes/ngc/private/wonton/1.2.2-intel-18.0.1-ope
 mkdir build
 cd build
 cmake \
-  -D CMAKE_C_COMPILER=`which mpicc` \
-  -D CMAKE_CXX_COMPILER=`which mpiCC` \
   -D CMAKE_BUILD_TYPE=Release \
   -D ENABLE_UNIT_TESTS=True \
   -D TANGRAM_ENABLE_MPI=True \
@@ -165,8 +163,8 @@ Execute the following from the Tangram root directory:
 
 ```sh
 # machine=sn-fey
-export MODULEPATH=""
 . /usr/share/lmod/lmod/init/sh
+
 module load intel/18.0.5 openmpi/2.1.2 cmake/3.14.0
 XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/0.9.5-intel-18.0.5
 WONTON_INSTALL_PREFIX=/usr/local/codes/ngc/private/wonton/1.2.2-intel-18.0.5-openmpi-2.1.2
