@@ -166,8 +166,8 @@ Execute the following from the Tangram root directory:
 . /usr/share/lmod/lmod/init/sh
 
 module load intel/18.0.5 openmpi/2.1.2 cmake/3.14.0
-XMOF2D_INSTALL_PREFIX=/usr/local/codes/ngc/private/xmof2d/0.9.5-intel-18.0.5
-WONTON_INSTALL_PREFIX=/usr/local/codes/ngc/private/wonton/1.2.2-intel-18.0.5-openmpi-2.1.2
+XMOF2D_INSTALL_PREFIX=/usr/projects/ngc/private/xmof2d/0.9.5-intel-18.0.5
+WONTON_INSTALL_PREFIX=/usr/projects/ngc/private/wonton/1.2.2-intel-18.0.5-openmpi-2.1.2
 mkdir build
 cd build
 cmake \
