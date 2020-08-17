@@ -43,7 +43,7 @@ ngc_include_dir=$NGC/private/include
 if [[ $compiler == "intel18" ]]; then
 
     compiler_version=18.0.5
-    cxxmodule=intel/${intel_version}
+    cxxmodule=intel/${compiler_version}
     compiler_suffix="-intel-${compiler_version}"
     
     openmpi_version=2.1.2
@@ -64,10 +64,10 @@ elif [[ $compiler =~ "gcc" ]]; then
     
     mpi_module=openmpi/${openmpi_version}
     mpi_suffix="-openmpi-${openmpi_version}"
+
 fi
 
 
-# build-type-specific settings
 mpi_flags="-D TANGRAM_ENABLE_MPI=True"
 if [[ $build_type == "serial" ]]; then
     mpi_flags=
@@ -102,9 +102,7 @@ fi
 
 export SHELL=/bin/sh
 
-export MODULEPATH=""
 . /usr/share/lmod/lmod/init/sh
-echo ${cxxmodule}
 module load ${cxxmodule}
 module load cmake/3.14.0  # 3.13 or higher is required
 
