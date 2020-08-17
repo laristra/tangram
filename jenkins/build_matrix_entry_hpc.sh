@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This script is executed on Jenkins using
 #
-#     $WORKSPACE/jenkins/build_matrix_entry.sh <compiler> <build_type>
+#     $WORKSPACE/jenkins/build_matrix_entry_hpc.sh <compiler> <build_type>
 #
 # The exit code determines if the test succeeded or failed.
 # Note that the environment variable WORKSPACE must be set (Jenkins
@@ -11,6 +11,10 @@
 set -e
 # Echo each command
 set -x
+
+echo "--------------------------------------------------------------"
+echo "Running configuration $COMPILER $BUILD_TYPE on `hostname`"
+echo "--------------------------------------------------------------"
 
 compiler=$1
 build_type=$2
@@ -38,6 +42,7 @@ wonton_version=1.2.2
 
 export NGC=/usr/projects/ngc
 ngc_include_dir=$NGC/private/include
+ngc_tpl_dir=$NGC/private
 
 # compiler-specific settings
 if [[ $compiler == "intel18" ]]; then
@@ -66,7 +71,6 @@ elif [[ $compiler =~ "gcc" ]]; then
     mpi_suffix="-openmpi-${openmpi_version}"
 
 fi
-
 
 mpi_flags="-D TANGRAM_ENABLE_MPI=True"
 if [[ $build_type == "serial" ]]; then
@@ -100,11 +104,12 @@ if [[ $build_type != "serial" ]]; then
     jali_flags="-D TANGRAM_ENABLE_Jali:BOOL=True"  # Jali found through Wonton
 fi
 
+
 export SHELL=/bin/sh
 
 . /usr/share/lmod/lmod/init/sh
 module load ${cxxmodule}
-module load cmake/3.14.0  # 3.13 or higher is required
+module load cmake/3.14.6 # 3.13 or higher is required
 
 if [[ -n "$mpi_flags" ]]; then
     module load openmpi/${openmpi_version}
@@ -129,5 +134,5 @@ cmake \
   $jali_flags \
   $flecsi_flags \
   ..
-make -j2
-ctest --output-on-failure
+make -j8
+ctest -j36 --output-on-failure
