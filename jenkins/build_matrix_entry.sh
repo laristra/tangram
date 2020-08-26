@@ -43,7 +43,7 @@ ngc_include_dir=$NGC/private/include
 if [[ $compiler == "intel18" ]]; then
 
     compiler_version=18.0.1
-    cxxmodule=intel/${intel_version}
+    cxxmodule=intel/${compiler_version}
     compiler_suffix="-intel-${compiler_version}"
     
     openmpi_version=2.1.2
