@@ -201,7 +201,7 @@ class MatPoly {
     @param material_id  Material ID to assign to this poly: should be a valid (>=0) value
   */
   void set_mat_id(int const mat_id) {
-#ifdef DEBUG
+#ifndef NDEBUG
     assert(mat_id >= 0);
 #endif
     material_id_ = mat_id;
@@ -237,7 +237,7 @@ class MatPoly {
     @param face_group_id ID of the associated face: should be a valid (>=0) value
   */
   void set_face_group_id(int const face_group_id) {
-#ifdef DEBUG
+#ifndef NDEBUG
     assert(face_group_id >= 0);
 #endif
     face_group_id_ = face_group_id;
@@ -286,7 +286,7 @@ class MatPoly {
    @return  Vector of indices of face's vertices
   */
   const std::vector<int>& face_vertices(int const face_id) const {
-#ifdef DEBUG
+#ifndef NDEBUG
     assert((face_id >= 0) && (face_id < nfaces_));
 #endif
     return face_vertices_[face_id];
@@ -298,7 +298,7 @@ class MatPoly {
    @return  Vector of coordinates of face's vertices
   */
   std::vector< Point<D> > face_points(int const face_id) const {
-#ifdef DEBUG
+#ifndef NDEBUG
     assert((face_id >= 0) && (face_id < nfaces_));
 #endif
     int nvrts = static_cast<int>(face_vertices_[face_id].size());
@@ -324,7 +324,7 @@ class MatPoly {
    @return  Coordinates of that vertex
   */
   Point<D> vertex_point(int const vertex_id) const {
-#ifdef DEBUG
+#ifndef NDEBUG
     assert((vertex_id >= 0) && (vertex_id < nvertices_));
 #endif
     return vertex_points_[vertex_id];
@@ -382,7 +382,7 @@ class MatPoly {
    moments[i+1]/moments[0] is i-th coordinate of the centroid
   */  
   void assign_moments(const std::vector<double>& moments) const {
-#ifdef DEBUG
+#ifndef NDEBUG
     assert(moments.size() == D + 1);
 #endif    
     moments_ = moments;
@@ -478,7 +478,7 @@ void MatPoly<2>::initialize(const std::vector<Point2>& poly_points,
                             double dst_tol) {
   dst_tol_ = dst_tol;
   nvertices_ = static_cast<int>(poly_points.size());
-#ifdef DEBUG
+#ifndef NDEBUG
   assert(nvertices_ > 2);
 #endif
   nfaces_ = nvertices_;
@@ -503,7 +503,7 @@ void MatPoly<3>::initialize(const std::vector<Point3>& vertex_points,
   dst_tol_ = dst_tol;
   nvertices_ = static_cast<int>(vertex_points.size());
   nfaces_ = static_cast<int>(face_vertices.size());
-#ifdef DEBUG
+#ifndef NDEBUG
   assert(nvertices_ > 3);
   assert(nfaces_ > 3);
 #endif
@@ -520,7 +520,7 @@ void MatPoly<3>::initialize(const std::vector<Point3>& vertex_points,
 template<>
 inline
 Point2 MatPoly<2>::face_centroid(int const face_id) const {
-#ifdef DEBUG
+#ifndef NDEBUG
   assert((face_id >= 0) && (face_id < nfaces_));
 #endif
   return 0.5*(vertex_points_[face_id] + vertex_points_[(face_id + 1)%nvertices_]);
@@ -534,7 +534,7 @@ Point2 MatPoly<2>::face_centroid(int const face_id) const {
 template<>
 inline
 Point3 MatPoly<3>::face_centroid(int const face_id) const {
-#ifdef DEBUG
+#ifndef NDEBUG
   assert((face_id >= 0) && (face_id < nfaces_));
 #endif
   std::vector<double> face_moments;
@@ -688,7 +688,7 @@ template <>
 inline
 void MatPoly<2>::decompose(std::vector< MatPoly<2> >& sub_polys,
                            const std::vector<int>* face_ids) const {
-#ifdef DEBUG
+#ifndef NDEBUG
   if (face_ids != nullptr) {
     assert(face_ids->size() == unsigned(nfaces_));
   }
@@ -727,7 +727,7 @@ template <>
 inline
 void MatPoly<3>::decompose(std::vector< MatPoly<3> >& sub_polys,
                            const std::vector<int>* face_ids) const {
-#ifdef DEBUG
+#ifndef NDEBUG
   if (face_ids != nullptr) {
     assert(face_ids->size() == unsigned(nfaces_));
   }
@@ -792,7 +792,7 @@ template <>
 inline
 void MatPoly<3>::facetize_decompose(std::vector< MatPoly<3> >& sub_polys,
                                     const std::vector<int>* face_ids) const {
-#ifdef DEBUG
+#ifndef NDEBUG
   if (face_ids != nullptr) {
     assert(face_ids->size() == unsigned(nfaces_));
   }
@@ -1002,7 +1002,7 @@ void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       const int cellid,
                       MatPoly<2>* mat_poly,
                       const double dst_tol) {
-#ifdef DEBUG                        
+#ifndef NDEBUG                        
   assert(Mesh.space_dimension() == 2);
 #endif
 
@@ -1030,7 +1030,7 @@ void cell_get_matpoly(const Mesh_Wrapper& Mesh,
                       const int cellid,
                       MatPoly<3>* mat_poly,
                       const double dst_tol) {
-#ifdef DEBUG                        
+#ifndef NDEBUG                        
   assert(Mesh.space_dimension() == 3);
 #endif
 

@@ -17,14 +17,24 @@ build_type=$2
 
 # special case for README builds
 if [[ $build_type == "readme" ]]; then
-  python2 $WORKSPACE/jenkins/parseREADME.py $WORKSPACE/README.md $WORKSPACE
-  exit
+
+   # Put a couple of settings in place to generate test output even if
+   # the README doesn't ask for it.
+   export CTEST_OUTPUT_ON_FAILURE=1
+   CACHE_OPTIONS="-D ENABLE_JENKINS_OUTPUT=True"
+   sed "s/^ *cmake/& $CACHE_OPTIONS/g" $WORKSPACE/README.md >$WORKSPACE/README.md.1
+   python2 $WORKSPACE/jenkins/parseREADME.py \
+	   $WORKSPACE/README.md.1 \
+	   $WORKSPACE \
+	   sn-fey
+   exit
+   
 fi
 
 # set modules and install paths
 
 xmof2d_version=0.9.5
-wonton_version=1.1.5
+wonton_version=1.2.2
 
 export NGC=/usr/local/codes/ngc
 ngc_include_dir=$NGC/private/include
@@ -32,9 +42,9 @@ ngc_include_dir=$NGC/private/include
 # compiler-specific settings
 if [[ $compiler == "intel18" ]]; then
 
-    intel_version=18.0.1
-    cxxmodule=intel/${intel_version}
-    compiler_suffix="-intel-${intel_version}"
+    compiler_version=18.0.1
+    cxxmodule=intel/${compiler_version}
+    compiler_suffix="-intel-${compiler_version}"
     
     openmpi_version=2.1.2
     mpi_module=openmpi/${openmpi_version}
@@ -44,16 +54,16 @@ elif [[ $compiler =~ "gcc" ]]; then
 
     openmpi_version=2.1.2
     if [[ $compiler == "gcc6" ]]; then
-	gcc_version=6.4.0
+	compiler_version=6.4.0
     elif [[ $compiler == "gcc7" ]]; then
-	gcc_version=7.3.0
+	compiler_version=7.3.0
     elif [[ $compiler == "gcc8" ]]; then
-	gcc_version=8.2.0
+	compiler_version=8.2.0
 	openmpi_version=3.1.3
     fi
     
-    cxxmodule=gcc/${gcc_version}
-    compiler_suffix="-gcc-${gcc_version}"
+    cxxmodule=gcc/${compiler_version}
+    compiler_suffix="-gcc-${compiler_version}"
     
     mpi_module=openmpi/${openmpi_version}
     mpi_suffix="-openmpi-${openmpi_version}"
@@ -110,6 +120,7 @@ cd build
 
 cmake \
   -D CMAKE_BUILD_TYPE=$cmake_build_type \
+  -D CMAKE_CXX_FLAGS="-Wall -Werror" \
   -D ENABLE_UNIT_TESTS=True \
   -D ENABLE_APP_TESTS=True \
   -D ENABLE_JENKINS_OUTPUT=True \

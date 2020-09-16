@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
   }
 #endif
 
-#ifdef DEBUG
+#ifndef NDEBUG
   std::string ref_gmv_fname = mesh_name + "_ref_matpolys.gmv";
   std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
 #endif
@@ -138,10 +138,11 @@ int main(int argc, char** argv) {
 
   // Volume and angle tolerances
   double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
-  double vol_tol = std::numeric_limits<double>::epsilon();
+  //double vol_tol = std::numeric_limits<double>::epsilon();
+  double vol_tol = 1.0e-16;
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
   ims_tols[0] = {1000, dst_tol, vol_tol};
-  ims_tols[1] = {100, 1.0e-15, 1.0e-15};  
+  ims_tols[1] = {100, 1.0e-18, dst_tol};  
 
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
@@ -179,7 +180,7 @@ int main(int argc, char** argv) {
       nmmcells++;
     }
 
-#ifdef DEBUG
+#ifndef NDEBUG
   std::vector< std::shared_ptr< Tangram::CellMatPoly<2> > > ref_matpoly_list(ncells);
   for (int icell = 0; icell < ncells; icell++) {
     ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<2> >(icell);
@@ -326,7 +327,7 @@ std::cout << std::endl << "Stats for ";
         max_mat_sym_diff_vol[imat]/max_sym_diff_mat_vol << std::endl;
   }
 
-#ifdef DEBUG
+#ifndef NDEBUG
   //Create MatPoly's for single-material cells
   for (int icell = 0; icell < ncells; icell++) {
     if (cell_num_mats[icell] == 1) {

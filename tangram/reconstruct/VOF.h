@@ -12,7 +12,6 @@
 // tangram includes
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
-#include "tangram/driver/CellMatPoly.h"
 #include "tangram/reconstruct/nested_dissections.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
 
@@ -46,10 +45,10 @@ public:
     @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
-  explicit VOF(const Mesh_Wrapper& Mesh,
-               const std::vector<IterativeMethodTolerances_t>& ims_tols,
-               const bool all_convex) :
-               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+  VOF(const Mesh_Wrapper& Mesh,
+      const std::vector<IterativeMethodTolerances_t>& ims_tols,
+      const bool all_convex) :
+    mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.empty())
       throw std::runtime_error(
         "VOF uses 0-order moments and needs tolerances for the related iterative method!");
@@ -102,8 +101,8 @@ public:
   }
 
   /*!
-    @brief Pass in indices of cells for which CellMatPoly objects
-    are to be constructed. If the index is in the list, a CellMatPoly object will be
+    @brief Pass in list of cells to decompose into material polygons using nested
+    dissections. If the index is in the list, a CellMatPoly object will be
     created even for a single-material cell.
     @param[in] cellIDs_to_op_on A vector of length up to (num_cells)
     specifying the indices of cells for which CellMatPoly objects are requested.
@@ -119,17 +118,21 @@ public:
     does not require decomposion into tetrahedrons.
     @param[in] cellID Index of the multi-material cell to operate on
     @param[in] matID Index of the material to clip
-    @param[in] mixed_polys Vector of material poly's that contain the material
-    to clip and (possibly) other materials
+    @param[in] mixed_polys Vector of pointers to vectors of material poly's 
+    that contain the material to clip and (possibly) other materials;
+    for VOF this vector is of length one, with the only pointer corresponding
+    to MatPoly's representing the remaining part of the cell on the current step
+    of the nested dissections algorithm    
     @param[out] cutting_plane The resulting cutting plane position
     @param[in] planar_faces Flag indicating whether the faces of all mixed_polys
     are planar
   */
   void get_plane_position(const int cellID,
                           const int matID,
-                          const std::vector< MatPoly<Dim> >& mixed_polys,
+                          const std::vector< std::vector< MatPoly<Dim> >* >& mixed_polys_ptrs,
                           Plane_t<Dim>& cutting_plane,
                           const bool planar_faces) const {
+    const std::vector< MatPoly<Dim> >& mixed_polys = *(mixed_polys_ptrs[0]);
     double vol_tol = ims_tols_[0].fun_eps;
 
     std::vector<int> istencil_cells;
@@ -225,7 +228,7 @@ public:
     // actual material indices.
     nested_dissections.set_cell_materials_order(false);
 
-    return nested_dissections();
+    return nested_dissections()[0];
   }
 
   /*!
@@ -247,6 +250,14 @@ public:
 
     return mat_poly;
   }
+
+  /*!
+    @brief Indices of neigboring cell that are split when errors are computed:
+    for VOF the vector is empty
+    @param[in] cellID Cell index
+    @return  Empty vector
+  */
+  std::vector<int> neighbor_cells_to_split(const int cellID) const { return {}; }
 
   /*!
     @brief IDs of the cell's faces to be associated with MatPoly's
