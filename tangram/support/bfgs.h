@@ -323,14 +323,26 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
     if (cur_grad.max_norm() == 0.0)
       return cur_arg;
 
-    Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+    if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+      // The system could not be solved (likely B matrix is singular), 
+      // revert to the one from the previous step
+      B = B_old;
+      if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+        // Normally should not be here
+        return cur_arg;
+      }
+    }
+
     double df0 = dot(cur_grad, cur_dir);
 
     // Function should be decreasing in the linesearch direction
     if (!std::isnormal(df0) || (df0 > 0.0)) {
       if (i > 0) {
         B = B_old;
-        Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+        if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+          // Normally should not be here
+          return cur_arg;
+        }        
         df0 = dot(cur_grad, cur_dir);
       }
       // Can't decrease the function value any further, finishing
@@ -443,14 +455,26 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
     if (cur_grad.max_norm() == 0.0)
       return cur_arg;
 
-    Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+    if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+      // The system could not be solved (likely B matrix is singular), 
+      // revert to the one from the previous step
+      B = B_old;
+      if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+        // Normally should not be here
+        return cur_arg;
+      }
+    }
+
     double df0 = dot(cur_grad, cur_dir);
 
     // Function should be decreasing in the linesearch direction
     if (!std::isnormal(df0) || (df0 > 0.0)) {
       if (i > 0) {
         B = B_old;
-        Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+        if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+          // Normally should not be here
+          return cur_arg;
+        }        
         df0 = dot(cur_grad, cur_dir);
       }
       // Can't decrease the function value any further, finishing

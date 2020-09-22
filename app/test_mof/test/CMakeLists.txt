@@ -40,6 +40,18 @@ else(WONTON_ENABLE_Jali)
   ADD_MOF_3D_TEST(1)
 endif(WONTON_ENABLE_Jali)
 
+# SINGLE-CELL 3D SINGULAR MATRIX TEST
+file(COPY test_single_cell_3d.sh
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+add_test(NAME test_single_cell_3d
+         COMMAND ./test_single_cell_3d.sh)
+set_property(TEST test_single_cell_3d
+             PROPERTY ENVIRONMENT 
+             TESTAPPDIR=${CMAKE_CURRENT_BINARY_DIR}/..
+             RUN_COMMAND=${RUN_COMMAND})
+set_property(TEST test_single_cell_3d
+             PROPERTY PROCESSORS 1) 
+
 # 2D TEST
 macro(ADD_MOF_2D_TEST TEST_NUM)
   file(COPY mof_2d_test${TEST_NUM}.sh
