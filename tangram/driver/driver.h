@@ -182,7 +182,9 @@ class Driver {
     assert(!cell_num_mats_.empty());
     int ncells = mesh_.num_entities(Tangram::Entity_kind::CELL);
     
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
     if (comm_rank == 0) std::printf("in Driver::run()...\n");
+#endif
     {
       // Instantiate the interface reconstructor class that will
       // compute the interfaces and compute the pure material submesh
@@ -255,10 +257,12 @@ class Driver {
           timersub(&xmat_end_timeval, &xmat_begin_timeval, &xmat_diff_timeval);
           xmat_cells_seconds = xmat_diff_timeval.tv_sec + 1.0E-6*xmat_diff_timeval.tv_usec;
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
           std::cout << "Transform Time for " << nMMCs << " "
                     << count++ << "-material cells (s): "
                     << xmat_cells_seconds << ", mean time per cell (s): "
                     << xmat_cells_seconds/nMMCs << std::endl;
+#endif
         }
       }
 
@@ -273,9 +277,11 @@ class Driver {
           mycomm);
       }
 #endif
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       if (comm_rank == 0)
         std::cout << "Max Transform Time over " << world_size << " Ranks (s): " <<
           max_transform_time << std::endl;
+#endif
     }
     
     reconstruction_done_ = true;
