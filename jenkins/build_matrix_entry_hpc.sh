@@ -38,7 +38,7 @@ fi
 # set modules and install paths
 
 xmof2d_version=0.9.5
-wonton_version=1.2.2
+wonton_version=1.2.6
 
 export NGC=/usr/projects/ngc
 ngc_include_dir=$NGC/private/include
