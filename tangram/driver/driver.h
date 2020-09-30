@@ -196,8 +196,13 @@ class Driver {
       // what their volume fractions are
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
                                          cell_mat_volfracs_, cell_mat_centroids_);
-      
-      float tot_seconds = 0.0, xmat_cells_seconds = 0.0;
+
+
+      float tot_seconds = 0.0;
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+      float xmat_cells_seconds = 0.0;
+      int count = 2;
+#endif
       struct timeval begin_timeval, end_timeval, diff_timeval,
                      xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
 
@@ -226,7 +231,6 @@ class Driver {
       //Reconstructor is set to operate on multi-material cells only.
       //To improve load balancing, we operate on the cells with the same
       //number of materials at a time
-      int count = 2;
       for (auto&& mm_cells : iMMCs) {
         int const nMMCs = mm_cells.size();
         if (nMMCs == 0)
@@ -252,18 +256,18 @@ class Driver {
             cellmatpolys_[mm_cells[immc]] = MMCs_cellmatpolys[immc];
         }
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
         if (world_size == 1) {
           gettimeofday(&xmat_end_timeval, 0);
           timersub(&xmat_end_timeval, &xmat_begin_timeval, &xmat_diff_timeval);
           xmat_cells_seconds = xmat_diff_timeval.tv_sec + 1.0E-6*xmat_diff_timeval.tv_usec;
 
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
           std::cout << "Transform Time for " << nMMCs << " "
                     << count++ << "-material cells (s): "
                     << xmat_cells_seconds << ", mean time per cell (s): "
                     << xmat_cells_seconds/nMMCs << std::endl;
-#endif
         }
+#endif
       }
 
       gettimeofday(&end_timeval, 0);
