@@ -165,6 +165,7 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct(Wonton::Executor_type const *executor = nullptr) {
+#if !(defined(NDEBUG) && defined(VERBOSE_OUTPUT)    
     int comm_rank = 0;
     int world_size = 1;
 
@@ -177,6 +178,7 @@ class Driver {
       MPI_Comm_rank(mycomm, &comm_rank);
       MPI_Comm_size(mycomm, &world_size);
     }
+#endif
 #endif
 
     assert(!cell_num_mats_.empty());
@@ -276,7 +278,8 @@ class Driver {
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
-      
+
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       float max_transform_time = tot_seconds;
 #ifdef WONTON_ENABLE_MPI
       if (world_size > 1) {
@@ -284,7 +287,7 @@ class Driver {
           mycomm);
       }
 #endif
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+
       if (comm_rank == 0)
         std::cout << "Max Transform Time over " << world_size << " Ranks (s): " <<
           max_transform_time << std::endl;
