@@ -197,14 +197,15 @@ class Driver {
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
                                          cell_mat_volfracs_, cell_mat_centroids_);
 
-
+      struct timeval begin_timeval, end_timeval, diff_timeval;
       float tot_seconds = 0.0;
+
 #if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       float xmat_cells_seconds = 0.0;
       int count = 2;
+
+      struct timeval xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
 #endif
-      struct timeval begin_timeval, end_timeval, diff_timeval,
-                     xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
 
       gettimeofday(&begin_timeval, 0);
 
@@ -236,8 +237,10 @@ class Driver {
         if (nMMCs == 0)
           continue;
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)        
         if (world_size == 1)
           gettimeofday(&xmat_begin_timeval, 0);
+#endif
 
         reconstructor.set_cell_indices_to_operate_on(mm_cells);
 
