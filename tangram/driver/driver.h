@@ -165,6 +165,7 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct(Wonton::Executor_type const *executor = nullptr) {
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)    
     int comm_rank = 0;
     int world_size = 1;
 
@@ -178,11 +179,14 @@ class Driver {
       MPI_Comm_size(mycomm, &world_size);
     }
 #endif
+#endif
 
     assert(!cell_num_mats_.empty());
     int ncells = mesh_.num_entities(Tangram::Entity_kind::CELL);
     
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
     if (comm_rank == 0) std::printf("in Driver::run()...\n");
+#endif
     {
       // Instantiate the interface reconstructor class that will
       // compute the interfaces and compute the pure material submesh
@@ -194,12 +198,18 @@ class Driver {
       // what their volume fractions are
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
                                          cell_mat_volfracs_, cell_mat_centroids_);
-      
-      float tot_seconds = 0.0, xmat_cells_seconds = 0.0;
-      struct timeval begin_timeval, end_timeval, diff_timeval,
-                     xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
+
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+      struct timeval begin_timeval, end_timeval, diff_timeval;
+      float tot_seconds = 0.0;
+
+      float xmat_cells_seconds = 0.0;
+      int count = 2;
+
+      struct timeval xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
 
       gettimeofday(&begin_timeval, 0);
+#endif
 
       //Normally, we only need CellMatPoly's for multi-material cells,
       //so we first find their indices and group MMC's based on the number
@@ -224,14 +234,15 @@ class Driver {
       //Reconstructor is set to operate on multi-material cells only.
       //To improve load balancing, we operate on the cells with the same
       //number of materials at a time
-      int count = 2;
       for (auto&& mm_cells : iMMCs) {
         int const nMMCs = mm_cells.size();
         if (nMMCs == 0)
           continue;
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)        
         if (world_size == 1)
           gettimeofday(&xmat_begin_timeval, 0);
+#endif
 
         reconstructor.set_cell_indices_to_operate_on(mm_cells);
 
@@ -250,6 +261,7 @@ class Driver {
             cellmatpolys_[mm_cells[immc]] = MMCs_cellmatpolys[immc];
         }
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
         if (world_size == 1) {
           gettimeofday(&xmat_end_timeval, 0);
           timersub(&xmat_end_timeval, &xmat_begin_timeval, &xmat_diff_timeval);
@@ -260,12 +272,14 @@ class Driver {
                     << xmat_cells_seconds << ", mean time per cell (s): "
                     << xmat_cells_seconds/nMMCs << std::endl;
         }
+#endif
       }
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
-      
+
       float max_transform_time = tot_seconds;
 #ifdef WONTON_ENABLE_MPI
       if (world_size > 1) {
@@ -273,9 +287,11 @@ class Driver {
           mycomm);
       }
 #endif
+
       if (comm_rank == 0)
         std::cout << "Max Transform Time over " << world_size << " Ranks (s): " <<
           max_transform_time << std::endl;
+#endif
     }
     
     reconstruction_done_ = true;

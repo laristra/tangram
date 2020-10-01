@@ -12,6 +12,9 @@ set -e
 # Echo each command
 set -x
 
+# Set umask so installation directories will have rwx permissions for group
+umask 007
+
 echo "--------------------------------------------------------------"
 echo "Running configuration $COMPILER $BUILD_TYPE on `hostname`"
 echo "--------------------------------------------------------------"
