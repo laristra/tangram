@@ -165,7 +165,7 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct(Wonton::Executor_type const *executor = nullptr) {
-#if !(defined(NDEBUG) && defined(VERBOSE_OUTPUT)    
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)    
     int comm_rank = 0;
     int world_size = 1;
 
