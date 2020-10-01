@@ -199,17 +199,17 @@ class Driver {
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
                                          cell_mat_volfracs_, cell_mat_centroids_);
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       struct timeval begin_timeval, end_timeval, diff_timeval;
       float tot_seconds = 0.0;
 
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       float xmat_cells_seconds = 0.0;
       int count = 2;
 
       struct timeval xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
-#endif
 
       gettimeofday(&begin_timeval, 0);
+#endif
 
       //Normally, we only need CellMatPoly's for multi-material cells,
       //so we first find their indices and group MMC's based on the number
@@ -275,11 +275,11 @@ class Driver {
 #endif
       }
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
 
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       float max_transform_time = tot_seconds;
 #ifdef WONTON_ENABLE_MPI
       if (world_size > 1) {
