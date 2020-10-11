@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
     std::cout << "Material " << mesh_materials[imat] << " has volume of " << mmcells_material_volumes[imat] << std::endl;
 
   Tangram::Driver<Tangram::MOF, 3, Wonton::Simple_Mesh_Wrapper,
-                  Tangram::SplitR3D, Tangram::ClipR3D>
+                  Tangram::SplitRnD<3>, Tangram::ClipRnD<3>>
     mof_driver(mesh_wrapper, ims_tols, true);
 
   mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
