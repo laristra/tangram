@@ -7,6 +7,8 @@
 #ifndef INTERSECT_SPLIT_RnD_H
 #define INTERSECT_SPLIT_RnD_H
 
+#include <type_traits>
+
 #include "tangram/intersect/split_r2d.h"
 #include "tangram/intersect/split_r3d.h"
 
