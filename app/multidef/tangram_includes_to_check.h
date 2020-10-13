@@ -28,6 +28,7 @@ Please see the license file at the root of this repository, or at:
 
 #include "tangram/intersect/split_r2d.h"
 #include "tangram/intersect/split_r3d.h"
+#include "tangram/intersect/split_rnd.h"
 
 #include "tangram/reconstruct/cutting_distance_solver.h"
 #include "tangram/reconstruct/MOF.h"

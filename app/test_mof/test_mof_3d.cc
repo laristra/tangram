@@ -210,11 +210,11 @@ int main(int argc, char** argv) {
   // Build the driver
 #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   Tangram::Driver<Tangram::MOF, 3, Wonton::Jali_Mesh_Wrapper,
-                  Tangram::SplitR3D, Tangram::ClipR3D>
+                  Tangram::SplitRnD<3>, Tangram::ClipRnD<3>>
     mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #else
   Tangram::Driver<Tangram::MOF, 3, Wonton::Simple_Mesh_Wrapper,
-                  Tangram::SplitR3D, Tangram::ClipR3D>
+                  Tangram::SplitRnD<3>, Tangram::ClipRnD<3>>
     mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #endif
 

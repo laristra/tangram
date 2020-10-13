@@ -10,8 +10,7 @@
 #include <stdlib.h>
 #include "tangram/support/tangram.h"
 #include "tangram/driver/CellMatPoly.h"
-#include "tangram/intersect/split_r2d.h"
-#include "tangram/intersect/split_r3d.h"
+#include "tangram/intersect/split_rnd.h"
 
 /*!
  @brief For a given cell, computes per-material volume of symmetric difference
