@@ -6,5 +6,6 @@ COMPILER:
 
 CONFIG_TYPE:
   - base
+  - debug
   - serial
   - thrust
