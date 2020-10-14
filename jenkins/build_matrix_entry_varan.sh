@@ -102,10 +102,6 @@ fi
 xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}${compiler_suffix}
 xmof2d_flags="-D TANGRAM_ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
 
-# WONTON
-wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
-wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
-
 # Jali
 jali_flags="-D TANGRAM_ENABLE_Jali::BOOL=True"
 
@@ -141,6 +137,10 @@ if [[ $CONFIG_TYPE == "debug" ]]; then
     cmake_build_type=Debug
     debug_suffix="-debug"
 fi
+
+# WONTON
+wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
+wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
 # Build up an install dir name
 tangram_install_dir=$NGC/private/tangram/${version}${compiler_suffix}${mpi_suffix}${thrust_suffix}${kokkos_suffix}${debug_suffix}
