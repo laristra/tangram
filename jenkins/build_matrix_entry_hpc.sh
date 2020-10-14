@@ -34,7 +34,7 @@ if [[ $version == "" ]]; then
     version=dev
 fi
 wonton_version=$3
-if [[ $version == "" ]]; then
+if [[ $wonton_version == "" ]]; then
     wonton_version=dev
 fi
 
@@ -65,7 +65,7 @@ export NGC=/usr/projects/ngc
 ngc_include_dir=$NGC/private/include
 
 # compiler-specific settings
-if [[ $compiler =~ "intel" ]]; then
+if [[ $COMPILER =~ "intel" ]]; then
 
     compiler_version=18.0.5
     cxxmodule=intel/${compiler_version}
@@ -75,7 +75,7 @@ if [[ $compiler =~ "intel" ]]; then
     mpi_module=openmpi/${openmpi_version}
     mpi_suffix="-openmpi-${openmpi_version}"
 
-elif [[ $compiler =~ "gcc" ]]; then
+elif [[ $COMPILER =~ "gcc" ]]; then
 
     openmpi_version=2.1.2
     if [[ $compiler == "gcc6" ]]; then
