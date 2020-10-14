@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 #include "tangram/support/tangram.h"
-#include "tangram/intersect/split_rnd.h"
+#include "tangram/intersect/split_rNd.h"
 #include "tangram/utility/rpgtools/primitives.h"
 #include "tangram/utility/rpgtools/cuts.h"
 

@@ -23,7 +23,7 @@
 
 // tangram includes
 #include "tangram/support/tangram.h"
-#include "tangram/intersect/split_rnd.h"
+#include "tangram/intersect/split_rNd.h"
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/VOF.h"
 #include "tangram/driver/write_to_gmv.h"
