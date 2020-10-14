@@ -4,7 +4,7 @@ COMPILER:
   - gcc6
   - gcc7
 
-BUILD_TYPE:
+CONFIG_TYPE:
   - base
   - serial
   - thrust
