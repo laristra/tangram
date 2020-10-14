@@ -81,11 +81,11 @@ if [[ $COMPILER =~ "intel" ]]; then
 elif [[ $COMPILER =~ "gcc" ]]; then
 
     openmpi_version=2.1.2
-    if [[ $compiler == "gcc6" ]]; then
+    if [[ $COMPILER == "gcc6" ]]; then
 	compiler_version=6.4.0
-    elif [[ $compiler == "gcc7" ]]; then
+    elif [[ $COMPILER == "gcc7" ]]; then
 	compiler_version=7.3.0
-    elif [[ $compiler == "gcc8" ]]; then
+    elif [[ $COMPILER == "gcc8" ]]; then
 	compiler_version=8.2.0
 	openmpi_version=3.1.3
     fi
