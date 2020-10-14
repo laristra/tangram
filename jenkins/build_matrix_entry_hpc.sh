@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
 # This script is executed on Jenkins using
 #
-#     $WORKSPACE/jenkins/build_matrix_entry_hpc.sh <compiler> <build_type>
+#     $WORKSPACE/jenkins/build_matrix_entry_hpc.sh BUILD_TYPE <VER> <WONTON_VER>
+#
+# BUILD_TYPE - pr, nightly, install
+#
+# if VER is abset, the HEAD of the master branch will be taken. If
+# WONTON_VER is absent, the HEAD of the master branch of wonton will
+# be taken. If BUILD_TYPE is 'install' and VER is specified, it will
+# install it to /install_prefix/tangram/$VER-blah-blah; if VER is not
+# specified, it will install to /install_prefix/wonton/dev-blah-blah
+#
+# WORKSPACE   -  where the code is checked out
+# CONFIG_TYPE -  base, debug, serial, readme, thrust, kokkos
+# COMPILER    -  intel, gcc6, gcc7
+# BRANCH_NAME -  master
 #
 # The exit code determines if the test succeeded or failed.
-# Note that the environment variable WORKSPACE must be set (Jenkins
-# will do this automatically).
+
+
 
 # Exit on error
 set -e
@@ -15,15 +28,21 @@ set -x
 # Set umask so installation directories will have rwx permissions for group
 umask 007
 
-echo "--------------------------------------------------------------"
-echo "Running configuration $COMPILER $BUILD_TYPE on `hostname`"
-echo "--------------------------------------------------------------"
+BUILD_TYPE=$1
+version=$2
+if [[ $version == "" ]]; then
+    version=dev
+fi
+wonton_version=$3
+if [[ $version == "" ]]; then
+    wonton_version=dev
+fi
 
-compiler=$1
-build_type=$2
+echo "inside build_matrix on PLATFORM=$PLATFORM with BUILD_TYPE=$BUILD_TYPE $CONFIG_TYPE=$CONFIG_TYPE COMPILER=$COMPILER"
+
 
 # special case for README builds
-if [[ $build_type == "readme" ]]; then
+if [[ $BUILD_TYPE != "install" && $CONFIG_TYPE == "readme" ]]; then
 
    # Put a couple of settings in place to generate test output even if
    # the README doesn't ask for it.
@@ -41,14 +60,12 @@ fi
 # set modules and install paths
 
 xmof2d_version=0.9.5
-wonton_version=1.2.6
 
 export NGC=/usr/projects/ngc
 ngc_include_dir=$NGC/private/include
-ngc_tpl_dir=$NGC/private
 
 # compiler-specific settings
-if [[ $compiler == "intel18" ]]; then
+if [[ $compiler =~ "intel" ]]; then
 
     compiler_version=18.0.5
     cxxmodule=intel/${compiler_version}
@@ -75,67 +92,82 @@ elif [[ $compiler =~ "gcc" ]]; then
 
 fi
 
-mpi_flags="-D TANGRAM_ENABLE_MPI=True"
-if [[ $build_type == "serial" ]]; then
-    mpi_flags=
-    mpi_suffix=
-fi
+# XMOF2D
+xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}${compiler_suffix}
+xmof2d_flags="-D TANGRAM_ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
 
-cmake_build_type=Release
-if [[ $build_type == "debug" ]]; then
-    cmake_build_type=Debug
-fi
+# WONTON
+wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
+wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
+# Jali
+jali_flags="-D TANGRAM_ENABLE_Jali::BOOL=True"
+
+# FleCSI
+flecsi_flags="-D TANGRAM_ENABLE_FleCSI:BOOL=False"  # Not building with FleCSI for HPC builds
+
+# THRUST
 thrust_flags=
 thrust_suffix=
-if [[ $build_type == "thrust" ]]; then
+if [[ $CONFIG_TYPE == "thrust" ]]; then
     thrust_flags="-D TANGRAM_ENABLE_THRUST=True"
     thrust_suffix="-thrust"
 fi
 
-
-
-xmof2d_install_dir=$NGC/private/xmof2d/${xmof2d_version}${compiler_suffix}
-xmof2d_flags="-D TANGRAM_ENABLE_XMOF2D=True -D XMOF2D_ROOT:FILEPATH=$xmof2d_install_dir/share/cmake"
-
-wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
-wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
-
-flecsi_flags="-D TANGRAM_ENABLE_FleCSI:BOOL=False"  # Not building with FleCSI for HPC builds
-
-if [[ $build_type != "serial" ]]; then
-    jali_flags="-D TANGRAM_ENABLE_Jali:BOOL=True"  # Jali found through Wonton
+# MPI or not
+mpi_flags="-D TANGRAM_ENABLE_MPI=True"
+if [[ $CONFIG_TYPE == "serial" ]]; then
+    mpi_flags="-D TANGRAM_ENABLE_MPI=False"
+    mpi_suffix=
+    jali_flags=
+    flecsi_flags=
 fi
+
+# Debug or Optimized build
+cmake_build_type=Release
+debug_suffix=
+if [[ $CONFIG_TYPE == "debug" ]]; then
+    cmake_build_type=Debug
+    debug_suffix="-debug"
+fi
+
+# Build up an install dir name
+tangram_install_dir=$NGC/private/tangram/${version}${compiler_suffix}${mpi_suffix}${thrust_suffix}${kokkos_suffix}${debug_suffix}
 
 
 export SHELL=/bin/sh
 
-. /usr/share/lmod/lmod/init/sh
-module load ${cxxmodule}
-module load cmake/3.14.6 # 3.13 or higher is required
-
+#Rely on default user environment to load modules; these scripts can be found in /etc/profile.d/ as of 8/25/20 the scripts that set up modules on snow are  /etc/profile.d/z00_lmod.sh; /etc/profile.d/00-modulepath.sh; /etc/profile.d/z01-modules.lanl.sh;
+module load $cxxmodule
 if [[ -n "$mpi_flags" ]]; then
-    module load openmpi/${openmpi_version}
+    module load ${mpi_module}
 fi
+module load cmake/3.14.0 # 3.13 or higher is required
 
-echo $WORKSPACE
+echo "JENKINS WORKSPACE = $WORKSPACE"
 cd $WORKSPACE
 
+rm -fr build
 mkdir build
 cd build
 
 cmake \
   -D CMAKE_BUILD_TYPE=$cmake_build_type \
   -D CMAKE_CXX_FLAGS="-Wall -Werror" \
+  -D CMAKE_INSTALL_PREFIX=$tangram_install_dir \
   -D ENABLE_UNIT_TESTS=True \
   -D ENABLE_APP_TESTS=True \
   -D ENABLE_JENKINS_OUTPUT=True \
   $mpi_flags \
+  $jali_flags \
+  $flecsi_flags \
   $wonton_flags \
   $xmof2d_flags \
   $thrust_flags \
-  $jali_flags \
-  $flecsi_flags \
   ..
-make -j8
+make -j36
 ctest -j36 --output-on-failure
+
+if [[ $BUILD_TYPE == "install" ]]; then
+    make install
+fi
