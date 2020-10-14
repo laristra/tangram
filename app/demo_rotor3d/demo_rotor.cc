@@ -30,7 +30,7 @@
 #include "tangram/reconstruct/VOF.h"
 #include "tangram/reconstruct/MOF.h"
 #include "tangram/driver/write_to_gmv.h"
-#include "tangram/intersect/split_rnd.h"
+#include "tangram/intersect/split_rNd.h"
 
 #include "tangram/utility/rpgtools/cuts.h"
 #include "tangram/utility/rpgtools/primitives.h"

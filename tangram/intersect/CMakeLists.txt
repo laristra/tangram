@@ -18,7 +18,7 @@ target_include_directories(tangram_intersect INTERFACE
 set(tangram_intersect_HEADERS
   split_r2d.h
   split_r3d.h
-  split_rnd.h)
+  split_rNd.h)
 
 # Not yet allowed for INTERFACE libraries
 #

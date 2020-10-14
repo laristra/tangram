@@ -5,7 +5,7 @@
 */
 
 #include "tangram/reconstruct/cutting_distance_solver.h"
-#include "tangram/intersect/split_rnd.h"
+#include "tangram/intersect/split_rNd.h"
 
 #include "gtest/gtest.h"
 #include "tangram/support/tangram.h"
