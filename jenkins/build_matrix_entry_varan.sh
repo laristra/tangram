@@ -139,7 +139,7 @@ if [[ $CONFIG_TYPE == "debug" ]]; then
 fi
 
 # WONTON
-wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
+wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${kokkos_suffix}${thrust_suffix}${debug_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
 # Build up an install dir name
