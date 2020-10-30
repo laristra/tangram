@@ -128,11 +128,11 @@ if [[ $CONFIG_TYPE == "debug" ]]; then
 fi
 
 # WONTON
-wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}
+wonton_install_dir=$NGC/private/wonton/${wonton_version}${compiler_suffix}${mpi_suffix}${thrust_suffix}${kokkos_suffix}${debug_suffix}
 wonton_flags="-D WONTON_ROOT:FILEPATH=$wonton_install_dir"
 
 # Build up an install dir name
-tangram_install_dir=$NGC/private/tangram/${version}${compiler_suffix}${mpi_suffix}${thrust_suffix}${kokkos_suffix}${debug_suffix}
+tangram_install_dir=$NGC/private/tangram/${version}${compiler_suffix}${mpi_suffix}${thrust_suffix}${debug_suffix}
 
 
 export SHELL=/bin/sh
