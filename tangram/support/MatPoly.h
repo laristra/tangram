@@ -602,6 +602,16 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
 
 /*!
   @brief Computes moments of this material polygon,
+  Not implemented
+*/ 
+template<>
+inline
+void MatPoly<1>::compute_moments(std::vector<double>& moments) const {
+  assert(false);
+}
+
+/*!
+  @brief Computes moments of this material polygon,
   @param moments Computed moments: moments[0] is area, 
   moments[i+1]/moments[0] is i-th coordinate of the centroid, i=1,2
 */ 

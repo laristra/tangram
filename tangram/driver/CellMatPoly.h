@@ -1076,6 +1076,17 @@ void CellMatPoly<3>::add_matpoly(const MatPoly<3>& mat_poly) {
 }
 
 /*!
+  @brief Extracts 1D material polygon as a MatPoly object
+  Not implemented
+*/
+template<>
+inline
+MatPoly<1> CellMatPoly<1>::get_ith_matpoly(int matpoly_id) const {
+  assert(false);
+  return MatPoly<1>(); 
+}
+
+/*!
   @brief Extracts 2D material polygon as a MatPoly object
   @param matpoly_id  ID of the material poly
   @return  Corresponding MatPoly object
