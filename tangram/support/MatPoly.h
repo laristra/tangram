@@ -607,7 +607,7 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
 template<>
 inline
 void MatPoly<1>::compute_moments(std::vector<double>& moments) const {
-  assert(false);
+  throw std::runtime_error("Moments are not yet computed for 1D meshes.");
 }
 
 /*!

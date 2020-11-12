@@ -1082,7 +1082,7 @@ void CellMatPoly<3>::add_matpoly(const MatPoly<3>& mat_poly) {
 template<>
 inline
 MatPoly<1> CellMatPoly<1>::get_ith_matpoly(int matpoly_id) const {
-  assert(false);
+  throw std::runtime_error("Materials are not yet supported for 1D meshes.");
   return MatPoly<1>(); 
 }
 
