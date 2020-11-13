@@ -455,7 +455,7 @@ class MatPoly {
   */  
   void compute_moments(std::vector<double>& moments) const {
     std::stringstream ss;
-    ss << "\nTangram NOT yet support interface reconstruction for dimension " << D << std::endl;
+    ss << "\nTangram does NOT support interface reconstruction for dimension " << D << std::endl;
     throw std::runtime_error(ss.str());
   }
 
