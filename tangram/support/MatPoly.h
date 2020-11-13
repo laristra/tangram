@@ -11,6 +11,7 @@
 #include <array>
 #include <algorithm>
 #include <numeric>
+#include <sstream>
 
 #include "tangram/support/tangram.h"
 
@@ -452,7 +453,12 @@ class MatPoly {
    @param moments Computed moments, moments[0] is the size, 
    moments[i+1]/moments[0] is i-th coordinate of the centroid
   */  
-  void compute_moments(std::vector<double>& moments) const;
+  void compute_moments(std::vector<double>& moments) const {
+    std::stringstream ss;
+    ss << "\nTangram NOT yet support interface reconstruction for dimension " << D << std::endl;
+    throw std::runtime_error(ss.str());
+  }
+
  private:
 
   int material_id_;  // material ID of this matpoly
@@ -598,16 +604,6 @@ void MatPoly<3>::faceted_matpoly(MatPoly<3>* faceted_poly) const {
   faceted_poly->initialize(facetedpoly_vertices, facetedpoly_faces_, dst_tol_);
   if (!moments_.empty())
     faceted_poly->assign_moments(moments_);
-}
-
-/*!
-  @brief Computes moments of this material polygon,
-  Not implemented
-*/ 
-template<>
-inline
-void MatPoly<1>::compute_moments(std::vector<double>& moments) const {
-  throw std::runtime_error("Moments are not yet computed for 1D meshes.");
 }
 
 /*!
