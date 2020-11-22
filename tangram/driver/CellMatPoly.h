@@ -397,6 +397,7 @@ class CellMatPoly {
     std::stringstream ss;
     ss << "\nTangram does NOT support interface reconstruction for dimension " << D << std::endl;
     throw std::runtime_error(ss.str());
+    return MatPoly<D>();
   }
   
   /*!
