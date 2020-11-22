@@ -394,9 +394,7 @@ class CellMatPoly {
    @return  Corresponding MatPoly object
   */
   MatPoly<D> get_ith_matpoly(int matpoly_id) const {
-    std::stringstream ss;
-    ss << "Tangram does NOT support interface reconstruction for dimension " << D << std::endl;
-    throw std::runtime_error(ss.str());
+    throw std::runtime_error("Tangram does NOT support interface reconstruction for dimension 1");
     return MatPoly<D>();
   }
   

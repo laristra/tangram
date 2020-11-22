@@ -454,9 +454,7 @@ class MatPoly {
    moments[i+1]/moments[0] is i-th coordinate of the centroid
   */  
   void compute_moments(std::vector<double>& moments) const {
-    std::stringstream ss;
-    ss << "Tangram does NOT support interface reconstruction for dimension " << D << std::endl;
-    throw std::runtime_error(ss.str());
+    throw std::runtime_error("Tangram does NOT support interface reconstruction for dimension 1");
   }
 
  private:
