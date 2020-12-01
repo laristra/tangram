@@ -11,6 +11,7 @@
 #include <array>
 #include <algorithm>
 #include <numeric>
+#include <sstream>
 
 #include "tangram/support/tangram.h"
 
@@ -452,7 +453,10 @@ class MatPoly {
    @param moments Computed moments, moments[0] is the size, 
    moments[i+1]/moments[0] is i-th coordinate of the centroid
   */  
-  void compute_moments(std::vector<double>& moments) const;
+  void compute_moments(std::vector<double>& moments) const {
+    throw std::runtime_error("Tangram does NOT support interface reconstruction for dimension 1");
+  }
+
  private:
 
   int material_id_;  // material ID of this matpoly

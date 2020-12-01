@@ -11,6 +11,7 @@
 #include <array>
 #include <algorithm>
 #include <climits>
+#include <sstream>
 
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
@@ -392,7 +393,10 @@ class CellMatPoly {
    @param matpoly_id  ID of the material poly
    @return  Corresponding MatPoly object
   */
-  MatPoly<D> get_ith_matpoly(int matpoly_id) const;
+  MatPoly<D> get_ith_matpoly(int matpoly_id) const {
+    throw std::runtime_error("Tangram does NOT support interface reconstruction for dimension 1");
+    return MatPoly<D>();
+  }
   
   /*!
    @brief Extracts all polys containing a particular material
