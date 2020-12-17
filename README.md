@@ -11,6 +11,8 @@ meshes with their materials data. Interface reconstruction algorithms
 can be customized (e.g. VOF, MOF) and, through the wrappers, take 
 advantage of hybrid parallelism (MPI+X).
 
+Release process followed in accordance to  memo number CCS-DO-344. 
+
 ## Getting Started
 
 To obtain a copy of Tangram and its submodules from GitHub, clone
@@ -157,7 +159,7 @@ make -j2
 ctest --output-on-failure
 ```
 
-## Varan
+## Snow
 
 Execute the following from the Tangram root directory:
 

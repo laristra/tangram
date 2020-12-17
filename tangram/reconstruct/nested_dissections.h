@@ -105,7 +105,7 @@ public:
 
     // See what cells does the reconstructor split: most reconstructors only split the
     // cell itself (its ID always being the first entry), but some, such as LVIRA, 
-    // extend the cutting plane to the neighbors, in which case ID's of the neihboring
+    // extend the cutting plane to the neighbors, in which case ID's of the neighboring
     // cells are appended
     std::vector<int> icells_to_split = reconstructor_.neighbor_cells_to_split(cell_id_);
     icells_to_split.insert(icells_to_split.begin(), cell_id_);

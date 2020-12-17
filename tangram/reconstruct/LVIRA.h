@@ -146,7 +146,7 @@ public:
     norm of discrepancies between the parts of the neighbors below the plane
     and reference volumes of the clipped material prescribed for those cells.
     Note that if MatPoly_Clipper can handle non-convex cells, this method
-    does not require decomposion into tetrahedrons.
+    does not require decomposition into tetrahedrons.
     @param[in] cellID Index of the multi-material cell to operate on
     @param[in] matID Index of the material to clip
     @param[in] mixed_polys Vector of pointers to vectors of material poly's 
@@ -206,7 +206,7 @@ public:
 
     Vector<Dim - 1> init_guess = cartesian_to_polar(cutting_plane.normal);
 
-    // Objective function for the minimization algorithm caclculated according
+    // Objective function for the minimization algorithm calculated according
     // to the LVIRA
     std::function<double(const Vector<Dim - 1>&)> bfgs_obj_fun = 
       [this, &cellID, &cellMatID, &mixed_polys_ptrs]

@@ -27,7 +27,7 @@ cmake_policy(SET CMP0074 NEW)  # Don't ignore Pkg_ROOT variables
 
 set(TANGRAM_VERSION_MAJOR 1)
 set(TANGRAM_VERSION_MINOR 0)
-set(TANGRAM_VERSION_PATCH 4)
+set(TANGRAM_VERSION_PATCH 5.pub)
 
 
 # Top level target

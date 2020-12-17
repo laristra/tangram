@@ -318,7 +318,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
  @param[in] material_IDs IDs of materials corresponding to the the interior of each
  sphere; the last ID is for the material outside of all the spheres
  @param[in] center Center of the spheres
- @param[in] radius Radius' of the spheres
+ @param[in] radius Radii of the spheres
  @param[in] nquadrant_samples Discrete representation of the spheres is used,
  this number determines how many points are sampled per a coordinate plane (xy, xz) 
  quadrant
