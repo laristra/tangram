@@ -165,6 +165,7 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct(Wonton::Executor_type const *executor = nullptr) {
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)    
     int comm_rank = 0;
     int world_size = 1;
 
@@ -178,11 +179,14 @@ class Driver {
       MPI_Comm_size(mycomm, &world_size);
     }
 #endif
+#endif
 
     assert(!cell_num_mats_.empty());
     int ncells = mesh_.num_entities(Tangram::Entity_kind::CELL);
     
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
     if (comm_rank == 0) std::printf("in Driver::run()...\n");
+#endif
     {
       // Instantiate the interface reconstructor class that will
       // compute the interfaces and compute the pure material submesh
@@ -194,12 +198,18 @@ class Driver {
       // what their volume fractions are
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
                                          cell_mat_volfracs_, cell_mat_centroids_);
-      
-      float tot_seconds = 0.0, xmat_cells_seconds = 0.0;
-      struct timeval begin_timeval, end_timeval, diff_timeval,
-                     xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
+
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+      struct timeval begin_timeval, end_timeval, diff_timeval;
+      float tot_seconds = 0.0;
+
+      float xmat_cells_seconds = 0.0;
+      int count = 2;
+
+      struct timeval xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
 
       gettimeofday(&begin_timeval, 0);
+#endif
 
       //Normally, we only need CellMatPoly's for multi-material cells,
       //so we first find their indices and group MMC's based on the number
@@ -224,14 +234,15 @@ class Driver {
       //Reconstructor is set to operate on multi-material cells only.
       //To improve load balancing, we operate on the cells with the same
       //number of materials at a time
-      int count = 2;
       for (auto&& mm_cells : iMMCs) {
         int const nMMCs = mm_cells.size();
         if (nMMCs == 0)
           continue;
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)        
         if (world_size == 1)
           gettimeofday(&xmat_begin_timeval, 0);
+#endif
 
         reconstructor.set_cell_indices_to_operate_on(mm_cells);
 
@@ -250,6 +261,7 @@ class Driver {
             cellmatpolys_[mm_cells[immc]] = MMCs_cellmatpolys[immc];
         }
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
         if (world_size == 1) {
           gettimeofday(&xmat_end_timeval, 0);
           timersub(&xmat_end_timeval, &xmat_begin_timeval, &xmat_diff_timeval);
@@ -260,12 +272,14 @@ class Driver {
                     << xmat_cells_seconds << ", mean time per cell (s): "
                     << xmat_cells_seconds/nMMCs << std::endl;
         }
+#endif
       }
 
+#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
-      
+
       float max_transform_time = tot_seconds;
 #ifdef WONTON_ENABLE_MPI
       if (world_size > 1) {
@@ -273,9 +287,11 @@ class Driver {
           mycomm);
       }
 #endif
+
       if (comm_rank == 0)
         std::cout << "Max Transform Time over " << world_size << " Ranks (s): " <<
           max_transform_time << std::endl;
+#endif
     }
     
     reconstruction_done_ = true;
@@ -297,140 +313,6 @@ class Driver {
   
   const std::vector<std::shared_ptr<CellMatPoly<Dim>>>
     cell_matpoly_ptrs() const { return cellmatpolys_; }
-
-  // /*!
-  //   @brief Number of material polygons in cell
-  //   @param cellid  ID of the cell we are querying
-  //   @return Number of material polygons in cell which IN PRINCIPLE could
-  //   be greater than the number of materials in the cell (for example,
-  //   a layered reconstruction with Mat 1, Mat 2 and Mat 1)
-  //  */
-
-  // int num_matpolys(int const cellid) {
-  // }
-
-  // /*!
-  //   @brief Which material does a material polygon in cell contain?
-  //   @param cellid             ID of the cell we are querying
-  //   @param matpoly_localid    Local polygon ID in the cell
-  //   @return ID of material in the polygon
-  // */
-
-  // int matpoly_matid(int const cellid, int const matpoly_localid) const;
-
-  // /*!
-  //   @brief Volume of material polygon in cell
-  //   @param cellid             ID of the cell we are querying
-  //   @param matpoly_localid    Local polygon ID in the cell
-  //   @return Volume of material polygon
-  // */
-  // double  matpoly_volume(int const cellid, int const matpoly_localid) const;
-
-  // /*!
-  //   @brief Centroid of material polygon in cell
-  //   @param cellid             ID of the cell we are querying
-  //   @param matpoly_localid    Local polygon ID in the cell
-  //   @return Centroid of material polygon
-  // */
-  // Point<Dim> matpoly_centroid(int const cellid, int const matpoly_localid) const;
-
-  // /*!
-  //   @brief Points of the material polygon in cell
-  //   @param cellid             ID of the cell we are querying
-  //   @param matpoly_localid    Local polygon ID in the cell
-  //   @param nv                 Number of points
-  //   @param mpoints            Vector of points
-  // */
-  // void matpoly_points(int const cellid, int const matpoly_localid, int *nv,
-  //                     std::vector<Point<Dim>> *mpoints) const;
-
-  // /*!
-  //   @brief Faces of the material polygon in cell
-  //   @param cellid             ID of the cell we are querying
-  //   @param matpoly_localid    Local polygon ID in the cell
-  //   @param nf                 Number of faces
-  //   @param mfaceids           Local IDs of material polygon faces (unique within
-  //                             cell)
-  // */
-  // void matpoly_faces(int const cellid, int matpoly_localid,
-  //                    int *nf, std::vector<int> *mfaceids) const;
-
-  // /*!
-  //   @brief Points of the material polygon in cell
-  //   @param cellid             ID of the cell we are querying
-  //   @param matface_localid    Local ID of material polygon face in the cell
-  //   @param nv                 Number of points
-  //   @param fpoints            Vector of points
-  // */
-  // void matface_points(int const cellid, int const matface_localid, int *nv,
-  //                     std::vector<Point<D>> *fpoints) const;
-
-  // /*!
-  //   @brief "Vertices" of the material polygon in cell
-  //   @param cellid             ID of the cell we are querying
-  //   @param matface_localid    Local ID of material polygon face in the cell
-  //   @param nv                 Number of vertices
-  //   @param fvertices          Vector of local vertex IDs (shared across all
-  //                             matpolys IN THE CELL)
-  // */
-  // void  matface_vertices(int const cellid, int const matface_localid,
-  //                          int *nv, std::vector<int> *mvertex_localids) const;
-
-  // /*!
-  //   @brief Is material polygon face shared between two material polygons IN THE CELL
-  //   @param cellid             ID of the cell we are querying
-  //   @param matface_localid    Local ID of material polygon face in the cell
-  //   @return True or False
-  // */
-  // bool  matface_is_interface(int const cellid, int const matface_localid) const;
-
-  // /*!
-  //   @brief Material polygons in cell on either side of material polygon face
-  //   @param cellid             ID of the cell we are querying
-  //   @param matface_localid    Local ID of material polygon face in the cell
-  //   @param matpoly_localid0   Local ID of material polygon behind the face i.e. away from the normal (can be -1)
-  //   @param matpoly_localid1   Local ID of material polygon in front of the face i.e. in the direction of the normal (can be -1)
-
-  //   In 1D/2D, matpoly_localid0 is to the left of the matface and
-  //   matpoly_localid1 is to the right
-
-  //   CAVEAT: We cannot retrieve matpolys across cell boundaries
-  // */
-  // void  matface_matpolys(int const cellid, int const matface_localid,
-  //                          int *matpoly_localid0, int *matpoly_localid1) const;
-
-  // /*!
-  //   @brief Kind of mesh entity that material face lies on
-  //   @param cellid             ID of the cell we are querying
-  //   @param matface_localid    Local ID of material polygon face in the cell
-  //   @return Kind of mesh entity (can be FACE if its on the boundary of a cell or CELL if its in the interior of the cell)
-  // */
-  // Entity_kind matface_parent_kind(int const cellid, int const matface_localid) const;
-
-  // /*!
-  //   @brief ID of the mesh entity that material face lies on
-  //   @param cellid             ID of the cell we are querying
-  //   @param matface_localid    Local ID of material polygon face in the cell
-  //   @return ID of mesh entity (global to the mesh? Local to the cell?)
-  // */
-  // int matface_parent_id(int const cellid, int const matface_localid) const;
-
-  // /*!
-  //   @brief Kind of mesh entity that material vertex lies on
-  //   @param cellid             ID of the cell we are querying
-  //   @param matvert_localid    Local ID of material polygon vertex in the cell
-  //   @return Kind of mesh entity (can be FACE if its on the boundary of a cell or CELL if its in the interior of the cell)
-  // */
-  // Entity_kind  matvert_parent_kind(int const cellid, int const matvertid) const; // can be VERTEX/EDGE/FACE/CELL
-
-  // /*!
-  //   @brief ID of the mesh entity that material face lies on or in
-  //   @param cellid             ID of the cell we are querying
-  //   @param matvert_localid    Local ID of material polygon vertex in the cell
-  //   @return ID of mesh entity (global to the mesh? Local to the cell?)
-  // */
-  // int  matvert_parent_id(int const cellid, int const matvertid) const;
-
 
  private:
   Mesh_Wrapper const& mesh_;

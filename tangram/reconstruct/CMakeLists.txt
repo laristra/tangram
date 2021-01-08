@@ -28,6 +28,7 @@ set(tangram_reconstruct_HEADERS
   nested_dissections.h
   VOF.h
   MOF.h
+  LVIRA.h
   )
 
 # Not yet allowed for INTERFACE libraries

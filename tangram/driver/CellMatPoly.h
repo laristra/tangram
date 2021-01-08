@@ -11,6 +11,7 @@
 #include <array>
 #include <algorithm>
 #include <climits>
+#include <sstream>
 
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
@@ -392,7 +393,10 @@ class CellMatPoly {
    @param matpoly_id  ID of the material poly
    @return  Corresponding MatPoly object
   */
-  MatPoly<D> get_ith_matpoly(int matpoly_id) const;
+  MatPoly<D> get_ith_matpoly(int matpoly_id) const {
+    throw std::runtime_error("Tangram does NOT support interface reconstruction for dimension 1");
+    return MatPoly<D>();
+  }
   
   /*!
    @brief Extracts all polys containing a particular material
@@ -685,7 +689,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     dst_tol_ = dst_tol;
   }
   // avoid empty conditional branch in release mode
-#ifdef DEBUG
+#ifndef NDEBUG
   else {
     assert(dst_tol_ == dst_tol);
   }  
@@ -849,7 +853,7 @@ void CellMatPoly<D>::add_matpoly(int const matid,
     dst_tol_ = dst_tol;
   }
   // avoid empty conditional branch on release mode
-#ifdef DEBUG
+#ifndef NDEBUG
   else {
     assert(dst_tol_ == dst_tol);
   }
@@ -1083,7 +1087,7 @@ void CellMatPoly<3>::add_matpoly(const MatPoly<3>& mat_poly) {
 template<>
 inline
 MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
-#ifdef DEBUG
+#ifndef NDEBUG
   assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
 #endif
   std::vector<Point<2>> mp_pts = matpoly_points(matpoly_id);
@@ -1103,7 +1107,7 @@ MatPoly<2> CellMatPoly<2>::get_ith_matpoly(int matpoly_id) const {
 template<>
 inline
 MatPoly<3> CellMatPoly<3>::get_ith_matpoly(int matpoly_id) const {
-#ifdef DEBUG
+#ifndef NDEBUG
   assert((matpoly_id >= 0) && (matpoly_id < num_matpolys_));
 #endif
   const std::vector<int>& mp_vrt_ids = matpoly_vertices(matpoly_id);

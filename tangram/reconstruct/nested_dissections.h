@@ -12,8 +12,6 @@
 #include <algorithm>
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
-#include "tangram/driver/CellMatPoly.h"
-
 
 /*!
  @file nested_dissections.h
@@ -24,8 +22,8 @@
   variable that can be modified externally. Materials order should
   generally be updated if cellID is modified.
   
-  @tparam Reconstructor A reconstructor that implements an algorithm 
-  for finding the position of a plane between a given material and the rest
+  @tparam Reconstructor A reconstructor that implements a specific 
+  interface reconstruction algorithm for the two-material case
   @tparam Dim The spatial dimension of the problem
   @tparam MatPoly_Splitter An operator for splitting a vector of MatPoly's 
   into half-space sets with a cutting plane
@@ -51,9 +49,11 @@ public:
                              convex_cell_(convex_cell) {}
 
   /*!
-    @brief Specifies the order in which materials are clipped
-    @param[in] cell_materials_order Vector of local material indices, if a cell 
-    has three materials, it will have three entries (0, 1, 2) in certain order
+    @brief Specifies a custom order in which materials are clipped
+    @param[in] cell_materials_order Vector of local material indices, from zero
+    to the number of materials minus one; index zero corresponds to the first
+    given material, the last index corresponds to the last given material;
+    materials will be clipped in the order given by this vector
   */
   void set_cell_materials_order(const std::vector<int>& cell_materials_order) {
     cell_materials_order_.clear();                              
@@ -87,52 +87,86 @@ public:
     @return  Number of materials orders, their index can be used as a parameter
     for this class's operator.
   */
-  int num_materials_orders() { return static_cast<int>(cell_materials_order_.size()); }
+  int num_materials_orders() const { return static_cast<int>(cell_materials_order_.size()); }
 
   /*!
     @brief Calculates the CellMatPoly for the given interface reconstruction method
     using the nested dissections algorithm. If materials order permutations are enabled,
     permutation ID can be used to choose an alternative ordering. 
   */
-  std::shared_ptr< CellMatPoly<Dim> > operator()(const int permutation_ID = 0) const {
-    assert(unsigned(permutation_ID) < cell_materials_order_.size());
+  std::vector< std::shared_ptr< CellMatPoly<Dim> > > operator()(const int permutation_ID = 0) const {
+    assert(permutation_ID < num_materials_orders());
+
+    bool permutations_enabled = (num_materials_orders() > 1);
 
     // Get material indices for the cell from the reconstructor
     const std::vector<int>& mat_ids = reconstructor_.cell_materials(cell_id_);    
     int nmats = static_cast<int>(mat_ids.size());
 
-    std::shared_ptr< CellMatPoly<Dim> > cmp_ptr = 
-      std::make_shared< CellMatPoly<Dim> >(cell_id_);
+    // See what cells does the reconstructor split: most reconstructors only split the
+    // cell itself (its ID always being the first entry), but some, such as LVIRA, 
+    // extend the cutting plane to the neighbors, in which case ID's of the neighboring
+    // cells are appended
+    std::vector<int> icells_to_split = reconstructor_.neighbor_cells_to_split(cell_id_);
+    icells_to_split.insert(icells_to_split.begin(), cell_id_);
+    int nsplit_cells = static_cast<int>(icells_to_split.size());
 
-    //MatPoly corresponding to a non-convex cell can have non-planar faces
-    MatPoly<Dim> cell_matpoly;
-    if (convex_cell_)
-      cell_matpoly = reconstructor_.cell_matpoly(cell_id_);
-    else
-      reconstructor_.cell_matpoly(cell_id_).faceted_matpoly(&cell_matpoly);
-    
+    // Reconstructors that extend material interfaces to neighboring cells and employ
+    // material order permutations might require CellMatPoly's corresponding to the sequence
+    // of those (extended) interfaces not just for the cell itself, but also its neighbors
+    // (e.g. LVIRA+ uses neighbor CellMatPoly's to find the optimal material ordering)
+    int nstored_cmps = permutations_enabled ? nsplit_cells : 1;
+
+    //Get the MatPoly's for all the cells we need to split
+    std::vector< MatPoly<Dim> > cell_matpolys(nsplit_cells);
+    for (int isc = 0; isc < nsplit_cells; isc++) {
+      // MatPoly corresponding to a non-convex cell can have non-planar faces
+      if (convex_cell_)
+        cell_matpolys[isc] = reconstructor_.cell_matpoly(icells_to_split[isc]);
+      else {
+        // We facetize faces of non-convex cells
+        reconstructor_.cell_matpoly(icells_to_split[isc]).faceted_matpoly(&cell_matpolys[isc]);
+      }
+    }
+
+    // Create requested CellMatPoly's objects
+    std::vector< std::shared_ptr< CellMatPoly<Dim> > > cmp_ptrs(nstored_cmps);
+    for (int iscmp = 0; iscmp < nstored_cmps; iscmp++)
+      cmp_ptrs[iscmp] = std::make_shared< CellMatPoly<Dim> >(icells_to_split[iscmp]);
+
     double vol_tol = reconstructor_.iterative_methods_tolerances()[0].fun_eps;
     double dst_tol = reconstructor_.iterative_methods_tolerances()[0].arg_eps;
 
     Plane_t<Dim> cutting_plane {};
-    HalfSpaceSets_t<Dim> hs_sets; // Structure containing vectors of MatPoly's and their
-                                  // aggregated moments for the respective half-spaces
+    std::vector< HalfSpaceSets_t<Dim> > hs_sets(nsplit_cells); // Structures containing vectors of MatPoly's and their
+                                                               // aggregated moments for the respective half-spaces
+    // Pointers to MatPoly's that are split on every step
+    std::vector< std::vector< MatPoly<Dim> >* > upper_halfspace_matpolys(nsplit_cells);
 
-    //Original vector of mixed MatPoly's consists of the cell's MatPoly
-    hs_sets.upper_halfspace_set.matpolys = { cell_matpoly };
+    for (int isc = 0; isc < nsplit_cells; isc++) {
+      // Original vector of mixed MatPoly's consists of the cell's MatPoly
+      hs_sets[isc].upper_halfspace_set.matpolys = { cell_matpolys[isc] };
+      // MatPoly's in the upper halfspace are carried over to the next step of nested dissections
+      upper_halfspace_matpolys[isc] = &hs_sets[isc].upper_halfspace_set.matpolys;
+    }
 
-    //Create Splitter instance: assumes split MatPoly's are convex
-    MatPoly_Splitter split_matpolys(hs_sets.upper_halfspace_set.matpolys, 
-                                    cutting_plane, vol_tol, dst_tol, true);
-
+    //Create Splitter instances for each requested CellMatPolys object: assumes split MatPoly's are convex
+    std::vector<MatPoly_Splitter> material_splitters;
+    material_splitters.reserve(nstored_cmps);
+    for (int iscmp = 0; iscmp < nstored_cmps; iscmp++)
+      material_splitters.push_back(MatPoly_Splitter(hs_sets[iscmp].upper_halfspace_set.matpolys, 
+                                                    cutting_plane, vol_tol, dst_tol, true));
+    // Iterate over material in the given order, adding corresponding MatPoly's on each step
     for (int imat = 0; imat < nmats; imat++) {
       int matid = mat_ids[cell_materials_order_[permutation_ID][imat]];
-      
-      MatPolySet_t<Dim>* single_mat_set_ptr;
+     
+      std::vector< MatPolySet_t<Dim>* > single_mat_set_ptrs(nstored_cmps);
       //On the last iteration the remaining part is single-material,
       //so we don't need to split it
-      if (imat == nmats - 1)
-        single_mat_set_ptr = &hs_sets.upper_halfspace_set;
+      if (imat == nmats - 1) {
+        for (int iscmp = 0; iscmp < nstored_cmps; iscmp++)
+          single_mat_set_ptrs[iscmp] = &hs_sets[iscmp].upper_halfspace_set;
+      }
       else {
         // Find cutting plane position: assumes all faces are planar
         // Note that this method generally does NOT require MatPoly_Splitter,
@@ -141,54 +175,65 @@ public:
         // handled by the reconstructor that created this nested dissections
         // instance.
         reconstructor_.get_plane_position(cell_id_, matid, 
-                                          hs_sets.upper_halfspace_set.matpolys, 
+                                          upper_halfspace_matpolys, 
                                           cutting_plane, true);
 
-        // On the first cut we have to decompose a non-convex MatPoly
+        // On the first cut we have to decompose non-convex MatPolys
         // This is done inside the loop to make the first step cheaper: 
         // finding the position of the cutting plane normally requires 
         // only computation of moments, which we assume to be possible 
-        // without decomposing into tetrahedrons (e.g. if r3d is used). 
-        if (not convex_cell_ and imat == 0) {
-          hs_sets.upper_halfspace_set.matpolys.clear();
-          std::vector<int> face_group_ids = reconstructor_.cell_face_group_ids(cell_id_, true);
-          cell_matpoly.decompose(hs_sets.upper_halfspace_set.matpolys, &face_group_ids);
+        // without decomposing into tetrahedrons (e.g. if r3d is used).
+        // This approach is particularly beneficial in the case of 
+        // two-material cells
+        if (!convex_cell_ and imat == 0) {
+          for (int iscmp = 0; iscmp < nstored_cmps; iscmp++) {
+            hs_sets[iscmp].upper_halfspace_set.matpolys.clear();
+            std::vector<int> face_group_ids = reconstructor_.cell_face_group_ids(icells_to_split[iscmp], true);
+            cell_matpolys[iscmp].decompose(hs_sets[iscmp].upper_halfspace_set.matpolys, &face_group_ids);
+          }
         }
 
-        hs_sets = split_matpolys();
-        //Single-material MatPoly's are below the plane
-        single_mat_set_ptr = &hs_sets.lower_halfspace_set;
+        // For every requested CellMatPoly we split the remaining part of 
+        // the corresponding cell and store MatPoly's correspoinding to the
+        // material chopped off on the current step
+        for (int iscmp = 0; iscmp < nstored_cmps; iscmp++) {
+          hs_sets[iscmp] = material_splitters[iscmp]();
+          //Single-material MatPoly's are below the plane
+          single_mat_set_ptrs[iscmp] = &hs_sets[iscmp].lower_halfspace_set;
 
-        // Filter out MatPoly's with volumes below tolerance
-        int ismp = 0;
-        int nb_single_mat_points = single_mat_set_ptr->matpolys.size();
-        while (ismp < nb_single_mat_points) {
-          if (single_mat_set_ptr->matpolys[ismp].moments()[0] >= vol_tol) {
-            ismp++;
-          } else {
-            for (int im = 0; im < Dim + 1; im++) {
-              single_mat_set_ptr->moments[im] -=
-                single_mat_set_ptr->matpolys[ismp].moments()[im];
+          // Filter out MatPoly's with volumes below volume tolerance
+          int ismp = 0;
+          int nsingle_mat_points = single_mat_set_ptrs[iscmp]->matpolys.size();
+          while (ismp < nsingle_mat_points) {
+            if (single_mat_set_ptrs[iscmp]->matpolys[ismp].moments()[0] >= vol_tol) {
+              ismp++;
+            } else {
+              for (int im = 0; im < Dim + 1; im++) {
+                single_mat_set_ptrs[iscmp]->moments[im] -=
+                  single_mat_set_ptrs[iscmp]->matpolys[ismp].moments()[im];
+              }
+
+              auto deleted = single_mat_set_ptrs[iscmp]->matpolys.begin() + ismp;
+              single_mat_set_ptrs[iscmp]->matpolys.erase(deleted);
+              nsingle_mat_points = single_mat_set_ptrs[iscmp]->matpolys.size();
             }
-
-            auto deleted = single_mat_set_ptr->matpolys.begin() + ismp;
-            single_mat_set_ptr->matpolys.erase(deleted);
-            nb_single_mat_points = single_mat_set_ptr->matpolys.size();
           }
         }
       }
 
-      // Add single-material poly's below the plane to CellMatPoly
-      for (auto& cur_mat_poly : single_mat_set_ptr->matpolys) {
-        cur_mat_poly.set_mat_id(matid);
-        cmp_ptr->add_matpoly(cur_mat_poly);
-      }
+      // Add single-material poly's below the plane to the corresponding CellMatPoly's
+      for (int iscmp = 0; iscmp < nstored_cmps; iscmp++) {
+        for (auto& cur_mat_poly : single_mat_set_ptrs[iscmp]->matpolys) {
+          cur_mat_poly.set_mat_id(matid);
+          cmp_ptrs[iscmp]->add_matpoly(cur_mat_poly);
+        }
 
-      if (not single_mat_set_ptr->matpolys.empty())
-        cmp_ptr->assign_material_moments(matid, single_mat_set_ptr->moments);
+        if (!single_mat_set_ptrs[iscmp]->matpolys.empty())
+          cmp_ptrs[iscmp]->assign_material_moments(matid, single_mat_set_ptrs[iscmp]->moments);
+      }
     }
 
-    return cmp_ptr;
+    return cmp_ptrs;
   }
 
 private:

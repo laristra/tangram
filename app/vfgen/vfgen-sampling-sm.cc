@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
   std::string outfilename(basename + std::string(".vf"));
   std::string boutfilename(basename + std::string(".bvf"));
 
-  int ncells;
+  int ncells=0;
   int ncells_nmats[MAXMATS] = {};
 
   if (probdim == 2) {

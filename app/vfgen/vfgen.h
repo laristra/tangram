@@ -128,7 +128,9 @@ bool P_InTriPoly3D(Wonton::Point<3> ptest,
 //                     of faceted polyhedron in 3D
 
 template<int dim>
-bool P_InPoly(Wonton::Point<dim> ptest, int npnts, Wonton::Point<dim> *points) {}
+bool P_InPoly(Wonton::Point<dim> ptest, int npnts, Wonton::Point<dim> *points) {
+  return false;
+}
 
 template<>
 bool P_InPoly<2>(Wonton::Point<2> ptest, int npnts, Wonton::Point<2> *points) {
@@ -196,10 +198,6 @@ struct FEATURE {
 
 // Functor to evaluate which feature/material a point is in. Features
 // are layered on top of another in the order they are listed
-
-// Functor to evaluate which feature/material a point is in. Features
-// are layered on top of another in the order they are listed
-
 
 template <int dim>
 struct InFeatureEvaluator {
@@ -433,13 +431,7 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
     std::vector<std::vector<int>> tripnts;
     std::vector<Wonton::Point<3>> points;
 
-    // ------ Will be replaced by call to mesh_.cell_get_facetization -------
-    // ------ when PR-26 will get merged in ---------------------------------
-
-    // mesh_.cell_get_facetization(cellID, &tripnts, &points);
-
     cell_get_facetization(cellID, &tripnts, &points);
-
 
     int ntris = tripnts.size();
     std::vector<Wonton::Point<3>> tripnts_flat(3*ntris);
