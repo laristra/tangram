@@ -23,8 +23,7 @@
 
 // tangram includes
 #include "tangram/support/tangram.h"
-#include "tangram/intersect/split_r2d.h"
-#include "tangram/intersect/split_r3d.h"
+#include "tangram/intersect/split_rNd.h"
 #include "tangram/driver/driver.h"
 #include "tangram/reconstruct/MOF.h"
 #include "tangram/driver/write_to_gmv.h"
@@ -39,14 +38,6 @@
    Reads mesh and material data from file,
    performs interface reconstruction, and outputs material
    polygons to a gmv file */
-/*
- * This code block can be activated when the library starts to use C++14. 
-template<size_t dim>
-using SplitRnD = std::conditional_t<dim==2, Tangram::SplitR2D, Tangram::SplitR3D>;
-
-template<size_t dim>
-using ClipRnD = std::conditional_t<dim==2, Tangram::ClipR2D, Tangram::ClipR3D>;
-*/
 
 template<size_t dim>
 std::vector<std::shared_ptr<Tangram::CellMatPoly<dim>>>
@@ -71,7 +62,7 @@ run_driver<2>(Wonton::Jali_Mesh_Wrapper &mesh_wrapper,
 {
 
   Tangram::Driver<Tangram::MOF, 2, Wonton::Jali_Mesh_Wrapper,
-                  Tangram::SplitR2D, Tangram::ClipR2D>
+                  Tangram::SplitRnD<2>, Tangram::ClipRnD<2>>
   mof_driver(mesh_wrapper, ims_tols, isconvex);
 
   mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
@@ -97,7 +88,7 @@ run_driver<3>(Wonton::Jali_Mesh_Wrapper &mesh_wrapper,
 {
 
   Tangram::Driver<Tangram::MOF, 3, Wonton::Jali_Mesh_Wrapper,
-                  Tangram::SplitR3D, Tangram::ClipR3D>
+                  Tangram::SplitRnD<3>, Tangram::ClipRnD<3>>
   mof_driver(mesh_wrapper, ims_tols, isconvex);
 
   mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,

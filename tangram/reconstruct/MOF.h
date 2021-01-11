@@ -4,14 +4,13 @@
  https://github.com/laristra/tangram/blob/master/LICENSE
 */
 
-#ifndef MOF_H
-#define MOF_H
+#ifndef TANGRAM_RECONSTRUCT_MOF_H
+#define TANGRAM_RECONSTRUCT_MOF_H
 
 #include <vector>
 #include <functional>
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
-#include "tangram/driver/CellMatPoly.h"
 #include "tangram/reconstruct/nested_dissections.h"
 #include "tangram/reconstruct/cutting_distance_solver.h"
 #include "tangram/support/bfgs.h"
@@ -32,38 +31,7 @@
 
 namespace Tangram {
 
-enum BFGS_ALG {
-  BFGS,       //Algorithm based on Nocedal&Wright book, 
-              //uses linesearch with strong Wolfe conditions
-  DBFGS       //Algorithm by M.Al-Baali, uses linesearch with strong Wolfe conditions
-              //and an advanced damping technique
-};
-
 constexpr BFGS_ALG mof_bfgs_alg = BFGS;
-
-inline
-Vector<1> cartesian_to_polar(const Vector<2> cartesian_vec) {
-  return Vector<1>(atan2(cartesian_vec[1], cartesian_vec[0]));
-}
-
-inline
-Vector<2> cartesian_to_polar(const Vector<3> cartesian_vec) {
-  double len = cartesian_vec.norm();
-  return Vector<2>(atan2(cartesian_vec[1], cartesian_vec[0]), 
-                   acos(cartesian_vec[2]/len));
-}
-
-inline
-Vector<2> polar_to_cartesian(const Vector<1> polar_vec) {
-  return Vector<2>(cos(polar_vec[0]), sin(polar_vec[0]));
-}
-
-inline
-Vector<3> polar_to_cartesian(const Vector<2> polar_vec) {
-  return Vector<3>(sin(polar_vec[1])*cos(polar_vec[0]),
-                   sin(polar_vec[1])*sin(polar_vec[0]),
-                   cos(polar_vec[1])); 
-}
 
 template <class Mesh_Wrapper, int Dim, class MatPoly_Splitter, class MatPoly_Clipper>
 class MOF {
@@ -75,10 +43,10 @@ public:
     @param[in] ims_tols Tolerances for iterative methods
     @param[in] all_convex Flag indicating whether all mesh cells are convex
   */
-  explicit MOF(const Mesh_Wrapper& Mesh, 
-               const std::vector<IterativeMethodTolerances_t>& ims_tols,
-               const bool all_convex) : 
-               mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
+  MOF(const Mesh_Wrapper& Mesh, 
+      const std::vector<IterativeMethodTolerances_t>& ims_tols,
+      const bool all_convex) : 
+    mesh_(Mesh), ims_tols_(ims_tols), all_convex_(all_convex) {
     if (ims_tols.size() < 2)
       throw std::runtime_error(
         "MOF uses 0 and 1-order moments and needs tolerances for related iterative methods!");
@@ -139,8 +107,8 @@ public:
   }
 
   /*!
-    @brief Pass in indices of cells for which CellMatPoly objects 
-    are to be constructed. If the index is in the list, a CellMatPoly object will be
+    @brief Pass in list of cells to decompose into material polygons using nested
+    dissections. If the index is in the list, a CellMatPoly object will be
     created even for a single-material cell.
     @param[in] cellIDs_to_op_on A vector of length up to (num_cells) 
     specifying the indices of cells for which CellMatPoly objects are requested.
@@ -148,7 +116,7 @@ public:
   void set_cell_indices_to_operate_on(std::vector<int> const& cellIDs_to_op_on) {
     icells_to_reconstruct = cellIDs_to_op_on;
   }
-  
+
   /*!
     @brief Calculate the position of a plane that clips off a particular material.
     This method is used on every step of the nested dissections algorithm.
@@ -156,19 +124,24 @@ public:
     does not require decomposion into tetrahedrons.
     @param[in] cellID Index of the multi-material cell to operate on
     @param[in] matID Index of the material to clip
-    @param[in] mixed_polys Vector of material poly's that contain the material
-    to clip and (possibly) other materials
+    @param[in] mixed_polys Vector of pointers to vectors of material poly's 
+    that contain the material to clip and (possibly) other materials;
+    for MOF this vector is of length one, with the only pointer corresponding
+    to MatPoly's representing the remaining part of the cell on the current step
+    of the nested dissections algorithm
     @param[out] cutting_plane The resulting cutting plane position
     @param[in] planar_faces Flag indicating whether the faces of all mixed_polys
     are planar
   */  
   void get_plane_position(const int cellID,
                           const int matID,
-                          const std::vector< MatPoly<Dim> >& mixed_polys,
+                          const std::vector< std::vector< MatPoly<Dim> >* >& mixed_polys_ptrs,
                           Plane_t<Dim>& cutting_plane,
                           const bool planar_faces) const {
     assert(Dim > 1);
 
+    const std::vector< MatPoly<Dim> >& mixed_polys = *(mixed_polys_ptrs[0]);
+    double vol_tol = ims_tols_[0].fun_eps;
     int cellMatID = std::distance(cell_mat_ids_[cellID].begin(),
       std::find(cell_mat_ids_[cellID].begin(), 
                 cell_mat_ids_[cellID].end(), matID));
@@ -207,12 +180,31 @@ public:
     solve_cut_dst.set_target_volume(target_vol); 
     std::vector<double> clip_res = solve_cut_dst();
     cutting_plane.dist2origin = clip_res[0];
+
+    // Check if the resulting volume matches the reference value
+    double cur_vol_err = std::fabs(clip_res[1] - target_vol);
+    if (cur_vol_err > vol_tol) {
+      std::cerr << "MOF for cell " << cellID << ": given a maximum of  " << ims_tols_[0].max_num_iter <<
+        " iteration(s) achieved error in volume for material " <<
+        matID << " is " << cur_vol_err << ", volume tolerance is " << vol_tol << std::endl;
+      throw std::runtime_error("Target error in volume exceeded, terminating...");
+    }
   }
 
   /*!
-    @brief Given a cell index, calculate the CellMatPoly using the MOF 
-    interface reconstruction method.
-    Uses nested dissections algorithm.
+    @brief For a given cell, use the MOF interface reconstruction algorithm to calculate
+    a tiling of polygons (or polyhedra) that represent the extents of the materials
+    in the cells. The calculation of each material polygon is performed by finding
+    a plane that cuts off the right amount of material in the cell while matching
+    the centroid of the material polygon as closely as possible to a given reference
+    centroid. Multiple materials (more than 2) are handled by the nested dissections
+    method which sequentially cuts off the next material from the unprocessed part
+    of the original cell. The ordering of the material may be predetermined or the
+    optimal ordering may be determined by minimizing the error of reconstruction
+    over all permutations of material ordering.
+
+    The method returns a CellMatPoly object which is a composite object containing
+    all the material polygons in the cell.
   */
   std::shared_ptr<CellMatPoly<Dim>> operator()(const int cell_op_ID) const {
     int cellID = icells_to_reconstruct[cell_op_ID];
@@ -257,48 +249,56 @@ public:
     nested_dissections.set_cell_materials_order(enable_permutations);
 
     int npermutations = nested_dissections.num_materials_orders();
-    Wonton::vector<std::shared_ptr<CellMatPoly<Dim>>> 
-      permutations_cellmatpoly(npermutations);
+    // Even though MOF operates on one cell at a time and will return only one CellMatPoly
+    // (tiling of the cell) for a particular combination, other algorithms (like LVIRA),
+    // operate on a primary cell while also cutting secondary, neighboring cells. 
+    // This necessitates returning a vector of CellMatPoly objects, one for each cell in the set.
+    Wonton::vector< std::vector< std::shared_ptr< CellMatPoly<Dim> > > > 
+      permutations_cellmatpolys(npermutations);
 
     Wonton::transform(Wonton::make_counting_iterator(0),
                       Wonton::make_counting_iterator(npermutations),
-                      permutations_cellmatpoly.begin(), nested_dissections);
+                      permutations_cellmatpolys.begin(), nested_dissections);
 
     int nmats = static_cast<int>(cell_mat_ids_[cellID].size());
 
-    int iopt_permutation = -1;
-    double min_centroids_error = DBL_MAX;
-    for (int iperm = 0; iperm < npermutations; iperm++) {
-      std::shared_ptr<CellMatPoly<Dim>> cur_cmp_ptr = 
-        permutations_cellmatpoly[iperm];
+    int iopt_permutation = 0;
+    if (enable_permutations) {
+      double min_centroids_error = DBL_MAX;
+      for (int iperm = 0; iperm < npermutations; iperm++) {
+        const std::vector< std::shared_ptr< CellMatPoly<Dim> > >& cur_perm_cmp_ptrs = 
+          permutations_cellmatpolys[iperm];
+        std::shared_ptr<CellMatPoly<Dim>> cur_cmp_ptr = cur_perm_cmp_ptrs[0];
 
-      double cur_error = 0.0;      
-      for (int imat = 0; imat < nmats; imat++) {
-        int mat_id = cell_mat_ids_[cellID][imat];
-        if (!cur_cmp_ptr->is_cell_material(mat_id))
-          continue;
+        double cur_error = 0.0;      
+        for (int imat = 0; imat < nmats; imat++) {
+          int mat_id = cell_mat_ids_[cellID][imat];
+          if (!cur_cmp_ptr->is_cell_material(mat_id))
+            continue;
 
-        const std::vector<double>& cur_moments = 
-          cur_cmp_ptr->material_moments(cell_mat_ids_[cellID][imat]);
+          const std::vector<double>& cur_moments = 
+            cur_cmp_ptr->material_moments(cell_mat_ids_[cellID][imat]);
 
-        Point<Dim> mat_centroid;
-        for (int idim = 0; idim < Dim; idim++)
-          mat_centroid[idim] = cur_moments[idim + 1]/cur_moments[0];
+          Point<Dim> mat_centroid;
+          for (int idim = 0; idim < Dim; idim++)
+            mat_centroid[idim] = cur_moments[idim + 1]/cur_moments[0];
 
-        // We prioritize materials with larger volumes and essentially
-        // compute a discrete L2 norm scaled by the cell volume
-        cur_error += cell_mat_vfracs_[cellID][imat]*
-          (mat_centroid - cell_mat_centroids_[cellID][imat]).norm(false);
-      }
-      cur_error = sqrt(cur_error);
+          // We prioritize materials with larger volumes and essentially
+          // compute a discrete L2 norm scaled by the cell volume
+          cur_error += cell_mat_vfracs_[cellID][imat]*
+            (mat_centroid - cell_mat_centroids_[cellID][imat]).norm(false);
+        }
+        cur_error = sqrt(cur_error);
 
-      if (cur_error < min_centroids_error) {
-        iopt_permutation = iperm;
-        min_centroids_error = cur_error;
-      }
-    }                       
-
-    return permutations_cellmatpoly[iopt_permutation];
+        if (cur_error < min_centroids_error) {
+          iopt_permutation = iperm;
+          min_centroids_error = cur_error;
+        }
+      }                       
+    }
+    const std::vector< std::shared_ptr< CellMatPoly<Dim> > >& opt_perm_cmp_ptrs = 
+      permutations_cellmatpolys[iopt_permutation];
+    return opt_perm_cmp_ptrs[0];
   }
 
   /*!
@@ -320,6 +320,14 @@ public:
 
     return mat_poly;
   }
+
+  /*!
+    @brief Indices of neigboring cell that are split when errors are computed:
+    for MOF the vector is empty
+    @param[in] cellID Cell index
+    @return  Empty vector
+  */
+  std::vector<int> neighbor_cells_to_split(const int cellID) const { return {}; }
 
   /*!
     @brief IDs of the cell's faces to be associated with MatPoly's
@@ -353,8 +361,11 @@ private:
     and the actual aggregated centroids of clipped MatPoly's
     @param[in] cellID Index of the multi-material cell
     @param[in] cellMatID Local index of the clipped material
-    @param[in] mixed_polys Vector of material poly's that contain the material
-    to clip and (possibly) other materials
+    @param[in] mixed_polys Vector of pointers to vectors of material poly's 
+    that contain the material to clip and (possibly) other materials;
+    for MOF this vector is of length one, with the only pointer corresponding
+    to MatPoly's representing the remaining part of the cell on the current step
+    of the nested dissections algorithm    
     @param[in] plane_normal Direction of the cutting plane
     @return Distance between the reference and the actual centroids
   */  

@@ -52,7 +52,7 @@ public:
     @param target_vol Volume to match
   */
   void set_target_volume(double const target_vol) {
-#ifdef DEBUG
+#ifndef NDEBUG
     assert(target_vol >= 0.0);
 #endif    
     target_vol_ = target_vol;

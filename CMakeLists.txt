@@ -6,7 +6,7 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-project(tangram CXX)
+project(tangram CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -27,7 +27,7 @@ cmake_policy(SET CMP0074 NEW)  # Don't ignore Pkg_ROOT variables
 
 set(TANGRAM_VERSION_MAJOR 1)
 set(TANGRAM_VERSION_MINOR 0)
-set(TANGRAM_VERSION_PATCH 1)
+set(TANGRAM_VERSION_PATCH 5.pub)
 
 
 # Top level target

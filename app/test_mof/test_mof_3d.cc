@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
   }
 #endif
 
-#ifdef DEBUG
+#ifndef NDEBUG
   std::string ref_gmv_fname = mesh_name + "_ref_matpolys.gmv";
   std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
 #endif
@@ -140,10 +140,11 @@ int main(int argc, char** argv) {
 
   // Volume and angle tolerances
   double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
-  double vol_tol = std::numeric_limits<double>::epsilon();
+  //double vol_tol = std::numeric_limits<double>::epsilon();
+  double vol_tol = 5.0e-17;
   std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
   ims_tols[0] = {1000, dst_tol, vol_tol};
-  ims_tols[1] = {100, 1.0e-15, 1.0e-15};
+  ims_tols[1] = {100, 1.0e-18, dst_tol};
 
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
@@ -181,7 +182,7 @@ int main(int argc, char** argv) {
       nmmcells++;
     }
 
-#ifdef DEBUG
+#ifndef NDEBUG
   std::vector< std::shared_ptr< Tangram::CellMatPoly<3> > > 
     ref_matpoly_list(ncells, nullptr);
   for (int icell = 0; icell < ncells; icell++) 
@@ -209,11 +210,11 @@ int main(int argc, char** argv) {
   // Build the driver
 #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   Tangram::Driver<Tangram::MOF, 3, Wonton::Jali_Mesh_Wrapper,
-                  Tangram::SplitR3D, Tangram::ClipR3D>
+                  Tangram::SplitRnD<3>, Tangram::ClipRnD<3>>
     mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #else
   Tangram::Driver<Tangram::MOF, 3, Wonton::Simple_Mesh_Wrapper,
-                  Tangram::SplitR3D, Tangram::ClipR3D>
+                  Tangram::SplitRnD<3>, Tangram::ClipRnD<3>>
     mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #endif
 
@@ -332,7 +333,7 @@ std::cout << std::endl << "Stats for ";
         max_mat_sym_diff_vol[imat]/max_sym_diff_mat_vol << std::endl;
   }
 
-#ifdef DEBUG
+#ifndef NDEBUG
   write_to_gmv(mesh_wrapper, nmesh_materials, cell_num_mats, cell_mat_ids,
                cellmatpoly_list, out_gmv_fname);  
 #endif

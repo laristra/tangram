@@ -30,6 +30,7 @@
 #include "tangram/reconstruct/VOF.h"
 #include "tangram/reconstruct/MOF.h"
 #include "tangram/driver/write_to_gmv.h"
+#include "tangram/intersect/split_rNd.h"
 
 #include "tangram/utility/rpgtools/cuts.h"
 #include "tangram/utility/rpgtools/primitives.h"
@@ -197,7 +198,7 @@ int main(int argc, char** argv) {
     // Build the VOF driver
     std::cout << std::endl << IR_names[ivof] << " interface reconstruction method:" << std::endl;
     Tangram::Driver<Tangram::VOF, 3, Wonton::Simple_Mesh_Wrapper, 
-                    Tangram::SplitR3D, Tangram::ClipR3D> 
+                    Tangram::SplitRnD<3>, Tangram::ClipRnD<3>> 
       vof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 
     vof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 
@@ -212,7 +213,7 @@ int main(int argc, char** argv) {
     // Build the MOF driver
     std::cout << std::endl << IR_names[imof] << " interface reconstruction method:" << std::endl; 
     Tangram::Driver<Tangram::MOF, 3, Wonton::Simple_Mesh_Wrapper, 
-                    Tangram::SplitR3D, Tangram::ClipR3D> 
+                    Tangram::SplitRnD<3>, Tangram::ClipRnD<3>> 
       mof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 
     mof_driver.set_volume_fractions(cell_num_mats, cell_mat_ids, 

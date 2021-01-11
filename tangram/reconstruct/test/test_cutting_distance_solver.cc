@@ -5,7 +5,7 @@
 */
 
 #include "tangram/reconstruct/cutting_distance_solver.h"
-#include "tangram/intersect/split_r3d.h"
+#include "tangram/intersect/split_rNd.h"
 
 #include "gtest/gtest.h"
 #include "tangram/support/tangram.h"
@@ -56,10 +56,10 @@ TEST(cutting_distance_solver, Mesh3D) {
   ncv_matpolys[0].decompose(cv_subpolys);
 
   //Create cutting distance solvers
-  Tangram::CuttingDistanceSolver<3, Tangram::ClipR3D> 
+  Tangram::CuttingDistanceSolver<3, Tangram::ClipRnD<3>> 
     solve_cut_dst_ncv(ncv_matpolys, ref_cutting_plane.normal, tols, true);
 
-  Tangram::CuttingDistanceSolver<3, Tangram::ClipR3D> 
+  Tangram::CuttingDistanceSolver<3, Tangram::ClipRnD<3>> 
     solve_cut_dst_cv(cv_subpolys, ref_cutting_plane.normal, tols, true);
 
   // Find distance to origin for the cutting plane, non-convex poly

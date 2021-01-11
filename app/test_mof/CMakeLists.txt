@@ -11,6 +11,12 @@ add_executable(test_mof_3d test_mof_3d.cc)
 target_link_libraries(test_mof_3d tangram)
 
 #-------------------------------------------------------------------------------
+# test_single_cell_3d - uses a single-cell 3D mesh from SimpleMesh
+#-------------------------------------------------------------------------------
+add_executable(test_single_cell_3d test_single_cell_3d.cc)
+target_link_libraries(test_single_cell_3d tangram)
+
+#-------------------------------------------------------------------------------
 # test_mof_2d - uses 2D mesh from SimpleMesh or Jali
 #-------------------------------------------------------------------------------
 add_executable(test_mof_2d test_mof_2d.cc)

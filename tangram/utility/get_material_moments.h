@@ -9,8 +9,7 @@
 
 #include <stdlib.h>
 #include "tangram/support/tangram.h"
-#include "tangram/intersect/split_r2d.h"
-#include "tangram/intersect/split_r3d.h"
+#include "tangram/intersect/split_rNd.h"
 #include "tangram/utility/rpgtools/primitives.h"
 #include "tangram/utility/rpgtools/cuts.h"
 
@@ -33,12 +32,15 @@
                                vector, requires computations of offsets
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
- @param[out] reference_mat_polys For every cell and every material inside that cell, 
- the collection of single-material polyhedra containing that material
  @param[in] vol_tol Volume tolerance 
  @param[in] dst_tol Distance tolerance 
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
- in order to decompose cells into tetrahedrons                            
+ in order to decompose cells into tetrahedrons
+ @param[out] reference_mat_polys For every cell and every material inside that cell, 
+ the collection of single-material polyhedra containing that material
+ @param[in] reverse_mat_order Flips the order in which the material data was stored:
+ by construction, the default order is generally optimal and can be misleading when
+ used to evaluate the accuracy of an interface reconstruction algorithm
 */
 template <class Mesh_Wrapper>
 void get_material_moments(const Mesh_Wrapper& mesh,
@@ -52,7 +54,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           const double dst_tol,
                           const bool decompose_cells,
                           std::vector< std::vector< std::vector<r3d_poly> > >*
-                            reference_mat_polys = nullptr) {
+                            reference_mat_polys = nullptr,
+                          const bool reverse_mat_order = false) {
   int nplanes = static_cast<int>(planar_interfaces.size());
   assert(material_IDs.size() == unsigned(nplanes + 1));
   
@@ -217,6 +220,13 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   cell_mat_centroids.clear();
 
   for (int icell = 0; icell < ncells; icell++) {
+    if (reverse_mat_order) {
+      std::reverse(cells_mat_ids[icell].begin(), cells_mat_ids[icell].end());
+      std::reverse(cells_mat_moments[icell].begin(), cells_mat_moments[icell].end());
+      if (reference_mat_polys != nullptr)
+        std::reverse((*reference_mat_polys)[icell].begin(), (*reference_mat_polys)[icell].end());
+    }
+
     cell_num_mats[icell] = cells_mat_ids[icell].size();
     cell_mat_ids.insert(cell_mat_ids.end(), cells_mat_ids[icell].begin(), 
                         cells_mat_ids[icell].end());
@@ -308,7 +318,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
  @param[in] material_IDs IDs of materials corresponding to the the interior of each
  sphere; the last ID is for the material outside of all the spheres
  @param[in] center Center of the spheres
- @param[in] radius Radius' of the spheres
+ @param[in] radius Radii of the spheres
  @param[in] nquadrant_samples Discrete representation of the spheres is used,
  this number determines how many points are sampled per a coordinate plane (xy, xz) 
  quadrant
@@ -383,12 +393,15 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                                vector, requires computations of offsets
  @param[out] cell_mat_centroids Centroids of materials in each mesh cell, a flat vector,
                                 requires computations of offsets
- @param[out] reference_mat_polys For every cell and every material inside that cell, 
- the collection of single-material polygons containing that material
  @param[in] vol_tol Volume tolerance
  @param[in] dst_tol Distance tolerance
  @param[in] decompose_cells If mesh has non-convex cells, this flag should be set to true
- in order to decompose cells into triangles                            
+ in order to decompose cells into triangles
+ @param[out] reference_mat_polys For every cell and every material inside that cell, 
+ the collection of single-material polygons containing that material
+ @param[in] reverse_mat_order Flips the order in which the material data was stored:
+ by construction, the default order is generally optimal and can be misleading when
+ used to evaluate the accuracy of an interface reconstruction algorithm
 */
 template <class Mesh_Wrapper>
 void get_material_moments(const Mesh_Wrapper& mesh,
@@ -402,7 +415,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
                           const double dst_tol,
                           const bool decompose_cells,
                           std::vector< std::vector< std::vector<r2d_poly> > >*
-                            reference_mat_polys = nullptr) {
+                            reference_mat_polys = nullptr,
+                          const bool reverse_mat_order = false) {
   int nlines = static_cast<int>(linear_interfaces.size());
   assert(material_IDs.size() == unsigned(nlines + 1));
   
@@ -567,6 +581,13 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   cell_mat_centroids.clear();
 
   for (int icell = 0; icell < ncells; icell++) {
+    if (reverse_mat_order) {    
+      std::reverse(cells_mat_ids[icell].begin(), cells_mat_ids[icell].end());
+      std::reverse(cells_mat_moments[icell].begin(), cells_mat_moments[icell].end());
+      if (reference_mat_polys != nullptr)
+        std::reverse((*reference_mat_polys)[icell].begin(), (*reference_mat_polys)[icell].end());
+    }
+
     cell_num_mats[icell] = cells_mat_ids[icell].size();
     cell_mat_ids.insert(cell_mat_ids.end(), cells_mat_ids[icell].begin(), 
                         cells_mat_ids[icell].end());

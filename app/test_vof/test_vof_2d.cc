@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
   }
 #endif
 
-#ifdef DEBUG
+#ifndef NDEBUG
   std::string ref_gmv_fname = mesh_name + "_ref_matpolys.gmv";
   std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
 #endif
@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
       nmmcells++;
     }
 
-#ifdef DEBUG
+#ifndef NDEBUG
   std::vector< std::shared_ptr< Tangram::CellMatPoly<2> > > ref_matpoly_list(ncells);
   for (int icell = 0; icell < ncells; icell++) {
     ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<2> >(icell);
@@ -211,11 +211,11 @@ int main(int argc, char** argv) {
   // Build the driver
 #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
   Tangram::Driver<Tangram::VOF, 2, Wonton::Jali_Mesh_Wrapper,
-                  Tangram::SplitR2D, Tangram::ClipR2D>
+                  Tangram::SplitRnD<2>, Tangram::ClipRnD<2>>
     vof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #else
   Tangram::Driver<Tangram::VOF, 2, Wonton::Simple_Mesh_Wrapper,
-                  Tangram::SplitR2D, Tangram::ClipR2D>
+                  Tangram::SplitRnD<2>, Tangram::ClipRnD<2>>
     vof_driver(mesh_wrapper, ims_tols, !decompose_cells);
 #endif
 
@@ -334,7 +334,7 @@ std::cout << std::endl << "Stats for ";
         max_mat_sym_diff_vol[imat]/max_sym_diff_mat_vol << std::endl;
   }
 
-#ifdef DEBUG
+#ifndef NDEBUG
   //Create MatPoly's for single-material cells
   for (int icell = 0; icell < ncells; icell++) {
     if (cell_num_mats[icell] == 1) {

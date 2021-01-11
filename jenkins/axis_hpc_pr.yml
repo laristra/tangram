@@ -1,0 +1,15 @@
+# axis_hpc.yml
+COMPILER:
+  - intel18
+  - gcc7
+
+CONFIG_TYPE:
+  - base
+  - debug
+  - serial
+  - thrust
+  - readme
+
+exclude:
+  - COMPILER: gcc7
+    CONFIG_TYPE: readme

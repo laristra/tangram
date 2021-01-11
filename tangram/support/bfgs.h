@@ -17,7 +17,14 @@
 
 namespace Tangram {
 
-  using Wonton::pow2;
+using Wonton::pow2;
+
+enum BFGS_ALG {
+  BFGS,       // Algorithm based on Nocedal&Wright book, 
+              // uses linesearch with strong Wolfe conditions
+  DBFGS       // Algorithm by M.Al-Baali, uses linesearch with strong Wolfe conditions
+              // and an advanced damping technique
+};
 
 /*!
   @brief Computes the minimizer of a quadratic interpolant in the interval
@@ -307,7 +314,7 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
   Matrix B_old;
 
   Vector<arg_dim> cur_arg = init_guess, prev_grad, cur_grad, cur_dir, darg, dgrad;
-  double dfval, cur_fval = obj_fun(cur_arg);
+  double dfval = 0.0, cur_fval = obj_fun(cur_arg);
   finite_diff_grad<arg_dim>(obj_fun, cur_arg, cur_fval, 
                             grad_rel_err_bnd, cur_grad);
 
@@ -316,14 +323,26 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
     if (cur_grad.max_norm() == 0.0)
       return cur_arg;
 
-    Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+    if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+      // The system could not be solved (likely B matrix is singular), 
+      // revert to the one from the previous step
+      B = B_old;
+      if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+        // Normally should not be here
+        return cur_arg;
+      }
+    }
+
     double df0 = dot(cur_grad, cur_dir);
 
     // Function should be decreasing in the linesearch direction
-    if (df0 >= 0.0) {
+    if (!std::isnormal(df0) || (df0 > 0.0)) {
       if (i > 0) {
         B = B_old;
-        Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+        if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+          // Normally should not be here
+          return cur_arg;
+        }        
         df0 = dot(cur_grad, cur_dir);
       }
       // Can't decrease the function value any further, finishing
@@ -360,7 +379,7 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
 
     bool valid_dgrad = false;
     for (int idim = 0; idim < arg_dim; idim++)
-      if (dgrad[idim]/cur_grad[idim] > std::numeric_limits<double>::epsilon()) {
+      if (std::fabs(dgrad[idim]/cur_grad[idim]) > std::numeric_limits<double>::epsilon()) {
         valid_dgrad = true;
         break;
       }
@@ -368,12 +387,14 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
     // We update B if the change in gradient is not too small
     // relative to the value of the gradient
     if (valid_dgrad) {
-      B_old = B;
-
       Vector<arg_dim> B_darg = B*darg;
       double darg_B_darg = dot(darg, B_darg);
 
+      //B-norm shouldn't be smaller than the bound on 2-norm
+      if (darg_B_darg < pow2(im_tols.arg_eps)) continue;
+
       double darg_dgrad = dot(darg, dgrad);
+
       // Perform damping if necessary
       if (darg_dgrad < damping_scalar*darg_B_darg) {
         double delta = (1.0 - damping_scalar)*darg_B_darg/(darg_B_darg - darg_dgrad);
@@ -382,19 +403,16 @@ Vector<arg_dim> bfgs(const std::function<double(const Vector<arg_dim>&)>& obj_fu
         darg_dgrad = dot(darg, dgrad);
       }
 
-      if (darg_dgrad <= im_tols.arg_eps*std::numeric_limits<double>::epsilon()) continue;
-
       // Correction to the initial Hessian guess
       if (i == 0) {
         B *= dgrad.norm(false)/darg_dgrad;
         B_darg = B*darg;
         darg_B_darg = dot(darg, B_darg);
       }
-
+      B_old = B;
       B += (1.0/darg_dgrad)*(dgrad*dgrad) - (1.0/darg_B_darg)*(B_darg*B_darg);
     }
   }
-
   // Stopping conditions were NOT reached in the given number of iterations,
   // return the last value of the argument
   return cur_arg;
@@ -428,7 +446,7 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
   Matrix B_old;
 
   Vector<arg_dim> cur_arg = init_guess, prev_grad, cur_grad, cur_dir, darg, dgrad;
-  double dfval, cur_fval = obj_fun(cur_arg);
+  double dfval = 0.0, cur_fval = obj_fun(cur_arg);
   finite_diff_grad<arg_dim>(obj_fun, cur_arg, cur_fval, 
                             grad_rel_err_bnd, cur_grad);
 
@@ -437,14 +455,26 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
     if (cur_grad.max_norm() == 0.0)
       return cur_arg;
 
-    Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+    if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+      // The system could not be solved (likely B matrix is singular), 
+      // revert to the one from the previous step
+      B = B_old;
+      if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+        // Normally should not be here
+        return cur_arg;
+      }
+    }
+
     double df0 = dot(cur_grad, cur_dir);
 
     // Function should be decreasing in the linesearch direction
-    if (df0 >= 0.0) {
+    if (!std::isnormal(df0) || (df0 > 0.0)) {
       if (i > 0) {
         B = B_old;
-        Wonton::solve<arg_dim>(B, -cur_grad, cur_dir);
+        if (Wonton::solve<arg_dim>(B, -cur_grad, cur_dir) != 0) {
+          // Normally should not be here
+          return cur_arg;
+        }        
         df0 = dot(cur_grad, cur_dir);
       }
       // Can't decrease the function value any further, finishing
@@ -481,7 +511,7 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
 
     bool valid_dgrad = false;
     for (int idim = 0; idim < arg_dim; idim++)
-      if (dgrad[idim]/cur_grad[idim] > std::numeric_limits<double>::epsilon()) {
+      if (std::fabs(dgrad[idim]/cur_grad[idim]) > std::numeric_limits<double>::epsilon()) {
         valid_dgrad = true;
         break;
       }
@@ -489,10 +519,11 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
     // We update B if the change in gradient is not too small
     // relative to the value of the gradient
     if (valid_dgrad) {
-      B_old = B;
-
       Vector<arg_dim> B_darg = B*darg;
       double darg_B_darg = dot(darg, B_darg);
+
+      //B-norm shouldn't be smaller than the bound on 2-norm
+      if (darg_B_darg < pow2(im_tols.arg_eps)) continue;
 
       double darg_dgrad = dot(darg, dgrad);
       double b_rec = darg_dgrad/darg_B_darg;
@@ -525,8 +556,6 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
         darg_dgrad = dot(darg, dgrad);
       }
 
-      if (darg_dgrad <= im_tols.arg_eps*std::numeric_limits<double>::epsilon()) continue;
-
       // Correction to the initial Hessian guess
       if (i == 0) {
         B *= dgrad.norm(false)/darg_dgrad;
@@ -534,6 +563,7 @@ Vector<arg_dim> dbfgs(const std::function<double(const Vector<arg_dim>&)>& obj_f
         darg_B_darg = dot(darg, B_darg);
       }
 
+      B_old = B;
       B += (1.0/darg_dgrad)*(dgrad*dgrad) - (1.0/darg_B_darg)*(B_darg*B_darg);
     }
   }
