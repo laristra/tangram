@@ -122,6 +122,7 @@ class Driver {
     cell_mat_ids_.clear();
     cell_mat_volfracs_.clear();
     cell_mat_centroids_.clear();
+    cell_with_CMP_ids_.clear();
 
     // ims_tols_[0] are tolerances for 0-th moments, 
     // i.e. ims_tols_[0].fun_eps is the tolerance on absolute value of volume
@@ -129,20 +130,23 @@ class Driver {
 
     bool insufficient_vol_tol = false;
     // We only add materials with volumes above the tolerance
-    int offset = 0;
+    int input_offset = 0;
+    int actual_offset = 0;
     for (int icell = 0; icell < nc; icell++) {
       double cell_volume = mesh_.cell_volume(icell);  
-      int ncmats = cell_num_mats_[icell];
 
-      for (int icmat = 0; icmat < ncmats; icmat++) {
-        double mat_volume = cell_volume*cell_mat_volfracs[offset + icmat];
+      double aggregated_vfracs = 0.0;
+      for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
+        double mat_volume = cell_volume*cell_mat_volfracs[input_offset + icmat];
         // quick fix for Marc Charest's segfault on very tiny material volumes,
         // do not update until a permanent solution is set (shift and scale).
-        if (not(mat_volume < volume_tol)) {
-          cell_mat_ids_.push_back(cell_mat_ids[offset + icmat]);
-          cell_mat_volfracs_.push_back(cell_mat_volfracs[offset + icmat]);
+        if (!(mat_volume < volume_tol)) {
+          cell_mat_ids_.push_back(cell_mat_ids[input_offset + icmat]);
+          cell_mat_volfracs_.push_back(cell_mat_volfracs[input_offset + icmat]);
           if (!cell_mat_centroids.empty())
-            cell_mat_centroids_.push_back(cell_mat_centroids[offset + icmat]);
+            cell_mat_centroids_.push_back(cell_mat_centroids[input_offset + icmat]);
+
+          aggregated_vfracs += cell_mat_volfracs[input_offset + icmat];
 
           // If specified volume tolerance is not too small, ensure that the volume
           // of the reconstructed material poly will not drop below the tolerance
@@ -152,7 +156,30 @@ class Driver {
         else
            cell_num_mats_[icell]--;
       }
-      offset += ncmats;
+      assert(cell_num_mats_[icell] > 0);
+
+      // Volume fractions should add up to 1
+      if (std::fabs(aggregated_vfracs - 1.0) >= std::numeric_limits<double>::epsilon()) {
+        // Scale volume fractions so that they add up to 1
+        for (int icmat = 0; icmat < cell_num_mats_[icell]; icmat++)
+          cell_mat_volfracs_[actual_offset + icmat] /= aggregated_vfracs;
+      }
+      
+      // We always make CellMatPoly's for cells with more than one material
+      // as per input data
+      if (cell_num_mats[icell] > 1) {
+        // cell_with_CMP_ids_'s first index + 1 is the number of materials per cell,
+        // if a cell contains more materials than encountered before, we resize
+        int cur_max_cell_num_mats = static_cast<int>(cell_with_CMP_ids_.size());
+        if (cell_num_mats_[icell] > cur_max_cell_num_mats) {
+          cell_with_CMP_ids_.resize(cell_num_mats_[icell]);
+        }
+        // We include cell into the respective batch for CellMatPoly generation
+        cell_with_CMP_ids_[cell_num_mats_[icell] - 1].push_back(icell);        
+      }
+
+      input_offset += cell_num_mats[icell];
+      actual_offset += cell_num_mats_[icell];
     }
 
     if (insufficient_vol_tol) {
@@ -202,63 +229,53 @@ class Driver {
 #if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
       struct timeval begin_timeval, end_timeval, diff_timeval;
       float tot_seconds = 0.0;
-
       float xmat_cells_seconds = 0.0;
-      int count = 2;
 
       struct timeval xmat_begin_timeval, xmat_end_timeval, xmat_diff_timeval;
 
       gettimeofday(&begin_timeval, 0);
 #endif
 
-      //Normally, we only need CellMatPoly's for multi-material cells,
-      //so we first find their indices and group MMC's based on the number
-      //of contained materials.
-      //Because we only store indices of MMC's, iMMCs[0] vector corresponds
-      //to two-material cells, and iMMCs[i] vector corresponds to MMC's with
-      //(i+2) materials. If the partition contains MMC's with up to n_max
-      //materials, the size of iMMCs vector is therefore (n_max-1).
-      std::vector<std::vector<int>> iMMCs;
-      for (int icell = 0; icell < ncells; icell++) {
-        int nb_mats = cell_num_mats_[icell];
-        int nb_mmcs = static_cast<int>(iMMCs.size());
-        if (nb_mats < 2)
-          continue;
-        else if (nb_mats - 1 > nb_mmcs) {
-          iMMCs.resize(nb_mats - 1);
-        }
-        iMMCs[nb_mats - 2].push_back(icell);
-      }
+      // We only create CellMatPoly's for cells with more than one material
+      // as per input data. Such cells' IDs are grouped by the number of
+      // contained materials in cell_with_CMP_ids_.
+      // cell_with_CMP_ids_[0] vector corresponds to IDs of effectively
+      // single-material cells, i.e. cells for which additional materials
+      // have volumes below the tolerance.
+      // Similarly, cell_with_CMP_ids_[i] vector corresponds to MMC's with
+      // (i+1) material. If the partition contains MMC's with up to max_ncmats
+      // materials, the size of cell_with_CMP_ids_ vector is also max_ncmats.
+      int max_ncmats = static_cast<int>(cell_with_CMP_ids_.size());
       cellmatpolys_.resize(ncells);
 
-      //Reconstructor is set to operate on multi-material cells only.
       //To improve load balancing, we operate on the cells with the same
       //number of materials at a time
-      for (auto&& mm_cells : iMMCs) {
-        int const nMMCs = mm_cells.size();
+      for (int ibatch = 0; ibatch < max_ncmats; ibatch++) {
+        int const nMMCs = static_cast<int>(cell_with_CMP_ids_[ibatch].size());
         if (nMMCs == 0)
           continue;
 
+        int ncmats = ibatch + 1;
 #if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)        
         if (world_size == 1)
           gettimeofday(&xmat_begin_timeval, 0);
 #endif
 
-        reconstructor.set_cell_indices_to_operate_on(mm_cells);
+        reconstructor.set_cell_indices_to_operate_on(cell_with_CMP_ids_[ibatch]);
 
         //If reconstruction is performed for a single cell, we do not use transform:
         //this allows to use transform inside the reconstructor (e.g. to run
         //multiple threads for material order permutations in MOF)
         if (nMMCs == 1)
-          cellmatpolys_[mm_cells[0]] = reconstructor(0);
+          cellmatpolys_[cell_with_CMP_ids_[ibatch][0]] = reconstructor(0);
         else {
           Wonton::vector<std::shared_ptr<CellMatPoly<Dim>>> MMCs_cellmatpolys(nMMCs);
 
           Wonton::transform(Wonton::make_counting_iterator(0),
                             Wonton::make_counting_iterator(nMMCs),
-                             MMCs_cellmatpolys.begin(), reconstructor);
+                            MMCs_cellmatpolys.begin(), reconstructor);
           for (int immc = 0; immc < nMMCs; immc++)
-            cellmatpolys_[mm_cells[immc]] = MMCs_cellmatpolys[immc];
+            cellmatpolys_[cell_with_CMP_ids_[ibatch][immc]] = MMCs_cellmatpolys[immc];
         }
 
 #if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
@@ -268,7 +285,7 @@ class Driver {
           xmat_cells_seconds = xmat_diff_timeval.tv_sec + 1.0E-6*xmat_diff_timeval.tv_usec;
 
           std::cout << "Transform Time for " << nMMCs << " "
-                    << count++ << "-material cells (s): "
+                    << ncmats << "-material cells (s): "
                     << xmat_cells_seconds << ", mean time per cell (s): "
                     << xmat_cells_seconds/nMMCs << std::endl;
         }
@@ -459,6 +476,7 @@ class Driver {
   std::vector<double> cell_mat_volfracs_;
   std::vector<Point<Dim>> cell_mat_centroids_;
 
+  std::vector<std::vector<int>> cell_with_CMP_ids_;
   std::vector<std::shared_ptr<CellMatPoly<Dim>>> cellmatpolys_;
 
   bool reconstruction_done_ = false;
