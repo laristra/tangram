@@ -133,7 +133,14 @@ if (ENABLE_UNIT_TESTS)
   
 endif ()
 
+#-----------------------------------------------------------------------------
+# Allow to set VERBOSE_OUTPUT from the build script
+#-----------------------------------------------------------------------------
 
+option(VERBOSE_OUTPUT "Additional info will be printed" OFF)
+if (VERBOSE_OUTPUT)
+  add_definitions(-DVERBOSE_OUTPUT)
+endif()
 
 #-----------------------------------------------------------------------------
 # Recurse down the source directories building up dependencies
