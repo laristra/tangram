@@ -256,7 +256,6 @@ class Driver {
         if (nMMCs == 0)
           continue;
 
-        int ncmats = ibatch + 1;
 #if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)        
         if (world_size == 1)
           gettimeofday(&xmat_begin_timeval, 0);
@@ -280,6 +279,7 @@ class Driver {
         }
 
 #if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+        int ncmats = ibatch + 1;
         if (world_size == 1) {
           gettimeofday(&xmat_end_timeval, 0);
           timersub(&xmat_end_timeval, &xmat_begin_timeval, &xmat_diff_timeval);
