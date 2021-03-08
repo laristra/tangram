@@ -159,7 +159,8 @@ class Driver {
       assert(cell_num_mats_[icell] > 0);
 
       // Volume fractions should add up to 1
-      if (std::fabs(aggregated_vfracs - 1.0) >= std::numeric_limits<double>::epsilon()) {
+      if (std::fabs(aggregated_vfracs - 1.0) > 
+          cell_num_mats_[icell]*std::numeric_limits<double>::epsilon()) {
         // Scale volume fractions so that they add up to 1
         for (int icmat = 0; icmat < cell_num_mats_[icell]; icmat++)
           cell_mat_volfracs_[actual_offset + icmat] /= aggregated_vfracs;
