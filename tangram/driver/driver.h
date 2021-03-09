@@ -156,7 +156,6 @@ class Driver {
         else
            cell_num_mats_[icell]--;
       }
-      assert(cell_num_mats_[icell] > 0);
 
       // Volume fractions should add up to 1
       if (std::fabs(aggregated_vfracs - 1.0) > 
