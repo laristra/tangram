@@ -192,7 +192,7 @@ class Driver {
     @brief Perform the reconstruction
   */
   void reconstruct(Wonton::Executor_type const *executor = nullptr) {
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)    
+#if defined(TANGRAM_DEBUG)
     int comm_rank = 0;
     int world_size = 1;
 
@@ -211,7 +211,7 @@ class Driver {
     assert(!cell_num_mats_.empty());
     int ncells = mesh_.num_entities(Tangram::Entity_kind::CELL);
     
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+#if defined(TANGRAM_DEBUG)
     if (comm_rank == 0) std::printf("in Driver::run()...\n");
 #endif
     {
@@ -226,7 +226,7 @@ class Driver {
       reconstructor.set_volume_fractions(cell_num_mats_, cell_mat_ids_,
                                          cell_mat_volfracs_, cell_mat_centroids_);
 
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+#if defined(TANGRAM_DEBUG)
       struct timeval begin_timeval, end_timeval, diff_timeval;
       float tot_seconds = 0.0;
       float xmat_cells_seconds = 0.0;
@@ -255,7 +255,7 @@ class Driver {
         if (nMMCs == 0)
           continue;
 
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)        
+#if defined(TANGRAM_DEBUG)
         if (world_size == 1)
           gettimeofday(&xmat_begin_timeval, 0);
 #endif
@@ -277,7 +277,7 @@ class Driver {
             cellmatpolys_[cell_with_CMP_ids_[ibatch][immc]] = MMCs_cellmatpolys[immc];
         }
 
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+#if defined(TANGRAM_DEBUG)
         int ncmats = ibatch + 1;
         if (world_size == 1) {
           gettimeofday(&xmat_end_timeval, 0);
@@ -292,7 +292,7 @@ class Driver {
 #endif
       }
 
-#if !defined(NDEBUG) && defined(VERBOSE_OUTPUT)
+#if defined(TANGRAM_DEBUG)
       gettimeofday(&end_timeval, 0);
       timersub(&end_timeval, &begin_timeval, &diff_timeval);
       tot_seconds = diff_timeval.tv_sec + 1.0E-6*diff_timeval.tv_usec;
