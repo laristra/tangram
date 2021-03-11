@@ -137,7 +137,7 @@ endif ()
 # Allow to set TANGRAM_DEBUG from the build script
 #-----------------------------------------------------------------------------
 
-option( "Additional checks will be performed and info will be printed" OFF)
+option(TANGRAM_DEBUG "Additional checks will be performed and info will be printed" OFF)
 if (TANGRAM_DEBUG)
   add_definitions(-DTANGRAM_DEBUG)
 endif()
