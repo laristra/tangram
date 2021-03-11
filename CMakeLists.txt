@@ -134,12 +134,12 @@ if (ENABLE_UNIT_TESTS)
 endif ()
 
 #-----------------------------------------------------------------------------
-# Allow to set VERBOSE_OUTPUT from the build script
+# Allow to set TANGRAM_DEBUG from the build script
 #-----------------------------------------------------------------------------
 
-option(VERBOSE_OUTPUT "Additional info will be printed" OFF)
-if (VERBOSE_OUTPUT)
-  add_definitions(-DVERBOSE_OUTPUT)
+option( "Additional checks will be performed and info will be printed" OFF)
+if (TANGRAM_DEBUG)
+  add_definitions(-DTANGRAM_DEBUG)
 endif()
 
 #-----------------------------------------------------------------------------
