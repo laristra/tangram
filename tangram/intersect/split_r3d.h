@@ -13,7 +13,7 @@
 
 // tangram includes
 extern "C" {
-#include "wonton/intersect/r3d/r3d.h"
+#include "r3d.h"
 }
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"

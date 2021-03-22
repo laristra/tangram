@@ -16,7 +16,7 @@
 #include "tangram/support/MatPoly.h"
 
 extern "C" {
-#include "wonton/intersect/r3d/r2d.h"
+#include "r2d.h"
 }
 
 /*!
