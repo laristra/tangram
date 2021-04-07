@@ -5,7 +5,7 @@
 #
 # BUILD_TYPE - pr, nightly, install
 #
-# if VER is absent, the HEAD of the master branch will be taken. If
+# if VER is abset, the HEAD of the master branch will be taken. If
 # WONTON_VER is absent, the HEAD of the master branch of wonton will
 # be taken. If BUILD_TYPE is 'install' and VER is specified, it will
 # install it to /install_prefix/tangram/$VER-blah-blah; if VER is not

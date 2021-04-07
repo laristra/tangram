@@ -73,6 +73,7 @@ void get_mat_sym_diff_vol(const std::vector< std::vector<r3d_poly> >& reference_
  @param[in] convex_matpolys If material polygons in CellMatPoly are non-convex, 
  this flag should be set to true in order to decompose them into triangles
 */
+template<class CoordSys>
 void get_mat_sym_diff_vol(const std::vector< std::vector<r2d_poly> >& reference_mat_polys,
                           const std::vector<int>& ref_mat_ids,
                           const std::vector<double>& ref_mat_vol,
@@ -95,7 +96,7 @@ void get_mat_sym_diff_vol(const std::vector< std::vector<r2d_poly> >& reference_
       for (auto&& ref_poly : reference_mat_polys[icmat]) {
         for (auto&& res_mat_poly : res_mat_polys) {
           std::vector<double> intersection_moments;
-          Tangram::get_intersection_moments(res_mat_poly, ref_poly,
+          Tangram::get_intersection_moments<CoordSys>(res_mat_poly, ref_poly,
                                             intersection_moments, convex_matpolys);
           mat_sym_diff_vol[icmat] -= 2*intersection_moments[0];                               
         }

@@ -12,11 +12,13 @@
 #include <memory>
 #include <vector>
 
+#include "wonton/support/CoordinateSystem.h"
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
+#include "tangram/utility/compute_r2d_moments.h"
 
 extern "C" {
-#include "wonton/intersect/r3d/r2d.h"
+#include "r2d.h"
 }
 
 /*!
@@ -103,15 +105,12 @@ inline
   it will be decomposed into triangles
 */
 
+template<class CoordSys>
 inline
 void get_intersection_moments(const MatPoly<2>& mat_poly,
                               const r2d_poly& r2dpoly,
                               std::vector<double>& intersection_moments,
-                              bool convex_matpoly) {   
-  const int POLY_ORDER = 1;
-  int nmoments = R2D_NUM_MOMENTS(POLY_ORDER);
-  r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
-
+                              bool convex_matpoly) {
   if (convex_matpoly) {                                
     std::vector< Plane_t<2> > face_lines;
     mat_poly.face_planes(face_lines);
@@ -129,9 +128,9 @@ void get_intersection_moments(const MatPoly<2>& mat_poly,
     
     delete [] r2d_face_lines;
 
-    r2d_reduce(&intersection, r2d_moments, POLY_ORDER);
-    intersection_moments.resize(nmoments);
-    for (int im = 0; im < nmoments; im++)
+    const auto& r2d_moments = compute_r2d_moments<CoordSys>(&intersection);
+    intersection_moments.resize(3);
+    for (int im = 0; im < 3; im++)
       intersection_moments[im] = r2d_moments[im];
   }
   else {
@@ -139,7 +138,7 @@ void get_intersection_moments(const MatPoly<2>& mat_poly,
     mat_poly.decompose(mat_poly_tris);
 
     int ntris = static_cast<int>(mat_poly_tris.size());
-    intersection_moments.assign(nmoments, 0.0);
+    intersection_moments.assign(3, 0.0);
     for (int itri = 0; itri < ntris; itri++) {
       std::vector< Plane_t<2> > face_lines;
       mat_poly_tris[itri].face_planes(face_lines);
@@ -155,8 +154,8 @@ void get_intersection_moments(const MatPoly<2>& mat_poly,
 
       r2d_clip(&intersection, r2d_face_lines, 3);
 
-      r2d_reduce(&intersection, r2d_moments, POLY_ORDER);
-      for (int im = 0; im < nmoments; im++)
+      const auto& r2d_moments = compute_r2d_moments<CoordSys>(&intersection);
+      for (int im = 0; im < 3; im++)
         intersection_moments[im] += r2d_moments[im];
     }
   }
@@ -172,6 +171,7 @@ void get_intersection_moments(const MatPoly<2>& mat_poly,
   @param[out] lower_halfspace_moments Moments of MatPoly below the plane
   @param[out] upper_halfspace_moments Moments of MatPoly above the plane
 */
+template<class CoordSys>
 inline
 void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
                               const Plane_t<2>& cutting_plane,
@@ -202,8 +202,6 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
                                                   &upper_halfspace_moments};
 
   //Compute moments for subpoly's 
-  const int POLY_ORDER = 1;
-  r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
   int iempty_subpoly = -1;
   for (int isp = 0; isp < 2; isp++) {
     int nverts = r2d_subpolys[isp].nverts;
@@ -213,23 +211,23 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
     //original MatPoly, so we just need the ID (0 or 1) of the empty subpoly
     //to get the result
     if (nverts == 0) {
-	    subpoly_ptrs[isp]->clear();
-	    subpoly_moments_ptrs[isp]->assign(3, 0.0);
+      subpoly_ptrs[isp]->clear();
+      subpoly_moments_ptrs[isp]->assign(3, 0.0);
       iempty_subpoly = isp;
-	    break;
+      break;
     }
 
     //Find the moments for a subpoly
-    r2d_reduce(&r2d_subpolys[isp], r2d_moments, POLY_ORDER);
+    const auto& r2d_moments = compute_r2d_moments<CoordSys>(&r2d_subpolys[isp]);
 
     if (r2d_moments[0] < vol_tol) {
-	    subpoly_ptrs[isp]->clear();
-	    subpoly_moments_ptrs[isp]->assign(3, 0.0);
+      subpoly_ptrs[isp]->clear();
+      subpoly_moments_ptrs[isp]->assign(3, 0.0);
       iempty_subpoly = isp;
-	    break;
+      break;
     }
 
-    subpoly_moments_ptrs[isp]->assign(r2d_moments, r2d_moments + 3);
+    subpoly_moments_ptrs[isp]->assign(r2d_moments.begin(), r2d_moments.begin() + 3);
   }
 
   //If there are no empty subpolys, we return two resulting pieces.
@@ -248,8 +246,8 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
   else {
     int ifull_poly = (iempty_subpoly + 1)%2;
     matpoly_to_r2dpoly(mat_poly, r2d_subpolys[ifull_poly]);
-    r2d_reduce(&r2d_subpolys[ifull_poly], r2d_moments, POLY_ORDER);
-    subpoly_moments_ptrs[ifull_poly]->assign(r2d_moments, r2d_moments + 3);
+    const auto& r2d_moments = compute_r2d_moments<CoordSys>(&r2d_subpolys[ifull_poly]);
+    subpoly_moments_ptrs[ifull_poly]->assign(r2d_moments.begin(), r2d_moments.begin() + 3);
 
     *subpoly_ptrs[ifull_poly] = mat_poly;
   }
@@ -270,18 +268,19 @@ void split_convex_matpoly_r2d(const MatPoly<2>& mat_poly,
  * MatPoly's are assumed to be convex and will NOT be decomposed.
  */
 
+template<class CoordSys = Wonton::DefaultCoordSys>
 class SplitR2D {
  public:
   SplitR2D(const std::vector< MatPoly<2> >& matpolys,
            const Plane_t<2>& cutting_plane,
            const double vol_tol,
            const double dst_tol, 
-           const bool all_convex) : 
+           const bool all_convex) :
            matpolys_(matpolys), 
            cutting_plane_(cutting_plane),
            vol_tol_(vol_tol),
            dst_tol_(dst_tol),
-           all_convex_(all_convex) {}
+           all_convex_(all_convex) {};
 
   /*! 
     @brief Splits a MatPoly into two sets of convex MatPoly's
@@ -317,10 +316,11 @@ class SplitR2D {
     for (int icp = 0; icp < npolys; icp++) {
       MatPoly<2> cur_subpolys[2];
       std::vector<double> cur_moments[2];
-      split_convex_matpoly_r2d((*convex_polys)[icp], cutting_plane_,
-                               cur_subpolys[0], cur_subpolys[1],
-                               cur_moments[0], cur_moments[1],
-                               vol_tol_, dst_tol_);
+      split_convex_matpoly_r2d<CoordSys>(
+          (*convex_polys)[icp], cutting_plane_,
+          cur_subpolys[0], cur_subpolys[1],
+          cur_moments[0], cur_moments[1],
+          vol_tol_, dst_tol_);
 
       int cur_face_group_id = (*convex_polys)[icp].face_group_id();
       for (int ihs = 0; ihs < 2; ihs++)
@@ -371,9 +371,11 @@ class SplitR2D {
  *
  */
 
+template<class CoordSys = Wonton::DefaultCoordSys>
 class ClipR2D {
  public:
-  ClipR2D(double vol_tol) : vol_tol_(vol_tol) {}
+  ClipR2D(double vol_tol)
+    : vol_tol_(vol_tol) {};
 
   /*! 
     @brief Set the cutting line used by the functor. 
@@ -411,12 +413,9 @@ class ClipR2D {
     if (not r2d_polys_.empty()) {
       agg_moments.assign(3, 0.0);
 
-      const int POLY_ORDER = 1;
-      r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
-
       for (auto&& poly : r2d_polys_) {
         if (poly.nverts != 0) {
-          r2d_reduce(&poly, r2d_moments, POLY_ORDER);
+          const auto& r2d_moments = compute_r2d_moments<CoordSys>(&poly);
           for (int im = 0; im < 3; im++)
             agg_moments[im] += r2d_moments[im];
         }
@@ -438,9 +437,6 @@ class ClipR2D {
   std::vector<double> operator() () const {
     std::vector<double> below_plane_moments(3, 0.0);
 
-    const int POLY_ORDER = 1;
-    r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
-
     for (const auto& poly : r2d_polys_) {
       if (poly.nverts != 0) {
         //r2d does in-place clipping and does not have the const modifier
@@ -450,7 +446,7 @@ class ClipR2D {
         r2d_clip(&clipped_poly, &line_copy, 1);
         if (clipped_poly.nverts != 0) {
           //Find the moments for the part in the lower halfspace
-          r2d_reduce(&clipped_poly, r2d_moments, POLY_ORDER);
+          const auto& r2d_moments = compute_r2d_moments<CoordSys>(&clipped_poly);
           for (int im = 0; im < 3; im++)
             below_plane_moments[im] += r2d_moments[im];
         }

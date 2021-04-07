@@ -151,11 +151,13 @@ int main(int argc, char** argv) {
   std::vector< std::vector< std::vector<r3d_poly> > > reference_mat_polys;
 
 #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
+  get_material_moments<Wonton::Jali_Mesh_Wrapper, Wonton::CartesianCoordinates>(
+    mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     rmdg_vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #else
-  get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
+  get_material_moments<Wonton::Simple_Mesh_Wrapper, Wonton::CartesianCoordinates>(
+    mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     rmdg_vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #endif

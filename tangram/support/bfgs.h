@@ -47,7 +47,7 @@ double quad_interpolant_minimizer(const double arg0,
   double darg = arg1 - arg0;
   double denominator = fval1 - fval0 - df0*(darg);
   std::vector<double> denominator_terms = {fval0, fval1, df0*(darg)};
-  double max_denominator_term = *std::max(denominator_terms.begin(), denominator_terms.end());
+  double max_denominator_term = *std::max_element(denominator_terms.begin(), denominator_terms.end());
   double arg_min;
   double bnd0 = arg0 + safeguards[0]*darg,
          bnd1 = arg0 + safeguards[1]*darg;

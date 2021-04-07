@@ -115,8 +115,8 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
               fout << cellmatpoly->matvertex_parent_id(n)+1 << " ";
             else {
               Point<D> const& pnt = cellmatpoly->matvertex_point(n);
-              int np = mesh.num_entities(Entity_kind::NODE);
-              for (int j = np; j < nmatpnts; j++) {
+              int np_tmp = mesh.num_entities(Entity_kind::NODE);
+              for (int j = np_tmp; j < nmatpnts; j++) {
                 if (points[j] == pnt) {
                   fout << j+1 << " ";
                   break;
@@ -145,10 +145,10 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
                   fout << cellmatpoly->matvertex_parent_id(n)+1 << " ";
                 else {
                   Point<D> const& pnt = cellmatpoly->matvertex_point(n);
-                  int np = mesh.num_entities(Entity_kind::NODE);
-                  for (int j = np; j < nmatpnts; j++) {
-                    if (points[j] == pnt) {
-                      fout << j+1 << " ";
+                  int np_tmp = mesh.num_entities(Entity_kind::NODE);
+                  for (int k = np_tmp; k < nmatpnts; ++k) {
+                    if (points[k] == pnt) {
+                      fout << k+1 << " ";
                       break;
                     }
                   }
@@ -162,10 +162,10 @@ void write_to_gmv(Mesh_Wrapper const& mesh,
                   fout << cellmatpoly->matvertex_parent_id(n)+1 << " ";
                 else {
                   Point<D> const& pnt = cellmatpoly->matvertex_point(n);
-                  int np = mesh.num_entities(Entity_kind::NODE);
-                  for (int j = np; j < nmatpnts; j++) {
-                    if (points[j] == pnt) {
-                      fout << j+1 << " ";
+                  int np_tmp = mesh.num_entities(Entity_kind::NODE);
+                  for (int k = np_tmp; k < nmatpnts; ++k) {
+                    if (points[k] == pnt) {
+                      fout << k+1 << " ";
                       break;
                     }
                   }

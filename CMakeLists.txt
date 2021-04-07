@@ -27,7 +27,7 @@ cmake_policy(SET CMP0074 NEW)  # Don't ignore Pkg_ROOT variables
 
 set(TANGRAM_VERSION_MAJOR 1)
 set(TANGRAM_VERSION_MINOR 0)
-set(TANGRAM_VERSION_PATCH 5.pub)
+set(TANGRAM_VERSION_PATCH 4)
 
 
 # Top level target
@@ -133,7 +133,14 @@ if (ENABLE_UNIT_TESTS)
   
 endif ()
 
+#-----------------------------------------------------------------------------
+# Allow to set TANGRAM_DEBUG from the build script
+#-----------------------------------------------------------------------------
 
+option(TANGRAM_DEBUG "Additional checks will be performed and info will be printed" OFF)
+if (TANGRAM_DEBUG)
+  add_definitions(-DTANGRAM_DEBUG)
+endif()
 
 #-----------------------------------------------------------------------------
 # Recurse down the source directories building up dependencies
