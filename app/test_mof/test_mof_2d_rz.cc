@@ -12,7 +12,6 @@
 #include <ostream>
 #include <iterator>
 #include <algorithm>
-#include <set>
 #include <string>
 #include <sstream>
 
@@ -21,41 +20,66 @@
 #ifdef WONTON_ENABLE_MPI
   #include "mpi.h"
 #endif
-#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  #include "Mesh.hh"
-  #include "MeshFactory.hh"
-  #include "wonton/mesh/jali/jali_mesh_wrapper.h"
-#else
-  #include "wonton/mesh/simple/simple_mesh.h"
-  #include "wonton/mesh/simple/simple_mesh_wrapper.h"
-#endif
+// #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
+// #include "MeshFactory.hh"
+// #include "wonton/mesh/jali/jali_mesh_wrapper.h"
+// #include "wonton/state/jali/jali_state_wrapper.h"
+// #endif
+#include "wonton/mesh/simple/simple_mesh.h"
+#include "wonton/mesh/simple/simple_mesh_wrapper.h"
 
 // tangram includes
 #include "tangram/driver/driver.h"
-#include "tangram/reconstruct/SLIC.h"
+#include "tangram/reconstruct/VOF.h"
+#include "tangram/reconstruct/MOF.h"
 #include "tangram/driver/write_to_gmv.h"
 #include "tangram/utility/get_material_moments.h"
 #include "tangram/utility/get_mat_sym_diff_vol.h"
 
 // wonton includes
+#include "wonton/support/Vector.h"
 
-/* Test app for a 3D mesh and planar material interfaces.
-   Uses SimpleMesh/Jali and SLIC.
-   Generates (SimpleMesh) or reads mesh from file (Jali),
-   computes material moments for a sequence of planar interfaces,
-   performs interface reconstruction (SLIC), and outputs volumes of
-   symmetric difference for every material in every
-   multi-material cell */
+/* Test app for a 2D mesh and material interfaces. It makes 
+   the following steps:
+     (1) uses SimpleMesh (optionally Jali) and MOF/VOF, 
+     (2) generates a simple mesh or reads mesh from file,
+     (3) computes material moments for a sequence of planar interfaces, 
+     (4) performs interface reconstruction, 
+     (5) outputs volumes of symmetric difference for every material in every
+         multi-material cell 
 
-const std::vector<int> mesh_materials = {5, 0, 3};
-const std::vector< Tangram::Vector3 > material_interface_normals = {
-  Tangram::Vector3(0.5, 0.5, 0.0), Tangram::Vector3(0.5, 0.025, -0.375)
-};
-const std::vector< Tangram::Point3 > material_interface_points = {
-  Tangram::Point3(0.5, 0.5, 0.5), Tangram::Point3(0.5, 0.5, 0.5)
-};
+   CASE = 0 & 10  triple-point configuration of three materials, slightly tilted
+   CASE = 1 & 11  two-material problem, disk inside a box
 
+   CASE =  0 &  1  simple mesh
+   CASE = 10 & 11  Jali mesh
 
+   Currently we run MOF. To switch to VOF, one line has to be changed.
+   Tandom perturbation of centroids is commented-out currently.
+*/
+
+#include <set>
+
+using Clipper = Tangram::ClipRnD<2, Wonton::CylindricalAxisymmetricCoordinates>;
+using Splitter = Tangram::SplitRnD<2, Wonton::CylindricalAxisymmetricCoordinates>;
+
+#define CASE 0
+
+#if CASE == 0 || CASE == 10
+  const std::vector<int> mesh_materials = {5, 0, 3};
+  const std::vector< Tangram::Vector2 > material_interface_normals = {
+    Tangram::Vector2(-0.5, 0.1), Tangram::Vector2(0, -0.5)
+  };
+  const std::vector< Tangram::Point2 > material_interface_points = {
+    Tangram::Point2(0.5, 0.0), Tangram::Point2(1.0, 0.5)
+  };
+#endif
+
+#if CASE == 1 || CASE == 11
+  const std::vector<int> mesh_materials = {0, 1};
+  const Wonton::Point<2> disk_center(0.5, 0.5);
+  const double disk_radius = 0.3;
+#endif
 
 int main(int argc, char** argv) {
 #ifdef WONTON_ENABLE_MPI
@@ -71,28 +95,20 @@ int main(int argc, char** argv) {
   assert((material_interface_normals.size() == material_interface_points.size()) &&
          (mesh_materials.size() == material_interface_normals.size() + 1));
 
-#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  if (argc != 3) {
-    std::ostringstream os;
-    os << std::endl <<
-    "Correct usage: test_slic_3d" << " <decompose_cells> [0|1]" <<
-      " <base_mesh_file>" << std::endl;
-    throw std::runtime_error(os.str());
-  }
-#else
   if (argc != 5) {
     std::ostringstream os;
     os << std::endl <<
-    "Correct usage: test_slic_3d" << " <decompose_cells> [0|1]" <<
-      " <nx> <ny> <nz>" << std::endl;
+    "Correct usage: test_mof_2d" << " <decompose_cells> [0|1]" <<
+      " <nx> <ny>  <coord_sys> [0|1]" << std::endl;
     throw std::runtime_error(os.str());
   }
-#endif
 
+  // parsing arguments
   bool decompose_cells = atoi(argv[1]);
 
   int nmesh_materials = static_cast<int>(mesh_materials.size());
-  std::vector< Tangram::Plane_t<3> > material_interfaces(nmesh_materials - 1);
+#if CASE == 0 | CASE == 10
+  std::vector< Tangram::Plane_t<2> > material_interfaces(nmesh_materials - 1);
   for (int iplane = 0; iplane < nmesh_materials - 1; iplane++) {
     material_interfaces[iplane].normal = material_interface_normals[iplane];
     material_interfaces[iplane].normal.normalize();
@@ -100,65 +116,83 @@ int main(int argc, char** argv) {
       -Wonton::dot(material_interface_points[iplane].asV(),
                     material_interfaces[iplane].normal);
   }
-
-#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  std::string mesh_name = argv[2];
-  mesh_name.resize(mesh_name.size() - 4);
-#else
-  int nx = atoi(argv[2]), ny = atoi(argv[3]), nz = atoi(argv[4]);
-  std::string mesh_name;
-  {
-    std::ostringstream os;
-    os << "simple_mesh_" << nx << "x" << ny << "x" << nz;
-    mesh_name = os.str();
-  }
 #endif
 
-#ifndef NDEBUG
-  std::string ref_gmv_fname = mesh_name + "_ref_matpolys.gmv";
-  std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
-#endif
+  int nx = atoi(argv[2]), ny = atoi(argv[3]);
+  std::string mesh_name("simple_mesh");
 
-#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  Jali::MeshFactory mesh_factory(comm);
-  mesh_factory.framework(Jali::MSTK);
-  mesh_factory.included_entities({Jali::Entity_kind::EDGE, Jali::Entity_kind::FACE});
-  std::shared_ptr<Jali::Mesh> mesh = mesh_factory(argv[2]);
+  Wonton::CoordSysType sys = (atoi(argv[4]) == 0) ? Wonton::CoordSysType::Cartesian : Wonton::CoordSysType::CylindricalAxisymmetric;
 
-  assert(mesh != nullptr);
-  Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, false, false);
+#if CASE == 0 || CASE == 1
+  Wonton::Simple_Mesh mesh(0.0, 0.0, 1.0, 1.0, nx, ny);
+  Wonton::Simple_Mesh_Wrapper mesh_wrapper(mesh, true, true, true, sys);
 #else
-  Wonton::Simple_Mesh mesh(0.0, 0.0, 0.0,
-                           1.0, 1.0, 1.0,
-                           nx, ny, nz);
-  Wonton::Simple_Mesh_Wrapper mesh_wrapper(mesh);
+  Jali::MeshFactory mesh_factory(MPI_COMM_WORLD);
+  mesh_factory.included_entities(Jali::Entity_kind::ALL_KIND);
+  auto mesh = mesh_factory("test/median16.exo");
+  Wonton::Jali_Mesh_Wrapper mesh_wrapper(*mesh, true, true, true, sys);
 #endif
 
   int ncells = mesh_wrapper.num_owned_cells();
 
-  // Volume and distance tolerance
-  double dst_tol = sqrt(3)*std::numeric_limits<double>::epsilon();
-  double vol_tol = std::numeric_limits<double>::epsilon();
-  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(1);
-  ims_tols[0] = {1000, dst_tol, vol_tol}; 
+  // Volume and angle tolerances
+  double dst_tol = sqrt(2)*std::numeric_limits<double>::epsilon();
+  double vol_tol = 1.0e-16;
+  std::vector< Tangram::IterativeMethodTolerances_t> ims_tols(2);
+  ims_tols[0] = {1000, dst_tol, vol_tol};
+  ims_tols[1] = {100, 1.0e-18, dst_tol};  
 
   std::vector<int> cell_num_mats;
   std::vector<int> cell_mat_ids;
   std::vector<double> cell_mat_volfracs;
-  std::vector<Tangram::Point3> cell_mat_centroids;
-  std::vector< std::vector< std::vector<r3d_poly> > > reference_mat_polys;
+  std::vector<Tangram::Point2> cell_mat_centroids;
+  std::vector< std::vector< std::vector<r2d_poly> > > reference_mat_polys;
 
-#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  get_material_moments<Wonton::Jali_Mesh_Wrapper, Wonton::CartesianCoordinates>(
-    mesh_wrapper, material_interfaces,
-    mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
-    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
-#else
-  get_material_moments<Wonton::Simple_Mesh_Wrapper, Wonton::CartesianCoordinates>(
-    mesh_wrapper, material_interfaces,
+#if CASE == 0 
+  get_material_moments<Wonton::Simple_Mesh_Wrapper, Wonton::CylindricalAxisymmetricCoordinates>(
+      mesh_wrapper, material_interfaces,
+      mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
+      vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
+#endif
+
+#if CASE == 10 
+  get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #endif
+
+#if CASE == 1 
+  get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper,
+    mesh_materials, disk_center, disk_radius, 100,
+    cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
+#endif
+
+#if CASE == 11
+  get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper,
+    mesh_materials, disk_center, disk_radius, 100,
+    cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
+    vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
+#endif
+
+  // add random perturbation to centroids
+  /*
+  int offset(0);
+  int ncells_owned = mesh_wrapper.num_entities(Tangram::Entity_kind::CELL);
+  for (int i = 0; i < ncells_owned; i++) {
+    double cell_volume = mesh_wrapper.cell_volume(i);  
+    int nmats = cell_num_mats[i];
+    if (nmats > 1) {
+      for (int m = 0; m < nmats; ++m) {
+        double mat_volume = cell_volume * cell_mat_volfracs[offset + m];
+        for (int k = 0; k < 2; ++k) {
+          cell_mat_centroids[offset + m][k] += mat_volume * (double(rand()) / RAND_MAX - 0.5) * 0.5;
+        }
+      }
+    }
+    offset += nmats;
+  }
+  */
 
   std::vector<int> offsets(ncells, 0);
   for (int icell = 0; icell < ncells - 1; icell++)
@@ -180,45 +214,44 @@ int main(int argc, char** argv) {
       nmmcells++;
     }
 
-#ifndef NDEBUG
-  std::vector< std::shared_ptr< Tangram::CellMatPoly<3> > > ref_matpoly_list(ncells);
+// #ifndef NDEBUG
+  std::string ref_gmv_fname = mesh_name + "_ref_matpolys.gmv";
+  std::string out_gmv_fname = mesh_name + "_res_matpolys.gmv";
+
+  std::vector< std::shared_ptr< Tangram::CellMatPoly<2> > > ref_matpoly_list(ncells);
   for (int icell = 0; icell < ncells; icell++) {
-    ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<3> >(icell);
+    ref_matpoly_list[icell] = std::make_shared< Tangram::CellMatPoly<2> >(icell);
 
     for (int icmat = 0; icmat < cell_num_mats[icell]; icmat++) {
       int nmp = static_cast<int>(reference_mat_polys[icell][icmat].size());
       for (int imp = 0; imp < nmp; imp++) {
-        std::vector< Tangram::MatPoly<3> > cur_matpoly;
-        Tangram::r3dpoly_to_matpolys(reference_mat_polys[icell][icmat][imp], 
-                                     cur_matpoly, vol_tol, dst_tol);
-        assert(cur_matpoly.size() == 1);
+        Tangram::MatPoly<2> cur_matpoly;
+        Tangram::r2dpoly_to_matpoly(reference_mat_polys[icell][icmat][imp], 
+                                    cur_matpoly, dst_tol);
 
-        cur_matpoly[0].set_mat_id(cell_mat_ids[offsets[icell] + icmat]);
-        ref_matpoly_list[icell]->add_matpoly(cur_matpoly[0]);
+        cur_matpoly.set_mat_id(cell_mat_ids[offsets[icell] + icmat]);
+        ref_matpoly_list[icell]->add_matpoly(cur_matpoly);
       }
     }
   }
 
   write_to_gmv(ref_matpoly_list, ref_gmv_fname);
-#endif
+// #endif
 
   // Build the driver
-#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  Tangram::Driver<Tangram::SLIC, 3, Wonton::Jali_Mesh_Wrapper,
-                  Tangram::SplitRnD<3>, Tangram::ClipRnD<3>>
-    slic_driver(mesh_wrapper, ims_tols, !decompose_cells);
+#if CASE == 0 || CASE == 1
+  Tangram::Driver<Tangram::VOF, 2, Wonton::Simple_Mesh_Wrapper, Splitter, Clipper>
+    driver(mesh_wrapper, ims_tols, !decompose_cells);
 #else
-  Tangram::Driver<Tangram::SLIC, 3, Wonton::Simple_Mesh_Wrapper,
-                  Tangram::SplitRnD<3>, Tangram::ClipRnD<3>>
-    slic_driver(mesh_wrapper, ims_tols, !decompose_cells);
+  Tangram::Driver<Tangram::VOF, 2, Wonton::Jali_Mesh_Wrapper, Splitter, Clipper>
+    driver(mesh_wrapper, ims_tols, !decompose_cells);
 #endif
 
-  slic_driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
-                                  cell_mat_volfracs, cell_mat_centroids);
-  slic_driver.reconstruct();
+  driver.set_volume_fractions(cell_num_mats, cell_mat_ids,
+                              cell_mat_volfracs, cell_mat_centroids);
+  driver.reconstruct();
 
-  std::vector<std::shared_ptr<Tangram::CellMatPoly<3>>> cellmatpoly_list =
-    slic_driver.cell_matpoly_ptrs();
+  std::vector<std::shared_ptr<Tangram::CellMatPoly<2>>> cellmatpoly_list = driver.cell_matpoly_ptrs();
 
   std::vector<double> total_mat_sym_diff_vol(nmesh_materials, 0.0);
   std::vector<double> max_mat_sym_diff_vol(nmesh_materials, 0.0);
@@ -244,9 +277,10 @@ int main(int argc, char** argv) {
       cell_ref_mat_vols[icmat] *= cell_volume;
 
     std::vector<double> cell_mat_sym_diff_vol;
-    get_mat_sym_diff_vol(reference_mat_polys[icell], cell_ref_mat_ids,
-                         cell_ref_mat_vols, cellmatpoly_list[icell],
-                         cell_mat_sym_diff_vol, !decompose_cells);
+    get_mat_sym_diff_vol<Wonton::CylindricalAxisymmetricCoordinates>(
+        reference_mat_polys[icell], cell_ref_mat_ids,
+        cell_ref_mat_vols, cellmatpoly_list[icell],
+        cell_mat_sym_diff_vol, !decompose_cells);
 
     for (int icmat = 0; icmat < ncmats; icmat++) {
       int material_id = cell_ref_mat_ids[icmat];
@@ -264,7 +298,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  std::string res_out_fname = "cell_sym_diff_3d_" + mesh_name;
+  std::string res_out_fname = "cell_sym_diff_2d_" + mesh_name;
   if (decompose_cells)
     res_out_fname += "_decomposed";
   res_out_fname += ".txt";
@@ -280,13 +314,9 @@ int main(int argc, char** argv) {
 
   fout.close();
 
-std::cout << std::endl << "Stats for ";
-#if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  std::cout << "computational mesh " << mesh_name;
-#else
+  std::cout << std::endl << "Stats for ";
   std::cout << "structured " << nx << "x" << ny <<
-    "x" << nz << " computational mesh";
-#endif
+    " computational mesh";
   std::cout << ":" << std::endl << "  " << ncells << " cells," <<
     std::endl << "  " << nmesh_materials << " materials," <<
     std::endl << "  " << nmmcells << " multi-material cells." <<
@@ -328,15 +358,15 @@ std::cout << std::endl << "Stats for ";
         max_mat_sym_diff_vol[imat]/max_sym_diff_mat_vol << std::endl;
   }
 
-#ifndef NDEBUG
+// #ifndef NDEBUG
   //Create MatPoly's for single-material cells
   for (int icell = 0; icell < ncells; icell++) {
     if (cell_num_mats[icell] == 1) {
       assert(cellmatpoly_list[icell] == nullptr);
-      std::shared_ptr< Tangram::CellMatPoly<3> >
-        cmp_ptr(new Tangram::CellMatPoly<3>(icell));
+      std::shared_ptr< Tangram::CellMatPoly<2> >
+        cmp_ptr(new Tangram::CellMatPoly<2>(icell));
       // Create a MatPoly with the same geometry as the current cell        
-      Tangram::MatPoly<3> cell_matpoly;
+      Tangram::MatPoly<2> cell_matpoly;
       cell_get_matpoly(mesh_wrapper, icell, &cell_matpoly, dst_tol);
       cell_matpoly.set_mat_id(cell_mat_ids[offsets[icell]]);
       cmp_ptr->add_matpoly(cell_matpoly);
@@ -345,7 +375,7 @@ std::cout << std::endl << "Stats for ";
   }
 
   write_to_gmv(cellmatpoly_list, out_gmv_fname);
-#endif
+// #endif
 
 #ifdef WONTON_ENABLE_MPI
   MPI_Finalize();

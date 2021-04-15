@@ -35,10 +35,10 @@ void read_material_data(const Mesh_Wrapper& mesh,
                         std::vector< Wonton::Point<D> >& cell_mat_centroids) {
   std::ifstream os(mesh_data_fname.c_str(), std::ifstream::binary);
   if (!os.good()) {
-    std::ostringstream os;
-    os << std::endl << "Cannot open " << mesh_data_fname <<
+    std::ostringstream ss;
+    ss << std::endl << "Cannot open " << mesh_data_fname <<
       " for binary input" << std::endl;
-    throw std::runtime_error(os.str());
+    throw std::runtime_error(ss.str());
   }
 
   int data_dim;

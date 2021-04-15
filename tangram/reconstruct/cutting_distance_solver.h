@@ -8,6 +8,7 @@
 #define CUTTING_DISTANCE_SOLVER_H
 
 #include <cfloat>
+#include "wonton/support/CoordinateSystem.h"
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 
@@ -44,7 +45,7 @@ public:
   CuttingDistanceSolver(const std::vector< MatPoly<D> >& matpolys,
                         const Vector<D>& plane_normal,
                         const IterativeMethodTolerances_t& tolerances,
-                        const bool planar_faces = true) : 
+                        const bool planar_faces = true) :
                         matpolys_(matpolys), plane_normal_(plane_normal),
                         tolerances_(tolerances), planar_faces_(planar_faces) {}
   /*! 

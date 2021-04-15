@@ -23,6 +23,12 @@ add_executable(test_mof_2d test_mof_2d.cc)
 target_link_libraries(test_mof_2d tangram)
 
 #-------------------------------------------------------------------------------
+# test_mof_2d_rz - uses 2D mesh from SimpleMesh, RZ coordinate system
+#-------------------------------------------------------------------------------
+add_executable(test_mof_2d_rz test_mof_2d_rz.cc)
+target_link_libraries(test_mof_2d_rz tangram)
+
+#-------------------------------------------------------------------------------
 # Testing
 #-------------------------------------------------------------------------------
 if (ENABLE_APP_TESTS)

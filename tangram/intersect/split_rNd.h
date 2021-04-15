@@ -27,10 +27,10 @@
 
 namespace Tangram {
 
-template<int D>
-using SplitRnD = typename std::conditional<D==2, SplitR2D, SplitR3D>::type;
-template<int D>
-using ClipRnD = typename std::conditional<D==2, ClipR2D, ClipR3D>::type;
+template<int D, class CoordSys = Wonton::DefaultCoordSys>
+using SplitRnD = typename std::conditional<D==2, SplitR2D<CoordSys>, SplitR3D>::type;
+template<int D, class CoordSys = Wonton::DefaultCoordSys>
+using ClipRnD = typename std::conditional<D==2, ClipR2D<CoordSys>, ClipR3D>::type;
 
 }
 

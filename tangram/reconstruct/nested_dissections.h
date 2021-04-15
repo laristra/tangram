@@ -44,7 +44,7 @@ public:
   */
   explicit NestedDissections(const Reconstructor& rec,
                              const int& cellID,
-                             const bool convex_cell) : 
+                             const bool convex_cell) :
                              reconstructor_(rec), cell_id_(cellID),
                              convex_cell_(convex_cell) {}
 
@@ -105,7 +105,7 @@ public:
 
     // See what cells does the reconstructor split: most reconstructors only split the
     // cell itself (its ID always being the first entry), but some, such as LVIRA, 
-    // extend the cutting plane to the neighbors, in which case ID's of the neighboring
+    // extend the cutting plane to the neighbors, in which case ID's of the neihboring
     // cells are appended
     std::vector<int> icells_to_split = reconstructor_.neighbor_cells_to_split(cell_id_);
     icells_to_split.insert(icells_to_split.begin(), cell_id_);

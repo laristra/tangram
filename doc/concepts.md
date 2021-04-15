@@ -158,7 +158,7 @@ cells on the mesh partition, which is done using the method `set_volume_fraction
 exposed by the reconstructor, and select the subset of cells for which reconstruction
 is to be performed using the method `set_cell_indices_to_operate_on`. The latter
 can be used to limit the cells for which `CellMatPoly` objects are created or to perform
-reconstruction in batches when mesh cells are grouped based on certain criteria (e.g.
+reconstruction in batches when mesh cells are grouped based on certain cretiria (e.g.
 the number of materials). The `set_volume_fractions` requires the data on the number of
 materials in every cell, their material indices, volume fractions, and, optionally, 
 centroids. This data should be provided for all mesh cells, whether owned or ghosts,
