@@ -199,6 +199,10 @@ struct FEATURE {
 // Functor to evaluate which feature/material a point is in. Features
 // are layered on top of another in the order they are listed
 
+// Functor to evaluate which feature/material a point is in. Features
+// are layered on top of another in the order they are listed
+
+
 template <int dim>
 struct InFeatureEvaluator {
 
@@ -431,7 +435,13 @@ class VolfracEvaluator<3, Mesh_Wrapper> {
     std::vector<std::vector<int>> tripnts;
     std::vector<Wonton::Point<3>> points;
 
+    // ------ Will be replaced by call to mesh_.cell_get_facetization -------
+    // ------ when PR-26 will get merged in ---------------------------------
+
+    // mesh_.cell_get_facetization(cellID, &tripnts, &points);
+
     cell_get_facetization(cellID, &tripnts, &points);
+
 
     int ntris = tripnts.size();
     std::vector<Wonton::Point<3>> tripnts_flat(3*ntris);

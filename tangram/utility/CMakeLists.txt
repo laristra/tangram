@@ -20,6 +20,8 @@ set(tangram_utility_HEADERS
   get_mat_sym_diff_vol.h
   advance_moments.h
   rk4.h
+  compute_r2d_moments.h
+  get_material_moments.h
   )
 set(rpgtools_HEADERS
   rpgtools/primitives.h

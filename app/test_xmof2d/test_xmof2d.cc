@@ -150,11 +150,13 @@ int main(int argc, char** argv) {
   std::vector< std::vector< std::vector<r2d_poly> > > reference_mat_polys;
 
 #if defined(WONTON_ENABLE_Jali) && defined(WONTON_ENABLE_MPI)
-  get_material_moments<Wonton::Jali_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
+  get_material_moments<Wonton::Jali_Mesh_Wrapper, Wonton::CartesianCoordinates>(
+    mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #else
-  get_material_moments<Wonton::Simple_Mesh_Wrapper>(mesh_wrapper, material_interfaces,
+  get_material_moments<Wonton::Simple_Mesh_Wrapper, Wonton::CartesianCoordinates>(
+    mesh_wrapper, material_interfaces,
     mesh_materials, cell_num_mats, cell_mat_ids, cell_mat_volfracs, cell_mat_centroids,
     vol_tol, dst_tol, decompose_cells, &reference_mat_polys);
 #endif
@@ -245,7 +247,8 @@ int main(int argc, char** argv) {
       cell_ref_mat_vols[icmat] *= cell_volume;
 
     std::vector<double> cell_mat_sym_diff_vol;
-    get_mat_sym_diff_vol(reference_mat_polys[icell], cell_ref_mat_ids,
+    get_mat_sym_diff_vol<Wonton::CartesianCoordinates>(
+                         reference_mat_polys[icell], cell_ref_mat_ids,
                          cell_ref_mat_vols, cellmatpoly_list[icell],
                          cell_mat_sym_diff_vol, true);
 

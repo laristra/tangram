@@ -51,6 +51,11 @@ install(TARGETS tangram_driver
 # Unit tests
 
 if (ENABLE_UNIT_TESTS)
+  tangram_add_unittest(test_singlemat_cellmatpoly
+    SOURCES test/test_singlemat_cellmatpoly.cc
+    LIBRARIES tangram_driver
+    POLICY SERIAL
+  )
   if (WONTON_ENABLE_Jali)
 
     tangram_add_unittest(test_cell_matpoly_1d

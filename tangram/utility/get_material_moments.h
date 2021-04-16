@@ -12,6 +12,7 @@
 #include "tangram/intersect/split_rNd.h"
 #include "tangram/utility/rpgtools/primitives.h"
 #include "tangram/utility/rpgtools/cuts.h"
+#include "tangram/utility/compute_r2d_moments.h"
 
 /*!
  @brief For a given mesh and a sequence of planes computes volume fractions
@@ -42,7 +43,7 @@
  by construction, the default order is generally optimal and can be misleading when
  used to evaluate the accuracy of an interface reconstruction algorithm
 */
-template <class Mesh_Wrapper>
+template <class Mesh_Wrapper, class CoordSys>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector< Tangram::Plane_t<3> >& planar_interfaces,
                           const std::vector<int>& material_IDs,
@@ -274,7 +275,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
  a pointer to the collection of single-material polyhedra containing that material
                            
 */
-template <class Mesh_Wrapper>
+template <class Mesh_Wrapper, class CoordSys>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector<int>& material_IDs,
                           const Wonton::Point<3>& center,
@@ -318,7 +319,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
  @param[in] material_IDs IDs of materials corresponding to the the interior of each
  sphere; the last ID is for the material outside of all the spheres
  @param[in] center Center of the spheres
- @param[in] radius Radii of the spheres
+ @param[in] radius Radius' of the spheres
  @param[in] nquadrant_samples Discrete representation of the spheres is used,
  this number determines how many points are sampled per a coordinate plane (xy, xz) 
  quadrant
@@ -337,7 +338,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
  a pointer to the collection of single-material polyhedra containing that material
                            
 */
-template <class Mesh_Wrapper>
+template <class Mesh_Wrapper, class CoordSys>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector<int>& material_IDs,
                           const Wonton::Point<3>& center,
@@ -403,7 +404,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
  by construction, the default order is generally optimal and can be misleading when
  used to evaluate the accuracy of an interface reconstruction algorithm
 */
-template <class Mesh_Wrapper>
+template <class Mesh_Wrapper, class CoordSys>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector< Tangram::Plane_t<2> >& linear_interfaces,
                           const std::vector<int>& material_IDs,
@@ -443,9 +444,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   int ncur_polys = static_cast<int>(cur_polys_cellID.size());
   auto* cur_r2d_polys = new r2d_poly[ncur_polys];
 
-  const int POLY_ORDER = 1;
-  int nmoments = R2D_NUM_MOMENTS(POLY_ORDER);
-  r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
+  std::vector<double> r2d_moments;
 
   int ir2d_poly = 0;
   std::vector< std::vector<double> > cur_polys_moments(ncur_polys);
@@ -453,9 +452,10 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     for (auto&& poly : cells_polys[icell]) {
       Tangram::matpoly_to_r2dpoly(poly, cur_r2d_polys[ir2d_poly]);
 
-      r2d_reduce(&cur_r2d_polys[ir2d_poly], r2d_moments, POLY_ORDER);
-      cur_polys_moments[ir2d_poly].resize(nmoments);
-      for (int im = 0; im < nmoments; im++)
+      r2d_moments = compute_r2d_moments<CoordSys>(&cur_r2d_polys[ir2d_poly]);
+
+      cur_polys_moments[ir2d_poly].resize(3);
+      for (int im = 0; im < 3; im++)
         cur_polys_moments[ir2d_poly][im] += r2d_moments[im];
 
       ir2d_poly++;
@@ -488,7 +488,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     for (int ipoly = 0; ipoly < ncur_polys; ipoly++) {
       bool nnz_cutoff = false;
       if (lower_hp_polys[ipoly].nverts > 0) {
-        r2d_reduce(&lower_hp_polys[ipoly], r2d_moments, POLY_ORDER);
+        r2d_moments = compute_r2d_moments<CoordSys>(&lower_hp_polys[ipoly]);
+
         if (r2d_moments[0] >= vol_tol) {
           nnz_cutoff = true;
           // Poly below the line is cut off by the line, add it to 
@@ -501,7 +502,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
           if (static_cast<int>(cells_mat_ids[icell].size()) == cell_mat_id) {
             cells_mat_ids[icell].resize(cell_mat_id + 1);
             cells_mat_moments[icell].resize(cell_mat_id + 1);
-            cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
+            cells_mat_moments[icell][cell_mat_id].resize(3, 0.0);
             cells_mat_ids[icell][cell_mat_id] = cur_mat_id;
             if (reference_mat_polys != nullptr)
               (*reference_mat_polys)[icell].resize(cell_mat_id + 1);
@@ -509,26 +510,26 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 
           if (reference_mat_polys != nullptr)
             (*reference_mat_polys)[icell][cell_mat_id].push_back(lower_hp_polys[ipoly]);
-          for (int im = 0; im < nmoments; im++)
+          for (int im = 0; im < 3; im++)
             cells_mat_moments[icell][cell_mat_id][im] += r2d_moments[im];
         }
       }
 
       if (upper_hp_polys[ipoly].nverts > 0) {
         if (nnz_cutoff) {
-          for (int im = 0; im < nmoments; im++)
+          for (int im = 0; im < 3; im++)
             r2d_moments[im] = cur_polys_moments[ipoly][im] - r2d_moments[im];
         } 
         else {
-          for (int im = 0; im < nmoments; im++)
+          for (int im = 0; im < 3; im++)
             r2d_moments[im] = cur_polys_moments[ipoly][im];
         }
         if (r2d_moments[0] >= vol_tol) {
           int irpoly = iremaining_polys.size();
           iremaining_polys.push_back(ipoly);
           remaining_polys_moments.resize(irpoly + 1);
-          remaining_polys_moments[irpoly].resize(nmoments);
-          for (int im = 0; im < nmoments; im++)
+          remaining_polys_moments[irpoly].resize(3);
+          for (int im = 0; im < 3; im++)
             remaining_polys_moments[irpoly][im] = r2d_moments[im];
         }
       }
@@ -561,7 +562,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     if (static_cast<int>(cells_mat_ids[icell].size()) == cell_mat_id) {
       cells_mat_ids[icell].resize(cell_mat_id + 1);
       cells_mat_moments[icell].resize(cell_mat_id + 1);
-      cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
+      cells_mat_moments[icell][cell_mat_id].resize(3, 0.0);
       cells_mat_ids[icell][cell_mat_id] = cur_mat_id;
       if (reference_mat_polys != nullptr)
         (*reference_mat_polys)[icell].resize(cell_mat_id + 1);
@@ -569,7 +570,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
 
     if (reference_mat_polys != nullptr)
       (*reference_mat_polys)[icell][cell_mat_id].push_back(cur_r2d_polys[ipoly]);
-    for (int im = 0; im < nmoments; im++)
+    for (int im = 0; im < 3; im++)
       cells_mat_moments[icell][cell_mat_id][im] += cur_polys_moments[ipoly][im];
   }
 
@@ -634,7 +635,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
  a pointer to the collection of single-material polyhedra containing that material
                            
 */
-template <class Mesh_Wrapper>
+template <class Mesh_Wrapper, class CoordSys>
 void get_material_moments(const Mesh_Wrapper& mesh,
                           const std::vector<int>& material_IDs,
                           const Wonton::Point<2>& center,
@@ -692,9 +693,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
   int ncur_polys = static_cast<int>(cur_polys_cellID.size());
   auto* cur_r2d_polys = new r2d_poly[ncur_polys];
 
-  const int POLY_ORDER = 1;
-  int nmoments = R2D_NUM_MOMENTS(POLY_ORDER);
-  r2d_real r2d_moments[R2D_NUM_MOMENTS(POLY_ORDER)];
+  std::vector<double> r2d_moments;
 
   int ir2d_poly = 0;
   std::vector< std::vector<double> > cur_polys_moments(ncur_polys);
@@ -703,9 +702,10 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     for (auto&& poly : cells_polys[icell]) {
       Tangram::matpoly_to_r2dpoly(poly, cur_r2d_polys[ir2d_poly]);
 
-      r2d_reduce(&cur_r2d_polys[ir2d_poly], r2d_moments, POLY_ORDER);
-      cur_polys_moments[ir2d_poly].resize(nmoments);
-      for (int im = 0; im < nmoments; im++)
+      r2d_moments = compute_r2d_moments<CoordSys>(&cur_r2d_polys[ir2d_poly]);
+
+      cur_polys_moments[ir2d_poly].resize(3);
+      for (int im = 0; im < 3; im++)
         cur_polys_moments[ir2d_poly][im] += r2d_moments[im];
 
       ir2d_poly++;
@@ -738,7 +738,8 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     for (int ipoly = 0; ipoly < ncur_polys; ipoly++) {
       bool nnz_cutoff = false;
       if (upper_hp_polys[ipoly].nverts > 0) {
-        r2d_reduce(&upper_hp_polys[ipoly], r2d_moments, POLY_ORDER);
+        r2d_moments = compute_r2d_moments<CoordSys>(&upper_hp_polys[ipoly]);
+
         if (r2d_moments[0] >= vol_tol) {
           nnz_cutoff = true;
           // Poly above the line is exterior with respect to the circle,
@@ -749,7 +750,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
           if (cells_mat_ids[icell].empty()) {
             cells_mat_ids[icell].push_back(material_IDs[0]);
             cells_mat_moments[icell].resize(1);
-            cells_mat_moments[icell][0].resize(nmoments, 0.0);
+            cells_mat_moments[icell][0].resize(3, 0.0);
 
             if (reference_mat_polys != nullptr)
               (*reference_mat_polys)[icell].resize(1);
@@ -758,26 +759,26 @@ void get_material_moments(const Mesh_Wrapper& mesh,
           if (reference_mat_polys != nullptr)
             (*reference_mat_polys)[icell][0].push_back(upper_hp_polys[ipoly]);
 
-          for (int im = 0; im < nmoments; im++)
+          for (int im = 0; im < 3; im++)
             cells_mat_moments[icell][0][im] += r2d_moments[im];
         }
       }
 
       if (lower_hp_polys[ipoly].nverts > 0) {
         if (nnz_cutoff) {
-          for (int im = 0; im < nmoments; im++)
+          for (int im = 0; im < 3; im++)
             r2d_moments[im] = cur_polys_moments[ipoly][im] - r2d_moments[im];
         } 
         else {
-          for (int im = 0; im < nmoments; im++)
+          for (int im = 0; im < 3; im++)
             r2d_moments[im] = cur_polys_moments[ipoly][im];
         }
         if (r2d_moments[0] >= vol_tol) {
           int irpoly = iremaining_polys.size();
           iremaining_polys.push_back(ipoly);
           remaining_polys_moments.resize(irpoly + 1);
-          remaining_polys_moments[irpoly].resize(nmoments);
-          for (int im = 0; im < nmoments; im++)
+          remaining_polys_moments[irpoly].resize(3);
+          for (int im = 0; im < 3; im++)
             remaining_polys_moments[irpoly][im] = r2d_moments[im];
         }
       }
@@ -809,7 +810,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     if (unsigned(cell_mat_id) == cells_mat_ids[icell].size()) {
       cells_mat_ids[icell].push_back(material_IDs[1]);
       cells_mat_moments[icell].resize(cell_mat_id + 1);
-      cells_mat_moments[icell][cell_mat_id].resize(nmoments, 0.0);
+      cells_mat_moments[icell][cell_mat_id].resize(3, 0.0);
 
       if (reference_mat_polys != nullptr)
         (*reference_mat_polys)[icell].resize(cell_mat_id + 1);
@@ -818,7 +819,7 @@ void get_material_moments(const Mesh_Wrapper& mesh,
     if (reference_mat_polys != nullptr)
       (*reference_mat_polys)[icell][cell_mat_id].push_back(cur_r2d_polys[ipoly]);
 
-    for (int im = 0; im < nmoments; im++)
+    for (int im = 0; im < 3; im++)
       cells_mat_moments[icell][cell_mat_id][im] += cur_polys_moments[ipoly][im];
   }
 

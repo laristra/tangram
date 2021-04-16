@@ -13,8 +13,9 @@
 
 // tangram includes
 extern "C" {
-#include "wonton/intersect/r3d/r3d.h"
+#include "r3d.h"
 }
+#include "wonton/support/CoordinateSystem.h"
 #include "tangram/support/tangram.h"
 #include "tangram/support/MatPoly.h"
 
@@ -65,13 +66,16 @@ matpoly_to_r3dpoly(const MatPoly<3>& mat_poly, r3d_poly& r3dpoly) {
       r3dized_poly_faces[iface][ivrt] = matpoly_faces[ivrt];
   }
   
-  r3d_init_poly(&r3dpoly, r3dized_poly_vrts, nvrts, r3dized_poly_faces, nface_vrts, nfaces);
+  int ok = r3d_init_poly(&r3dpoly, r3dized_poly_vrts, nvrts, r3dized_poly_faces, nface_vrts, nfaces);
   
   delete [] r3dized_poly_vrts;
   delete [] nface_vrts;
   for (int iface = 0; iface < nfaces; iface++)
     delete [] r3dized_poly_faces[iface];
   delete [] r3dized_poly_faces;
+
+  if (!ok)
+    throw std::runtime_error("split_r3d.h(matpoly_to_r3dpoly): r3d_init_poly failed");
 }
 
 /*!
@@ -261,7 +265,9 @@ split_convex_matpoly_r3d(const MatPoly<3>& mat_poly,
   r3d_poly r3dized_poly;
   r3d_poly r3d_subpolys[2];
   matpoly_to_r3dpoly(mat_poly, r3dized_poly);
-  r3d_split(&r3dized_poly, 1, r3d_cut_plane, &r3d_subpolys[1], &r3d_subpolys[0]);
+  int ok = r3d_split(&r3dized_poly, 1, r3d_cut_plane, &r3d_subpolys[1], &r3d_subpolys[0]);
+  if (!ok)
+    throw std::runtime_error("split_r3d.h(split_convex_matpoly_r3d): r3d_split failed");
 
   MatPoly<3>* subpoly_ptrs[2] = {&lower_halfspace_poly, &upper_halfspace_poly};
   std::vector<double>* subpoly_moments_ptrs[2] = {&lower_halfspace_moments, 
@@ -350,12 +356,12 @@ class SplitR3D {
            const Plane_t<3>& cutting_plane, 
            const double vol_tol,
            const double dst_tol, 
-           const bool all_convex) : 
+           const bool all_convex) :
            matpolys_(matpolys), 
            cutting_plane_(cutting_plane),
            vol_tol_(vol_tol),
            dst_tol_(dst_tol),
-           all_convex_(all_convex) {}
+           all_convex_(all_convex) {};
 
   /*! 
     @brief Splits a MatPoly into two sets of convex MatPoly's
@@ -454,7 +460,8 @@ class SplitR3D {
 
 class ClipR3D {
  public:
-  ClipR3D(double vol_tol) : vol_tol_(vol_tol) {}
+  ClipR3D(double vol_tol)
+    : vol_tol_(vol_tol) {};
 
   /*! 
     @brief Set the cutting plane used by the functor. 
@@ -535,7 +542,10 @@ class ClipR3D {
         //for the plane: we need to make copies
         r3d_poly clipped_poly = poly;
         r3d_plane plane_copy = r3d_cut_plane_;
-        r3d_clip(&clipped_poly, &plane_copy, 1);
+        int ok = r3d_clip(&clipped_poly, &plane_copy, 1);
+        if (!ok)
+          throw std::runtime_error("split_r3d.h(ClipR3D::operator): r3d_clip failed");
+        
         if (clipped_poly.nverts != 0) {
           //Find the moments for the part in the lower halfspace
           r3d_reduce(&clipped_poly, r3d_moments, POLY_ORDER);
@@ -587,7 +597,7 @@ inline
 void get_intersection_moments(const MatPoly<3>& mat_poly,
                               const r3d_poly& r3dpoly,
                               std::vector<double>& intersection_moments,
-                              bool convex_matpoly) {   
+                              bool convex_matpoly) {
   const int POLY_ORDER = 1;
   r3d_real r3d_moments[R3D_NUM_MOMENTS(POLY_ORDER)];
 
@@ -606,9 +616,12 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
       r3d_face_planes[iplane].d = -face_planes[iplane].dist2origin;
     }
 
-    r3d_clip(&intersection, r3d_face_planes, (r3d_int) nplanes);
+    int ok = r3d_clip(&intersection, r3d_face_planes, (r3d_int) nplanes);
     
     delete [] r3d_face_planes;
+
+    if (!ok)
+      throw std::runtime_error("split_r3d.h(ClipR3D::get_intersection_moments): r3d_clip failed");
 
     r3d_reduce(&intersection, r3d_moments, POLY_ORDER);
     intersection_moments.resize(4);
@@ -639,7 +652,9 @@ void get_intersection_moments(const MatPoly<3>& mat_poly,
         r3d_face_planes[iplane].d = -face_planes[iplane].dist2origin;
       }
 
-      r3d_clip(&intersection, r3d_face_planes, 4);
+      int ok = r3d_clip(&intersection, r3d_face_planes, 4);
+      if (!ok)
+        throw std::runtime_error("split_r3d.h(ClipR3D::get_intersection_moments): r3d_clip failed");
 
       r3d_reduce(&intersection, r3d_moments, POLY_ORDER);
       for (int im = 0; im < 4; im++)

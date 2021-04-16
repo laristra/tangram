@@ -185,7 +185,7 @@ TEST(split_r2d, ConvexPoly) {
   reference_matpolys(CONVEX_SINGLEPOLY, ref_cp_pnts_lower, ref_cp_pnts_upper);
 
   //Split using SplitR2D class
-  Tangram::SplitR2D split(convex_singlepoly, cutting_plane, vol_tol, dst_tol, true);
+  Tangram::SplitR2D<Wonton::CartesianCoordinates> split(convex_singlepoly, cutting_plane, vol_tol, dst_tol, true);
   Tangram::HalfSpaceSets_t<2> hsp_sets = split();
 
   //Check
@@ -264,7 +264,7 @@ TEST(split_r2d, NonConvexPoly) {
   reference_matpolys(NONCONVEX_SINGLEPOLY, ref_ncp_pnts_lower, ref_ncp_pnts_upper);
 
   //Split using SplitR2D class
-  Tangram::SplitR2D split(cpmatpolys, cutting_plane, vol_tol, dst_tol, false);
+  Tangram::SplitR2D<Wonton::CartesianCoordinates> split(cpmatpolys, cutting_plane, vol_tol, dst_tol, false);
   Tangram::HalfSpaceSets_t<2> hsp_sets = split();
 
   //Check
@@ -345,7 +345,7 @@ TEST(clip_r2d, ConvexPoly) {
   std::vector<double> ref_moments = {0.875, 0.625, 0.604166666666666667};
 
   //Clip using ClipR2D class
-  Tangram::ClipR2D clip(dst_tol);
+  Tangram::ClipR2D<Wonton::CartesianCoordinates> clip(dst_tol);
   clip.set_matpolys(cpmatpolys, true);
   clip.set_plane(cutting_plane);
 
@@ -373,7 +373,7 @@ TEST(clip_r2d, NonConvexPoly) {
   std::vector<double> ref_moments = {0.5, 1.83333333333333333, 1.0};
 
   //Clip using ClipR2D class
-  Tangram::ClipR2D clip(dst_tol);
+  Tangram::ClipR2D<Wonton::CartesianCoordinates> clip(dst_tol);
   clip.set_matpolys(cpmatpolys, true);
   clip.set_plane(cutting_plane);
 
